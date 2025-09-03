@@ -368,10 +368,6 @@ const getInitials = (name) => {
 </template>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
-
 .student-dashboard {
   min-height: 100vh;
   background: #f8fafc;
@@ -435,8 +431,6 @@ const getInitials = (name) => {
   margin-top: 0.25rem;
 }
 
-
-
 .dashboard-body {
   display: flex;
   max-width: 1400px;
@@ -494,30 +488,6 @@ const getInitials = (name) => {
   height: 1rem;
   stroke-width: 2;
 }
-
-/* .add-block-form {
-  background: #f1f5f9;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  gap: 0.75rem;
-}
-
-.block-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.block-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-} */
 
 .btn-create {
   background: #3b82f6;
