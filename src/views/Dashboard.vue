@@ -1,3 +1,16 @@
+<script setup>
+import { ref } from 'vue'
+
+// Reactive data
+const totalStudents = ref(30)
+const presentToday = ref(25)
+const recentLogs = ref([
+  { name: 'Christian Sayson', time: '8:01 AM' },
+  { name: 'Christina Cassandra', time: '8:05 AM' },
+  { name: 'Jose Rizal', time: '8:10 AM' },
+])
+</script>
+
 <template>
   <div class="dashboard">
     <h1 class="title">Dashboard</h1>
@@ -27,23 +40,6 @@
     </div>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'Dashboard',
-  data() {
-    return {
-      totalStudents: 30, 
-      presentToday: 25,
-      recentLogs: [
-        { name: 'Christian Sayson', time: '8:01 AM' },
-        { name: 'Christina Cassandra', time: '8:05 AM' },
-        { name: 'Jose Rizal', time: '8:10 AM' },
-      ]
-    }
-  }
-}
-</script>
 
 <style scoped>
 .dashboard {
