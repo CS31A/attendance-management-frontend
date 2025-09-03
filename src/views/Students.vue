@@ -1,20 +1,27 @@
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed } from 'vue'
+import DeleteModal from '@/components/DeleteModal.vue'
+import CreateBlockModal from '@/components/CreateBlockModal.vue'
+import CreateStudentModal from '@/components/CreateStudentModal.vue'
+import EditBlockModal from '@/components/EditBlockModal.vue'
+import EditStudentModal from '@/components/EditStudentModal.vue'
+import ExcelComponent from '@/components/ExcelComponent.vue'
 
 // State
 const blocks = ref([])
 const selectedBlockIndex = ref(null)
-const newBlockName = ref('')
-const newStudentName = ref('')
 const showAddBlock = ref(false)
 const showAddStudent = ref(false)
+const showEditBlock = ref(false)
+const showEditStudent = ref(false)
 const showDeleteModal = ref(false)
 const deleteModal = ref({ title: '', message: '', type: '', index: -1 })
+const editingBlockIndex = ref(-1)
+const editingStudentIndex = ref(-1)
+const editingBlockName = ref('')
+const editingStudentName = ref('')
 
 // Refs
-const blockInputRef = ref(null)
-const studentInputRef = ref(null)
-const fileInputRef = ref(null)
 
 // Computed
 const selectedBlock = computed(() => {
@@ -28,23 +35,31 @@ const totalStudents = computed(() => {
 })
 
 // Block Management
-const toggleAddBlock = async () => {
+const toggleAddBlock = () => {
   showAddBlock.value = !showAddBlock.value
-  if (showAddBlock.value) {
-    await nextTick()
-    blockInputRef.value?.focus()
+}
+
+const addBlock = (blockName) => {
+  if (blockName.trim()) {
+    blocks.value.push({
+      id: Date.now().toString(),
+      name: blockName.trim(),
+      students: []
+    })
+    showAddBlock.value = false
   }
 }
 
-const addBlock = () => {
-  if (newBlockName.value.trim()) {
-    blocks.value.push({
-      id: Date.now().toString(),
-      name: newBlockName.value.trim(),
-      students: []
-    })
-    newBlockName.value = ''
-    showAddBlock.value = false
+const toggleEditBlock = (index) => {
+  editingBlockIndex.value = index
+  editingBlockName.value = blocks.value[index].name
+  showEditBlock.value = !showEditBlock.value
+}
+
+const updateBlock = (blockName) => {
+  if (blockName.trim() && editingBlockIndex.value >= 0) {
+    blocks.value[editingBlockIndex.value].name = blockName.trim()
+    showEditBlock.value = false
   }
 }
 
@@ -71,23 +86,33 @@ const deleteBlock = (index) => {
 }
 
 // Student Management
-const toggleAddStudent = async () => {
-  showAddStudent.value = !showAddStudent.value
-  if (showAddStudent.value) {
-    await nextTick()
-    studentInputRef.value?.focus()
+const toggleAddStudent = () => {
+  if (selectedBlock.value) {
+    showAddStudent.value = !showAddStudent.value
   }
 }
 
-const addStudent = () => {
-  if (newStudentName.value.trim() && selectedBlock.value) {
+const addStudent = (studentName) => {
+  if (studentName.trim() && selectedBlock.value) {
     const studentId = `STU${Date.now().toString().slice(-6)}`
     selectedBlock.value.students.push({
       id: studentId,
-      name: newStudentName.value.trim()
+      name: studentName.trim()
     })
-    newStudentName.value = ''
     showAddStudent.value = false
+  }
+}
+
+const toggleEditStudent = (index) => {
+  editingStudentIndex.value = index
+  editingStudentName.value = selectedBlock.value.students[index].name
+  showEditStudent.value = !showEditStudent.value
+}
+
+const updateStudent = (studentName) => {
+  if (studentName.trim() && editingStudentIndex.value >= 0 && selectedBlock.value) {
+    selectedBlock.value.students[editingStudentIndex.value].name = studentName.trim()
+    showEditStudent.value = false
   }
 }
 
@@ -134,177 +159,6 @@ const cancelDelete = () => {
 const getInitials = (name) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
-
-// Excel Import/Export Functions
-const triggerFileUpload = () => {
-  fileInputRef.value?.click()
-}
-
-const handleFileUpload = (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    try {
-      const text = e.target.result
-      parseExcelData(text, file.name)
-    } catch (error) {
-      alert('Error reading file. Please make sure it\'s a valid Excel or CSV file.')
-      console.error('File read error:', error)
-    }
-  }
-
-  if (file.name.endsWith('.csv')) {
-    reader.readAsText(file)
-  } else {
-    // For .xlsx files, we'll treat them as CSV for simplicity
-    // In a real app, you'd use a library like SheetJS
-    reader.readAsText(file)
-  }
-  
-  // Reset file input
-  event.target.value = ''
-}
-
-const parseExcelData = (csvText, fileName) => {
-  const lines = csvText.trim().split('\n')
-  if (lines.length < 2) {
-    alert('File must contain at least a header row and one data row.')
-    return
-  }
-
-  // Parse header to detect format
-  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase())
-  
-  let blockIndex = -1
-  let nameIndex = -1
-  let idIndex = -1
-
-  // Try to find relevant columns
-  headers.forEach((header, index) => {
-    if (header.includes('block') || header.includes('class') || header.includes('period')) {
-      blockIndex = index
-    }
-    if (header.includes('name') || header.includes('student')) {
-      nameIndex = index
-    }
-    if (header.includes('id') || header.includes('number')) {
-      idIndex = index
-    }
-  })
-
-  if (blockIndex === -1 || nameIndex === -1) {
-    alert('Could not find required columns. Please ensure your file has "Block" and "Student Name" columns.')
-    return
-  }
-
-  const importedData = new Map() // blockName -> students[]
-  let successCount = 0
-  let errorCount = 0
-
-  // Process data rows
-  for (let i = 1; i < lines.length; i++) {
-    const row = lines[i].split(',').map(cell => cell.replace(/"/g, '').trim())
-    
-    if (row.length < Math.max(blockIndex + 1, nameIndex + 1)) {
-      errorCount++
-      continue
-    }
-
-    const blockName = row[blockIndex]
-    const studentName = row[nameIndex]
-    const studentId = idIndex >= 0 ? row[idIndex] : `STU${Date.now().toString().slice(-6)}`
-
-    if (!blockName || !studentName) {
-      errorCount++
-      continue
-    }
-
-    if (!importedData.has(blockName)) {
-      importedData.set(blockName, [])
-    }
-
-    importedData.get(blockName).push({
-      id: studentId,
-      name: studentName
-    })
-    successCount++
-  }
-
-  // Import the data
-  importedData.forEach((students, blockName) => {
-    // Find or create block
-    let blockIndex = blocks.value.findIndex(b => b.name === blockName)
-    
-    if (blockIndex === -1) {
-      // Create new block
-      blocks.value.push({
-        id: Date.now().toString() + Math.random(),
-        name: blockName,
-        students: []
-      })
-      blockIndex = blocks.value.length - 1
-    }
-
-    // Add students (avoiding duplicates by name)
-    const existingNames = new Set(blocks.value[blockIndex].students.map(s => s.name.toLowerCase()))
-    
-    students.forEach(student => {
-      if (!existingNames.has(student.name.toLowerCase())) {
-        blocks.value[blockIndex].students.push(student)
-        existingNames.add(student.name.toLowerCase())
-      }
-    })
-  })
-
-  // Show import summary
-  let message = `Import completed!\n\n✅ ${successCount} students imported successfully`
-  if (errorCount > 0) {
-    message += `\n⚠️ ${errorCount} rows had errors and were skipped`
-  }
-  message += `\n\n📚 ${importedData.size} blocks processed`
-  
-  alert(message)
-}
-
-const exportToExcel = () => {
-  if (totalStudents.value === 0) return
-
-  // Create CSV content
-  let csvContent = 'Block,Student Name,Student ID\n'
-  
-  blocks.value.forEach(block => {
-    block.students.forEach(student => {
-      csvContent += `"${block.name}","${student.name}","${student.id}"\n`
-    })
-  })
-
-  // Create blob and download
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(blob)
-  
-  link.setAttribute('href', url)
-  link.setAttribute('download', `students_${new Date().toISOString().split('T')[0]}.csv`)
-  link.style.visibility = 'hidden'
-  
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-watch(showAddBlock, (show) => {
-  if (show) {
-    nextTick(() => blockInputRef.value?.focus())
-  }
-})
-
-watch(showAddStudent, (show) => {
-  if (show) {
-    nextTick(() => studentInputRef.value?.focus())
-  }
-})
 </script>
 
 <template>
@@ -326,35 +180,11 @@ watch(showAddStudent, (show) => {
             <div class="stat-label">Students</div>
           </div>
         </div>
-        <div class="excel-actions">
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            @change="handleFileUpload"
-            style="display: none;"
-          />
-          <button @click="triggerFileUpload" class="btn-excel">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14,2 14,8 20,8"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-              <line x1="7" y1="8" x2="12" y2="3"/>
-              <line x1="17" y1="8" x2="12" y2="3"/>
-            </svg>
-            Import Excel
-          </button>
-          <button @click="exportToExcel" class="btn-export" :disabled="totalStudents === 0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14,2 14,8 20,8"/>
-              <line x1="12" y1="9" x2="12" y2="21"/>
-              <line x1="7" y1="16" x2="12" y2="21"/>
-              <line x1="17" y1="16" x2="12" y2="21"/>
-            </svg>
-            Export Excel
-          </button>
-        </div>
+        <ExcelComponent 
+          :blocks="blocks" 
+          :total-students="totalStudents" 
+          @update:blocks="blocks = $event"
+        />
       </div>
     </div>
 
@@ -374,18 +204,6 @@ watch(showAddStudent, (show) => {
             </svg>
             {{ showAddBlock ? 'Cancel' : 'Add Block' }}
           </button>
-        </div>
-
-        <!-- Add Block Form -->
-        <div v-if="showAddBlock" class="add-block-form">
-          <input 
-            v-model="newBlockName" 
-            @keyup.enter="addBlock"
-            placeholder="Enter block name (e.g., Period 1, Block A)"
-            class="block-input"
-            ref="blockInputRef"
-          />
-          <button @click="addBlock" class="btn-create">Create Block</button>
         </div>
 
         <!-- Blocks List -->
@@ -412,7 +230,7 @@ watch(showAddStudent, (show) => {
                 <span class="block-count">{{ block.students.length }} students</span>
               </div>
               <div class="block-actions">
-                <button @click.stop="editBlockName(index)" class="btn-edit" title="Edit">
+                <button @click.stop="toggleEditBlock(index)" class="btn-edit" title="Edit">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -449,19 +267,6 @@ watch(showAddStudent, (show) => {
             </button>
           </div>
 
-          <!-- Add Student Form -->
-          <div v-if="showAddStudent" class="add-student-form">
-            <input 
-              v-model="newStudentName" 
-              @keyup.enter="addStudent"
-              placeholder="Enter student full name"
-              class="student-input"
-              ref="studentInputRef"
-            />
-            <button @click="addStudent" class="btn-create">Add Student</button>
-            <button @click="showAddStudent = false" class="btn-cancel">Cancel</button>
-          </div>
-
           <!-- Students Grid -->
           <div class="students-grid">
             <div v-if="selectedBlock.students.length === 0" class="empty-students">
@@ -489,7 +294,7 @@ watch(showAddStudent, (show) => {
                 <span class="student-id">ID: {{ student.id }}</span>
               </div>
               <div class="student-actions">
-                <button @click="editStudentName(index)" class="btn-edit" title="Edit">
+                <button @click="toggleEditStudent(index)" class="btn-edit" title="Edit">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -522,20 +327,43 @@ watch(showAddStudent, (show) => {
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ deleteModal.title }}</h3>
-        </div>
-        <div class="modal-body">
-          <p>{{ deleteModal.message }}</p>
-        </div>
-        <div class="modal-actions">
-          <button @click="confirmDelete" class="btn-confirm-delete">Delete</button>
-          <button @click="cancelDelete" class="btn-cancel">Cancel</button>
-        </div>
-      </div>
-    </div>
+    <DeleteModal 
+      v-if="showDeleteModal"
+      :title="deleteModal.title"
+      :message="deleteModal.message"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
+    
+    <!-- Create Block Modal -->
+    <CreateBlockModal
+      v-if="showAddBlock"
+      @create="addBlock"
+      @cancel="toggleAddBlock"
+    />
+    
+    <!-- Create Student Modal -->
+    <CreateStudentModal
+      v-if="showAddStudent && selectedBlock"
+      @create="addStudent"
+      @cancel="toggleAddStudent"
+    />
+    
+    <!-- Edit Block Modal -->
+    <EditBlockModal
+      v-if="showEditBlock"
+      :block-name="editingBlockName"
+      @update="updateBlock"
+      @cancel="showEditBlock = false"
+    />
+    
+    <!-- Edit Student Modal -->
+    <EditStudentModal
+      v-if="showEditStudent && selectedBlock"
+      :student-name="editingStudentName"
+      @update="updateStudent"
+      @cancel="showEditStudent = false"
+    />
   </div>
 </template>
 
@@ -607,65 +435,7 @@ watch(showAddStudent, (show) => {
   margin-top: 0.25rem;
 }
 
-.excel-actions {
-  display: flex;
-  gap: 0.75rem;
-}
 
-.btn-excel {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.btn-excel:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.btn-export {
-  background: #059669;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.btn-export:hover:not(:disabled) {
-  background: #047857;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
-}
-
-.btn-export:disabled {
-  background: #cbd5e1;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.btn-excel svg, .btn-export svg {
-  width: 1.25rem;
-  height: 1.25rem;
-  stroke-width: 2;
-}
 
 .dashboard-body {
   display: flex;
@@ -725,7 +495,7 @@ watch(showAddStudent, (show) => {
   stroke-width: 2;
 }
 
-.add-block-form {
+/* .add-block-form {
   background: #f1f5f9;
   padding: 1rem;
   border-radius: 0.75rem;
@@ -747,7 +517,7 @@ watch(showAddStudent, (show) => {
 .block-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
+} */
 
 .btn-create {
   background: #3b82f6;
@@ -951,7 +721,7 @@ watch(showAddStudent, (show) => {
 }
 
 
-.add-student-form {
+/* .add-student-form {
   background: #f0fdf4;
   padding: 1rem;
   border-radius: 0.75rem;
@@ -974,7 +744,7 @@ watch(showAddStudent, (show) => {
 .student-input:focus {
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
+} */
 
 .btn-cancel {
   background: #64748b;
@@ -1128,92 +898,6 @@ watch(showAddStudent, (show) => {
   line-height: 1.5;
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  background: white;
-  border-radius: 1rem;
-  width: 90%;
-  max-width: 420px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  animation: modalSlide 0.3s ease-out;
-}
-
-@keyframes modalSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-header {
-  padding: 1.5rem 1.5rem 0 1.5rem;
-}
-
-.modal-header h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-}
-
-.modal-body {
-  padding: 1rem 1.5rem;
-}
-
-.modal-body p {
-  color: #64748b;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  padding: 0 1.5rem 1.5rem 1.5rem;
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
-.btn-confirm-delete {
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-confirm-delete:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
-}
-
 
 @media (max-width: 1024px) {
   .dashboard-body {
@@ -1261,29 +945,16 @@ watch(showAddStudent, (show) => {
     align-items: flex-start;
   }
 
-  .add-block-form,
+  /* .add-block-form,
   .add-student-form {
     flex-direction: column;
-  }
+  } */
 
   .students-grid {
     grid-template-columns: 1fr;
   }
 
-  .modal-actions {
-    flex-direction: column-reverse;
-  }
 
-  .excel-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .btn-excel,
-  .btn-export {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1328,17 +999,16 @@ watch(showAddStudent, (show) => {
 .btn-add-student:focus,
 .btn-excel:focus,
 .btn-edit:focus,
-.btn-delete:focus,
-.btn-confirm-delete:focus {
+.btn-delete:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
 
-.block-input:focus,
+/* .block-input:focus,
 .student-input:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
-}
+} */
 
 .block-card:focus {
   outline: 2px solid #3b82f6;
