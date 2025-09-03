@@ -1,235 +1,3 @@
-<template>
-  <div class="student-dashboard">
-    <!-- Header -->
-    <div class="dashboard-header">
-      <div class="header-left">
-        <h1 class="page-title">Student Management</h1>
-        <p class="page-subtitle">Manage class blocks and student enrollment</p>
-      </div>
-      <div class="header-right">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value">{{ totalBlocks }}</div>
-            <div class="stat-label">Blocks</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ totalStudents }}</div>
-            <div class="stat-label">Students</div>
-          </div>
-        </div>
-        <div class="excel-actions">
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            @change="handleFileUpload"
-            style="display: none;"
-          />
-          <button @click="triggerFileUpload" class="btn-excel">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14,2 14,8 20,8"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-              <line x1="7" y1="8" x2="12" y2="3"/>
-              <line x1="17" y1="8" x2="12" y2="3"/>
-            </svg>
-            Import Excel
-          </button>
-          <button @click="exportToExcel" class="btn-export" :disabled="totalStudents === 0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14,2 14,8 20,8"/>
-              <line x1="12" y1="9" x2="12" y2="21"/>
-              <line x1="7" y1="16" x2="12" y2="21"/>
-              <line x1="17" y1="16" x2="12" y2="21"/>
-            </svg>
-            Export Excel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-body">
-      <!-- Blocks Section -->
-      <div class="blocks-section">
-        <div class="section-header">
-          <h2>Class Blocks</h2>
-          <button @click="toggleAddBlock" class="btn-add-block">
-            <svg v-if="!showAddBlock" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-            {{ showAddBlock ? 'Cancel' : 'Add Block' }}
-          </button>
-        </div>
-
-        <!-- Add Block Form -->
-        <div v-if="showAddBlock" class="add-block-form">
-          <input 
-            v-model="newBlockName" 
-            @keyup.enter="addBlock"
-            placeholder="Enter block name (e.g., Period 1, Block A)"
-            class="block-input"
-            ref="blockInputRef"
-          />
-          <button @click="addBlock" class="btn-create">Create Block</button>
-        </div>
-
-        <!-- Blocks List -->
-        <div class="blocks-container">
-          <div v-if="blocks.length === 0" class="empty-blocks">
-            <div class="empty-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <h3>No blocks created</h3>
-            <p>Create your first class block to start managing students</p>
-          </div>
-
-          <div 
-            v-for="(block, index) in blocks" 
-            :key="block.id"
-            :class="['block-card', { active: selectedBlockIndex === index }]"
-            @click="selectBlock(index)"
-          >
-            <div class="block-main">
-              <div class="block-info">
-                <h3 class="block-name">{{ block.name }}</h3>
-                <span class="block-count">{{ block.students.length }} students</span>
-              </div>
-              <div class="block-actions">
-                <button @click.stop="editBlockName(index)" class="btn-edit" title="Edit">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-                <button @click.stop="deleteBlock(index)" class="btn-delete" title="Delete">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polyline points="3,6 5,6 21,6"/>
-                    <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Students Section -->
-      <div class="students-section">
-        <div v-if="selectedBlock" class="students-content">
-          <div class="students-header">
-            <div>
-              <h2>{{ selectedBlock.name }} Students</h2>
-              <p class="students-subtitle">{{ selectedBlock.students.length }} students enrolled</p>
-            </div>
-            <button @click="toggleAddStudent" class="btn-add-student">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/>
-                <line x1="20" y1="8" x2="20" y2="14"/>
-                <line x1="23" y1="11" x2="17" y2="11"/>
-              </svg>
-              Add Student
-            </button>
-          </div>
-
-          <!-- Add Student Form -->
-          <div v-if="showAddStudent" class="add-student-form">
-            <input 
-              v-model="newStudentName" 
-              @keyup.enter="addStudent"
-              placeholder="Enter student full name"
-              class="student-input"
-              ref="studentInputRef"
-            />
-            <button @click="addStudent" class="btn-create">Add Student</button>
-            <button @click="showAddStudent = false" class="btn-cancel">Cancel</button>
-          </div>
-
-          <!-- Students Grid -->
-          <div class="students-grid">
-            <div v-if="selectedBlock.students.length === 0" class="empty-students">
-              <div class="empty-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="m22 21-3-3m0 0a5 5 0 1 0-7-7 5 5 0 0 0 7 7z"/>
-                </svg>
-              </div>
-              <h3>No students added</h3>
-              <p>Add students to this block to get started</p>
-            </div>
-
-            <div 
-              v-for="(student, index) in selectedBlock.students" 
-              :key="student.id"
-              class="student-card"
-            >
-              <div class="student-avatar">
-                <span>{{ getInitials(student.name) }}</span>
-              </div>
-              <div class="student-details">
-                <h4 class="student-name">{{ student.name }}</h4>
-                <span class="student-id">ID: {{ student.id }}</span>
-              </div>
-              <div class="student-actions">
-                <button @click="editStudentName(index)" class="btn-edit" title="Edit">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-                <button @click="deleteStudent(index)" class="btn-delete" title="Remove">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- No Block Selected -->
-        <div v-else class="no-block-selected">
-          <div class="placeholder-content">
-            <div class="placeholder-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <h3>Select a Block</h3>
-            <p>Choose a class block from the left to view and manage its students</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ deleteModal.title }}</h3>
-        </div>
-        <div class="modal-body">
-          <p>{{ deleteModal.message }}</p>
-        </div>
-        <div class="modal-actions">
-          <button @click="confirmDelete" class="btn-confirm-delete">Delete</button>
-          <button @click="cancelDelete" class="btn-cancel">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, nextTick, watch } from 'vue'
 
@@ -538,6 +306,238 @@ watch(showAddStudent, (show) => {
   }
 })
 </script>
+
+<template>
+  <div class="student-dashboard">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="header-left">
+        <h1 class="page-title">Student Management</h1>
+        <p class="page-subtitle">Manage class blocks and student enrollment</p>
+      </div>
+      <div class="header-right">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">{{ totalBlocks }}</div>
+            <div class="stat-label">Blocks</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ totalStudents }}</div>
+            <div class="stat-label">Students</div>
+          </div>
+        </div>
+        <div class="excel-actions">
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            @change="handleFileUpload"
+            style="display: none;"
+          />
+          <button @click="triggerFileUpload" class="btn-excel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+              <line x1="7" y1="8" x2="12" y2="3"/>
+              <line x1="17" y1="8" x2="12" y2="3"/>
+            </svg>
+            Import Excel
+          </button>
+          <button @click="exportToExcel" class="btn-export" :disabled="totalStudents === 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="12" y1="9" x2="12" y2="21"/>
+              <line x1="7" y1="16" x2="12" y2="21"/>
+              <line x1="17" y1="16" x2="12" y2="21"/>
+            </svg>
+            Export Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-body">
+      <!-- Blocks Section -->
+      <div class="blocks-section">
+        <div class="section-header">
+          <h2>Class Blocks</h2>
+          <button @click="toggleAddBlock" class="btn-add-block">
+            <svg v-if="!showAddBlock" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            {{ showAddBlock ? 'Cancel' : 'Add Block' }}
+          </button>
+        </div>
+
+        <!-- Add Block Form -->
+        <div v-if="showAddBlock" class="add-block-form">
+          <input 
+            v-model="newBlockName" 
+            @keyup.enter="addBlock"
+            placeholder="Enter block name (e.g., Period 1, Block A)"
+            class="block-input"
+            ref="blockInputRef"
+          />
+          <button @click="addBlock" class="btn-create">Create Block</button>
+        </div>
+
+        <!-- Blocks List -->
+        <div class="blocks-container">
+          <div v-if="blocks.length === 0" class="empty-blocks">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h3>No blocks created</h3>
+            <p>Create your first class block to start managing students</p>
+          </div>
+
+          <div 
+            v-for="(block, index) in blocks" 
+            :key="block.id"
+            :class="['block-card', { active: selectedBlockIndex === index }]"
+            @click="selectBlock(index)"
+          >
+            <div class="block-main">
+              <div class="block-info">
+                <h3 class="block-name">{{ block.name }}</h3>
+                <span class="block-count">{{ block.students.length }} students</span>
+              </div>
+              <div class="block-actions">
+                <button @click.stop="editBlockName(index)" class="btn-edit" title="Edit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button @click.stop="deleteBlock(index)" class="btn-delete" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Students Section -->
+      <div class="students-section">
+        <div v-if="selectedBlock" class="students-content">
+          <div class="students-header">
+            <div>
+              <h2>{{ selectedBlock.name }} Students</h2>
+              <p class="students-subtitle">{{ selectedBlock.students.length }} students enrolled</p>
+            </div>
+            <button @click="toggleAddStudent" class="btn-add-student">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Add Student
+            </button>
+          </div>
+
+          <!-- Add Student Form -->
+          <div v-if="showAddStudent" class="add-student-form">
+            <input 
+              v-model="newStudentName" 
+              @keyup.enter="addStudent"
+              placeholder="Enter student full name"
+              class="student-input"
+              ref="studentInputRef"
+            />
+            <button @click="addStudent" class="btn-create">Add Student</button>
+            <button @click="showAddStudent = false" class="btn-cancel">Cancel</button>
+          </div>
+
+          <!-- Students Grid -->
+          <div class="students-grid">
+            <div v-if="selectedBlock.students.length === 0" class="empty-students">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="m22 21-3-3m0 0a5 5 0 1 0-7-7 5 5 0 0 0 7 7z"/>
+                </svg>
+              </div>
+              <h3>No students added</h3>
+              <p>Add students to this block to get started</p>
+            </div>
+
+            <div 
+              v-for="(student, index) in selectedBlock.students" 
+              :key="student.id"
+              class="student-card"
+            >
+              <div class="student-avatar">
+                <span>{{ getInitials(student.name) }}</span>
+              </div>
+              <div class="student-details">
+                <h4 class="student-name">{{ student.name }}</h4>
+                <span class="student-id">ID: {{ student.id }}</span>
+              </div>
+              <div class="student-actions">
+                <button @click="editStudentName(index)" class="btn-edit" title="Edit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button @click="deleteStudent(index)" class="btn-delete" title="Remove">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Block Selected -->
+        <div v-else class="no-block-selected">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h3>Select a Block</h3>
+            <p>Choose a class block from the left to view and manage its students</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ deleteModal.title }}</h3>
+        </div>
+        <div class="modal-body">
+          <p>{{ deleteModal.message }}</p>
+        </div>
+        <div class="modal-actions">
+          <button @click="confirmDelete" class="btn-confirm-delete">Delete</button>
+          <button @click="cancelDelete" class="btn-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 * {

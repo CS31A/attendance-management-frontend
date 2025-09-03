@@ -5,6 +5,7 @@ import QRGenerator from '../views/QRGenerator.vue'
 import QRScanner from '../views/QRScanner.vue'
 
 const routes = [
+  { path: '/login', component: () => import('../views/LoginView.vue') },
   { path: '/dashboard', component: Dashboard },
   { path: '/students', component: Students },
   { path: '/qr-generator', component: QRGenerator },
