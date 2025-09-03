@@ -1,43 +1,47 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 // Reactive data
 const isSidebarOpen = ref(false)
 const isCollapsed = ref(false)
 const windowWidth = ref(window.innerWidth)
 
+// Event listener functions
+let clickOutsideHandler
+let resizeHandler
+
 // Computed properties
 const isDesktop = computed(() => windowWidth.value > 768)
+
+// Helper function to dispatch sidebar toggle event
+const dispatchSidebarToggle = (isOpen = isSidebarOpen.value) => {
+  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
+    detail: { isOpen, isCollapsed: isCollapsed.value } 
+  }))
+}
 
 // Methods
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
   // Emit event to notify parent component
-  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-    detail: { isOpen: isSidebarOpen.value, isCollapsed: isCollapsed.value } 
-  }))
+  dispatchSidebarToggle()
 }
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
   // Emit event to notify parent component
-  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-    detail: { isOpen: isSidebarOpen.value, isCollapsed: isCollapsed.value } 
-  }))
+  dispatchSidebarToggle()
 }
 
 const closeSidebar = () => {
   isSidebarOpen.value = false
   // Emit event to notify parent component
-  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-    detail: { isOpen: false, isCollapsed: isCollapsed.value } 
-  }))
+  dispatchSidebarToggle(false)
 }
 
 // Lifecycle hooks
 onMounted(() => {
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener('click', (e) => {
+  clickOutsideHandler = (e) => {
     if (window.innerWidth <= 768) {
       const sidebar = document.querySelector('.sidebar')
       const burgerBtn = document.querySelector('.burger-btn')
@@ -45,24 +49,31 @@ onMounted(() => {
       if (sidebar && burgerBtn && !sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
         isSidebarOpen.value = false
         // Emit event to notify parent component
-        window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-          detail: { isOpen: false, isCollapsed: isCollapsed.value } 
-        }))
+        dispatchSidebarToggle(false)
       }
     }
-  })
+  }
+  document.addEventListener('click', clickOutsideHandler)
 
   // Close sidebar on window resize to desktop
-  window.addEventListener('resize', () => {
+  resizeHandler = () => {
     windowWidth.value = window.innerWidth
     if (window.innerWidth > 768) {
       isSidebarOpen.value = false
       // Emit event to notify parent component
-      window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-        detail: { isOpen: false, isCollapsed: isCollapsed.value } 
-      }))
+      dispatchSidebarToggle(false)
     }
-  })
+  }
+  window.addEventListener('resize', resizeHandler)
+})
+
+onUnmounted(() => {
+  if (clickOutsideHandler) {
+    document.removeEventListener('click', clickOutsideHandler)
+  }
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler)
+  }
 })
 </script>
 

@@ -12,8 +12,10 @@ const checkIsMobile = () => {
 
 // Event listener to detect when sidebar opens/closes
 const handleSidebarToggle = (event) => {
-  isSidebarOpen.value = event.detail.isOpen;
-  isSidebarCollapsed.value = event.detail.isCollapsed;
+  if (event.detail) {
+    isSidebarOpen.value = event.detail.isOpen ?? false;
+    isSidebarCollapsed.value = event.detail.isCollapsed ?? false;
+  }
 };
 
 onMounted(() => {
