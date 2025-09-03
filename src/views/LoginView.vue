@@ -128,10 +128,12 @@ const handleForgotPassword = () => {
   <div class="login-container">
     <!-- Left Panel -->
     <div class="left-panel">
+      <!-- Background Logo -->
+      <div class="background-logo">
+        <img src="@/components/icons/ACLCLogo.png" alt="ACLC Logo Background" class="background-logo-image" />
+      </div>
+      
       <div class="logo-section">
-        <div class="logo-icon">
-          <img src="@/components/icons/ACLCLogo.png" alt="ACLC Logo" class="logo-image" />
-        </div>
         <div class="logo-content">
           <h1 class="logo-title">ACLC Attendance Monitoring System</h1>
           <p class="logo-subtitle">A reliable and efficient way to monitor student attendance.</p>
@@ -230,6 +232,23 @@ const handleForgotPassword = () => {
   padding: 48px;
   color: white;
   position: relative;
+  overflow: hidden;
+}
+
+.background-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.background-logo-image {
+  width: 600px;
+  height: 600px;
+  object-fit: contain;
+  opacity: 0.4;
 }
 
 .logo-section {
@@ -237,23 +256,8 @@ const handleForgotPassword = () => {
   align-items: flex-start;
   gap: 16px;
   margin-top: 24px;
-}
-
-.logo-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.logo-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  position: relative;
+  z-index: 2;
 }
 
 .logo-content {
@@ -278,6 +282,8 @@ const handleForgotPassword = () => {
   margin-top: auto;
   font-size: 12px;
   opacity: 0.7;
+  position: relative;
+  z-index: 2;
 }
 
 /* Right Panel Styles */
@@ -455,6 +461,11 @@ const handleForgotPassword = () => {
     padding: 32px;
   }
   
+  .background-logo-image {
+    width: 200px;
+    height: 200px;
+  }
+  
   .login-form {
     padding: 32px;
   }
@@ -469,6 +480,11 @@ const handleForgotPassword = () => {
     flex: none;
     padding: 32px;
     min-height: 200px;
+  }
+  
+  .background-logo-image {
+    width: 120px;
+    height: 120px;
   }
   
   .right-panel {
@@ -492,6 +508,11 @@ const handleForgotPassword = () => {
   
   .logo-section {
     margin-top: 0;
+  }
+  
+  .background-logo-image {
+    width: 80px;
+    height: 80px;
   }
   
   .right-panel {
