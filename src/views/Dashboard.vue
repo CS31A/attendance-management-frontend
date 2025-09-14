@@ -1,9 +1,18 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Chart, registerables } from 'chart.js'
+import { ref, computed } from 'vue'
+import { Doughnut, Bar } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, BarElement } from 'chart.js'
+import { useAuthStore } from '@/stores/authStore'
 
 // Register Chart.js components
-Chart.register(...registerables)
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, BarElement)
+
+
+const authStore = useAuthStore()
+
+// Computed properties for auth state
+const isLoading = computed(() => authStore.getIsLoading)
+const isAuthenticated = computed(() => authStore.getIsAuthenticated)
 
 // Reactive data
 const totalStudents = ref(30)
@@ -14,120 +23,171 @@ const recentLogs = ref([
   { name: 'Jose Rizal', time: '8:10 AM' },
 ])
 
-// Chart refs
-const attendanceChart = ref(null)
-const weeklyChart = ref(null)
-const attendanceChartCanvas = ref(null)
-const weeklyChartCanvas = ref(null)
+// Chart data
+const attendanceChartData = computed(() => ({
+  labels: ['Present', 'Absent'],
+  datasets: [{
+    data: [presentToday.value, totalStudents.value - presentToday.value],
+    backgroundColor: ['#10b981', '#ef4444']
+  }]
+}))
 
-// Simplified chart creation
-const createAttendanceChart = () => {
-  attendanceChart.value = new Chart(attendanceChartCanvas.value, {
-    type: 'doughnut',
-    data: {
-      labels: ['Present', 'Absent'],
-      datasets: [{
-        data: [presentToday.value, totalStudents.value - presentToday.value],
-        backgroundColor: ['#10b981', '#ef4444']
-      }]
+const weeklyChartData = computed(() => ({
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+  datasets: [
+    {
+      label: 'Present',
+      data: [28, 26, 25, 29, 27],
+      backgroundColor: '#10b981'
     },
-    options: { responsive: true }
-  })
-}
-
-const createWeeklyChart = () => {
-  weeklyChart.value = new Chart(weeklyChartCanvas.value, {
-    type: 'bar',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      datasets: [
-        {
-          label: 'Present',
-          data: [28, 26, 25, 29, 27],
-          backgroundColor: '#10b981'
-        },
-        {
-          label: 'Absent', 
-          data: [2, 4, 5, 1, 3],
-          backgroundColor: '#ef4444'
-        }
-      ]
-    },
-    options: { 
-      responsive: true,
-      maintainAspectRatio: false
+    {
+      label: 'Absent', 
+      data: [2, 4, 5, 1, 3],
+      backgroundColor: '#ef4444'
     }
-  })
+  ]
+}))
+
+// Chart options
+const attendanceChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false
 }
 
-const createCharts = () => {
-  createAttendanceChart()
-  createWeeklyChart()
+const weeklyChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false
 }
-
-// Lifecycle hooks
-onMounted(() => {
-  createCharts()
-})
-
-onUnmounted(() => {
-  // Clean up charts when component is destroyed
-  if (attendanceChart.value) {
-    attendanceChart.value.destroy()
-  }
-  if (weeklyChart.value) {
-    weeklyChart.value.destroy()
-  }
-})
 </script>
 
 <template>
   <div class="dashboard">
-    <h1 class="title">Admin Dashboard</h1>
-
-    <div class="summary-cards">
-      <div class="card total">
-        <h3>Total Students</h3>
-        <p>{{ totalStudents }}</p>
-      </div>
-      
-      <div class="card present">
-        <h3>Present Today</h3>
-        <p>{{ presentToday }}</p>
-      </div>
-      <div class="card absent">
-        <h3>Absent Today</h3>
-        <p>{{ totalStudents - presentToday }}</p>
-      </div>
+    <!-- Loading state -->
+    <div v-if="isLoading" class="auth-checking">
+      <div class="spinner"></div>
+      <p>Checking authentication...</p>
     </div>
-
-    <!-- Charts Section -->
-    <div class="charts-section">
-      <div class="chart-container">
-        <h2>Attendance Overview</h2>
-        <canvas ref="attendanceChartCanvas" width="400" height="200"></canvas>
-      </div>
-      
-      <div class="chart-container">
-        <h2>Weekly Attendance Trend</h2>
-        <canvas ref="weeklyChartCanvas" width="400" height="200"></canvas>
-      </div>
+    
+    <!-- Unauthenticated state -->
+    <div v-else-if="!isAuthenticated" class="unauthenticated">
+      <h2>Access Denied</h2>
+      <p>You need to be logged in to view this page.</p>
+      <router-link to="/login" class="login-link">Go to Login</router-link>
     </div>
+    
+    <!-- Authenticated content -->
+    <template v-else>
+      <h1 class="title">Dashboard</h1>
 
-    <div class="recent-activity">
-      <h2>Recent Attendance</h2>
-      <ul>
-        <li v-for="(log, index) in recentLogs" :key="index">
-          {{ log.name }} - {{ log.time }}
-        </li>
-      </ul>
-    </div>
+      <div class="summary-cards">
+        <div class="card total">
+          <h3>Total Students</h3>
+          <p>{{ totalStudents }}</p>
+        </div>
+        <div class="card present">
+          <h3>Present Today</h3>
+          <p>{{ presentToday }}</p>
+        </div>
+        <div class="card absent">
+          <h3>Absent Today</h3>
+          <p>{{ totalStudents - presentToday }}</p>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="chart-container">
+          <h2>Attendance Overview</h2>
+          <Doughnut 
+            :data="attendanceChartData" 
+            :options="attendanceChartOptions" 
+            style="height: 300px;"
+          />
+        </div>
+        
+        <div class="chart-container">
+          <h2>Weekly Attendance Trend</h2>
+          <Bar 
+            :data="weeklyChartData" 
+            :options="weeklyChartOptions" 
+            style="height: 300px;"
+          />
+        </div>
+      </div>
+
+      <div class="recent-activity">
+        <h2>Recent Attendance</h2>
+        <ul>
+          <li v-for="(log, index) in recentLogs" :key="index">
+            {{ log.name }} - {{ log.time }}
+          </li>
+        </ul>
+      </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .dashboard {
   padding: 30px;
+}
+
+.auth-checking {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.unauthenticated {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  text-align: center;
+}
+
+.unauthenticated h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #ef4444;
+}
+
+.unauthenticated p {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.login-link {
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.login-link:hover {
+  background-color: #2563eb;
 }
 
 .title {

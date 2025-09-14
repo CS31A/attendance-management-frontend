@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
+const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
 
 // Reactive data
 const isSidebarOpen = ref(false)
@@ -177,6 +178,8 @@ onUnmounted(() => {
             <span class="user-role">Administrator</span>
           </div>
         </div>
+        <!-- Logout Button -->
+        <LogoutButton />
       </div>
     </aside>
   </div>
@@ -690,5 +693,24 @@ onUnmounted(() => {
   .user-role {
     font-size: 13px;
   }
+}
+
+/* Logout button styles */
+.sidebar-footer :deep(.logout-button) {
+  width: 100%;
+  margin-top: 16px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.sidebar-footer :deep(.logout-button:hover:not(:disabled)) {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+}
+
+.sidebar.collapsed .sidebar-footer :deep(.logout-button) {
+  padding: 8px;
+  font-size: 12px;
 }
 </style>
