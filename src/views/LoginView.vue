@@ -1,8 +1,17 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
+// Redirect if already authenticated
+onMounted(() => {
+  if (authStore.getIsAuthenticated) {
+    router.push('/dashboard')
+  }
+})
 
 const formData = reactive({
   username: '',
@@ -96,23 +105,22 @@ const handleLogin = async () => {
   isLoading.value = true
   
   try {
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // Using the authStore login method
+    const result = await authStore.login(formData.username, formData.password)
     
-    // Simulate authentication check
-    if (formData.username === 'invalid' && formData.password === 'invalid') {
-      throw new Error('Invalid credentials')
+    if (result.success) {
+      console.log('Login successful:', {
+        username: formData.username,
+        rememberMe: formData.rememberMe
+      })
+      
+      router.push('/dashboard')
+    } else {
+      throw new Error(result.message || 'Invalid credentials')
     }
-    
-    console.log('Login attempt with:', {
-      username: formData.username,
-      password: formData.password,
-      rememberMe: formData.rememberMe
-    })
-    
-    router.push('/dashboard')
   } catch (error) {
     console.error('Login failed:', error)
-    errors.general = 'Invalid username or password. Please try again.'
+    errors.general = error.message || 'Invalid username or password. Please try again.'
   } finally {
     isLoading.value = false
   }

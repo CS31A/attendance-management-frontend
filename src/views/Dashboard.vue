@@ -1,9 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Chart, registerables } from 'chart.js'
-
-// Register Chart.js components
-Chart.register(...registerables)
+import { ref } from 'vue'
 
 // Reactive data
 const totalStudents = ref(30)
@@ -13,121 +9,42 @@ const recentLogs = ref([
   { name: 'Christina Cassandra', time: '8:05 AM' },
   { name: 'Jose Rizal', time: '8:10 AM' },
 ])
-
-// Chart refs
-const attendanceChart = ref(null)
-const weeklyChart = ref(null)
-const attendanceChartCanvas = ref(null)
-const weeklyChartCanvas = ref(null)
-
-// Simplified chart creation
-const createAttendanceChart = () => {
-  attendanceChart.value = new Chart(attendanceChartCanvas.value, {
-    type: 'doughnut',
-    data: {
-      labels: ['Present', 'Absent'],
-      datasets: [{
-        data: [presentToday.value, totalStudents.value - presentToday.value],
-        backgroundColor: ['#10b981', '#ef4444']
-      }]
-    },
-    options: { responsive: true }
-  })
-}
-
-const createWeeklyChart = () => {
-  weeklyChart.value = new Chart(weeklyChartCanvas.value, {
-    type: 'bar',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      datasets: [
-        {
-          label: 'Present',
-          data: [28, 26, 25, 29, 27],
-          backgroundColor: '#10b981'
-        },
-        {
-          label: 'Absent', 
-          data: [2, 4, 5, 1, 3],
-          backgroundColor: '#ef4444'
-        }
-      ]
-    },
-    options: { 
-      responsive: true,
-      maintainAspectRatio: false
-    }
-  })
-}
-
-const createCharts = () => {
-  createAttendanceChart()
-  createWeeklyChart()
-}
-
-// Lifecycle hooks
-onMounted(() => {
-  createCharts()
-})
-
-onUnmounted(() => {
-  // Clean up charts when component is destroyed
-  if (attendanceChart.value) {
-    attendanceChart.value.destroy()
-  }
-  if (weeklyChart.value) {
-    weeklyChart.value.destroy()
-  }
-})
 </script>
 
 <template>
   <div class="dashboard">
-    <h1 class="title">Admin Dashboard</h1>
+    <h1 class="title">Dashboard</h1>
 
     <div class="summary-cards">
       <div class="card total">
         <h3>Total Students</h3>
-        <p>{{ totalStudents }}</p>
+        <p>30</p>
       </div>
-      
       <div class="card present">
         <h3>Present Today</h3>
-        <p>{{ presentToday }}</p>
+        <p>25</p>
       </div>
       <div class="card absent">
         <h3>Absent Today</h3>
-        <p>{{ totalStudents - presentToday }}</p>
+        <p>5</p>
       </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="charts-section">
-      <div class="chart-container">
-        <h2>Attendance Overview</h2>
-        <canvas ref="attendanceChartCanvas" width="400" height="200"></canvas>
+      <div class="recent-activity">
+        <h2>Recent Attendance</h2>
+        <ul>
+          <li v-for="(log, index) in recentLogs" :key="index">
+            {{ log.name }} - {{ log.time }}
+          </li>
+        </ul>
       </div>
-      
-      <div class="chart-container">
-        <h2>Weekly Attendance Trend</h2>
-        <canvas ref="weeklyChartCanvas" width="400" height="200"></canvas>
-      </div>
-    </div>
-
-    <div class="recent-activity">
-      <h2>Recent Attendance</h2>
-      <ul>
-        <li v-for="(log, index) in recentLogs" :key="index">
-          {{ log.name }} - {{ log.time }}
-        </li>
-      </ul>
-    </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .dashboard {
-  padding: 30px;
+  padding: 20px;
 }
 
 .title {
