@@ -60,9 +60,9 @@ onUnmounted(() => {
     <template v-else>
       <SideBar v-if="showSidebar" />
       <main :class="{ 
-        'no-sidebar': !showSidebar || route.path === '/login' || isMobile, 
-        'sidebar-open': isMobile && isSidebarOpen,
-        'sidebar-collapsed': !isMobile && isSidebarCollapsed
+        'no-sidebar': !showSidebar || isMobile,
+        'sidebar-open': showSidebar && isMobile && isSidebarOpen,
+        'sidebar-collapsed': showSidebar && !isMobile && isSidebarCollapsed
       }">
         <router-view />
       </main>
