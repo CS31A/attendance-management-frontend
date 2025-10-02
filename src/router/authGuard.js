@@ -26,7 +26,7 @@ export const authGuard = async (to, from) => {
   // If we're still initializing, allow the navigation to proceed for now
   // The router will re-evaluate the guard when the auth store finishes initializing
   if (authStore.getIsLoading) {
-    return true // Don't block navigation during initialization
+    await authStore.initializeAuth()
   }
   
   try {
@@ -68,7 +68,7 @@ export const guestGuard = async (to, from) => {
   // If we're still initializing, allow the navigation to proceed for now
   // The router will re-evaluate the guard when the auth store finishes initializing
   if (authStore.getIsLoading) {
-    return true // Don't block navigation during initialization
+    await authStore.initializeAuth()
   }
   
   // If user is authenticated, redirect to dashboard

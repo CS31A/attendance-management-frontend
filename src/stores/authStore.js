@@ -74,10 +74,11 @@ export const useAuthStore = defineStore('authStore', () => {
             // Create the payload with identifier and password
             const payload = { identifier, password }
             
-            const response = await api.post("/Account/web/login", payload)
+            const response = await api.post("/account/web/login", payload)
 
             if (response.data.success) {
                 isAuthenticated.value = true
+                await checkAuth()
                 return { success: true }
             } else {
                 return { success: false, message: "Login failed" }
@@ -100,7 +101,7 @@ export const useAuthStore = defineStore('authStore', () => {
     const logout = async () => {
         try {
             // Call backend logout endpoint to clear cookie
-            await api.post("/Account/web/logout")
+            await api.post("/account/web/logout")
         } catch (error) {
             console.error("Logout error:", error)
         } finally {
@@ -122,14 +123,27 @@ export const useAuthStore = defineStore('authStore', () => {
     const checkAuth = async () => {
         isLoading.value = true
         try {
-            const response = await api.get("/Account/check")
-            user.value = response.data.user
-            isAuthenticated.value = true
-            return true
-        } catch (error) {
-            // If not authenticated, clear state
+            const response = await api.get("/account/check")
+
+            if (response.data && response.data.user) {
+                user.value = response.data.user
+                isAuthenticated.value = true
+                return true
+            }
+            // If response doesn't include a user, treat as unauthenticated
             user.value = null
             isAuthenticated.value = false
+            return false
+        } catch (error) {
+            const status = error?.response?.status
+            if (status === 401) {
+                user.value = null
+                isAuthenticated.value = false
+            } else {
+                // For other errors, still clear the state as a fallback
+                user.value = null
+                isAuthenticated.value = false
+            }
             return false
         } finally {
             isLoading.value = false
@@ -147,13 +161,13 @@ export const useAuthStore = defineStore('authStore', () => {
      */
     const initializeAuth = async () => {
         // Only check if we haven't already determined auth state
-        if (user.value === null && isLoading.value) {
+        if (user.value === null && isLoading.value) 
             await checkAuth()
-        }
+    
         // Set loading to false if it's still true
-        if (isLoading.value) {
+        if (isLoading.value) 
             isLoading.value = false
-        }
+        
     }
 
     return {

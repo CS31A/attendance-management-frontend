@@ -1,5 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { Doughnut, Bar } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, BarElement } from 'chart.js'
+import { useAuthStore } from '@/stores/authStore'
+import router from '@/router'
+
+// Register Chart.js components
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, BarElement)
+
+
+const authStore = useAuthStore()
+
+// Computed properties for auth state
+const isLoading = computed(() => authStore.getIsLoading)
+const isAuthenticated = authStore.getIsAuthenticated
 
 // Reactive data
 const totalStudents = ref(30)
@@ -9,26 +23,104 @@ const recentLogs = ref([
   { name: 'Christina Cassandra', time: '8:05 AM' },
   { name: 'Jose Rizal', time: '8:10 AM' },
 ])
+
+// Chart data
+const attendanceChartData = computed(() => ({
+  labels: ['Present', 'Absent'],
+  datasets: [{
+    data: [presentToday.value, totalStudents.value - presentToday.value],
+    backgroundColor: ['#10b981', '#ef4444']
+  }]
+}))
+
+const weeklyChartData = computed(() => ({
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+  datasets: [
+    {
+      label: 'Present',
+      data: [28, 26, 25, 29, 27],
+      backgroundColor: '#10b981'
+    },
+    {
+      label: 'Absent', 
+      data: [2, 4, 5, 1, 3],
+      backgroundColor: '#ef4444'
+    }
+  ]
+}))
+
+// Chart options
+const attendanceChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false
+}
+
+const weeklyChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false
+}
+
+onMounted(() => {
+  if (!isAuthenticated && !authStore.getUser) {
+    router.push("/login")
+  }
+})
 </script>
 
 <template>
   <div class="dashboard">
-    <h1 class="title">Dashboard</h1>
-
-    <div class="summary-cards">
-      <div class="card total">
-        <h3>Total Students</h3>
-        <p>30</p>
-      </div>
-      <div class="card present">
-        <h3>Present Today</h3>
-        <p>25</p>
-      </div>
-      <div class="card absent">
-        <h3>Absent Today</h3>
-        <p>5</p>
-      </div>
+    <!-- Loading state -->
+    <div v-if="isLoading" class="auth-checking">
+      <div class="spinner"></div>
+      <p>Checking authentication...</p>
     </div>
+    
+    <!-- Unauthenticated state -->
+    <div v-else-if="!isAuthenticated" class="unauthenticated">
+      <h2>Access Denied</h2>
+      <p>You need to be logged in to view this page.</p>
+      <router-link to="/login" class="login-link">Go to Login</router-link>
+    </div>
+    
+    <!-- Authenticated content -->
+    <template v-else>
+      <h1 class="title">Dashboard</h1>
+
+      <div class="summary-cards">
+        <div class="card total">
+          <h3>Total Students</h3>
+          <p>{{ totalStudents }}</p>
+        </div>
+        <div class="card present">
+          <h3>Present Today</h3>
+          <p>{{ presentToday }}</p>
+        </div>
+        <div class="card absent">
+          <h3>Absent Today</h3>
+          <p>{{ totalStudents - presentToday }}</p>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="chart-container">
+          <h2>Attendance Overview</h2>
+          <Doughnut 
+            :data="attendanceChartData" 
+            :options="attendanceChartOptions" 
+            style="height: 300px;"
+          />
+        </div>
+        
+        <div class="chart-container">
+          <h2>Weekly Attendance Trend</h2>
+          <Bar 
+            :data="weeklyChartData" 
+            :options="weeklyChartOptions" 
+            style="height: 300px;"
+          />
+        </div>
+      </div>
 
       <div class="recent-activity">
         <h2>Recent Attendance</h2>
