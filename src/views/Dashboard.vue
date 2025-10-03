@@ -12,7 +12,6 @@ ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale,
 const authStore = useAuthStore()
 
 // Computed properties for auth state
-const isLoading = computed(() => authStore.getIsLoading)
 const isAuthenticated = authStore.getIsAuthenticated
 
 // Reactive data
@@ -69,14 +68,8 @@ onMounted(() => {
 
 <template>
   <div class="dashboard">
-    <!-- Loading state -->
-    <div v-if="isLoading" class="auth-checking">
-      <div class="spinner"></div>
-      <p>Checking authentication...</p>
-    </div>
-    
     <!-- Unauthenticated state -->
-    <div v-else-if="!isAuthenticated" class="unauthenticated">
+    <div v-if="!isAuthenticated" class="unauthenticated">
       <h2>Access Denied</h2>
       <p>You need to be logged in to view this page.</p>
       <router-link to="/login" class="login-link">Go to Login</router-link>
