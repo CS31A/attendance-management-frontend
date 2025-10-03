@@ -1,6 +1,10 @@
 <script setup>
+import { useAuthStore } from '@/stores/authStore'
 import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
 const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
+
+const authStore = useAuthStore()
+const user = authStore.getUser
 
 // Reactive data
 const isSidebarOpen = ref(false)
@@ -161,7 +165,7 @@ onUnmounted(() => {
             </svg>
           </div>
           <div class="user-details" v-show="!isCollapsed">
-            <span class="user-name">Admin User</span>
+            <span class="user-name">{{ user }}</span>
             <span class="user-role">Administrator</span>
           </div>
         </div>
