@@ -3,36 +3,35 @@ import { useAuthStore } from '@/stores/authStore'
 import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
 const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
 
+// Props
+const props = defineProps({
+  isCollapsed: {
+    type: Boolean,
+    default: false
+  }
+})
+
 const authStore = useAuthStore()
 const user = authStore.getUser
 
 // Reactive data
 const isSidebarOpen = ref(false)
-const isCollapsed = ref(false)
 const windowWidth = ref(window.innerWidth)
 
 // Event listener functions
 let clickOutsideHandler
 let resizeHandler
 
-// Computed properties
-const isDesktop = computed(() => windowWidth.value > 768)
-
 // Helper function to dispatch sidebar toggle event
 const dispatchSidebarToggle = (isOpen = isSidebarOpen.value) => {
-  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-    detail: { isOpen, isCollapsed: isCollapsed.value } 
+  window.dispatchEvent(new CustomEvent('sidebar-toggle', {
+    detail: { isOpen, isCollapsed: props.isCollapsed }
   }))
 }
 
 // Methods
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
-  dispatchSidebarToggle()
-}
-
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
   dispatchSidebarToggle()
 }
 
@@ -97,14 +96,6 @@ onUnmounted(() => {
 
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'mobile-open': isSidebarOpen, 'collapsed': isCollapsed }">
-      <!-- Collapse Toggle Button (Desktop Only) -->
-      <div class="collapse-section" v-show="isDesktop">
-        <button class="collapse-btn" @click="toggleCollapse">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path :d="isCollapsed ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'"/>
-          </svg>
-        </button>
-      </div>
 
       <nav class="nav-menu">
         <ul>
@@ -170,7 +161,7 @@ onUnmounted(() => {
   top: 10px;
   left: 20px;
   z-index: 1100;
-  background: #2563eb;
+  background: #1e3a8a;
   border: none;
   border-radius: 8px;
   width: 50px;
@@ -180,7 +171,7 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
   transition: all 0.3s ease;
 }
 
@@ -207,7 +198,7 @@ onUnmounted(() => {
 }
 
 .burger-btn:hover {
-  background: #1d4ed8;
+  background: #1e40af;
   transform: scale(1.05);
 }
 
@@ -234,11 +225,11 @@ onUnmounted(() => {
 /* Main Sidebar */
 .sidebar {
   width: 280px;
-  background: #2563eb;
+  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
   color: white;
   height: 100vh;
   padding: 70px 0 0 0;
-  box-shadow: 4px 0 20px rgba(37, 99, 235, 0.2);
+  box-shadow: 4px 0 20px rgba(30, 58, 138, 0.3);
   position: fixed;
   top: 0;
   left: 0;
@@ -253,44 +244,6 @@ onUnmounted(() => {
   width: 80px;
 }
 
-/* Collapse Section */
-.collapse-section {
-  padding: 16px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.sidebar.collapsed .collapse-section {
-  padding: 16px;
-  justify-content: center;
-}
-
-/* Collapse Button */
-.collapse-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 6px;
-  width: 32px;
-  height: 32px;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.collapse-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-}
-
-.collapse-btn svg {
-  width: 16px;
-  height: 16px;
-}
 
 .nav-menu {
   flex: 1;
@@ -316,7 +269,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 14px 16px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   transition: all 0.3s ease;
   border-radius: 12px;
@@ -332,15 +285,15 @@ onUnmounted(() => {
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
   transform: translateX(4px);
 }
 
 .nav-link.router-link-active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .nav-icon {
@@ -361,8 +314,8 @@ onUnmounted(() => {
 
 .sidebar-footer {
   padding: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.15);
   transition: padding 0.3s ease;
 }
 
@@ -377,7 +330,7 @@ onUnmounted(() => {
   padding: 12px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
 }
 
@@ -464,7 +417,7 @@ onUnmounted(() => {
 
 .user-role {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -576,9 +529,6 @@ onUnmounted(() => {
     width: 80px;
   }
   
-  .collapse-section {
-    padding: 16px 28px;
-  }
   
   .nav-link {
     padding: 16px 18px;

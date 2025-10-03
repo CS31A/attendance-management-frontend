@@ -62,6 +62,11 @@ const handleProfileClick = () => {
   // Add your profile logic here
   console.log('Profile clicked');
 };
+
+// Handle collapse toggle from Header
+const handleToggleCollapse = (isCollapsed) => {
+  isSidebarCollapsed.value = isCollapsed;
+};
 </script>
 
 <template>
@@ -74,7 +79,7 @@ const handleProfileClick = () => {
     
     <!-- Show app content when auth is ready -->
     <template v-else>
-      <SideBar v-if="showSidebar" />
+      <SideBar v-if="showSidebar" :is-collapsed="isSidebarCollapsed" />
       
       <!-- Header Component -->
       <Header
@@ -86,6 +91,8 @@ const handleProfileClick = () => {
         :show-sidebar="showSidebar"
         @notification-click="handleNotificationClick"
         @profile-click="handleProfileClick"
+        @toggle-collapse="handleToggleCollapse"
+        @sidebar-toggle="handleSidebarToggle"
       />
       
       <main :class="{ 

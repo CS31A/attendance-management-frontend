@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue'
+
 // Props
 const props = defineProps({
   notificationCount: {
@@ -13,10 +15,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  isSidebarCollapsed: {
-    type: Boolean,
-    default: false
-  },
   showSidebar: {
     type: Boolean,
     default: true
@@ -24,7 +22,10 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['notification-click', 'profile-click']);
+const emit = defineEmits(['notification-click', 'profile-click', 'toggle-collapse', 'sidebar-toggle']);
+
+// Reactive state
+const isCollapsed = ref(false);
 
 // Handle notification click
 const handleNotificationClick = () => {
@@ -35,21 +36,43 @@ const handleNotificationClick = () => {
 const handleProfileClick = () => {
   emit('profile-click');
 };
+
+// Methods
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+  emit('toggle-collapse', isCollapsed.value)
+  emit('sidebar-toggle', { isOpen: props.isSidebarOpen, isCollapsed: isCollapsed.value })
+}
+
+// Handle collapse toggle (for backward compatibility)
+const handleToggleCollapse = () => {
+  toggleCollapse()
+};
 </script>
 
 <template>
   <header>
     <div class="header-left" :class="{
-      'sidebar-collapsed': showSidebar && !isMobile && isSidebarCollapsed
+      'sidebar-collapsed': showSidebar && !isMobile && isCollapsed
     }">
       <div class="logo-container">
         <div class="logo">
-          <img src="@/components/icons/image.png" alt="Logo" class="logo-image" />
+          <img src="@/components/icons/ACLCLogo.png" alt="Logo" class="logo-image" loading="lazy" />
         </div>
-        <div class="brand-info" v-show="!isSidebarCollapsed || isMobile">
+        <div class="brand-info" v-show="true">
           <h1 class="brand-name">Attendance</h1>
           <p class="brand-subtitle">Monitoring System</p>
         </div>
+        <!-- Collapse Toggle Button (Desktop Only) -->
+        <button
+          v-show="!isMobile"
+          class="header-collapse-btn"
+          @click="handleToggleCollapse"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path :d="isCollapsed ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -80,13 +103,14 @@ header {
   left: 0;
   right: 0;
   height: 70px;
-  background-color: #d4d4d8;
+  background-color: #2563eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 24px 0 0;
   z-index: 1001;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
 }
 
 .header-left {
@@ -95,14 +119,18 @@ header {
   background: #2563eb;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  justify-content: flex-start;
   transition: all 0.3s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .header-left.sidebar-collapsed {
-  width: 80px;
-  padding: 0 16px;
-  justify-content: center;
+    justify-content: flex-start;
+  }
+
+.header-left.sidebar-collapsed .header-collapse-btn {
+  margin-left: 8px;
 }
 
 .logo-container {
@@ -110,27 +138,20 @@ header {
   align-items: center;
   gap: 16px;
   width: 100%;
+  padding-right: 8px;
 }
 
-.header-left.sidebar-collapsed .logo-container {
-  justify-content: center;
-  gap: 0;
-}
 
 .logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
 
 .logo-image {
-  width: 32px;
-  height: 32px;
+  width: 4.25rem;
+  height: 4.25rem;
   object-fit: contain;
   border-radius: 6px;
 }
@@ -155,7 +176,7 @@ header {
   font-size: 13px;
   font-weight: 500;
   margin: 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1;
 }
 
@@ -177,12 +198,12 @@ header {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #27272a;
+  color: white;
   transition: background-color 0.2s;
 }
 
 .icon-button:hover {
-  background-color: rgba(39, 39, 42, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .notification-button {
@@ -214,6 +235,7 @@ header {
   .header-left {
     width: auto;
     padding: 0 20px;
+    border-right: none;
   }
   
   .brand-name {
@@ -234,17 +256,55 @@ header {
   }
 }
 
+/* Header Collapse Button */
+.header-collapse-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+  margin-left: 12px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.header-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.header-collapse-btn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.header-collapse-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.header-collapse-btn:hover svg {
+  transform: scale(1.1);
+}
+
 /* Large screens */
 @media (min-width: 1200px) {
   .header-left {
     width: 300px;
-    padding: 0 28px;
   }
-  
+
   .header-left.sidebar-collapsed {
-    width: 80px;
+    justify-content: flex-start;
   }
-  
+
   .brand-name {
     font-size: 24px;
   }
