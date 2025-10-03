@@ -170,6 +170,44 @@ export const useAuthStore = defineStore('authStore', () => {
         
     }
 
+    /**
+     * Refresh the access token using the refresh token
+     * 
+     * This function calls the backend refresh endpoint to obtain a new
+     * access token when the current one expires. It updates the authentication
+     * state if successful, or logs out the user if the refresh fails.
+     * 
+     * @returns {Promise<boolean>} True if refresh was successful, false otherwise
+     */
+    const refreshToken = async () => {
+        try {
+            const response = await api.post("/account/web/refresh")
+            
+            if (response.data.success) {
+                // Update the authentication state with the new access token info
+                // We need to check auth status again to update user info
+                const authStatus = await checkAuth()
+                return authStatus
+            } else {
+                // Refresh failed, clear auth state
+                user.value = null
+                isAuthenticated.value = false
+                return false
+            }
+        } catch (error) {
+            console.error("Token refresh error:", error)
+            const status = error?.response?.status
+            
+            // If refresh token is also expired or invalid, logout user
+            if (status === 401 || status === 403) {
+                user.value = null
+                isAuthenticated.value = false
+            }
+            
+            return false
+        }
+    }
+
     return {
         // State
         user,
@@ -185,6 +223,7 @@ export const useAuthStore = defineStore('authStore', () => {
         login,
         logout,
         checkAuth,
-        initializeAuth
+        initializeAuth,
+        refreshToken
     }
 })

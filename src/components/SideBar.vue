@@ -149,19 +149,6 @@ onUnmounted(() => {
               <span class="nav-text" v-show="!isCollapsed">QR Generator</span>
             </router-link>
           </li>
-          <li>
-            <router-link to="/qr-scanner" class="nav-link" @click="closeSidebar">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 12l2 2 4-4"/>
-                <path d="M21 12c.552 0 1-.448 1-1V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v6c0 .552.448 1 1 1"/>
-                <path d="M3 12v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6"/>
-                <path d="M8 7h.01"/>
-                <path d="M16 7h.01"/>
-                <path d="M12 7h.01"/>
-              </svg>
-              <span class="nav-text" v-show="!isCollapsed">QR Scanner</span>
-            </router-link>
-          </li>
         </ul>
       </nav>
 
