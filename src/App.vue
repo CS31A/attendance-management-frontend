@@ -1,9 +1,10 @@
-<script setup>  
+<script setup>
 import { defineAsyncComponent, ref, onMounted, onUnmounted, computed } from 'vue';
 import { useAuthStore } from './stores/authStore';
 import { useRoute } from 'vue-router';
 
 const SideBar = defineAsyncComponent(() => import('./components/SideBar.vue'))
+const Header = defineAsyncComponent(() => import('./components/Header.vue'))
 const authStore = useAuthStore()
 const route = useRoute()
 
@@ -46,6 +47,21 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkIsMobile);
   window.removeEventListener('sidebar-toggle', handleSidebarToggle);
 });
+
+// Notification badge count (you can make this dynamic)
+const notificationCount = ref(1);
+
+// Handle notification click
+const handleNotificationClick = () => {
+  // Add your notification logic here
+  console.log('Notification clicked');
+};
+
+// Handle profile click
+const handleProfileClick = () => {
+  // Add your profile logic here
+  console.log('Profile clicked');
+};
 </script>
 
 <template>
@@ -59,10 +75,24 @@ onUnmounted(() => {
     <!-- Show app content when auth is ready -->
     <template v-else>
       <SideBar v-if="showSidebar" />
+      
+      <!-- Header Component -->
+      <Header
+        v-if="showSidebar"
+        :notification-count="notificationCount"
+        :is-mobile="isMobile"
+        :is-sidebar-open="isSidebarOpen"
+        :is-sidebar-collapsed="isSidebarCollapsed"
+        :show-sidebar="showSidebar"
+        @notification-click="handleNotificationClick"
+        @profile-click="handleProfileClick"
+      />
+      
       <main :class="{ 
         'no-sidebar': !showSidebar || isMobile,
         'sidebar-open': showSidebar && isMobile && isSidebarOpen,
-        'sidebar-collapsed': showSidebar && !isMobile && isSidebarCollapsed
+        'sidebar-collapsed': showSidebar && !isMobile && isSidebarCollapsed,
+        'with-header': showSidebar
       }">
         <router-view />
       </main>
@@ -80,14 +110,21 @@ onUnmounted(() => {
 
 .container {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
+
+/* Main Content Styles */
 main {
   flex: 1;
   margin-left: 280px;
   overflow-y: auto;
   transition: margin-left 0.3s ease;
+}
+
+main.with-header {
+  margin-top: 70px;
 }
 
 main.no-sidebar {
@@ -131,7 +168,7 @@ main.sidebar-collapsed {
   main {
     margin-left: 0;
   }
-  
+
   main.sidebar-open {
     margin-left: 280px;
   }
