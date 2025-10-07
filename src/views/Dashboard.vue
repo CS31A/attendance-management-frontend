@@ -129,7 +129,7 @@ onMounted(() => {
 
 <style scoped>
 .dashboard {
-  padding: 20px;
+  padding: 30px;
 }
 
 .title {
