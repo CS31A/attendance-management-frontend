@@ -621,24 +621,6 @@ const weeklyChartOptions = {
   background: currentColor;
 }
 
-.recent-activity h2 {
-  font-size: 22px;
-  margin-bottom: 10px;
-}
-
-.recent-activity ul {
-  list-style: none;
-  padding: 0;
-}
-
-.recent-activity li {
-  background: #f3f4f6;
-  margin-bottom: 8px;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .charts-section {
