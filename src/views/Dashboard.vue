@@ -77,7 +77,17 @@ onMounted(() => {
     
     <!-- Authenticated content -->
     <template v-else>
-      <h1 class="title">Dashboard</h1>
+      
+      <div class="dashboard-header">
+  <div>
+    <h1 class="title">Dashboard Overview</h1>
+    <p class="subtitle">Track and monitor student attendance in real-time</p>
+  </div>
+  <div class="header-badge">
+    <span class="live-indicator"></span>
+    Live Data
+  </div>
+</div>
 
       <div class="summary-cards">
         <div class="card total">
