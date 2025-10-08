@@ -473,6 +473,16 @@ const weeklyChartOptions = {
   margin: 0;
 }
 
+.chart-badge {
+  background: var(--background);
+  padding: 0.375rem 0.875rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
 .chart-container {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
