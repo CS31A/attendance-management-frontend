@@ -502,6 +502,15 @@ const weeklyChartOptions = {
   height: 300px;
   position: relative;
 }
+/* Recent Activity */
+
+.recent-activity-card {
+  background: var(--card-background);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
 
 .recent-activity h2 {
   font-size: 22px;
