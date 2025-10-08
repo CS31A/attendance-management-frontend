@@ -327,6 +327,14 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
+.card-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+  line-height: 1;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
