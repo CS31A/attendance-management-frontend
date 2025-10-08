@@ -488,15 +488,6 @@ const weeklyChartOptions = {
   position: relative;
 }
 
-
-.chart-container h2 {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #374151;
-  text-align: center;
-}
-
 .chart-container canvas {
   max-height: 300px;
 }
