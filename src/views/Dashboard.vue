@@ -341,12 +341,6 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.card h3 {
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: #4b5563;
-}
-
 .card p {
   font-size: 24px;
   font-weight: bold;
