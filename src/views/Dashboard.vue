@@ -488,10 +488,6 @@ const weeklyChartOptions = {
   position: relative;
 }
 
-.chart-container canvas {
-  max-height: 300px;
-}
-
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
