@@ -313,6 +313,11 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.card-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
