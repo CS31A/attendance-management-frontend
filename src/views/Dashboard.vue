@@ -203,6 +203,14 @@ onMounted(() => {
   border: 1px solid var(--border-color);
 }
 
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--success-color);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
 .summary-cards {
   display: flex;
   gap: 20px;
