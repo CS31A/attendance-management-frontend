@@ -466,6 +466,13 @@ const weeklyChartOptions = {
   margin-bottom: 1.5rem;
 }
 
+.chart-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
 .chart-container {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
