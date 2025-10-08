@@ -207,25 +207,33 @@ const weeklyChartOptions = {
 </div>
 
       <!-- Charts Section -->
-      <div class="charts-section">
-        <div class="chart-container">
-          <h2>Attendance Overview</h2>
-          <Doughnut 
-            :data="attendanceChartData" 
-            :options="attendanceChartOptions" 
-            style="height: 300px;"
-          />
-        </div>
-        
-        <div class="chart-container">
-          <h2>Weekly Attendance Trend</h2>
-          <Bar 
-            :data="weeklyChartData" 
-            :options="weeklyChartOptions" 
-            style="height: 300px;"
-          />
-        </div>
-      </div>
+  <div class="charts-section">
+  <div class="chart-card">
+    <div class="chart-header">
+      <h2>Attendance Overview</h2>
+      <span class="chart-badge">Today</span>
+    </div>
+    <div class="chart-wrapper">
+      <Doughnut 
+        :data="attendanceChartData" 
+        :options="attendanceChartOptions"
+      />
+    </div>
+  </div>
+  
+  <div class="chart-card">
+    <div class="chart-header">
+      <h2>Weekly Attendance Trend</h2>
+      <span class="chart-badge">This Week</span>
+    </div>
+    <div class="chart-wrapper">
+      <Bar 
+        :data="weeklyChartData" 
+        :options="weeklyChartOptions"
+      />
+    </div>
+  </div>
+</div>
 
       <div class="recent-activity">
         <h2>Recent Attendance</h2>
