@@ -68,22 +68,90 @@ const weeklyChartData = computed(() => ({
   ]
 }))
 
-// Chart options
+// Enhanced chart options
 const attendanceChartOptions = {
   responsive: true,
-  maintainAspectRatio: false
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        padding: 20,
+        font: {
+          size: 13,
+          weight: '500'
+        },
+        usePointStyle: true
+      }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      padding: 12,
+      borderRadius: 8,
+      titleFont: {
+        size: 14,
+        weight: 'bold'
+      },
+      bodyFont: {
+        size: 13
+      }
+    }
+  }
 }
 
 const weeklyChartOptions = {
   responsive: true,
-  maintainAspectRatio: false
-}
-
-onMounted(() => {
-  if (!isAuthenticated && !authStore.getUser) {
-    router.push("/login")
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        padding: 20,
+        font: {
+          size: 13,
+          weight: '500'
+        },
+        usePointStyle: true
+      }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      padding: 12,
+      borderRadius: 8,
+      titleFont: {
+        size: 14,
+        weight: 'bold'
+      },
+      bodyFont: {
+        size: 13
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(0, 0, 0, 0.05)'
+      },
+      ticks: {
+        font: {
+          size: 12
+        }
+      }
+    },
+    x: {
+      grid: {
+        display: false
+      },
+      ticks: {
+        font: {
+          size: 12,
+          weight: '500'
+        }
+      }
+    }
   }
-})
+}
 </script>
 
 <template>
