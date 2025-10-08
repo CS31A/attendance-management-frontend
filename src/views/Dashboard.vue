@@ -483,6 +483,11 @@ const weeklyChartOptions = {
   border: 1px solid var(--border-color);
 }
 
+.chart-wrapper {
+  height: 300px;
+  position: relative;
+}
+
 .chart-container {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
