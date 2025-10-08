@@ -94,20 +94,34 @@ onMounted(() => {
   </div>
 </div>
 
-      <div class="summary-cards">
-        <div class="card total">
-          <h3>Total Students</h3>
-          <p>{{ totalStudents }}</p>
-        </div>
-        <div class="card present">
-          <h3>Present Today</h3>
-          <p>{{ presentToday }}</p>
-        </div>
-        <div class="card absent">
-          <h3>Absent Today</h3>
-          <p>{{ totalStudents - presentToday }}</p>
-        </div>
-      </div>
+     <div class="summary-cards">
+  <div class="card total-card">
+    <div class="card-icon">👥</div>
+    <div class="card-content">
+      <h3>Total Students</h3>
+      <p class="card-value">{{ totalStudents }}</p>
+      <span class="card-label">Enrolled</span>
+    </div>
+  </div>
+  
+  <div class="card present-card">
+    <div class="card-icon">✓</div>
+    <div class="card-content">
+      <h3>Present Today</h3>
+      <p class="card-value">{{ presentToday }}</p>
+      <span class="card-label">{{ attendanceRate }}% attendance</span>
+    </div>
+  </div>
+  
+  <div class="card absent-card">
+    <div class="card-icon">✗</div>
+    <div class="card-content">
+      <h3>Absent Today</h3>
+      <p class="card-value">{{ totalStudents - presentToday }}</p>
+      <span class="card-label">{{ (100 - attendanceRate).toFixed(1) }}% absent</span>
+    </div>
+  </div>
+</div>
 
       <!-- Charts Section -->
       <div class="charts-section">
