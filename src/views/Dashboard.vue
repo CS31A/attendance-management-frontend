@@ -335,6 +335,12 @@ onMounted(() => {
   line-height: 1;
 }
 
+.card-label {
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
