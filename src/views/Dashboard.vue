@@ -284,6 +284,11 @@ onMounted(() => {
   opacity: 1;
 }
 
+.total-card {
+  --accent-color: #3b82f6;
+  --accent-light: #60a5fa;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
