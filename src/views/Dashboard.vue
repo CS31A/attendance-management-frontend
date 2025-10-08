@@ -446,6 +446,15 @@ const weeklyChartOptions = {
   margin-bottom: 2rem;
 }
 
+.chart-card {
+  background: var(--card-background);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
 .chart-container {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
