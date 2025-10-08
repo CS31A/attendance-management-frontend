@@ -580,6 +580,47 @@ const weeklyChartOptions = {
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
+.activity-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.activity-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.activity-time {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.813rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.status-present {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
