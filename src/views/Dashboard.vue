@@ -280,6 +280,10 @@ onMounted(() => {
   box-shadow: var(--shadow-lg);
 }
 
+.card:hover::before {
+  opacity: 1;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
