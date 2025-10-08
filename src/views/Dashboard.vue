@@ -526,6 +526,22 @@ const weeklyChartOptions = {
   margin: 0;
 }
 
+.view-all-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.view-all-btn:hover {
+  background: var(--background);
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
