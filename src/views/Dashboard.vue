@@ -488,13 +488,6 @@ const weeklyChartOptions = {
   position: relative;
 }
 
-.chart-container {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
 
 .chart-container h2 {
   font-size: 20px;
