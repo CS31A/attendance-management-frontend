@@ -52,12 +52,18 @@ const weeklyChartData = computed(() => ({
     {
       label: 'Present',
       data: [28, 26, 25, 29, 27],
-      backgroundColor: '#10b981'
+      backgroundColor: 'rgba(16, 185, 129, 0.8)',
+      borderColor: 'rgba(16, 185, 129, 1)',
+      borderWidth: 2,
+      borderRadius: 6
     },
     {
       label: 'Absent', 
       data: [2, 4, 5, 1, 3],
-      backgroundColor: '#ef4444'
+      backgroundColor: 'rgba(239, 68, 68, 0.8)',
+      borderColor: 'rgba(239, 68, 68, 1)',
+      borderWidth: 2,
+      borderRadius: 6
     }
   ]
 }))
