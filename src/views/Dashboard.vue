@@ -18,11 +18,15 @@ const isAuthenticated = authStore.getIsAuthenticated
 const totalStudents = ref(30)
 const presentToday = ref(25)
 const recentLogs = ref([
-  { name: 'Christian Sayson', time: '8:01 AM' },
-  { name: 'Christina Cassandra', time: '8:05 AM' },
-  { name: 'Jose Rizal', time: '8:10 AM' },
+  { name: 'Christian Sayson', time: '8:01 AM', status: 'present' },
+  { name: 'Christina Cassandra', time: '8:05 AM', status: 'present' },
+  { name: 'Jose Rizal', time: '8:10 AM', status: 'present' },
 ])
 
+// Get initials for avatar
+const getInitials = (name) => {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase()
+}
 // Computed values
 const attendanceRate = computed(() => {
   return ((presentToday.value / totalStudents.value) * 100).toFixed(1)
