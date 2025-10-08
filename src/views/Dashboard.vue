@@ -263,6 +263,19 @@ onMounted(() => {
 
 }
 
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
