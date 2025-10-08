@@ -459,6 +459,13 @@ const weeklyChartOptions = {
   box-shadow: var(--shadow-lg);
 }
 
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
 .chart-container {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
