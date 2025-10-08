@@ -249,14 +249,18 @@ onMounted(() => {
 }
 
 .card {
-  flex: 1;
-  min-width: 200px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-left: 5px solid #0f71d3;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  background: var(--card-background);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
 }
 
 .card h3 {
