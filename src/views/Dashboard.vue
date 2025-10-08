@@ -239,14 +239,25 @@ const weeklyChartOptions = {
   </div>
 </div>
 
-      <div class="recent-activity">
-        <h2>Recent Attendance</h2>
-        <ul>
-          <li v-for="(log, index) in recentLogs" :key="index">
-            {{ log.name }} - {{ log.time }}
-          </li>
-        </ul>
+<div class="recent-activity-card">
+  <div class="activity-header">
+    <h2>Recent Attendance</h2>
+    <button class="view-all-btn">View All →</button>
+  </div>
+  <div class="activity-list">
+    <div v-for="(log, index) in recentLogs" :key="index" class="activity-item">
+      <div class="avatar">{{ getInitials(log.name) }}</div>
+      <div class="activity-details">
+        <span class="activity-name">{{ log.name }}</span>
+        <span class="activity-time">{{ log.time }}</span>
       </div>
+      <div class="status-badge status-present">
+        <span class="status-dot"></span>
+        Present
+      </div>
+    </div>
+  </div>
+</div>
     </template>
   </div>
 </template>
