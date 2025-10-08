@@ -23,6 +23,11 @@ const recentLogs = ref([
   { name: 'Jose Rizal', time: '8:10 AM' },
 ])
 
+// Computed values
+const attendanceRate = computed(() => {
+  return ((presentToday.value / totalStudents.value) * 100).toFixed(1)
+})
+
 // Chart data
 const attendanceChartData = computed(() => ({
   labels: ['Present', 'Absent'],
