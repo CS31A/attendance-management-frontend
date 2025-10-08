@@ -289,6 +289,11 @@ onMounted(() => {
   --accent-light: #60a5fa;
 }
 
+.present-card {
+  --accent-color: #10b981;
+  --accent-light: #34d399;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
