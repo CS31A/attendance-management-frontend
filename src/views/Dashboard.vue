@@ -512,6 +512,20 @@ const weeklyChartOptions = {
   border: 1px solid var(--border-color);
 }
 
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.activity-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
