@@ -189,6 +189,20 @@ onMounted(() => {
   font-weight: 400;
 }
 
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--card-background);
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
 .summary-cards {
   display: flex;
   gap: 20px;
