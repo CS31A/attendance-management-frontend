@@ -172,13 +172,9 @@ const weeklyChartOptions = {
 
       <div class="dashboard-header">
   <div>
-    <h1 class="title">Dashboard Overview</h1>
-    <p class="subtitle">Track and monitor student attendance in real-time</p>
+    <h1 class="title">Admin Dashboard </h1>
   </div>
-  <div class="header-badge">
-    <span class="live-indicator"></span>
-    Live Data
-  </div>
+
 </div>
 
      <div class="summary-cards">
@@ -326,14 +322,6 @@ const weeklyChartOptions = {
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-}
-
-.live-indicator {
-  width: 8px;
-  height: 8px;
-  background: var(--success-color);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
