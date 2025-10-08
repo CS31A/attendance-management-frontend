@@ -275,6 +275,10 @@ onMounted(() => {
   transition: opacity 0.3s;
 }
 
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
 
 .card h3 {
   font-size: 18px;
