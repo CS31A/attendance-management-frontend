@@ -565,6 +565,21 @@ const weeklyChartOptions = {
   box-shadow: var(--shadow-sm);
 }
 
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
