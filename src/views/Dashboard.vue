@@ -148,7 +148,11 @@ onMounted(() => {
 }
 
 .dashboard {
-  padding: 30px;
+  padding: 2rem;
+  background: var(--background);
+  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .title {
