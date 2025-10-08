@@ -542,6 +542,12 @@ const weeklyChartOptions = {
   background: var(--background);
 }
 
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
