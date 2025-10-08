@@ -455,6 +455,10 @@ const weeklyChartOptions = {
   transition: all 0.3s ease;
 }
 
+.chart-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
 .chart-container {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
