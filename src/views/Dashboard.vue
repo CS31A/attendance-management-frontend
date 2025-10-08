@@ -559,6 +559,12 @@ const weeklyChartOptions = {
   border: 1px solid transparent;
 }
 
+.activity-item:hover {
+  background: white;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
