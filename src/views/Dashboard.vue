@@ -299,6 +299,20 @@ onMounted(() => {
   --accent-light: #f87171;
 }
 
+.card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
