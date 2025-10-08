@@ -294,6 +294,11 @@ onMounted(() => {
   --accent-light: #34d399;
 }
 
+.absent-card {
+  --accent-color: #ef4444;
+  --accent-light: #f87171;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
