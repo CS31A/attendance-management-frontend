@@ -182,6 +182,13 @@ onMounted(() => {
   letter-spacing: -0.5px;
 }
 
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 400;
+}
+
 .summary-cards {
   display: flex;
   gap: 20px;
