@@ -77,7 +77,7 @@ onMounted(() => {
     
     <!-- Authenticated content -->
     <template v-else>
-      
+
       <div class="dashboard-header">
   <div>
     <h1 class="title">Dashboard Overview</h1>
@@ -163,6 +163,15 @@ onMounted(() => {
   min-height: 100vh;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .title {
