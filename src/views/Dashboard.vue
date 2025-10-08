@@ -548,6 +548,17 @@ const weeklyChartOptions = {
   gap: 1rem;
 }
 
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
 .recent-activity h2 {
   font-size: 22px;
   margin-bottom: 10px;
