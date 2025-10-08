@@ -318,6 +318,15 @@ onMounted(() => {
   min-width: 0;
 }
 
+.card-content h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .card h3 {
   font-size: 18px;
   margin-bottom: 10px;
