@@ -28,12 +28,21 @@ const attendanceRate = computed(() => {
   return ((presentToday.value / totalStudents.value) * 100).toFixed(1)
 })
 
-// Chart data
+// Chart data with modern colors
 const attendanceChartData = computed(() => ({
   labels: ['Present', 'Absent'],
   datasets: [{
     data: [presentToday.value, totalStudents.value - presentToday.value],
-    backgroundColor: ['#10b981', '#ef4444']
+    backgroundColor: [
+      'rgba(16, 185, 129, 0.8)',
+      'rgba(239, 68, 68, 0.8)'
+    ],
+    borderColor: [
+      'rgba(16, 185, 129, 1)',
+      'rgba(239, 68, 68, 1)'
+    ],
+    borderWidth: 2,
+    hoverOffset: 10
   }]
 }))
 
