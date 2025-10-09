@@ -888,4 +888,59 @@ export default {
 .form-select option {
   padding: 10px;
 }
+
+/* Enhanced Subject Card */
+.subject-code {
+  display: inline-block;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  color: #6b7280;
+}
+
+.detail-icon {
+  width: 18px;
+  height: 18px;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* Responsive Updates */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .add-teacher-btn {
+    justify-content: center;
+  }
+  
+  .teachers-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .teacher-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .remove-teacher-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+}
 </style>
