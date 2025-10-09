@@ -114,7 +114,7 @@ export default {
 </script>
 
 <template>
-  <div class="qr-app">
+    <div class="qr-app">
     <!-- Header Section -->
     <header class="app-header">
       <h1 class="app-title">
@@ -123,7 +123,7 @@ export default {
         </svg>
         Class Subject QR Generator
       </h1>
-      <p class="app-subtitle">Generate QR codes for all your class subjects</p>
+      <p class="app-subtitle">Assign subjects to teachers and generate QR codes</p>
     </header>
 
     <!-- Subject Form -->
