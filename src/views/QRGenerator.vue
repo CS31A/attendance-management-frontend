@@ -10,11 +10,11 @@ export default {
         { id: 'COMP102', name: 'Database Management', code: 'COMP102' },
         { id: 'COMP103', name: 'Web Development', code: 'COMP103' },
         { id: 'MATH101', name: 'Calculus I', code: 'MATH101' },
-        { id: 'MATH102', name: 'Linear Algebra', code: 'MATH102' },
-        { id: 'PHYS101', name: 'Physics I', code: 'PHYS101' },
-        { id: 'CHEM101', name: 'Chemistry I', code: 'CHEM101' },
-        { id: 'ENG101', name: 'English Composition', code: 'ENG101' },
-        { id: 'HIST101', name: 'World History', code: 'HIST101' },
+        { id: 'MATH102', name: 'Calculus II', code: 'MATH102' },
+        { id: 'PHYS101', name: 'Calculus Base Physics I', code: 'PHYS101' },
+        { id: 'COMP104', name: 'Computer Architecture', code: 'COMP104' },
+        { id: 'ENG101', name: 'Understanding Literature', code: 'ENG101' },
+        { id: 'COMP105', name: 'Mobile Programming', code: 'COMP105' },
         { id: 'BIO101', name: 'Biology I', code: 'BIO101' }
       ],
       
