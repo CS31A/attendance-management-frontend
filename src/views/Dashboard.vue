@@ -199,6 +199,8 @@ const filteredLogs = computed(() => {
 
 </div>
 
+
+
      <div class="summary-cards">
   <div class="card total-card">
     <div class="card-icon">👥</div>
@@ -300,7 +302,7 @@ const filteredLogs = computed(() => {
     <button class="view-all-btn">View All →</button>
   </div>
   <div class="activity-list">
-    <div v-for="(log, index) in recentLogs" :key="index" class="activity-item">
+    <div v-for="(log, index) in filteredLogs" :key="index" class="activity-item">
       <div class="avatar">{{ getInitials(log.name) }}</div>
       <div class="activity-details">
         <span class="activity-name">{{ log.name }}</span>
