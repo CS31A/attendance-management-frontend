@@ -178,6 +178,17 @@ const filteredLogs = computed(() => {
   
   return logs
 })
+//functions to get gradients
+const getGradient = (index) => {
+  const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+  ]
+  return gradients[index % gradients.length]
+}
 </script>
 
 <template>
@@ -328,25 +339,66 @@ const filteredLogs = computed(() => {
   </div>
 </div>
 
+<!-- Enhanced Recent Activity -->
 <div class="recent-activity-card">
   <div class="activity-header">
-    <h2>Recent Attendance</h2>
-    <button class="view-all-btn">View All →</button>
+    <div class="header-left">
+      <h2>Recent Check-ins</h2>
+      <span class="activity-count">{{ filteredLogs.length }} students</span>
+    </div>
+    <button class="view-all-btn">
+      <span>View All</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </div>
-  <div class="activity-list">
+  <!-- Empty State -->
+  <div v-if="filteredLogs.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+        <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h3>No students found</h3>
+    <p>Try adjusting your search or filter criteria</p>
+    <button @click="searchQuery = ''; filterStatus = 'all'" class="reset-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M3 12L6 9M3 12L6 15M3 12H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Reset Filters</span>
+    </button>
+  </div>
+  
+  <!-- Activity List -->
+  <div v-else class="activity-list">
     <div v-for="(log, index) in filteredLogs" :key="index" class="activity-item">
-      <div class="avatar">{{ getInitials(log.name) }}</div>
+      <div class="avatar-wrapper">
+        <div class="avatar" :style="{ background: getGradient(index) }">
+          {{ getInitials(log.name) }}
+        </div>
+        <div class="avatar-ring"></div>
+      </div>
       <div class="activity-details">
         <span class="activity-name">{{ log.name }}</span>
-        <span class="activity-time">{{ log.time }}</span>
+        <div class="activity-meta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="activity-time">{{ log.time }}</span>
+        </div>
       </div>
       <div class="status-badge status-present">
+        <div class="status-pulse"></div>
         <span class="status-dot"></span>
-        Present
+        <span>Present</span>
       </div>
     </div>
   </div>
 </div>
+
     </template>
   </div>
 </template>
@@ -644,11 +696,12 @@ const filteredLogs = computed(() => {
 }
 /* Recent Activity */
 
+/* Enhanced Recent Activity */
 .recent-activity-card {
   background: var(--card-background);
-  border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-md);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-color);
 }
 
@@ -656,32 +709,106 @@ const filteredLogs = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--background);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .activity-header h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: var(--text-primary);
   margin: 0;
 }
 
+.activity-count {
+  padding: 0.375rem 0.875rem;
+  background: var(--background);
+  color: var(--text-secondary);
+  border-radius: 50px;
+  font-size: 0.813rem;
+  font-weight: 700;
+}
+
 .view-all-btn {
-  background: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-color), #2563eb);
   border: none;
-  color: var(--primary-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.938rem;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .view-all-btn:hover {
-  background: var(--background);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  background: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 2rem 0;
+}
+
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.reset-btn:hover {
+  background: #ff0000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Activity List */
 .activity-list {
   display: flex;
   flex-direction: column;
@@ -691,77 +818,166 @@ const filteredLogs = computed(() => {
 .activity-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 1.25rem;
+  padding: 1.25rem;
   background: var(--background);
-  border-radius: var(--radius-md);
-  transition: all 0.2s;
-  border: 1px solid transparent;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.activity-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--success-color), #34d399);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .activity-item:hover {
   background: white;
   border-color: var(--border-color);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateX(4px);
+}
+
+.activity-item:hover::before {
+  opacity: 1;
+}
+
+.avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 2;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 3px solid var(--success-color);
+  opacity: 0.3;
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
 }
 
 .activity-details {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   min-width: 0;
 }
 
 .activity-name {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.063rem;
+  font-weight: 700;
   color: var(--text-primary);
-}
-.activity-time {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  display: block;
 }
 
-.status-badge {
+.activity-meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.813rem;
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.activity-meta svg {
   flex-shrink: 0;
 }
 
+.activity-time {
+  font-weight: 500;
+}
+
+/* Enhanced Status Badge */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
 .status-present {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success-color);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.15));
+  color: #059669;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.3);
+  animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
 }
 
 .status-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: currentColor;
+  position: relative;
+  z-index: 2;
+  animation: blink 2s ease-in-out infinite;
 }
 
-/* Search and Filter Bar */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* Enhanced Search and Filter Bar */
 .search-filter-bar {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
