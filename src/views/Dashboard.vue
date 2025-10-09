@@ -235,6 +235,43 @@ const weeklyChartOptions = {
   </div>
 </div>
 
+<!-- Search and Filter Bar -->
+<div class="search-filter-bar">
+  <div class="search-box">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="search-icon">
+      <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+      <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <input 
+      v-model="searchQuery"
+      type="text" 
+      placeholder="Search students..." 
+      class="search-input"
+    />
+  </div>
+  
+  <div class="filter-buttons">
+    <button 
+      @click="filterStatus = 'all'" 
+      :class="['filter-btn', { active: filterStatus === 'all' }]"
+    >
+      All
+    </button>
+    <button 
+      @click="filterStatus = 'present'" 
+      :class="['filter-btn', { active: filterStatus === 'present' }]"
+    >
+      Present
+    </button>
+    <button 
+      @click="filterStatus = 'absent'" 
+      :class="['filter-btn', { active: filterStatus === 'absent' }]"
+    >
+      Absent
+    </button>
+  </div>
+</div>
+
 <div class="recent-activity-card">
   <div class="activity-header">
     <h2>Recent Attendance</h2>
