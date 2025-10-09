@@ -4,7 +4,7 @@ export default {
   
   data() {
     return {
-      // Hardcoded subjects list
+      // subjects list
       availableSubjects: [
         { id: 'COMP101', name: 'Computer Programming', code: 'COMP101' },
         { id: 'COMP102', name: 'Database Management', code: 'COMP102' },
