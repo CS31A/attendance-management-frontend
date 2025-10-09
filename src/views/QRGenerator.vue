@@ -257,20 +257,30 @@ export default {
       </div>
     </section>
 
-    <!-- Subjects Grid -->
-    <section v-if="subjects.length > 0" class="subjects-section">
+   <!-- Assigned Subjects Grid -->
+    <section v-if="assignedSubjects.length > 0" class="subjects-section">
+      <h2 class="section-title">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        Assigned Subjects ({{ assignedSubjects.length }})
+      </h2>
       <div class="subjects-grid">
         <div
-          v-for="subject in subjects"
-          :key="subject.id"
+          v-for="assignment in assignedSubjects"
+          :key="assignment.id"
           class="subject-card"
         >
           <!-- Card Header -->
           <div class="card-header">
-            <h3 class="subject-name">{{ subject.name }}</h3>
+            <div>
+              <h3 class="subject-name">{{ assignment.subjectName }}</h3>
+              <span class="subject-code">{{ assignment.subjectCode }}</span>
+            </div>
             <button 
-              @click="removeSubject(subject.id)" 
+              @click="removeAssignment(assignment.id)" 
               class="delete-btn"
+              title="Remove Assignment"
             >
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -280,16 +290,31 @@ export default {
           
           <!-- Subject Details -->
           <div class="subject-details">
-            <p><strong>Code:</strong> {{ subject.code }}</p>
-            <p><strong>Teacher:</strong> {{ subject.teacher }}</p>
-            <p><strong>Created:</strong> {{ formatDate(subject.createdAt) }}</p>
+            <div class="detail-row">
+              <svg class="detail-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <span><strong>Teacher:</strong> {{ assignment.teacherName }}</span>
+            </div>
+            <div class="detail-row">
+              <svg class="detail-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+              </svg>
+              <span>{{ assignment.teacherEmail }}</span>
+            </div>
+            <div class="detail-row">
+              <svg class="detail-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+              </svg>
+              <span>{{ formatDate(assignment.createdAt) }}</span>
+            </div>
           </div>
 
           <!-- QR Code Display -->
           <div class="qr-display">
             <img 
-              :src="getQRUrl(subject)" 
-              :alt="'QR Code for ' + subject.name"
+              :src="getQRUrl(assignment)" 
+              :alt="'QR Code for ' + assignment.subjectName"
               class="qr-image"
               @error="handleImageError"
             />
@@ -298,7 +323,7 @@ export default {
           <!-- Card Actions -->
           <div class="card-actions">
             <button 
-              @click="regenerateQR(subject.id)" 
+              @click="regenerateQR(assignment.id)" 
               class="action-btn refresh-btn"
             >
               <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -307,7 +332,7 @@ export default {
               Refresh
             </button>
             <button 
-              @click="downloadQR(subject)" 
+              @click="downloadQR(assignment)" 
               class="action-btn download-btn"
             >
               <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -324,10 +349,10 @@ export default {
     <section v-else class="empty-section">
       <div class="empty-state">
         <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
         </svg>
-        <h3 class="empty-title">No subjects added yet</h3>
-        <p class="empty-text">Add your first subject to generate QR codes</p>
+        <h3 class="empty-title">No subjects assigned yet</h3>
+        <p class="empty-text">Select a subject and teacher from the dropdowns above to generate QR codes</p>
       </div>
     </section>
   </div>
