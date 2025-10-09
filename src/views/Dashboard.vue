@@ -278,40 +278,53 @@ const filteredLogs = computed(() => {
   </div>
 </div>
 
-<!-- Search and Filter Bar -->
+<!-- Enhanced Search and Filter Bar -->
 <div class="search-filter-bar">
-  <div class="search-box">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="search-icon">
-      <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-      <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-    <input 
-      v-model="searchQuery"
-      type="text" 
-      placeholder="Search students..." 
-      class="search-input"
-    />
+  <div class="search-wrapper">
+    <div class="search-box">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="search-icon">
+        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2.5"/>
+        <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <input 
+        v-model="searchQuery"
+        type="text" 
+        placeholder="Search students by name..." 
+        class="search-input"
+      />
+      <button v-if="searchQuery" @click="searchQuery = ''" class="clear-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
   
-  <div class="filter-buttons">
-    <button 
-      @click="filterStatus = 'all'" 
-      :class="['filter-btn', { active: filterStatus === 'all' }]"
-    >
-      All
-    </button>
-    <button 
-      @click="filterStatus = 'present'" 
-      :class="['filter-btn', { active: filterStatus === 'present' }]"
-    >
-      Present
-    </button>
-    <button 
-      @click="filterStatus = 'absent'" 
-      :class="['filter-btn', { active: filterStatus === 'absent' }]"
-    >
-      Absent
-    </button>
+  <div class="filter-section">
+    <span class="filter-label">Filter:</span>
+    <div class="filter-buttons">
+      <button 
+        @click="filterStatus = 'all'" 
+        :class="['filter-btn', { active: filterStatus === 'all' }]"
+      >
+        <span class="filter-count">{{ recentLogs.length }}</span>
+        All
+      </button>
+      <button 
+        @click="filterStatus = 'present'" 
+        :class="['filter-btn filter-present', { active: filterStatus === 'present' }]"
+      >
+        <span class="filter-count">{{ recentLogs.filter(log => log.status === 'present').length }}</span>
+        Present
+      </button>
+      <button 
+        @click="filterStatus = 'absent'" 
+        :class="['filter-btn filter-absent', { active: filterStatus === 'absent' }]"
+      >
+        <span class="filter-count">0</span>
+        Absent
+      </button>
+    </div>
   </div>
 </div>
 
@@ -749,22 +762,26 @@ const filteredLogs = computed(() => {
 }
 
 /* Search and Filter Bar */
+/* Enhanced Search and Filter Bar */
 .search-filter-bar {
-  background: var(--card-background);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 20px;
+  padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-color);
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.search-box {
+.search-wrapper {
   flex: 1;
-  min-width: 250px;
+  min-width: 300px;
+}
+
+.search-box {
   position: relative;
   display: flex;
   align-items: center;
@@ -772,57 +789,138 @@ const filteredLogs = computed(() => {
 
 .search-icon {
   position: absolute;
-  left: 1rem;
+  left: 1.25rem;
   color: var(--text-secondary);
+  transition: all 0.3s;
+  z-index: 2;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
+  padding: 1rem 3.5rem 1rem 3.5rem;
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: 0.938rem;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 500;
   transition: all 0.3s;
-  background: var(--background);
+  background: white;
+  color: var(--text-primary);
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  background: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.search-input:focus + .clear-btn,
+.search-input:not(:placeholder-shown) + .clear-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text-secondary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s;
+  z-index: 2;
+}
+
+.clear-btn:hover {
+  background: var(--danger-color);
+  transform: scale(1.1);
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-label {
+  font-size: 0.938rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .filter-buttons {
   display: flex;
-  gap: 0.5rem;
-  background: var(--background);
-  padding: 0.25rem;
-  border-radius: var(--radius-md);
+  gap: 0.75rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .filter-btn {
-  padding: 0.625rem 1.25rem;
-  border: none;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid transparent;
   background: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.938rem;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--background);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.3s;
 }
 
 .filter-btn:hover {
-  background: rgb(58, 96, 234);
-  color: var(--text-primary);
+  background: var(--background);
+  transform: translateY(-2px);
 }
 
 .filter-btn.active {
   background: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(93, 142, 219, 0.3);
+  color: rgb(76, 76, 248);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
 }
 
+.filter-present.active {
+  background: var(--success-color);
+  box-shadow: 0 4px 12px rgba(0, 240, 64, 0.4);
+}
+
+.filter-absent.active {
+  background: var(--danger-color);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+}
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .charts-section {
