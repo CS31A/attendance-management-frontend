@@ -72,7 +72,7 @@ const weeklyChartData = computed(() => ({
   ]
 }))
 
-// Enhanced chart options
+//chart options
 const attendanceChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -210,7 +210,7 @@ const getGradient = (index) => {
 
 </div>
 
-    <!-- Enhanced Summary Cards -->
+    <!--Summary Cards -->
 <div class="summary-cards">
   <div class="card total-card">
     <div class="card-icon">
@@ -260,7 +260,7 @@ const getGradient = (index) => {
   </div>
 </div>
 
-      <!-- Charts Section -->
+  <!-- Charts Section -->
   <div class="charts-section">
   <div class="chart-card">
     <div class="chart-header">
@@ -288,7 +288,6 @@ const getGradient = (index) => {
     </div>
   </div>
 </div>
-
 <!-- Enhanced Search and Filter Bar -->
 <div class="search-filter-bar">
   <div class="search-wrapper">
@@ -339,7 +338,6 @@ const getGradient = (index) => {
   </div>
 </div>
 
-<!-- Enhanced Recent Activity -->
 <div class="recent-activity-card">
   <div class="activity-header">
     <div class="header-left">
