@@ -715,4 +715,151 @@ export default {
     height: 40px;
   }
 }
+
+/* Teachers Section */
+.teachers-section {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e6f3ff;
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  color: #1e40af;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.section-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.add-teacher-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.add-teacher-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.teacher-form {
+  background: #f0f9ff;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  border: 2px dashed #3b82f6;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  align-items: end;
+}
+
+.teachers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.teacher-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 2px solid #bae6fd;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.teacher-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+}
+
+.teacher-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.teacher-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.teacher-name {
+  margin: 0 0 5px 0;
+  color: #1e40af;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.teacher-email {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-teacher-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.remove-teacher-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.remove-teacher-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
 </style>
