@@ -156,6 +156,28 @@ const weeklyChartOptions = {
     }
   }
 }
+// Search and filter state
+const searchQuery = ref('')
+const filterStatus = ref('all') // 'all', 'present', 'absent'
+
+// Filtered logs based on search and filter
+const filteredLogs = computed(() => {
+  let logs = recentLogs.value
+  
+  // Filter by search query
+  if (searchQuery.value) {
+    logs = logs.filter(log => 
+      log.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+  
+  // Filter by status
+  if (filterStatus.value !== 'all') {
+    logs = logs.filter(log => log.status === filterStatus.value)
+  }
+  
+  return logs
+})
 </script>
 
 <template>
