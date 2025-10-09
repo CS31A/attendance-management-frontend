@@ -4,99 +4,168 @@ export default {
   
   data() {
     return {
-      subjects: [
-        {
-          id: 1001,
-          name: 'Computer Programming',
-          code: 'COMP101',
-          teacher: 'Prof. Smith',
-          createdAt: new Date()
-        },
-        {
-          id: 2001,
-          name: 'Database Management',
-          code: 'COMP102',
-          teacher: 'Dr. Johnson',
-          createdAt: new Date()
-        },
-        {
-          id: 3001,
-          name: 'Calculus I',
-          code: 'MATH103',
-          teacher: 'Ms. Brown',
-          createdAt: new Date()
-        }
+      // Hardcoded subjects list
+      availableSubjects: [
+        { id: 'COMP101', name: 'Computer Programming', code: 'COMP101' },
+        { id: 'COMP102', name: 'Database Management', code: 'COMP102' },
+        { id: 'COMP103', name: 'Web Development', code: 'COMP103' },
+        { id: 'MATH101', name: 'Calculus I', code: 'MATH101' },
+        { id: 'MATH102', name: 'Linear Algebra', code: 'MATH102' },
+        { id: 'PHYS101', name: 'Physics I', code: 'PHYS101' },
+        { id: 'CHEM101', name: 'Chemistry I', code: 'CHEM101' },
+        { id: 'ENG101', name: 'English Composition', code: 'ENG101' },
+        { id: 'HIST101', name: 'World History', code: 'HIST101' },
+        { id: 'BIO101', name: 'Biology I', code: 'BIO101' }
       ],
-      newSubject: {
+      
+      // Teachers list
+      teachers: [
+        { id: 1, name: 'Prof. Smith', email: 'smith@school.edu' },
+        { id: 2, name: 'Dr. Johnson', email: 'johnson@school.edu' },
+        { id: 3, name: 'Ms. Brown', email: 'brown@school.edu' }
+      ],
+      
+      // Assigned subjects (subjects with teachers)
+      assignedSubjects: [],
+      
+      // Form states
+      newAssignment: {
+        subjectId: '',
+        teacherId: ''
+      },
+      
+      newTeacher: {
         name: '',
-        code: '',
-        teacher: ''
-      }
+        email: ''
+      },
+      
+      showTeacherForm: false
     }
   },
 
   computed: {
-    canAddSubject() {
-      return this.newSubject.name.trim() && 
-             this.newSubject.code.trim() && 
-             this.newSubject.teacher.trim()
+    canAssignSubject() {
+      return this.newAssignment.subjectId && this.newAssignment.teacherId
+    },
+    
+    canAddTeacher() {
+      return this.newTeacher.name.trim() && this.newTeacher.email.trim()
+    },
+    
+    // Filter out already assigned subjects
+    unassignedSubjects() {
+      const assignedIds = this.assignedSubjects.map(s => s.subjectId)
+      return this.availableSubjects.filter(subject => !assignedIds.includes(subject.id))
     }
   },
 
   methods: {
-    addSubject() {
-      if (!this.canAddSubject) return
+    // Add new teacher
+    addTeacher() {
+      if (!this.canAddTeacher) return
 
-      const subject = {
+      const teacher = {
         id: Date.now(),
-        name: this.newSubject.name.trim(),
-        code: this.newSubject.code.trim().toUpperCase(),
-        teacher: this.newSubject.teacher.trim(),
-        createdAt: new Date()
+        name: this.newTeacher.name.trim(),
+        email: this.newTeacher.email.trim()
       }
 
-      this.subjects.push(subject)
-      this.resetForm()
+      this.teachers.push(teacher)
+      this.resetTeacherForm()
+      this.showTeacherForm = false
     },
 
-    removeSubject(id) {
-      const index = this.subjects.findIndex(subject => subject.id === id)
+    // Assign subject to teacher
+    assignSubject() {
+      if (!this.canAssignSubject) return
+
+      const subject = this.availableSubjects.find(s => s.id === this.newAssignment.subjectId)
+      const teacher = this.teachers.find(t => t.id === parseInt(this.newAssignment.teacherId))
+
+      if (subject && teacher) {
+        const assignment = {
+          id: Date.now(),
+          subjectId: subject.id,
+          subjectName: subject.name,
+          subjectCode: subject.code,
+          teacherId: teacher.id,
+          teacherName: teacher.name,
+          teacherEmail: teacher.email,
+          createdAt: new Date()
+        }
+
+        this.assignedSubjects.push(assignment)
+        this.resetAssignmentForm()
+      }
+    },
+
+    // Remove assignment
+    removeAssignment(id) {
+      const index = this.assignedSubjects.findIndex(subject => subject.id === id)
       if (index !== -1) {
-        this.subjects.splice(index, 1)
+        this.assignedSubjects.splice(index, 1)
       }
     },
 
-    resetForm() {
-      this.newSubject = {
+    // Remove teacher
+    removeTeacher(id) {
+      // Check if teacher has assignments
+      const hasAssignments = this.assignedSubjects.some(s => s.teacherId === id)
+      
+      if (hasAssignments) {
+        alert('Cannot remove teacher with assigned subjects. Please remove their assignments first.')
+        return
+      }
+      
+      const index = this.teachers.findIndex(t => t.id === id)
+      if (index !== -1) {
+        this.teachers.splice(index, 1)
+      }
+    },
+
+    resetAssignmentForm() {
+      this.newAssignment = {
+        subjectId: '',
+        teacherId: ''
+      }
+    },
+
+    resetTeacherForm() {
+      this.newTeacher = {
         name: '',
-        code: '',
-        teacher: ''
+        email: ''
       }
     },
 
-    getQRUrl(subject) {
-      const qrData = this.generateQRData(subject)
+    toggleTeacherForm() {
+      this.showTeacherForm = !this.showTeacherForm
+      if (!this.showTeacherForm) {
+        this.resetTeacherForm()
+      }
+    },
+
+    getQRUrl(assignment) {
+      const qrData = this.generateQRData(assignment)
       const encodedData = encodeURIComponent(qrData)
       return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedData}&bgcolor=e6f3ff&color=1e40af`
     },
 
-    generateQRData(subject) {
-      return `Subject: ${subject.name}\nCode: ${subject.code}\nTeacher: ${subject.teacher}\nYear: ${new Date().getFullYear()}\nGenerated: ${this.formatDate(subject.createdAt)}`
+    generateQRData(assignment) {
+      return `Subject: ${assignment.subjectName}\nCode: ${assignment.subjectCode}\nTeacher: ${assignment.teacherName}\nEmail: ${assignment.teacherEmail}\nYear: ${new Date().getFullYear()}\nGenerated: ${this.formatDate(assignment.createdAt)}`
     },
 
-    regenerateQR(subjectId) {
-      const subject = this.subjects.find(s => s.id === subjectId)
-      if (subject) {
-        subject.createdAt = new Date()
-        // Force reactivity update
+    regenerateQR(assignmentId) {
+      const assignment = this.assignedSubjects.find(s => s.id === assignmentId)
+      if (assignment) {
+        assignment.createdAt = new Date()
         this.$forceUpdate()
       }
     },
 
-    downloadQR(subject) {
+    downloadQR(assignment) {
       const link = document.createElement('a')
-      link.href = this.getQRUrl(subject)
-      link.download = `${subject.code}_QR.png`
+      link.href = this.getQRUrl(assignment)
+      link.download = `${assignment.subjectCode}_${assignment.teacherName}_QR.png`
       link.click()
     },
 
@@ -107,7 +176,6 @@ export default {
     handleImageError(event) {
       console.error('QR image failed to load')
       event.target.style.display = 'none'
-      // You could show an error message here
     }
   }
 }
