@@ -1,7 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import CreateTeacherModal from '@/components/CreateTeacherModal.vue'
+import { useStudentStore } from '@/stores/studentstore'
 
+const studentStore = useStudentStore()
+const availableStudents = studentStore.students
 // Teacher list and modal state
 const teachers = ref([])
 const showAddTeacher = ref(false)
@@ -124,6 +127,41 @@ const deleteTeacher = async (id) => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
               <span class="info-text">{{ teacher.email }}</span>
+            </div>
+
+            <!-- New Info Rows for Section, Subject, Time -->
+            <div class="info-row">
+              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              <span class="info-text"><strong>Section:</strong> {{ teacher.section }}</span>
+            </div>
+
+            <div class="info-row">
+              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+              <span class="info-text"><strong>Subject:</strong> {{ teacher.subject }}</span>
+            </div>
+
+            <div class="info-row">
+              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="info-text"><strong>Time:</strong> {{ teacher.time }}</span>
+            </div>
+
+            <!-- Students List -->
+            <div class="students-section">
+              <div class="students-header">
+                <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <strong>Students:</strong>
+              </div>
+              <div class="students-list">
+                {{ teacher.students }}
+              </div>
             </div>
 
             <div class="card-actions">
@@ -326,7 +364,7 @@ const deleteTeacher = async (id) => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   padding: 0.75rem;
   background: #f9fafb;
   border-radius: 8px;
@@ -345,6 +383,31 @@ const deleteTeacher = async (id) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Students Section */
+.students-section {
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.students-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.students-list {
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.6;
+  padding-left: 1.625rem;
 }
 
 /* Card Actions */
