@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import TeacherManagement from '../views/TeacherManagement.vue'
-import QRGenerator from '../views/QRGenerator.vue'
 import { authGuard, guestGuard } from './authGuard'
+import StudentManagement from '../views/StudentManagement.vue'
+
 
 const routes = [
   { 
@@ -21,8 +22,8 @@ const routes = [
     beforeEnter: authGuard
   },
   { 
-    path: '/qr-generator', 
-    component: QRGenerator,
+    path: '/students', 
+    component: StudentManagement,
     beforeEnter: authGuard
   },
   
