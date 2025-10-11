@@ -1,175 +1,266 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-
-const studentName = ref('')
-
-const emit = defineEmits(['create', 'cancel'])
-
-const inputRef = ref(null)
-
-onMounted(() => {
-  // Focus the input when the modal opens
-  setTimeout(() => {
-    inputRef.value?.focus()
-  }, 100)
-})
-
-const create = () => {
-  if (studentName.value.trim()) {
-    emit('create', studentName.value.trim())
-    studentName.value = ''
-  }
-}
-
-const cancel = () => {
-  studentName.value = ''
-  emit('cancel')
-}
-</script>
-
 <template>
-  <div class="modal-overlay" @click="cancel">
-    <div class="modal-content" @click.stop>
+  <div class="overlay">
+    <div class="modal">
+      <!-- Modal Header -->
       <div class="modal-header">
-        <h3>Add New Student</h3>
+        <h2>Create Student</h2>
+        <button type="button" class="btn-close" @click="$emit('cancel')">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
+
+      <!-- Modal Body -->
       <div class="modal-body">
-        <input 
-          v-model="studentName"
-          @keyup.enter="create"
-          placeholder="Enter student full name"
-          class="student-input"
-          ref="inputRef"
-        />
-      </div>
-      <div class="modal-actions">
-        <button @click="cancel" class="btn-cancel">Cancel</button>
-        <button @click="create" class="btn-create" :disabled="!studentName.trim()">Add Student</button>
+        <div class="form-group">
+          <label>Username</label>
+          <input 
+            v-model="username" 
+            type="text"
+            placeholder="Enter username" 
+            required 
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input 
+            v-model="email" 
+            type="email"
+            placeholder="Enter email" 
+            required 
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input 
+              v-model="firstName" 
+              type="text"
+              placeholder="First name" 
+              required 
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Last Name</label>
+            <input 
+              v-model="lastName" 
+              type="text"
+              placeholder="Last name" 
+              required 
+            />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button @click="createStudent" class="btn-create">
+            Create Student
+          </button>
+          <button type="button" class="btn-cancel" @click="$emit('cancel')">
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
+<script setup>
+import { ref } from "vue";
+
+const emit = defineEmits(["create", "cancel"]);
+
+const username = ref("");
+const email = ref("");
+const firstName = ref("");
+const lastName = ref("");
+
+// Create student object and emit
+const createStudent = () => {
+  if (!username.value || !email.value || !firstName.value || !lastName.value) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  emit("create", {
+    username: username.value,
+    email: email.value,
+    firstName: firstName.value,
+    lastName: lastName.value,
+  });
+
+  // Clear form after submission
+  username.value = "";
+  email.value = "";
+  firstName.value = "";
+  lastName.value = "";
+};
+</script>
+
 <style scoped>
-.modal-overlay {
+.overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
+  align-items: center;
+  z-index: 50;
+  padding: 1rem;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
+.modal {
   background: white;
   border-radius: 1rem;
-  width: 90%;
-  max-width: 420px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  animation: modalSlide 0.3s ease-out;
-}
-
-@keyframes modalSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .modal-header {
-  padding: 1.5rem 1.5rem 0 1.5rem;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.modal-header h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
+.modal-header h2 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
   margin: 0;
 }
 
-.modal-body {
-  padding: 1rem 1.5rem;
+.btn-close {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 }
 
-.student-input {
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-close svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+  display: block;
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s;
+  font-family: inherit;
 }
 
-.student-input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.modal-actions {
-  padding: 0 1.5rem 1.5rem 1.5rem;
+.form-group select {
+  cursor: pointer;
+  background-color: white;
+}
+
+.helper-text {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.actions {
   display: flex;
   gap: 0.75rem;
-  justify-content: flex-end;
+  margin-top: 1.5rem;
 }
 
 .btn-create {
-  background: #10b981;
+  flex: 1;
+  background-color: #667eea;
   color: white;
   border: none;
-  border-radius: 0.5rem;
   padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
+  border-radius: 0.5rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
 }
 
-.btn-create:hover:not(:disabled) {
-  background: #059669;
-  transform: translateY(-1px);
-}
-
-.btn-create:disabled {
-  background: #cbd5e1;
-  cursor: not-allowed;
-  transform: none;
+.btn-create:hover {
+  background-color: #5568d3;
 }
 
 .btn-cancel {
-  background: #64748b;
-  color: white;
+  background-color: #e5e7eb;
+  color: #374151;
   border: none;
-  border-radius: 0.5rem;
   padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
+  border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
 }
 
 .btn-cancel:hover {
-  background: #475569;
+  background-color: #d1d5db;
 }
 
-@media (max-width: 768px) {
-  .modal-actions {
-    flex-direction: column-reverse;
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal {
+    max-width: 95%;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem;
   }
 }
 </style>
