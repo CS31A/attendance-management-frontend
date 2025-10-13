@@ -249,17 +249,17 @@ const createUser = () => {
 .role-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .role-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem 1rem;
+  gap: 0.5rem; 
+  padding: 1rem 0.75rem; 
   border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem; 
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
