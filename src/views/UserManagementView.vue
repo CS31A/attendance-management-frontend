@@ -257,6 +257,7 @@ const deleteUser = (id) => {
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
   font-weight: 300;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-add-user {
