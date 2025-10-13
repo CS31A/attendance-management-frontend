@@ -224,7 +224,7 @@ const deleteUser = (id) => {
 /* Header */
 .page-header {
   margin-bottom: 2rem;
-  animation: fadeInDown 0.6s ease-out;
+  animation: slideInDown 0.6s ease-out;
 }
 
 .header-content {
