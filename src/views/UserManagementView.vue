@@ -201,13 +201,13 @@ const deleteUser = (id) => {
   min-height: 100vh;
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   padding: 2rem;
+  position: relative;
 }
 
 .container {
   max-width: 1400px;
   margin: 0 auto;
 }
-
 /* Header */
 .page-header {
   margin-bottom: 2rem;
