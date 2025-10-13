@@ -111,16 +111,16 @@ onUnmounted(() => {
             </router-link>
           </li>
           <li>
-            <router-link to="/teachers" class="nav-link" @click="closeSidebar">
+            <router-link to="/users" class="nav-link" @click="closeSidebar">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              <span class="nav-text" v-show="!isCollapsed">Teachers</span>
+              <span class="nav-text" v-show="!isCollapsed">Users</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/students" class="nav-link" @click="closeSidebar">
+            <router-link to="/reports" class="nav-link" @click="closeSidebar">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="5" height="5"/>
                 <rect x="16" y="3" width="5" height="5"/>
@@ -128,7 +128,7 @@ onUnmounted(() => {
                 <path d="m21 16-3.5-3.5-2.5 2.5"/>
                 <path d="m13 13 3 3 4.5-4.5"/>
               </svg>
-              <span class="nav-text" v-show="!isCollapsed">Students</span>
+              <span class="nav-text" v-show="!isCollapsed">Reports</span>
             </router-link>
           </li>
         </ul>
