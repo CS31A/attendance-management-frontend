@@ -201,14 +201,14 @@ const createUser = () => {
 }
 
 .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 0.75rem; 
+  margin-bottom: 1rem; 
 }
 
 .form-group label {
