@@ -195,7 +195,7 @@ const createUser = () => {
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1.25rem;
   overflow-y: auto;
   flex: 1;
 }
