@@ -159,7 +159,7 @@ const createUser = () => {
 
 .modal-header {
   background: linear-gradient(to right, #1e3a8a, #1e40af);
-  padding: 1.5rem;
+  padding: 1rem 1.25rem; /* Reduced padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
