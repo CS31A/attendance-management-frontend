@@ -264,16 +264,18 @@ const deleteUser = (id) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   color: #667eea;
   border: none;
   padding: 0.875rem 1.75rem;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-add-user:hover {
