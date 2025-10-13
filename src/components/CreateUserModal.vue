@@ -292,7 +292,7 @@ const createUser = () => {
 .actions {
   display: flex;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem; 
 }
 
 .btn-create {
