@@ -216,16 +216,16 @@ const createUser = () => {
   font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.375rem; 
 }
 
 .form-group input {
   display: block;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem; 
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  font-size: 1rem;
+  font-size: 0.875rem; 
   outline: none;
   transition: all 0.2s;
 }
