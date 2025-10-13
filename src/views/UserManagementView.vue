@@ -369,17 +369,20 @@ const deleteUser = (id) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
-  animation: fadeIn 0.8s ease-out;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 /* User Card */
 .user-card {
-  background: white;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.5s ease-out backwards;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInUp 0.5s ease-out backwards;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
 }
 
 .user-card:nth-child(1) { animation-delay: 0.1s; }
