@@ -268,23 +268,23 @@ const createUser = () => {
 .role-option:hover {
   border-color: #667eea;
   background: #f8f9ff;
-  transform: translateY(-2px);
+  transform: translateY(-1px); 
 }
 
 .role-selected {
   border-color: #667eea;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15); /* Reduced shadow */
 }
 
 .role-icon {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem; 
+  height: 2rem;
   color: #667eea;
 }
 
 .role-name {
-  font-size: 1rem;
+  font-size: 0.875rem; 
   font-weight: 600;
   color: #374151;
 }
