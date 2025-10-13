@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/Dashboard.vue'
-import TeacherManagement from '../views/TeacherManagement.vue'
+import Dashboard from '../views/DashboardView.vue'
+import UserManagement from '../views/UserManagementView.vue'
 import { authGuard, guestGuard } from './authGuard'
-import StudentManagement from '../views/StudentManagement.vue'
+import Reports from '../views/ReportsView.vue'
 
 
 const routes = [
@@ -13,17 +13,17 @@ const routes = [
   },
   { 
     path: '/dashboard', 
-    component: Dashboard,
+    component: () => import('../views/DashboardView.vue'),
     beforeEnter: authGuard
   },
   { 
-    path: '/teachers', 
-    component: TeacherManagement,
+    path: '/users', 
+    component: () => import('../views/UserManagementView.vue'),
     beforeEnter: authGuard
   },
   { 
-    path: '/students', 
-    component: StudentManagement,
+    path: '/reports', 
+    component: () => import('../views/ReportsView.vue'),
     beforeEnter: authGuard
   },
   
