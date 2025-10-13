@@ -170,7 +170,7 @@ const createUser = () => {
 
 .modal-header h2 {
   color: white;
-  font-size: 1.25rem; /* Slightly smaller */
+  font-size: 1.25rem; 
   font-weight: bold;
   margin: 0;
 }
@@ -190,8 +190,8 @@ const createUser = () => {
 }
 
 .btn-close svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .modal-body {
