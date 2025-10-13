@@ -279,9 +279,9 @@ const deleteUser = (id) => {
 }
 
 .btn-add-user:hover {
-  background: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .icon {
