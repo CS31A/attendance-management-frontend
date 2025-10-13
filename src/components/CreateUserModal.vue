@@ -321,9 +321,10 @@ const createUser = () => {
   background-color: #e5e7eb;
   color: #374151;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem; 
   border-radius: 0.5rem;
   font-weight: 500;
+  font-size: 0.875rem; 
   cursor: pointer;
   transition: background-color 0.2s;
 }
