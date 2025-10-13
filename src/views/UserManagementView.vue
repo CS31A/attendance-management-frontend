@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import CreateUserModal from '@/components/CreateUserModal.vue'
+import UserTableSection from '@/components/tables/UserTableSection.vue'
+
 
 // All users (teachers and students only)
 const users = ref([])
@@ -8,7 +10,6 @@ const showAddUser = ref(false)
 const searchQuery = ref('')
 const selectedRole = ref('All Roles')
 
-// Role filters (removed Admin)
 const roleFilters = ['All Roles', 'Teacher', 'Student']
 
 // Filter users by role and search
@@ -32,6 +33,14 @@ const filteredUsers = computed(() => {
 
   return filtered
 })
+
+const filteredTeachers = computed(() =>
+  filteredUsers.value.filter(u => u.role === 'Teacher')
+)
+
+const filteredStudents = computed(() =>
+  filteredUsers.value.filter(u => u.role === 'Student')
+)
 
 // Get role color
 const getRoleColor = (role) => {
@@ -75,6 +84,10 @@ const deleteUser = (id) => {
     users.value = users.value.filter(u => u.id !== id)
     alert('User deleted successfully!')
   }
+}
+const handleEditUser = (user) => {
+  // Handle edit logic
+  console.log('Edit user:', user)
 }
 </script>
 
@@ -120,54 +133,28 @@ const deleteUser = (id) => {
         </div>
       </div>
 
-      <!-- Users Grid -->
-      <div class="users-grid" v-if="filteredUsers.length > 0">
-        <div v-for="user in filteredUsers" :key="user.id" class="user-card">
-          <!-- Card Header -->
-          <div class="card-header">
-            <div class="user-info">
-              <div class="avatar-container">
-                <svg class="avatar-icon" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="getRoleIcon(user.role)" />
-                </svg>
-              </div>
-              <div class="user-details">
-                <h3 class="user-name">{{ user.firstName }} {{ user.lastName }}</h3>
-                <span class="role-badge" :class="getRoleColor(user.role)">
-                  {{ user.role }}
-                </span>
-              </div>
-            </div>
-          </div>
+      <!-- Teachers Table -->
+      <UserTableSection
+        v-if="filteredTeachers.length > 0"
+        :users="filteredTeachers"
+        title="Teachers"
+        role="Teacher"
+        @edit="handleEditUser"
+        @delete="deleteUser"
+      />
 
-          <!-- Card Body -->
-          <div class="card-body">
-            <div class="info-item">
-              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-              <span class="info-text">{{ user.email }}</span>
-            </div>
-
-            <div class="info-item">
-              <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              <span class="info-text">Joined {{ user.createdAt }}</span>
-            </div>
-
-            <button @click="deleteUser(user.id)" class="btn-delete">
-              <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-              <span>Delete</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- Students Table -->
+      <UserTableSection
+        v-if="filteredStudents.length > 0"
+        :users="filteredStudents"
+        title="Students"
+        role="Student"
+        @edit="handleEditUser"
+        @delete="deleteUser"
+      />
 
       <!-- Empty State -->
-      <div v-else class="empty-state">
+      <div v-if="filteredUsers.length === 0" class="empty-state">
         <div class="empty-icon-container">
           <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -576,10 +563,21 @@ const deleteUser = (id) => {
   to { opacity: 1; }
 }
 
-@keyframes fadeInDown {
+@keyframes slideInDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
