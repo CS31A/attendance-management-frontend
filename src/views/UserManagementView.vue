@@ -318,16 +318,24 @@ const deleteUser = (id) => {
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 3rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 1rem;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .search-input:focus {
   outline: none;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+}
+
+.search-input:focus + .search-icon {
+  color: #667eea;
 }
 
 .role-filter {
