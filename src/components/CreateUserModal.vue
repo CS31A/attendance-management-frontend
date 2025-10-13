@@ -146,9 +146,9 @@ const createUser = () => {
 
 .modal {
   background: white;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   width: 100%;
-  max-width: 550px;
+  max-width: 420px; /* Reduced from 550px */
   max-height: calc(100vh - 2rem);
   overflow: hidden;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
