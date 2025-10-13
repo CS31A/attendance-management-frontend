@@ -294,7 +294,7 @@ const deleteUser = (id) => {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-  animation: fadeIn 0.8s ease-out;
+  animation: slideInUp 0.8s ease-out;
 }
 
 .search-box {
@@ -311,6 +311,7 @@ const deleteUser = (id) => {
   height: 1.25rem;
   color: #9ca3af;
   pointer-events: none;
+  transition: color 0.2s ease;
 }
 
 .search-input {
