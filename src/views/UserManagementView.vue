@@ -346,19 +346,22 @@ const deleteUser = (id) => {
   width: 100%;
   padding: 0.875rem 1rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 1rem;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   font-weight: 500;
   color: #374151;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-
 .filter-select:focus {
   outline: none;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
 }
 
 /* Users Grid */
