@@ -1,99 +1,169 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import CreateUserModal from '@/components/CreateUserModal.vue'
 import UserTableSection from '@/components/tables/UserTableSection.vue'
+import { useUserStore } from '@/stores/userStore'
 
+const userStore = useUserStore()
 
-// All users (teachers and students only)
-const users = ref([])
 const showAddUser = ref(false)
+const showEditUser = ref(false)
+const editingUser = ref(null)
 const searchQuery = ref('')
 const selectedRole = ref('All Roles')
+const createModal = ref(null)
 
-const roleFilters = ['All Roles', 'Teacher', 'Student']
+const roleFilters = ['All Roles', 'Instructor', 'Student']
 
-// Filter users by role and search
-const filteredUsers = computed(() => {
-  let filtered = users.value
-
-  // Filter by role
-  if (selectedRole.value !== 'All Roles') {
-    filtered = filtered.filter(u => u.role === selectedRole.value)
+onMounted(async () => {
+  try {
+    await userStore.fetchUsers()
+  } catch (error) {
+    console.error('Failed to load users:', error)
   }
-
-  // Filter by search
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(u => 
-      u.firstName.toLowerCase().includes(query) ||
-      u.lastName.toLowerCase().includes(query) ||
-      u.email.toLowerCase().includes(query)
-    )
-  }
-
-  return filtered
 })
 
-const filteredTeachers = computed(() =>
-  filteredUsers.value.filter(u => u.role === 'Teacher')
+const filteredUsers = computed(() => 
+  userStore.filteredUsers(searchQuery.value, selectedRole.value)
 )
 
-const filteredStudents = computed(() =>
-  filteredUsers.value.filter(u => u.role === 'Student')
+const paginatedUsers = computed(() => 
+  userStore.paginatedUsers(searchQuery.value, selectedRole.value)
 )
 
-// Get role color
+const filteredInstructors = computed(() => 
+  paginatedUsers.value.filter(u => u.role === 'Instructor')
+)
+
+const filteredStudents = computed(() => 
+  paginatedUsers.value.filter(u => u.role === 'Student')
+)
+
+// Pagination computed properties
+const totalPages = computed(() => 
+  userStore.totalPages(searchQuery.value, selectedRole.value)
+)
+
+const hasNextPage = computed(() => 
+  userStore.hasNextPage(searchQuery.value, selectedRole.value)
+)
+
+const hasPreviousPage = computed(() => 
+  userStore.hasPreviousPage
+)
+
+const currentPage = computed(() => 
+  userStore.currentPage
+)
+
+const totalUsers = computed(() => 
+  filteredUsers.value.length
+)
+
 const getRoleColor = (role) => {
   const colors = {
-    Teacher: 'teacher-badge',
+    Instructor: 'instructor-badge',
     Student: 'student-badge'
   }
   return colors[role] || 'default-badge'
 }
 
-// Get role icon
 const getRoleIcon = (role) => {
   const icons = {
-    Teacher: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
+    Instructor: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
     Student: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222'
   }
   return icons[role] || ''
 }
 
-// Handle user creation from modal
-const handleCreateUser = (userData) => {
-  const newUser = {
-    id: Date.now(),
-    ...userData,
-    createdAt: new Date().toLocaleDateString()
+const handleCreateUser = async (userData) => {
+  const result = await userStore.createUser(userData)
+  if (result.success) {
+    showAddUser.value = false
+  } else {
+    createModal.value?.handleError(result.error)
   }
-
-  users.value.push(newUser)
-  showAddUser.value = false
-  alert(`${newUser.role} account created successfully!`)
 }
 
-// Handle modal cancel
+const handleUpdateUser = async (updatedUserData) => {
+  const result = await userStore.updateUser(editingUser.value.id, updatedUserData)
+  if (result.success) {
+    showEditUser.value = false
+    editingUser.value = null
+  } else {
+    createModal.value?.handleError(result.error)
+  }
+}
+
 const handleCancel = () => {
   showAddUser.value = false
+  showEditUser.value = false
+  editingUser.value = null
 }
 
-// Delete user
-const deleteUser = (id) => {
-  if (confirm('Are you sure you want to delete this user?')) {
-    users.value = users.value.filter(u => u.id !== id)
-    alert('User deleted successfully!')
+const deleteUser = async (id) => {
+  if (!confirm('Are you sure you want to delete this user?')) {
+    return
+  }
+  
+  const userToDelete = userStore.users.find(u => u.id === id)
+  const result = await userStore.deleteUser(id, userToDelete.role)
+  
+  if (!result.success) {
+    console.error('Delete error:', result.error)
   }
 }
-const handleEditUser = (user) => {
-  // Handle edit logic
-  console.log('Edit user:', user)
-}
-</script>
 
+const handleEditUser = (user) => {
+  editingUser.value = user
+  showEditUser.value = true
+}
+
+// Pagination methods
+const nextPage = () => {
+  userStore.nextPage(searchQuery.value, selectedRole.value)
+}
+
+const previousPage = () => {
+  userStore.previousPage()
+}
+
+const goToPage = (page) => {
+  userStore.goToPage(page, searchQuery.value, selectedRole.value)
+}
+
+const setItemsPerPage = (itemsPerPage) => {
+  userStore.setItemsPerPage(itemsPerPage)
+}
+
+// Reset pagination when search or filter changes
+watch([searchQuery, selectedRole], () => {
+  userStore.setCurrentPage(1)
+})
+</script>
 <template>
   <div class="user-management">
-    <div class="container">
+    <!-- Loading overlay -->
+    <div v-if="userStore.loading" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    </div>
+    
+    <!-- Error message -->
+    <div v-if="userStore.error" class="error-message">
+      <div class="error-content">
+        <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p>{{ userStore.error }}</p>
+        <button @click="userStore.fetchUsers" class="retry-btn">Retry</button>
+      </div>
+    </div>
+    
+    <!-- Main content - only show if we have users or no error -->
+    <div v-else-if="userStore.users.length > 0 || !userStore.error" class="container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -135,10 +205,10 @@ const handleEditUser = (user) => {
 
       <!-- Teachers Table -->
       <UserTableSection
-        v-if="filteredTeachers.length > 0"
-        :users="filteredTeachers"
-        title="Teachers"
-        role="Teacher"
+        v-if="filteredInstructors.length > 0"
+        :users="filteredInstructors"
+        title="Instructors"
+        role="Instructor"
         @edit="handleEditUser"
         @delete="deleteUser"
       />
@@ -171,13 +241,100 @@ const handleEditUser = (user) => {
           <span>Add Your First User</span>
         </button>
       </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="filteredUsers.length > 0" class="pagination-section">
+        <div class="pagination-info">
+          <span class="pagination-text">
+            Showing {{ (currentPage - 1) * userStore.itemsPerPage + 1 }} to 
+            {{ Math.min(currentPage * userStore.itemsPerPage, totalUsers) }} of 
+            {{ totalUsers }} users
+          </span>
+          <div class="items-per-page">
+            <label for="itemsPerPage">Show:</label>
+            <select 
+              id="itemsPerPage" 
+              :value="userStore.itemsPerPage" 
+              @change="setItemsPerPage(parseInt($event.target.value))"
+              class="items-select"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="pagination-controls">
+          <button 
+            @click="previousPage" 
+            :disabled="!hasPreviousPage"
+            class="pagination-btn"
+            :class="{ disabled: !hasPreviousPage }"
+          >
+            <svg class="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Previous
+          </button>
+          
+          <div class="page-numbers">
+            <button 
+              v-for="page in Math.min(5, totalPages)" 
+              :key="page"
+              @click="goToPage(page)"
+              class="page-btn"
+              :class="{ active: page === currentPage }"
+            >
+              {{ page }}
+            </button>
+            <span v-if="totalPages > 5" class="page-ellipsis">...</span>
+            <button 
+              v-if="totalPages > 5 && currentPage < totalPages - 2"
+              @click="goToPage(totalPages)"
+              class="page-btn"
+            >
+              {{ totalPages }}
+            </button>
+          </div>
+          
+          <button 
+            @click="nextPage" 
+            :disabled="!hasNextPage"
+            class="pagination-btn"
+            :class="{ disabled: !hasNextPage }"
+          >
+            Next
+            <svg class="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty state -->
+    <div v-else class="empty-state">
+      <p>No users found</p>
     </div>
 
-    <!-- Modal Component -->
+    <!-- Create User Modal -->
     <CreateUserModal
       v-if="showAddUser"
       @create="handleCreateUser"
       @cancel="handleCancel"
+      ref="createModal"
+    />
+
+    <!-- Edit User Modal -->
+    <CreateUserModal
+      v-if="showEditUser"
+      :user="editingUser"
+      mode="edit"
+      @update="handleUpdateUser"
+      @cancel="handleCancel"
+      ref="createModal"
     />
   </div>
 </template>
@@ -427,7 +584,7 @@ const handleEditUser = (user) => {
   font-weight: 600;
 }
 
-.teacher-badge {
+.instructor-badge {
   background-color: rgba(59, 130, 246, 0.2);
   color: #1e40af;
 }
@@ -557,6 +714,86 @@ const handleEditUser = (user) => {
   box-shadow: 0 10px 15px rgba(102, 126, 234, 0.4);
 }
 
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  text-align: center;
+  color: white;
+}
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ef4444;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.retry-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -627,4 +864,157 @@ const handleEditUser = (user) => {
     justify-content: center;
   }
 }
+
+/* Pagination Styles */
+.pagination-section {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.pagination-text {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.items-per-page label {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.items-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.items-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.page-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.page-btn.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.page-ellipsis {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  padding: 0 0.5rem;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+  .pagination-section {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .pagination-info {
+    justify-content: center;
+  }
+  
+  .pagination-controls {
+    justify-content: center;
+  }
+  
+  .page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
 </style>
+
