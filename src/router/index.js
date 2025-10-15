@@ -29,7 +29,7 @@ const routes = [
   
   { 
     path: '/', 
-    redirect: '/dashboard' 
+    redirect: '/login'  // Change this from '/dashboard' to '/login'
   },
   
 ]
