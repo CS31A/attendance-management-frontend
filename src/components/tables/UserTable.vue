@@ -7,6 +7,7 @@
               <th class="th-avatar">Avatar</th>
               <th class="th-name">Name</th>
               <th class="th-email">Email</th>
+              <th class="th-section">Section</th>
               <th class="th-joined">Joined</th>
               <th class="th-actions">Actions</th>
             </tr>
@@ -22,7 +23,7 @@
               </td>
               <td class="td-name">
                 <div class="name-cell">
-                  <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                  <span class="user-name">{{ getUserName(user) }}</span>
                 </div>
               </td>
               <td class="td-email">
@@ -31,6 +32,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                   </svg>
                   <span class="email-text">{{ user.email }}</span>
+                </div>
+              </td>
+              <td class="td-section">
+                <div class="section-cell">
+                  <span class="section-text">{{ getUserSection(user) }}</span>
                 </div>
               </td>
               <td class="td-joined">
@@ -75,10 +81,43 @@
   // Get role icon
   const getRoleIcon = (role) => {
     const icons = {
-      Teacher: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
+      Instructor: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
       Student: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222'
     }
     return icons[role] || ''
+  }
+
+  // Get user name - handle different possible field names
+  const getUserName = (user) => {
+    // Try different possible field name combinations
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`
+    }
+    if (user.firstname && user.lastname) {
+      return `${user.firstname} ${user.lastname}`
+    }
+    if (user.name) {
+      return user.name
+    }
+    if (user.fullName) {
+      return user.fullName
+    }
+    // Fallback to email if no name found
+    return user.email || 'Unknown User'
+  }
+
+  // Get user section - handle different possible field names
+  const getUserSection = (user) => {
+    if (user.sectionId) {
+      return user.sectionId
+    }
+    if (user.section) {
+      return user.section
+    }
+    if (user.sectionName) {
+      return user.sectionName
+    }
+    return '-'
   }
   </script>
   
@@ -132,6 +171,11 @@
   min-width: 250px;
 }
 
+.th-section {
+  width: 100px;
+  text-align: center;
+}
+
 .th-joined {
   width: 140px;
 }
@@ -176,7 +220,7 @@
   margin: 0 auto;
 }
 
-.avatar-circle.teacher {
+.avatar-circle.instructor {
   background: #dbeafe;
   color: #3b82f6;
 }
@@ -231,6 +275,28 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Section Column */
+.td-section {
+  text-align: center;
+}
+
+.section-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-text {
+  color: #4b5563;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  min-width: 2rem;
+  text-align: center;
 }
 
 /* Joined Column */
