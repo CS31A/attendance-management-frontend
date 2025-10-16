@@ -165,34 +165,41 @@ export const useUserStore = defineStore('user', {
       try {
         // Transform data to match Scalar API documentation exactly
         const registerData = {
-          Username: userData.Username,
-          Firstname: userData.FirstName,
-          Lastname: userData.LastName,
-          Email: userData.Email,
-          Password: userData.Password,
-          RepeatedPassword: userData.RepeatedPassword,
-          Role: userData.Role,
-          SectionId: (userData.Role === 'Student' || userData.Role === 'Instructor') ? userData.SectionId : null
+          username: userData.Username,
+          firstname: userData.FirstName,
+          lastname: userData.LastName,
+          email: userData.Email,
+          password: userData.Password,
+          repeatedPassword: userData.RepeatedPassword,
+          role: userData.Role === 'Instructor' ? 'teacher' : userData.Role.toLowerCase(),
+          sectionId: userData.Role === 'Student' ? parseInt(userData.SectionId) : null
         }
         
-        // If section validation fails, try with a default section
-        if (registerData.SectionId && !isValidSection(registerData.SectionId)) {
-          console.warn('Section validation failed, trying with default section 1')
-          registerData.SectionId = '1'
+        // If section validation fails for students, try with a default section
+        if (registerData.sectionId && userData.Role.toLowerCase() === 'student' && !isValidSection(registerData.sectionId)) {
+          console.warn('Section validation failed for student, trying with default section 3')
+          registerData.sectionId = 3
         }
         
         console.log('Sending registerData to backend:', registerData)
+        console.log('Role:', userData.Role, 'SectionId:', registerData.sectionId)
+        console.log('Role type:', typeof userData.Role, 'Role value:', JSON.stringify(userData.Role))
+        console.log('Final role being sent:', registerData.role)
         
         let response
         try {
           response = await api.post('/account/register', registerData)
         } catch (error) {
-          // If section validation fails, try with a different approach
-          if (error.response?.status === 400 && error.response?.data?.message?.includes('section')) {
-            console.log('Section validation failed, trying with section ID as integer...')
+          console.error('Backend error details:', error.response?.data)
+          console.error('Error status:', error.response?.status)
+          console.error('Error message:', error.response?.data?.message)
+          
+          // If section validation fails for students, try with a different approach
+          if (error.response?.status === 400 && error.response?.data?.message?.includes('section') && userData.Role.toLowerCase() === 'student') {
+            console.log('Section validation failed for student, trying with section ID as integer...')
             const fallbackData = {
               ...registerData,
-              SectionId: parseInt(registerData.SectionId) || 1
+              sectionId: parseInt(registerData.sectionId) || 3
             }
             console.log('Trying fallback data:', fallbackData)
             response = await api.post('/account/register', fallbackData)
@@ -204,10 +211,17 @@ export const useUserStore = defineStore('user', {
         console.log('Backend response:', response.data)
         
         // Add the new user to the store
-        this.users.push({
-          ...response.data,
-          role: userData.Role
-        })
+        const newUser = {
+          id: response.data.id || Date.now(),
+          firstName: response.data.firstName || response.data.firstname || userData.FirstName,
+          lastName: response.data.lastName || response.data.lastname || userData.LastName,
+          email: response.data.email || userData.Email,
+          role: userData.Role,
+          sectionId: response.data.sectionId || userData.SectionId,
+          createdAt: response.data.createdAt || new Date().toISOString()
+        }
+        
+        this.users.push(newUser)
         
         return { success: true, data: response.data }
       } catch (error) {
