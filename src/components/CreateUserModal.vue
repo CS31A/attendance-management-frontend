@@ -84,6 +84,7 @@
             minlength="6"
           />
           <small class="helper-text info">Must match the password above</small>
+          <small v-if="passwordMismatchError" class="helper-text error">{{ passwordMismatchError }}</small>
         </div>
 
         <!-- Role Field -->
@@ -114,25 +115,17 @@
           <small class="helper-text" v-if="!role">Please select a role</small>
         </div>
 
-        <!-- Section ID Field (for both Students and Instructors) -->
-        <div v-if="role === 'Student' || role === 'Instructor'" class="form-group">
+        <!-- Section ID Field (for Students only) -->
+        <div v-if="role === 'Student'" class="form-group">
           <label>Section *</label>
-          <select 
-            v-model="sectionId" 
+          <input
+            v-model="sectionId"
+            type="text"
+            class="form-input"
+            placeholder="Enter section (e.g., 3, 4, 5, CS101, MATH201...)"
             required
-            class="section-select"
-          >
-            <option value="">Select a section...</option>
-            <option value="1">Section 1</option>
-            <option value="2">Section 2</option>
-            <option value="3">Section 3</option>
-            <option value="4">Section 4</option>
-            <option value="5">Section 5</option>
-            <option value="CS101">CS101</option>
-            <option value="MATH201">MATH201</option>
-            <option value="ENG301">ENG301</option>
-          </select>
-          <small class="helper-text info">Required for {{ role.toLowerCase() }}s (select from existing sections)</small>
+          />
+          <small class="helper-text info">Required for students (enter any valid section)</small>
         </div>
 
         <!-- Actions -->
@@ -168,6 +161,7 @@ const confirmPassword = ref("");
 const role = ref("");
 const sectionId = ref("");
 const errorMessage = ref("");
+const passwordMismatchError = ref("");
 
 // Computed properties
 const isEditMode = computed(() => props.mode === 'edit');
@@ -183,10 +177,26 @@ const isFormValid = computed(() => {
     passwordsMatch: password.value === confirmPassword.value
   });
   
+  // Reset error message
+  passwordMismatchError.value = '';
+
   if (!role.value) return false;
-  if ((role.value === 'Student' || role.value === 'Instructor') && !sectionId.value?.trim()) return false;
-  if (password.value !== confirmPassword.value) return false;
+  if (role.value === 'Student' && !sectionId.value?.trim()) return false;
+
+  if (password.value !== confirmPassword.value) {
+    if (password.value && confirmPassword.value) {
+      passwordMismatchError.value = 'Passwords do not match';
+    }
+    return false;
+  }
   return true;
+});
+
+// Watch for password changes to clear error
+watch([password, confirmPassword], () => {
+  if (password.value === confirmPassword.value) {
+    passwordMismatchError.value = '';
+  }
 });
 
 // Watch for user changes in edit mode
@@ -217,9 +227,9 @@ const createUser = () => {
     return;
   }
   
-  if (role.value === 'Student' || role.value === 'Instructor') {
+  if (role.value === 'Student') {
     if (!sectionId.value?.trim()) {
-      errorMessage.value = `Please enter a section for ${role.value.toLowerCase()}s`;
+      errorMessage.value = "Please enter a section for students";
       return;
     }
   }
@@ -233,7 +243,7 @@ const createUser = () => {
     FirstName: firstName.value,
     LastName: lastName.value,
     Role: role.value,
-    SectionId: (role.value === "Student" || role.value === "Instructor") ? sectionId.value.trim() : null,
+    SectionId: role.value === "Student" ? sectionId.value.trim() : null,
   };
   
   console.log('Sending userData to backend:', userData);
@@ -396,6 +406,13 @@ defineExpose({ handleError });
 
 .helper-text.info {
   color: #6b7280;
+}
+
+.helper-text.error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 .role-selector {
