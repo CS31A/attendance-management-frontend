@@ -227,7 +227,7 @@ const setActiveTab = (tab) => {
 
         <div class="stat-card">
           <div class="stat-header">
-            <div class="stat-icon purple">
+            <div class="stat-icon navy">
               <svg fill="currentColor" viewBox="0 0 24 24">
                 <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
@@ -300,7 +300,7 @@ const setActiveTab = (tab) => {
 /* Main Container */
 .reports-dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #3b5998 0%, #2d4373 100%);
+  background: #f8fafc;
   padding: 2rem;
 }
 
@@ -331,14 +331,13 @@ const setActiveTab = (tab) => {
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: white;
+  color: #1e3a8a;
   margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #6b7280;
   margin: 0;
   font-weight: 300;
 }
@@ -367,9 +366,9 @@ const setActiveTab = (tab) => {
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #3b5998 0%, #2d4373 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
 }
 
 .tab:not(.active):hover {
@@ -440,9 +439,9 @@ const setActiveTab = (tab) => {
   color: #ef4444;
 }
 
-.stat-icon.purple {
-  background: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
+.stat-icon.navy {
+  background: rgba(30, 58, 138, 0.1);
+  color: #1e3a8a;
 }
 
 .stat-trend {

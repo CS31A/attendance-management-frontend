@@ -369,7 +369,7 @@ defineExpose({ handleError });
 }
 
 .form-group input:focus {
-  border-color: #667eea;
+  border-color: #1e3a8a;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -393,7 +393,7 @@ defineExpose({ handleError });
 }
 
 .section-select:focus {
-  border-color: #667eea;
+  border-color: #1e3a8a;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -435,13 +435,13 @@ defineExpose({ handleError });
 }
 
 .role-option:hover {
-  border-color: #667eea;
+  border-color: #1e3a8a;
   background: #f8f9ff;
   transform: translateY(-1px); 
 }
 
 .role-selected {
-  border-color: #667eea;
+  border-color: #1e3a8a;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15); /* Reduced shadow */
 }
@@ -449,7 +449,7 @@ defineExpose({ handleError });
 .role-icon {
   width: 2rem; 
   height: 2rem;
-  color: #667eea;
+  color: #1e3a8a;
 }
 
 .role-name {
@@ -466,7 +466,7 @@ defineExpose({ handleError });
 
 .btn-create {
   flex: 1;
-  background-color: #667eea;
+  background-color: #1e3a8a;
   color: white;
   border: none;
   padding: 0.625rem 1.25rem; 

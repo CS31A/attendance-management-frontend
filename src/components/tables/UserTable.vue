@@ -1,70 +1,68 @@
 <template>
-    <div class="table-container">
-      <div class="table-wrapper">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th class="th-avatar">Avatar</th>
-              <th class="th-name">Name</th>
-              <th class="th-email">Email</th>
-              <th class="th-section">Section</th>
-              <th class="th-joined">Joined</th>
-              <th class="th-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id" class="user-row">
-              <td class="td-avatar">
-                <div class="avatar-circle" :class="user.role.toLowerCase()">
-                  <svg class="avatar-icon" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="getRoleIcon(user.role)" />
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th class="th-avatar">Avatar</th>
+            <th class="th-name">Name</th>
+            <th class="th-email">Email</th>
+            <th class="th-section">Section</th>
+            <th class="th-joined">Joined</th>
+            <th class="th-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in users" :key="user.id" class="user-row">
+            <td class="td-avatar">
+              <div class="avatar-circle" :class="user.role.toLowerCase()">
+                <svg class="avatar-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="getRoleIcon(user.role)" />
+                </svg>
+              </div>
+            </td>
+            <td class="td-name">
+              <div class="name-cell">
+                <span class="user-name">{{ getUserName(user) }}</span>
+              </div>
+            </td>
+            <td class="td-email">
+              <div class="email-cell">
+                <svg class="email-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <span class="email-text">{{ user.email }}</span>
+              </div>
+            </td>
+            <td class="td-section">
+              <div class="section-cell">
+                <span class="section-text">{{ getUserSection(user) }}</span>
+              </div>
+            </td>
+            <td class="td-joined">
+              <div class="joined-cell">
+                <svg class="date-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="date-text">{{ user.createdAt }}</span>
+              </div>
+            </td>
+            <td class="td-actions">
+              <div class="action-buttons">
+                <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
-                </div>
-              </td>
-              <td class="td-name">
-                <div class="name-cell">
-                  <span class="user-name">{{ getUserName(user) }}</span>
-                </div>
-              </td>
-              <td class="td-email">
-                <div class="email-cell">
-                  <svg class="email-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </button>
+                <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
+                  <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
-                  <span class="email-text">{{ user.email }}</span>
-                </div>
-              </td>
-              <td class="td-section">
-                <div class="section-cell">
-                  <span class="section-text">{{ getUserSection(user) }}</span>
-                </div>
-              </td>
-              <td class="td-joined">
-                <div class="joined-cell">
-                  <svg class="date-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                  </svg>
-                  <span class="date-text">{{ user.createdAt }}</span>
-                </div>
-              </td>
-              <td class="td-actions">
-                <div class="action-buttons">
-                  <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
-                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
-                  <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
-                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </template>
   
@@ -122,15 +120,6 @@
   </script>
   
 <style scoped>
-/* Table Container */
-.table-container {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  overflow: hidden;
-  animation: fadeIn 0.8s ease-out;
-}
-
 .table-wrapper {
   overflow-x: auto;
 }
@@ -144,7 +133,7 @@
 
 /* Table Header */
 .users-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
 }
 
 .users-table th {
@@ -192,8 +181,9 @@
 }
 
 .users-table tbody tr:hover {
-  background: #f8fafc;
+  background: #f1f5f9;
   transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .users-table tbody tr:last-child {

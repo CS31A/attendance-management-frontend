@@ -199,7 +199,7 @@ const getUserInitials = computed(() => {
             <p class="stat-label">User Management</p>
             <div class="stat-progress">
               <div class="progress-bar">
-                <div class="progress-fill purple" :style="{ width: managementPercentage + '%' }"></div>
+                <div class="progress-fill navy" :style="{ width: managementPercentage + '%' }"></div>
               </div>
               <span class="progress-label">{{ managementPercentage }}%</span>
             </div>
@@ -238,7 +238,7 @@ const getUserInitials = computed(() => {
 <style scoped>
 .dashboard {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #f8fafc;
   padding: 2rem;
 }
 
@@ -267,7 +267,7 @@ const getUserInitials = computed(() => {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,8 +365,8 @@ const getUserInitials = computed(() => {
   background: #f59e0b;
 }
 
-.progress-fill.purple {
-  background: #8b5cf6;
+.progress-fill.navy {
+  background: #1e3a8a;
 }
 
 .progress-label {

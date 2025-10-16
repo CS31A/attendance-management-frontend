@@ -203,9 +203,31 @@ watch([searchQuery, selectedRole], () => {
         </div>
       </div>
 
+      <!-- All Roles Table -->
+      <UserTableSection
+        v-if="selectedRole === 'All Roles' && filteredUsers.length > 0"
+        :users="paginatedUsers"
+        title="All Users"
+        role="All"
+        :pagination="{
+          currentPage,
+          totalPages,
+          hasNextPage,
+          hasPreviousPage,
+          totalUsers,
+          itemsPerPage: userStore.itemsPerPage
+        }"
+        @edit="handleEditUser"
+        @delete="deleteUser"
+        @next-page="nextPage"
+        @previous-page="previousPage"
+        @go-to-page="goToPage"
+        @set-items-per-page="setItemsPerPage"
+      />
+
       <!-- Teachers Table -->
       <UserTableSection
-        v-if="filteredInstructors.length > 0"
+        v-if="selectedRole === 'Instructor' && filteredInstructors.length > 0"
         :users="filteredInstructors"
         title="Instructors"
         role="Instructor"
@@ -215,7 +237,7 @@ watch([searchQuery, selectedRole], () => {
 
       <!-- Students Table -->
       <UserTableSection
-        v-if="filteredStudents.length > 0"
+        v-if="selectedRole === 'Student' && filteredStudents.length > 0"
         :users="filteredStudents"
         title="Students"
         role="Student"
@@ -242,76 +264,6 @@ watch([searchQuery, selectedRole], () => {
         </button>
       </div>
 
-      <!-- Pagination Controls -->
-      <div v-if="filteredUsers.length > 0" class="pagination-section">
-        <div class="pagination-info">
-          <span class="pagination-text">
-            Showing {{ (currentPage - 1) * userStore.itemsPerPage + 1 }} to 
-            {{ Math.min(currentPage * userStore.itemsPerPage, totalUsers) }} of 
-            {{ totalUsers }} users
-          </span>
-          <div class="items-per-page">
-            <label for="itemsPerPage">Show:</label>
-            <select 
-              id="itemsPerPage" 
-              :value="userStore.itemsPerPage" 
-              @change="setItemsPerPage(parseInt($event.target.value))"
-              class="items-select"
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="pagination-controls">
-          <button 
-            @click="previousPage" 
-            :disabled="!hasPreviousPage"
-            class="pagination-btn"
-            :class="{ disabled: !hasPreviousPage }"
-          >
-            <svg class="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Previous
-          </button>
-          
-          <div class="page-numbers">
-            <button 
-              v-for="page in Math.min(5, totalPages)" 
-              :key="page"
-              @click="goToPage(page)"
-              class="page-btn"
-              :class="{ active: page === currentPage }"
-            >
-              {{ page }}
-            </button>
-            <span v-if="totalPages > 5" class="page-ellipsis">...</span>
-            <button 
-              v-if="totalPages > 5 && currentPage < totalPages - 2"
-              @click="goToPage(totalPages)"
-              class="page-btn"
-            >
-              {{ totalPages }}
-            </button>
-          </div>
-          
-          <button 
-            @click="nextPage" 
-            :disabled="!hasNextPage"
-            class="pagination-btn"
-            :class="{ disabled: !hasNextPage }"
-          >
-            Next
-            <svg class="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
-      </div>
     </div>
     
     <!-- Empty state -->
@@ -343,7 +295,7 @@ watch([searchQuery, selectedRole], () => {
 /* Main Container */
 .user-management {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: #f8fafc;
   padding: 2rem;
   position: relative;
 }
@@ -387,45 +339,38 @@ watch([searchQuery, selectedRole], () => {
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: white;
+  color: #1e3a8a;
   margin: 0 0 0.5rem 0;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(45deg, #ffffff, #e0e7ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #6b7280;
   margin: 0;
   font-weight: 300;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-add-user {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.95);
-  color: #667eea;
+  background: #1e3a8a;
+  color: white;
   border: none;
   padding: 0.875rem 1.75rem;
   border-radius: 16px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-add-user:hover {
-  background: rgba(255, 255, 255, 1);
+  background: #1e40af;
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 35px rgba(30, 58, 138, 0.4);
 }
 
 .icon {
@@ -461,25 +406,23 @@ watch([searchQuery, selectedRole], () => {
 .search-input {
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 3rem;
-  border: none;
+  border: 2px solid #e5e7eb;
   border-radius: 16px;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .search-input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  border-color: #1e3a8a;
+  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
   transform: translateY(-2px);
 }
 
 .search-input:focus + .search-icon {
-  color: #667eea;
+  color: #1e3a8a;
 }
 
 .role-filter {
@@ -489,22 +432,20 @@ watch([searchQuery, selectedRole], () => {
 .filter-select {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: none;
+  border: 2px solid #e5e7eb;
   border-radius: 16px;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.95);
+  background: white;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   font-weight: 500;
   color: #374151;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .filter-select:focus {
   outline: none;
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  border-color: #1e3a8a;
+  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
   transform: translateY(-2px);
 }
 
@@ -542,7 +483,7 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   padding: 1.5rem;
 }
 
@@ -666,7 +607,7 @@ watch([searchQuery, selectedRole], () => {
 .empty-icon-container {
   display: inline-flex;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   border-radius: 50%;
   margin-bottom: 1.5rem;
 }
@@ -697,7 +638,7 @@ watch([searchQuery, selectedRole], () => {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   color: white;
   border: none;
   padding: 1rem 2rem;
@@ -706,12 +647,12 @@ watch([searchQuery, selectedRole], () => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 6px rgba(30, 58, 138, 0.3);
 }
 
 .btn-empty-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 15px rgba(30, 58, 138, 0.4);
 }
 
 /* Loading Overlay */
@@ -735,7 +676,7 @@ watch([searchQuery, selectedRole], () => {
 
 .spinner {
   border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #1e3a8a;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -916,8 +857,8 @@ watch([searchQuery, selectedRole], () => {
 
 .items-select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 .pagination-controls {
@@ -984,8 +925,8 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .page-btn.active {
-  background: #667eea;
-  border-color: #667eea;
+  background: #1e3a8a;
+  border-color: #1e3a8a;
   color: white;
 }
 
