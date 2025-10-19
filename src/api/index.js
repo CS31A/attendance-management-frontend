@@ -38,8 +38,11 @@ api.interceptors.response.use(
         
         // Check if error is 401 and not from the refresh endpoint itself
         if (error.response?.status === 401 && !originalRequest._retry) {
+            console.log('401 error detected for:', originalRequest.url)
+            
             // Prevent retry loop for the refresh endpoint
             if (originalRequest.url === "/account/web/refresh") {
+                console.log('Refresh endpoint failed, clearing auth state')
                 isRefreshing = false;
                 processQueue(error);
                 return Promise.reject(error);
@@ -52,10 +55,12 @@ api.interceptors.response.use(
                 isRefreshing = true;
                 
                 try {
+                    console.log('Attempting token refresh...')
                     // Call refresh endpoint (cookie-based, no body needed)
                     const response = await api.post("/account/web/refresh");
                     
                     if (response.data.success) {
+                        console.log('Token refresh successful')
                         // Token refreshed successfully
                         isRefreshing = false;
                         processQueue(null);
@@ -63,10 +68,12 @@ api.interceptors.response.use(
                         // Retry the original request
                         return api(originalRequest);
                     } else {
+                        console.log('Token refresh failed - no success response')
                         // Refresh indicated failure
                         throw new Error("Token refresh failed");
                     }
                 } catch (refreshError) {
+                    console.log('Token refresh error:', refreshError)
                     // Refresh failed, reject all queued requests
                     isRefreshing = false;
                     processQueue(refreshError);

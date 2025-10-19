@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/Dashboard.vue'
-import Students from '../views/Students.vue'
-import QRGenerator from '../views/QRGenerator.vue'
+import Dashboard from '../views/DashboardView.vue'
+import UserManagement from '../views/UserManagementView.vue'
 import { authGuard, guestGuard } from './authGuard'
+import Reports from '../views/ReportsView.vue'
+
 
 const routes = [
   { 
@@ -12,23 +13,25 @@ const routes = [
   },
   { 
     path: '/dashboard', 
-    component: Dashboard,
+    component: () => import('../views/DashboardView.vue'),
     beforeEnter: authGuard
   },
   { 
-    path: '/students', 
-    component: Students,
+    path: '/users', 
+    component: () => import('../views/UserManagementView.vue'),
     beforeEnter: authGuard
   },
   { 
-    path: '/qr-generator', 
-    component: QRGenerator,
+    path: '/reports', 
+    component: () => import('../views/ReportsView.vue'),
     beforeEnter: authGuard
   },
+  
   { 
     path: '/', 
-    redirect: '/dashboard' 
+    redirect: '/login'  // Change this from '/dashboard' to '/login'
   },
+  
 ]
 
 const router = createRouter({

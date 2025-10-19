@@ -115,10 +115,15 @@ const handleToggleCollapse = (isCollapsed) => {
   font-family: "Poppins", sans-serif;
 }
 
+body {
+  background: #f8fafc;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: #f8fafc;
 }
 
 
@@ -128,6 +133,7 @@ main {
   margin-left: 280px;
   overflow-y: auto;
   transition: margin-left 0.3s ease;
+  background: #f8fafc;
 }
 
 main.with-header {

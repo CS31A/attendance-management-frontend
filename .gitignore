@@ -29,5 +29,5 @@ coverage
 
 .env
 .env.local
-
+.env.dev
 *.tsbuildinfo
