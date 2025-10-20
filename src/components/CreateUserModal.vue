@@ -530,9 +530,86 @@ defineExpose({ handleError });
   font-weight: 500;
 }
 
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .modal {
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 968px) {
+  .modal {
+    max-width: 450px;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    padding: 1rem;
+    align-items: center;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 1rem;
+    margin: 0;
+  }
+  
+  .modal-header {
+    padding: 1rem 1.25rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.125rem;
+  }
+  
+  .modal-body {
+    padding: 1.25rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group input {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .role-selector {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .role-option {
+    padding: 0.875rem 0.75rem;
+  }
+  
+  .actions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .btn-create,
+  .btn-cancel {
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 640px) {
   .overlay {
-    padding: 0;
+    padding: 0.5rem;
     align-items: flex-end;
   }
 
@@ -545,23 +622,187 @@ defineExpose({ handleError });
 
   .modal-header {
     border-radius: 1rem 1rem 0 0;
+    padding: 0.875rem 1rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1rem;
+  }
+  
+  .btn-close svg {
+    width: 1rem;
+    height: 1rem;
   }
 
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 0.875rem;
+  }
+  
+  .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .form-group input {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.85rem;
+  }
+  
+  .helper-text {
+    font-size: 0.7rem;
+  }
+  
   .role-selector {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
-
-  .form-row {
-    grid-template-columns: 1fr;
+  
+  .role-option {
+    padding: 0.75rem 0.625rem;
+    gap: 0.375rem;
+  }
+  
+  .role-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  .role-name {
+    font-size: 0.8rem;
   }
 
   .actions {
     flex-direction: column-reverse;
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
 
   .btn-create,
   .btn-cancel {
     width: 100%;
+    padding: 0.625rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 98vh;
+    border-radius: 0.75rem 0.75rem 0 0;
+  }
+
+  .modal-header {
+    border-radius: 0.75rem 0.75rem 0 0;
+    padding: 0.75rem 1rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 0.95rem;
+  }
+
+  .modal-body {
+    padding: 0.875rem;
+    max-height: calc(98vh - 60px);
+    overflow-y: auto;
+  }
+  
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+  
+  .form-group label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .form-group input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .helper-text {
+    font-size: 0.65rem;
+  }
+  
+  .role-option {
+    padding: 0.625rem 0.5rem;
+    gap: 0.25rem;
+  }
+  
+  .role-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  .role-name {
+    font-size: 0.75rem;
+  }
+
+  .actions {
+    margin-top: 0.875rem;
+  }
+
+  .btn-create,
+  .btn-cancel {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+  }
+  
+  .error-message {
+    margin: 0.75rem 1rem 0;
+    padding: 0.625rem;
+  }
+  
+  .error-content p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .modal-header {
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 0.9rem;
+  }
+
+  .modal-body {
+    padding: 0.75rem;
+  }
+  
+  .form-group input {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+  }
+  
+  .role-option {
+    padding: 0.5rem 0.375rem;
+  }
+  
+  .role-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .role-name {
+    font-size: 0.7rem;
+  }
+
+  .btn-create,
+  .btn-cancel {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
   }
 }
 </style>

@@ -425,6 +425,63 @@ onUnmounted(() => {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 260px;
+  }
+  
+  .sidebar.collapsed {
+    width: 70px;
+  }
+  
+  .nav-link {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 968px) {
+  .sidebar {
+    width: 240px;
+  }
+  
+  .sidebar.collapsed {
+    width: 70px;
+  }
+  
+  .nav-link {
+    padding: 11px 13px;
+    font-size: 12px;
+  }
+  
+  .nav-icon {
+    width: 17px;
+    height: 17px;
+  }
+  
+  .user-info {
+    padding: 11px;
+  }
+  
+  .user-avatar {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .user-name {
+    font-size: 13px;
+  }
+  
+  .user-role {
+    font-size: 11px;
+  }
+}
+
 @media (max-width: 768px) {
   .burger-btn {
     display: flex;
@@ -436,7 +493,8 @@ onUnmounted(() => {
   
   .sidebar {
     transform: translateX(-100%);
-    padding-top: 70px;
+    padding-top: 60px;
+    width: 280px;
   }
   
   .sidebar.mobile-open {
@@ -451,27 +509,60 @@ onUnmounted(() => {
   .sidebar.mobile-open.collapsed .user-details {
     display: flex;
   }
-}
-
-@media (max-width: 768px) and (min-width: 481px) {
+  
+  .nav-link {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
   .sidebar-footer {
     padding: 20px;
   }
   
+  .user-info {
+    padding: 12px;
+  }
+  
   .user-avatar {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .user-name {
+    font-size: 14px;
+  }
+  
+  .user-role {
+    font-size: 12px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  .burger-btn {
+    width: 45px;
+    height: 45px;
+    top: 8px;
+    left: 16px;
+  }
+  
+  .burger-btn span {
+    width: 22px;
+    height: 2px;
+  }
+  
   .sidebar {
     width: 260px;
+    padding-top: 56px;
   }
   
   .nav-link {
-    font-size: 13px;
     padding: 12px 14px;
+    font-size: 13px;
   }
   
   .nav-icon {
@@ -480,7 +571,7 @@ onUnmounted(() => {
   }
   
   .sidebar-footer {
-    padding: 16px;
+    padding: 18px;
   }
   
   .user-info {
@@ -498,6 +589,106 @@ onUnmounted(() => {
   
   .user-role {
     font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .burger-btn {
+    width: 40px;
+    height: 40px;
+    top: 6px;
+    left: 12px;
+  }
+  
+  .burger-btn span {
+    width: 20px;
+    height: 2px;
+  }
+  
+  .sidebar {
+    width: 240px;
+    padding-top: 52px;
+  }
+  
+  .nav-link {
+    font-size: 12px;
+    padding: 11px 13px;
+  }
+  
+  .nav-icon {
+    width: 17px;
+    height: 17px;
+  }
+  
+  .sidebar-footer {
+    padding: 16px;
+  }
+  
+  .user-info {
+    padding: 9px;
+  }
+  
+  .user-avatar {
+    width: 34px;
+    height: 34px;
+  }
+  
+  .user-name {
+    font-size: 12px;
+  }
+  
+  .user-role {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .burger-btn {
+    width: 36px;
+    height: 36px;
+    top: 4px;
+    left: 8px;
+  }
+  
+  .burger-btn span {
+    width: 18px;
+    height: 2px;
+  }
+  
+  .sidebar {
+    width: 220px;
+    padding-top: 48px;
+  }
+  
+  .nav-link {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+  
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .sidebar-footer {
+    padding: 14px;
+  }
+  
+  .user-info {
+    padding: 8px;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .user-name {
+    font-size: 11px;
+  }
+  
+  .user-role {
+    font-size: 9px;
   }
 }
 

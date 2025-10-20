@@ -298,6 +298,7 @@ watch([searchQuery, selectedRole], () => {
   background: #f8fafc;
   padding: 2rem;
   position: relative;
+  overflow-x: hidden;
 }
 
 .user-management::before {
@@ -774,35 +775,245 @@ watch([searchQuery, selectedRole], () => {
   }
 }
 
-/* Responsive */
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .page-title {
+    font-size: 2.25rem;
+  }
+  
+  .filters-section {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 968px) {
+  .user-management {
+    padding: 1.5rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .btn-add-user {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .filters-section {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .search-box {
+    order: 1;
+  }
+  
+  .role-filter {
+    order: 2;
+    min-width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .user-management {
     padding: 1rem;
   }
-
+  
   .page-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
-
-  .filters-section {
-    flex-direction: column;
+  
+  .page-subtitle {
+    font-size: 0.95rem;
   }
-
-  .role-filter {
-    min-width: 100%;
-  }
-
-  .users-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
+  
   .btn-add-user {
-    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-input {
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .filter-select {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .empty-state {
+    padding: 3rem 1.5rem;
+  }
+  
+  .empty-title {
+    font-size: 1.5rem;
+  }
+  
+  .empty-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .user-management {
+    padding: 0.75rem;
+    min-height: auto;
+    height: auto;
+    overflow: visible;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .btn-add-user {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.85rem;
+  }
+  
+  .filters-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .search-input {
+    padding: 0.625rem 0.875rem 0.625rem 2.25rem;
+    font-size: 0.85rem;
+  }
+  
+  .search-icon {
+    width: 1rem;
+    height: 1rem;
+    left: 0.75rem;
+  }
+  
+  .filter-select {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.85rem;
+  }
+  
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-icon-container {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .empty-title {
+    font-size: 1.25rem;
+  }
+  
+  .empty-description {
+    font-size: 0.9rem;
+  }
+  
+  .btn-empty-action {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-management {
+    padding: 0.5rem;
+    min-height: auto;
+    height: auto;
+    overflow: visible;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .page-title {
+    font-size: 1.25rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .btn-add-user {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .filters-section {
+    margin-bottom: 1rem;
+  }
+  
+  .search-input {
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+    font-size: 0.8rem;
+  }
+  
+  .search-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    left: 0.625rem;
+  }
+  
+  .filter-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .empty-state {
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .empty-title {
+    font-size: 1.125rem;
+  }
+  
+  .empty-description {
+    font-size: 0.85rem;
+  }
+  
+  .btn-empty-action {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.85rem;
   }
 }
 

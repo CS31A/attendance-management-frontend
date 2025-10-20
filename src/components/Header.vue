@@ -226,16 +226,10 @@ header {
   justify-content: center;
 }
 
-/* Responsive behavior for mobile */
-@media (max-width: 768px) {
-  header {
-    padding: 0 16px 0 0;
-  }
-  
+/* Responsive Design */
+@media (max-width: 1200px) {
   .header-left {
-    width: auto;
-    padding: 0 20px;
-    border-right: none;
+    width: 260px;
   }
   
   .brand-name {
@@ -245,14 +239,225 @@ header {
   .brand-subtitle {
     font-size: 12px;
   }
+}
+
+@media (max-width: 968px) {
+  header {
+    padding: 0 20px 0 0;
+  }
+  
+  .header-left {
+    width: 240px;
+    padding: 0 16px;
+  }
+  
+  .brand-name {
+    font-size: 18px;
+  }
+  
+  .brand-subtitle {
+    font-size: 11px;
+  }
   
   .logo-image {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  header {
+    padding: 0 16px 0 0;
+    height: 60px;
+  }
+  
+  .header-left {
+    width: auto;
+    padding: 0 20px;
+    border-right: none;
+    flex: 1;
+  }
+  
+  .brand-name {
+    font-size: 18px;
+  }
+  
+  .brand-subtitle {
+    font-size: 11px;
+  }
+  
+  .logo-image {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .logo {
+    padding: 8px;
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
+  
+  .icon-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .notification-badge {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 640px) {
+  header {
+    padding: 0 12px 0 0;
+    height: 56px;
+  }
+  
+  .header-left {
+    padding: 0 16px;
+  }
+  
+  .brand-name {
+    font-size: 16px;
+  }
+  
+  .brand-subtitle {
+    font-size: 10px;
+  }
+  
+  .logo-image {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  
+  .logo {
+    padding: 6px;
+  }
+  
+  .header-right {
+    gap: 6px;
+  }
+  
+  .icon-button {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .icon-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .notification-badge {
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
+    top: 4px;
+    right: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 0 8px 0 0;
+    height: 52px;
+  }
+  
+  .header-left {
+    padding: 0 12px;
+  }
+  
+  .brand-name {
+    font-size: 14px;
+  }
+  
+  .brand-subtitle {
+    font-size: 9px;
+  }
+  
+  .logo-image {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .logo {
+    padding: 4px;
+  }
+  
+  .header-right {
+    gap: 4px;
+  }
+  
+  .icon-button {
     width: 28px;
     height: 28px;
   }
   
+  .icon-button svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .notification-badge {
+    width: 10px;
+    height: 10px;
+    font-size: 7px;
+    top: 3px;
+    right: 3px;
+  }
+}
+
+@media (max-width: 360px) {
+  header {
+    padding: 0 4px 0 0;
+    height: 48px;
+  }
+  
+  .header-left {
+    padding: 0 8px;
+  }
+  
+  .brand-name {
+    font-size: 12px;
+  }
+  
+  .brand-subtitle {
+    font-size: 8px;
+  }
+  
+  .logo-image {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
   .logo {
-    padding: 10px;
+    padding: 2px;
+  }
+  
+  .header-right {
+    gap: 2px;
+  }
+  
+  .icon-button {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .icon-button svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .notification-badge {
+    width: 8px;
+    height: 8px;
+    font-size: 6px;
+    top: 2px;
+    right: 2px;
   }
 }
 
