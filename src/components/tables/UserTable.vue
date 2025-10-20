@@ -44,7 +44,7 @@
                 <svg class="date-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <span class="date-text">{{ user?.createdAt || 'N/A' }}</span>
+                <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
               </div>
             </td>
             <td class="td-actions">
@@ -91,7 +91,7 @@
             </div>
             <div class="mobile-card-detail">
               <div class="mobile-card-detail-label">Joined</div>
-              <div class="mobile-card-detail-value">{{ user?.createdAt || 'N/A' }}</div>
+              <div class="mobile-card-detail-value">{{ formatDate(user?.createdAt) }}</div>
             </div>
           </div>
           
@@ -162,6 +162,19 @@
       return user.sectionName
     }
     return '-'
+  }
+
+  // Format date for display
+  const formatDate = (value) => {
+    if (!value) return 'N/A'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return 'N/A'
+    
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit'
+    }).format(date)
   }
   </script>
   
