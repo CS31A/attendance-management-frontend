@@ -62,39 +62,46 @@
 
         <!-- Password Field -->
         <div class="form-group">
-          <label>Password *</label>
+          <label>Password {{ isEditMode ? '(Optional)' : '*' }}</label>
           <input 
             v-model="password" 
             type="password"
-            placeholder="Enter password" 
-            required 
+            :placeholder="isEditMode ? 'Leave empty to keep current password' : 'Enter password'" 
+            :required="!isEditMode"
             minlength="6"
           />
-          <small class="helper-text info">Must be at least 6 characters</small>
+          <small class="helper-text info">
+            {{ isEditMode ? 'Leave empty to keep current password' : 'Must be at least 6 characters' }}
+          </small>
         </div>
 
         <!-- Confirm Password Field -->
         <div class="form-group">
-          <label>Confirm Password *</label>
+          <label>Confirm Password {{ isEditMode ? '(Optional)' : '*' }}</label>
           <input 
             v-model="confirmPassword" 
             type="password"
-            placeholder="Confirm password" 
-            required 
+            :placeholder="isEditMode ? 'Leave empty to keep current password' : 'Confirm password'" 
+            :required="!isEditMode"
             minlength="6"
           />
-          <small class="helper-text info">Must match the password above</small>
+          <small class="helper-text info">
+            {{ isEditMode ? 'Leave empty to keep current password' : 'Must match the password above' }}
+          </small>
           <small v-if="passwordMismatchError" class="helper-text error">{{ passwordMismatchError }}</small>
         </div>
 
         <!-- Role Field -->
         <div class="form-group">
           <label>Role *</label>
-          <div class="role-selector">
+          <div class="role-selector" :class="{ 'disabled': isEditMode }">
             <div 
-              @click="role = 'Instructor'"
+              @click="!isEditMode && (role = 'Instructor')"
               class="role-option"
-              :class="{ 'role-selected': role === 'Instructor' }"
+              :class="{ 
+                'role-selected': role === 'Instructor',
+                'disabled': isEditMode
+              }"
             >
               <svg class="role-icon" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
@@ -102,9 +109,12 @@
               <span class="role-name">Instructor</span>
             </div>
             <div 
-              @click="role = 'Student'"
+              @click="!isEditMode && (role = 'Student')"
               class="role-option"
-              :class="{ 'role-selected': role === 'Student' }"
+              :class="{ 
+                'role-selected': role === 'Student',
+                'disabled': isEditMode
+              }"
             >
               <svg class="role-icon" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
@@ -113,6 +123,7 @@
             </div>
           </div>
           <small class="helper-text" v-if="!role">Please select a role</small>
+          <small class="helper-text info" v-if="isEditMode">Role cannot be changed when editing</small>
         </div>
 
         <!-- Section ID Field (for Students only) -->
@@ -174,7 +185,8 @@ const isFormValid = computed(() => {
     sectionId: sectionId.value,
     password: password.value,
     confirmPassword: confirmPassword.value,
-    passwordsMatch: password.value === confirmPassword.value
+    passwordsMatch: password.value === confirmPassword.value,
+    isEditMode: isEditMode.value
   });
   
   // Reset error message
@@ -183,11 +195,26 @@ const isFormValid = computed(() => {
   if (!role.value) return false;
   if (role.value === 'Student' && !sectionId.value?.trim()) return false;
 
-  if (password.value !== confirmPassword.value) {
-    if (password.value && confirmPassword.value) {
+  // In edit mode, password is optional - only validate if provided
+  if (isEditMode.value) {
+    // If password is provided, it must match confirmation
+    if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
       passwordMismatchError.value = 'Passwords do not match';
+      return false;
     }
-    return false;
+    // If only one password field is filled, it's invalid
+    if ((password.value && !confirmPassword.value) || (!password.value && confirmPassword.value)) {
+      passwordMismatchError.value = 'Please fill both password fields or leave both empty';
+      return false;
+    }
+  } else {
+    // In create mode, password is required
+    if (password.value !== confirmPassword.value) {
+      if (password.value && confirmPassword.value) {
+        passwordMismatchError.value = 'Passwords do not match';
+      }
+      return false;
+    }
   }
   return true;
 });
@@ -202,9 +229,10 @@ watch([password, confirmPassword], () => {
 // Watch for user changes in edit mode
 watch(() => props.user, (newUser) => {
   if (newUser && isEditMode.value) {
+    console.log('Loading user data for edit:', newUser);
     email.value = newUser.email || '';
-    firstName.value = newUser.firstName || '';
-    lastName.value = newUser.lastName || '';
+    firstName.value = newUser.firstName || newUser.firstname || '';
+    lastName.value = newUser.lastName || newUser.lastname || '';
     password.value = '';
     confirmPassword.value = '';
     role.value = newUser.role || '';
@@ -222,9 +250,23 @@ const createUser = () => {
     return;
   }
   
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = "Passwords do not match";
-    return;
+  // Password validation - different rules for edit vs create
+  if (isEditMode.value) {
+    // In edit mode, password is optional but must match if provided
+    if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
+      errorMessage.value = "Passwords do not match";
+      return;
+    }
+    if ((password.value && !confirmPassword.value) || (!password.value && confirmPassword.value)) {
+      errorMessage.value = "Please fill both password fields or leave both empty";
+      return;
+    }
+  } else {
+    // In create mode, password is required
+    if (password.value !== confirmPassword.value) {
+      errorMessage.value = "Passwords do not match";
+      return;
+    }
   }
   
   if (role.value === 'Student') {
@@ -238,15 +280,21 @@ const createUser = () => {
   const userData = {
     Username: email.value,
     Email: email.value,
-    Password: password.value,
-    RepeatedPassword: confirmPassword.value,
     FirstName: firstName.value,
     LastName: lastName.value,
-    Role: role.value,
+    // Don't include Role in edit mode - role cannot be changed
+    ...(isEditMode.value ? {} : { Role: role.value }),
     SectionId: role.value === "Student" ? sectionId.value.trim() : null,
   };
   
+  // Only include password fields if provided (for edit mode) or required (for create mode)
+  if (password.value && confirmPassword.value) {
+    userData.Password = password.value;
+    userData.RepeatedPassword = confirmPassword.value;
+  }
+  
   console.log('Sending userData to backend:', userData);
+  console.log('Edit mode:', isEditMode.value);
   
   // Emit the appropriate event
   if (isEditMode.value) {
@@ -438,6 +486,22 @@ defineExpose({ handleError });
   border-color: #1e3a8a;
   background: #f8f9ff;
   transform: translateY(-1px); 
+}
+
+.role-selector.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.role-option.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.role-option.disabled:hover {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+  transform: none;
 }
 
 .role-selected {

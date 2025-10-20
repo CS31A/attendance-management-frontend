@@ -270,13 +270,29 @@ export const useUserStore = defineStore('user', {
       this.error = null
       
       try {
-        const endpoint = userData.role === 'Instructor' ? '/instructors' : '/students'
+        // Find the original user to get their current role/endpoint
+        const originalUser = this.users.find(user => user.id === userId)
+        if (!originalUser) {
+          throw new Error('User not found')
+        }
+        
+        // Use the original user's role to determine the correct endpoint
+        // This prevents 404 errors when trying to update across different endpoints
+        const endpoint = originalUser.role === 'Instructor' ? '/instructors' : '/students'
+        
+        console.log('Updating user:', {
+          userId,
+          originalRole: originalUser.role,
+          endpoint,
+          userData
+        })
+        
         const response = await api.patch(`${endpoint}/${userId}`, userData)
         
-        // Update the user in the store
+        // Update the user in the store with the original role (role cannot be changed)
         const index = this.users.findIndex(user => user.id === userId)
         if (index !== -1) {
-          this.users[index] = { ...response.data, role: userData.role }
+          this.users[index] = { ...response.data, role: originalUser.role }
         }
         
         return { success: true, data: response.data }
