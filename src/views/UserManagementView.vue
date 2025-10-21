@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import CreateUserModal from '@/components/CreateUserModal.vue'
+import EditUserModal from '@/components/EditUserModal.vue'
 import UserTableSection from '@/components/tables/UserTableSection.vue'
 import { useUserStore } from '@/stores/userStore'
 
@@ -12,6 +13,7 @@ const editingUser = ref(null)
 const searchQuery = ref('')
 const selectedRole = ref('All Roles')
 const createModal = ref(null)
+const editModal = ref(null)
 
 const roleFilters = ['All Roles', 'Instructor', 'Student']
 
@@ -91,7 +93,7 @@ const handleUpdateUser = async (updatedUserData) => {
     showEditUser.value = false
     editingUser.value = null
   } else {
-    createModal.value?.handleError(result.error)
+    editModal.value?.handleError(result.error)
   }
 }
 
@@ -280,13 +282,12 @@ watch([searchQuery, selectedRole], () => {
     />
 
     <!-- Edit User Modal -->
-    <CreateUserModal
+    <EditUserModal
       v-if="showEditUser"
       :user="editingUser"
-      mode="edit"
       @update="handleUpdateUser"
       @cancel="handleCancel"
-      ref="createModal"
+      ref="editModal"
     />
   </div>
 </template>
