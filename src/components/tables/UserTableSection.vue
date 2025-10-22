@@ -308,14 +308,29 @@
 
   /* Responsive pagination */
   @media (max-width: 768px) {
+    .table-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .table-container {
+      border-radius: 12px;
+    }
+    
+    .table-title h2 {
+      font-size: 1.25rem;
+    }
+    
     .pagination-section {
       flex-direction: column;
       align-items: stretch;
       text-align: center;
+      padding: 1rem;
     }
     
     .pagination-info {
       justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
     }
     
     .pagination-controls {
@@ -325,6 +340,34 @@
     .page-numbers {
       flex-wrap: wrap;
       justify-content: center;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .table-section {
+      margin-bottom: 1rem;
+    }
+    
+    .table-title h2 {
+      font-size: 1.125rem;
+    }
+    
+    .pagination-section {
+      padding: 0.75rem;
+    }
+    
+    .pagination-text {
+      font-size: 0.8rem;
+    }
+    
+    .pagination-btn {
+      padding: 0.5rem;
+      font-size: 0.8rem;
+    }
+    
+    .pagination-icon {
+      width: 0.875rem;
+      height: 0.875rem;
     }
   }
   </style>
