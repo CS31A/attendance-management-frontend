@@ -1,34 +1,57 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
 import { useAuthStore } from '@/stores/authStore'
-import { useStudentStore } from '@/stores/studentStore' 
+import { useUserStore } from '@/stores/userStore' 
 import router from '@/router'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const authStore = useAuthStore()
-const studentStore = useStudentStore()
+const userStore = useUserStore()
 
 // Computed properties for auth state
 const isAuthenticated = authStore.getIsAuthenticated
 const user = authStore.user
 
-// Get student count from store
-const totalStudents = computed(() => studentStore.students.length)
+// Get real data from userStore
+const totalStudents = computed(() => userStore.students.length)
+const totalTeachers = computed(() => userStore.instructors.length)
+const totalUsers = computed(() => userStore.users.length)
+const userManagement = computed(() => userStore.users.length)
 
-// Mock data for other stats
-const totalRegistered = ref(1336)
-const totalTeachers = ref(89)
-const userManagement = ref(1336)
+// Calculate percentages based on real data
+const registeredPercentage = computed(() => {
+  const target = 100 // Target number of users
+  return Math.min((totalUsers.value / target) * 100, 100)
+})
 
-// Calculate percentages
-const registeredPercentage = computed(() => 70)
-const studentsPercentage = computed(() => Math.min((totalStudents.value / 100) * 10, 100))
-const teachersPercentage = computed(() => 70)
-const managementPercentage = computed(() => 70)
+const studentsPercentage = computed(() => {
+  const target = 50 // Target number of students
+  return Math.min((totalStudents.value / target) * 100, 100)
+})
+
+const teachersPercentage = computed(() => {
+  const target = 20 // Target number of teachers
+  return Math.min((totalTeachers.value / target) * 100, 100)
+})
+
+const managementPercentage = computed(() => {
+  const target = 100 // Target for user management
+  return Math.min((totalUsers.value / target) * 100, 100)
+})
+
+// Loading state
+const isLoading = computed(() => userStore.loading)
+
+// Load data when component mounts
+onMounted(async () => {
+  if (userStore.users.length === 0) {
+    await userStore.fetchUsers()
+  }
+})
 
 // Chart.js data
 const chartData = computed(() => ({
@@ -148,18 +171,24 @@ const getUserInitials = computed(() => {
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="isLoading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading dashboard data...</p>
+      </div>
+
       <!-- Stats Grid -->
-      <div class="stats-grid">
+      <div v-if="!isLoading" class="stats-grid">
         <!-- Total Registered -->
         <div class="stat-card primary-card">
           <div class="stat-content">
-            <h2 class="stat-value">{{ totalRegistered.toLocaleString() }}</h2>
+            <h2 class="stat-value">{{ totalUsers.toLocaleString() }}</h2>
             <p class="stat-label">Total Registered</p>
             <div class="stat-progress">
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: registeredPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ registeredPercentage }}%</span>
+              <span class="progress-label">{{ registeredPercentage.toFixed(0) }}%</span>
             </div>
           </div>
         </div>
@@ -187,7 +216,7 @@ const getUserInitials = computed(() => {
               <div class="progress-bar">
                 <div class="progress-fill orange" :style="{ width: teachersPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ teachersPercentage }}%</span>
+              <span class="progress-label">{{ teachersPercentage.toFixed(0) }}%</span>
             </div>
           </div>
         </div>
@@ -201,14 +230,14 @@ const getUserInitials = computed(() => {
               <div class="progress-bar">
                 <div class="progress-fill navy" :style="{ width: managementPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ managementPercentage }}%</span>
+              <span class="progress-label">{{ managementPercentage.toFixed(0) }}%</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Performance Chart -->
-      <div class="performance-card">
+      <div v-if="!isLoading" class="performance-card">
         <div class="performance-header">
           <h2>Performance</h2>
           <div class="time-filters">
@@ -456,6 +485,40 @@ const getUserInitials = computed(() => {
 
 .legend-dot.black {
   background: #000000;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 20px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1e3a8a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
 }
 
 /* Unauthenticated */
