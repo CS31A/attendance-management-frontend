@@ -46,6 +46,65 @@ const managementPercentage = computed(() => {
 // Loading state
 const isLoading = computed(() => userStore.loading)
 
+// Profile picture upload functionality
+const userProfilePicture = ref(localStorage.getItem('userProfilePicture') || null)
+const fileInput = ref(null)
+const isUploading = ref(false)
+
+// Profile picture methods
+const triggerFileUpload = () => {
+  fileInput.value?.click()
+}
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file')
+    return
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File size must be less than 5MB')
+    return
+  }
+
+  isUploading.value = true
+  
+  try {
+    // Convert to base64 for preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      userProfilePicture.value = e.target.result
+      // Save to localStorage to persist across refreshes
+      localStorage.setItem('userProfilePicture', e.target.result)
+      console.log('Profile picture set:', userProfilePicture.value ? 'Yes' : 'No')
+    }
+    reader.readAsDataURL(file)
+    
+    // Here you would upload to your backend
+    // await uploadProfilePicture(file)
+    console.log('Profile picture uploaded:', file.name)
+    
+  } catch (error) {
+    console.error('Error uploading profile picture:', error)
+    alert('Failed to upload profile picture')
+  } finally {
+    isUploading.value = false
+  }
+}
+
+// Method to clear profile picture
+const clearProfilePicture = () => {
+  console.log('Clearing profile picture...')
+  userProfilePicture.value = null
+  localStorage.removeItem('userProfilePicture')
+  console.log('Profile picture cleared')
+}
+
 // Load data when component mounts
 onMounted(async () => {
   if (userStore.users.length === 0) {
@@ -166,8 +225,29 @@ const getUserInitials = computed(() => {
           <h1 class="title">Dashboard</h1>
           <p class="subtitle">Welcome back, {{ user?.name || 'Admin' }}</p>
         </div>
-        <div class="user-avatar">
-          {{ getUserInitials }}
+        <div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
+          <img v-if="userProfilePicture" :src="userProfilePicture" alt="Profile" class="avatar-image" />
+          <span v-else>{{ getUserInitials }}</span>
+          <input 
+            ref="fileInput" 
+            type="file" 
+            accept="image/*" 
+            @change="handleFileUpload" 
+            style="display: none"
+          />
+          <div v-if="isUploading" class="upload-overlay">
+            <div class="upload-spinner"></div>
+          </div>
+          <!-- Remove button - only show when there's a profile picture -->
+          <button 
+            v-if="userProfilePicture && !isUploading" 
+            @click.stop="clearProfilePicture" 
+            class="remove-profile-btn"
+            title="Remove profile picture"
+            style="display: block !important; visibility: visible !important; opacity: 1 !important;"
+          >
+            ×
+          </button>
         </div>
       </div>
 
@@ -293,8 +373,8 @@ const getUserInitials = computed(() => {
 }
 
 .user-avatar {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   display: flex;
@@ -302,8 +382,106 @@ const getUserInitials = computed(() => {
   justify-content: center;
   color: white;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.user-avatar.uploading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.user-avatar::after {
+  content: '📷';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #1e3a8a;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.user-avatar:hover::after {
+  opacity: 1;
+}
+
+.upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.upload-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.remove-profile-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.remove-profile-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.remove-profile-btn:active {
+  transform: scale(0.95);
 }
 
 /* Stats Grid */
