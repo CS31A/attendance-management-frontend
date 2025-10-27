@@ -1,34 +1,116 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
 import { useAuthStore } from '@/stores/authStore'
-import { useStudentStore } from '@/stores/studentStore' 
+import { useUserStore } from '@/stores/userStore' 
 import router from '@/router'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 const authStore = useAuthStore()
-const studentStore = useStudentStore()
+const userStore = useUserStore()
 
 // Computed properties for auth state
 const isAuthenticated = authStore.getIsAuthenticated
 const user = authStore.user
 
-// Get student count from store
-const totalStudents = computed(() => studentStore.students.length)
+// Get real data from userStore
+const totalStudents = computed(() => userStore.students.length)
+const totalTeachers = computed(() => userStore.instructors.length)
+const totalUsers = computed(() => userStore.users.length)
+const userManagement = computed(() => userStore.users.length)
 
-// Mock data for other stats
-const totalRegistered = ref(1336)
-const totalTeachers = ref(89)
-const userManagement = ref(1336)
+// Calculate percentages based on real data
+const registeredPercentage = computed(() => {
+  const target = 100 // Target number of users
+  return Math.min((totalUsers.value / target) * 100, 100)
+})
 
-// Calculate percentages
-const registeredPercentage = computed(() => 70)
-const studentsPercentage = computed(() => Math.min((totalStudents.value / 100) * 10, 100))
-const teachersPercentage = computed(() => 70)
-const managementPercentage = computed(() => 70)
+const studentsPercentage = computed(() => {
+  const target = 50 // Target number of students
+  return Math.min((totalStudents.value / target) * 100, 100)
+})
+
+const teachersPercentage = computed(() => {
+  const target = 20 // Target number of teachers
+  return Math.min((totalTeachers.value / target) * 100, 100)
+})
+
+const managementPercentage = computed(() => {
+  const target = 100 // Target for user management
+  return Math.min((totalUsers.value / target) * 100, 100)
+})
+
+// Loading state
+const isLoading = computed(() => userStore.loading)
+
+// Profile picture upload functionality
+const userProfilePicture = ref(localStorage.getItem('userProfilePicture') || null)
+const fileInput = ref(null)
+const isUploading = ref(false)
+
+// Profile picture methods
+const triggerFileUpload = () => {
+  fileInput.value?.click()
+}
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file')
+    return
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File size must be less than 5MB')
+    return
+  }
+
+  isUploading.value = true
+  
+  try {
+    // Convert to base64 for preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      userProfilePicture.value = e.target.result
+      // Save to localStorage to persist across refreshes
+      localStorage.setItem('userProfilePicture', e.target.result)
+      console.log('Profile picture set:', userProfilePicture.value ? 'Yes' : 'No')
+    }
+    reader.readAsDataURL(file)
+    
+    // Here you would upload to your backend
+    // await uploadProfilePicture(file)
+    console.log('Profile picture uploaded:', file.name)
+    
+  } catch (error) {
+    console.error('Error uploading profile picture:', error)
+    alert('Failed to upload profile picture')
+  } finally {
+    isUploading.value = false
+  }
+}
+
+// Method to clear profile picture
+const clearProfilePicture = () => {
+  console.log('Clearing profile picture...')
+  userProfilePicture.value = null
+  localStorage.removeItem('userProfilePicture')
+  console.log('Profile picture cleared')
+}
+
+// Load data when component mounts
+onMounted(async () => {
+  if (userStore.users.length === 0) {
+    await userStore.fetchUsers()
+  }
+})
 
 // Chart.js data
 const chartData = computed(() => ({
@@ -143,23 +225,50 @@ const getUserInitials = computed(() => {
           <h1 class="title">Dashboard</h1>
           <p class="subtitle">Welcome back, {{ user?.name || 'Admin' }}</p>
         </div>
-        <div class="user-avatar">
-          {{ getUserInitials }}
-        </div>
+        <!--<div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
+          <img v-if="userProfilePicture" :src="userProfilePicture" alt="Profile" class="avatar-image" />
+          <span v-else>{{ getUserInitials }}</span>
+          <input 
+            ref="fileInput" 
+            type="file" 
+            accept="image/*" 
+            @change="handleFileUpload" 
+            style="display: none"
+          />
+          <div v-if="isUploading" class="upload-overlay">
+            <div class="upload-spinner"></div>
+          </div>
+       
+          <button 
+            v-if="userProfilePicture && !isUploading" 
+            @click.stop="clearProfilePicture" 
+            class="remove-profile-btn"
+            title="Remove profile picture"
+            style="display: block !important; visibility: visible !important; opacity: 1 !important;"
+          >
+            ×
+          </button>
+        </div>-->
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading dashboard data...</p>
       </div>
 
       <!-- Stats Grid -->
-      <div class="stats-grid">
+      <div v-if="!isLoading" class="stats-grid">
         <!-- Total Registered -->
         <div class="stat-card primary-card">
           <div class="stat-content">
-            <h2 class="stat-value">{{ totalRegistered.toLocaleString() }}</h2>
+            <h2 class="stat-value">{{ totalUsers.toLocaleString() }}</h2>
             <p class="stat-label">Total Registered</p>
             <div class="stat-progress">
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: registeredPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ registeredPercentage }}%</span>
+              <span class="progress-label">{{ registeredPercentage.toFixed(0) }}%</span>
             </div>
           </div>
         </div>
@@ -187,7 +296,7 @@ const getUserInitials = computed(() => {
               <div class="progress-bar">
                 <div class="progress-fill orange" :style="{ width: teachersPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ teachersPercentage }}%</span>
+              <span class="progress-label">{{ teachersPercentage.toFixed(0) }}%</span>
             </div>
           </div>
         </div>
@@ -201,14 +310,14 @@ const getUserInitials = computed(() => {
               <div class="progress-bar">
                 <div class="progress-fill navy" :style="{ width: managementPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ managementPercentage }}%</span>
+              <span class="progress-label">{{ managementPercentage.toFixed(0) }}%</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Performance Chart -->
-      <div class="performance-card">
+      <div v-if="!isLoading" class="performance-card">
         <div class="performance-header">
           <h2>Performance</h2>
           <div class="time-filters">
@@ -264,8 +373,8 @@ const getUserInitials = computed(() => {
 }
 
 .user-avatar {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   display: flex;
@@ -273,8 +382,106 @@ const getUserInitials = computed(() => {
   justify-content: center;
   color: white;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.user-avatar.uploading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.user-avatar::after {
+  content: '📷';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #1e3a8a;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.user-avatar:hover::after {
+  opacity: 1;
+}
+
+.upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.upload-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.remove-profile-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.remove-profile-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.remove-profile-btn:active {
+  transform: scale(0.95);
 }
 
 /* Stats Grid */
@@ -456,6 +663,40 @@ const getUserInitials = computed(() => {
 
 .legend-dot.black {
   background: #000000;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 20px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1e3a8a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
 }
 
 /* Unauthenticated */
