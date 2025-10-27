@@ -225,7 +225,7 @@ const getUserInitials = computed(() => {
           <h1 class="title">Dashboard</h1>
           <p class="subtitle">Welcome back, {{ user?.name || 'Admin' }}</p>
         </div>
-        <div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
+        <!--<div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
           <img v-if="userProfilePicture" :src="userProfilePicture" alt="Profile" class="avatar-image" />
           <span v-else>{{ getUserInitials }}</span>
           <input 
@@ -238,7 +238,7 @@ const getUserInitials = computed(() => {
           <div v-if="isUploading" class="upload-overlay">
             <div class="upload-spinner"></div>
           </div>
-          <!-- Remove button - only show when there's a profile picture -->
+       
           <button 
             v-if="userProfilePicture && !isUploading" 
             @click.stop="clearProfilePicture" 
@@ -248,7 +248,7 @@ const getUserInitials = computed(() => {
           >
             ×
           </button>
-        </div>
+        </div>-->
       </div>
 
       <!-- Loading State -->
