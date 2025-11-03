@@ -5,18 +5,14 @@
       <div class="modal-header">
         <h2>{{ modalTitle }}</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+          <X size="24" />
         </button>
       </div>
 
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+          <AlertTriangle class="error-icon" size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -95,9 +91,7 @@
               class="role-option"
               :class="{ 'role-selected': role === 'Instructor' }"
             >
-              <svg class="role-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-              </svg>
+              <GraduationCap class="role-icon" size="32" />
               <span class="role-name">Instructor</span>
             </div>
             <div 
@@ -105,9 +99,7 @@
               class="role-option"
               :class="{ 'role-selected': role === 'Student' }"
             >
-              <svg class="role-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
-              </svg>
+              <User class="role-icon" size="32" />
               <span class="role-name">Student</span>
             </div>
           </div>
@@ -143,6 +135,7 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
+import { X, AlertTriangle, GraduationCap, User } from 'lucide-vue-next';
 
 const props = defineProps({
   // No props needed for create mode

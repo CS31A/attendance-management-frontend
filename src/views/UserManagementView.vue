@@ -4,6 +4,7 @@ import CreateUserModal from '@/components/CreateUserModal.vue'
 import EditUserModal from '@/components/EditUserModal.vue'
 import UserTableSection from '@/components/tables/UserTableSection.vue'
 import { useUserStore } from '@/stores/userStore'
+import { AlertTriangle, Plus, Search, Users } from 'lucide-vue-next'
 
 const userStore = useUserStore()
 
@@ -156,9 +157,7 @@ watch([searchQuery, selectedRole], () => {
     <!-- Error message -->
     <div v-if="userStore.error" class="error-message">
       <div class="error-content">
-        <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
+        <AlertTriangle class="error-icon" size="24" />
         <p>{{ userStore.error }}</p>
         <button @click="userStore.fetchUsers" class="retry-btn">Retry</button>
       </div>
@@ -174,9 +173,7 @@ watch([searchQuery, selectedRole], () => {
             <p class="page-subtitle">Manage teachers and students</p>
           </div>
           <button @click="showAddUser = true" class="btn-add-user">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
+            <Plus class="icon" size="20" />
             <span>Add User</span>
           </button>
         </div>
@@ -185,9 +182,7 @@ watch([searchQuery, selectedRole], () => {
       <!-- Filters Section -->
       <div class="filters-section">
         <div class="search-box">
-          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+          <Search class="search-icon" size="20" />
           <input 
             v-model="searchQuery"
             type="text" 
@@ -250,18 +245,14 @@ watch([searchQuery, selectedRole], () => {
       <!-- Empty State -->
       <div v-if="filteredUsers.length === 0" class="empty-state">
         <div class="empty-icon-container">
-          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-          </svg>
+          <Users class="empty-icon" size="48" />
         </div>
         <h3 class="empty-title">No Users Found</h3>
         <p class="empty-description">
           {{ searchQuery ? 'Try adjusting your search or filters' : 'Get started by adding your first user' }}
         </p>
         <button v-if="!searchQuery" @click="showAddUser = true" class="btn-empty-action">
-          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
+          <Plus class="icon" size="20" />
           <span>Add Your First User</span>
         </button>
       </div>
@@ -1170,4 +1161,3 @@ watch([searchQuery, selectedRole], () => {
   }
 }
 </style>
-

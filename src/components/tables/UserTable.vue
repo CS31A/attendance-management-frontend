@@ -15,9 +15,7 @@
         <tr v-for="user in users" :key="user.id" class="user-row">
           <td class="td-avatar">
             <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
-              <svg class="avatar-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="getRoleIcon(user?.role || '')" />
-              </svg>
+              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
             </div>
           </td>
           <td class="td-name">
@@ -27,9 +25,7 @@
           </td>
           <td class="td-email">
             <div class="email-cell">
-              <svg class="email-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
+              <Mail class="email-icon" size="16" />
               <span class="email-text">{{ user?.email || '⚠️ Email Missing' }}</span>
             </div>
           </td>
@@ -40,23 +36,17 @@
           </td>
           <td class="td-joined">
             <div class="joined-cell">
-              <svg class="date-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
+              <Calendar class="date-icon" size="16" />
               <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="action-buttons">
               <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
-                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
+                <Edit class="btn-icon" size="16" />
               </button>
               <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
-                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
+                <Trash2 class="btn-icon" size="16" />
               </button>
             </div>
           </td>
@@ -67,6 +57,8 @@
 </template>
 
 <script setup>
+import { GraduationCap, User, Mail, Calendar, Edit, Trash2 } from 'lucide-vue-next'
+
 defineProps({
   users: {
     type: Array,
@@ -76,13 +68,13 @@ defineProps({
 
 defineEmits(['edit', 'delete'])
 
-// Get role icon
+// Get role icon component
 const getRoleIcon = (role) => {
   const icons = {
-    Instructor: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
-    Student: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222'
+    Instructor: GraduationCap,
+    Student: User
   }
-  return icons[role] || ''
+  return icons[role] || User
 }
 
 // Get user name - handle different possible field names

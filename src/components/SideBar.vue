@@ -1,6 +1,8 @@
 <script setup>
 import { useAuthStore } from '@/stores/authStore'
 import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
+import { Grid3X3, Users, BarChart3, UserCircle } from 'lucide-vue-next'
+
 const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
 
 // Props
@@ -101,33 +103,19 @@ onUnmounted(() => {
         <ul>
           <li>
             <router-link to="/dashboard" class="nav-link" @click="closeSidebar">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
-              </svg>
+              <Grid3X3 class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Dashboard</span>
             </router-link>
           </li>
           <li>
             <router-link to="/users" class="nav-link" @click="closeSidebar">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
+              <Users class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Users</span>
             </router-link>
           </li>
           <li>
             <router-link to="/reports" class="nav-link" @click="closeSidebar">
-              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="5" height="5"/>
-                <rect x="16" y="3" width="5" height="5"/>
-                <rect x="3" y="16" width="5" height="5"/>
-                <path d="m21 16-3.5-3.5-2.5 2.5"/>
-                <path d="m13 13 3 3 4.5-4.5"/>
-              </svg>
+              <BarChart3 class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Reports</span>
             </router-link>
           </li>
@@ -137,10 +125,7 @@ onUnmounted(() => {
       <div class="sidebar-footer">
         <div class="user-info">
           <div class="user-avatar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
+            <UserCircle size="20" />
           </div>
           <div class="user-details" v-show="!isCollapsed">
             <span class="user-name">{{ user }}</span>

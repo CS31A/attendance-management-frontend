@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { ChevronLeft, ChevronRight, Bell, User } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
@@ -69,27 +70,19 @@ const handleToggleCollapse = () => {
           class="header-collapse-btn"
           @click="handleToggleCollapse"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path :d="isCollapsed ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'"/>
-          </svg>
+          <component :is="isCollapsed ? ChevronRight : ChevronLeft" size="16" />
         </button>
       </div>
     </div>
 
     <div class="header-right">
       <button class="icon-button notification-button" @click="handleNotificationClick">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
+        <Bell size="20" />
         <span v-if="notificationCount > 0" class="notification-badge">{{ notificationCount }}</span>
       </button>
 
       <button class="icon-button profile-button" @click="handleProfileClick">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
+        <User size="20" />
       </button>
     </div>
   </header>

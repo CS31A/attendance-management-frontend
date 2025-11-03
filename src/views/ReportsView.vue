@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { Line, Bar } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js'
 import { useStudentStore } from '@/stores/studentStore' 
+import { Users, CheckCircle, XCircle, BarChart3, TrendingUp, MoreVertical, GraduationCap, Clock } from 'lucide-vue-next'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
@@ -189,9 +190,7 @@ const setActiveTab = (tab) => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon blue">
-              <svg fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-              </svg>
+              <Users size="24" />
             </div>
             <span class="stat-trend positive">+5.2%</span>
           </div>
@@ -202,9 +201,7 @@ const setActiveTab = (tab) => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon green">
-              <svg fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
+              <CheckCircle size="24" />
             </div>
             <span class="stat-trend positive">+2.1%</span>
           </div>
@@ -215,9 +212,7 @@ const setActiveTab = (tab) => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon red">
-              <svg fill="currentColor" viewBox="0 0 24 24">
-                <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
+              <XCircle size="24" />
             </div>
             <span class="stat-trend negative">-1.3%</span>
           </div>
@@ -228,9 +223,7 @@ const setActiveTab = (tab) => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon navy">
-              <svg fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-              </svg>
+              <BarChart3 size="24" />
             </div>
             <span class="stat-trend positive">+0.8%</span>
           </div>
@@ -246,9 +239,7 @@ const setActiveTab = (tab) => {
           <div class="chart-header">
             <div class="chart-title-wrapper">
               <div class="chart-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                </svg>
+                <TrendingUp size="24" />
               </div>
               <div>
                 <h2 class="chart-title">Attendance Trend</h2>
@@ -256,9 +247,7 @@ const setActiveTab = (tab) => {
               </div>
             </div>
             <button class="chart-action-btn">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
-              </svg>
+              <MoreVertical size="18" />
             </button>
           </div>
           <div class="chart-wrapper">
@@ -271,10 +260,7 @@ const setActiveTab = (tab) => {
           <div class="chart-header">
             <div class="chart-title-wrapper">
               <div class="chart-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-                </svg>
+                <GraduationCap size="24" />
               </div>
               <div>
                 <h2 class="chart-title">Class Performance</h2>
@@ -282,9 +268,7 @@ const setActiveTab = (tab) => {
               </div>
             </div>
             <button class="chart-action-btn">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
-              </svg>
+              <MoreVertical size="18" />
             </button>
           </div>
           <div class="chart-wrapper">
