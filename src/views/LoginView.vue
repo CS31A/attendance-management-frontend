@@ -2,6 +2,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -27,6 +28,7 @@ const errors = reactive({
 
 const isLoading = ref(false)
 const hasAttemptedSubmit = ref(false)
+const showPassword = ref(false)
 
 // Validation rules
 const validateUsername = (username) => {
@@ -247,9 +249,9 @@ const handleForgotPassword = () => {
                 <input
                   id="password"
                   v-model="formData.password"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   class="form-input"
-                  :class="{ 
+                  :class="{
                     'form-input-error': errors.password,
                     'form-input-success': formData.password && !errors.password && hasAttemptedSubmit
                   }"
@@ -257,6 +259,15 @@ const handleForgotPassword = () => {
                   @blur="validateField('password')"
                   @input="validateField('password')"
                 />
+                <button
+                  type="button"
+                  class="password-toggle-btn"
+                  @click="showPassword = !showPassword"
+                  :title="showPassword ? 'Hide password' : 'Show password'"
+                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                >
+                  <component :is="showPassword ? EyeOff : Eye" class="password-toggle-icon" />
+                </button>
                 <div class="input-border"></div>
               </div>
               <div v-if="errors.password" class="error-message">
@@ -669,6 +680,55 @@ const handleForgotPassword = () => {
 
 .form-input:focus + .input-border {
   width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  z-index: 2;
+}
+
+.password-toggle-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.password-toggle-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.password-toggle-icon {
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.form-input:focus + .password-toggle-btn {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.form-input-error + .password-toggle-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .error-message {
