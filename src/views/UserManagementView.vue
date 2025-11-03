@@ -685,15 +685,15 @@ watch([searchQuery, selectedRole], () => {
 /* Error Message */
 .error-message {
   position: fixed;
-  top: 20px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   background: #ef4444;
   color: white;
   padding: 15px 25px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 999;
+  z-index: 1002;
   display: flex;
   align-items: center;
   gap: 10px;
