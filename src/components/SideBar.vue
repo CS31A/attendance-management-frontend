@@ -16,6 +16,15 @@ const props = defineProps({
 const authStore = useAuthStore()
 const user = authStore.getUser
 
+// Computed property for user role with fallback
+const userRole = computed(() => {
+  const role = authStore.userProfile?.role
+  if (!role) return 'User'
+  
+  // Capitalize first letter of role
+  return role.charAt(0).toUpperCase() + role.slice(1)
+})
+
 // Reactive data
 const isSidebarOpen = ref(false)
 const windowWidth = ref(window.innerWidth)
@@ -129,7 +138,7 @@ onUnmounted(() => {
           </div>
           <div class="user-details" v-show="!isCollapsed">
             <span class="user-name">{{ user }}</span>
-            <span class="user-role">Administrator</span>
+            <span class="user-role">{{ userRole }}</span>
           </div>
         </div>
         <LogoutButton />
