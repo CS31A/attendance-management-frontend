@@ -1,7 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/authStore'
 import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
-import { Grid3X3, Users, BarChart3, UserCircle } from 'lucide-vue-next'
+import { Grid3X3, Users, BarChart3, UserCircle, Calendar } from 'lucide-vue-next'
 
 const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
 
@@ -114,6 +114,12 @@ onUnmounted(() => {
             <router-link to="/dashboard" class="nav-link" @click="closeSidebar">
               <Grid3X3 class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Dashboard</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/sessions" class="nav-link" @click="closeSidebar">
+              <Calendar class="nav-icon" size="20" />
+              <span class="nav-text" v-show="!isCollapsed">Sessions</span>
             </router-link>
           </li>
           <li>

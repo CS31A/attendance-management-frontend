@@ -17,6 +17,11 @@ const routes = [
     beforeEnter: authGuard
   },
   { 
+    path: '/sessions', 
+    component: () => import('../views/SessionsView.vue'),
+    beforeEnter: authGuard
+  },
+  { 
     path: '/users', 
     component: () => import('../views/UserManagementView.vue'),
     beforeEnter: authGuard
