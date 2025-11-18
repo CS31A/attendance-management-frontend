@@ -119,7 +119,7 @@ onUnmounted(() => {
               <span class="nav-text" v-show="!isCollapsed">Dashboard</span>
             </router-link>
           </li>
-          <li>
+          <li v-if="authStore.isTeacher">
             <router-link to="/sessions" class="nav-link" @click="closeSidebar">
               <Calendar class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Sessions</span>

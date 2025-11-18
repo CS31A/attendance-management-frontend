@@ -135,3 +135,50 @@ export const adminGuard = async (to, from) => {
     return { path: '/dashboard', query: { redirect: to.fullPath } }
   }
 }
+
+/**
+ * Instructor guard for instructor-only routes
+ *
+ * This guard checks if the user is authenticated AND has the "Teacher" role
+ * before allowing access to instructor-only routes. If the user is not authenticated
+ * or does not have the Teacher role, they will be redirected to the dashboard.
+ *
+ * Note: Backend uses "Teacher" role for instructors.
+ *
+ * @param {import('vue-router').RouteLocationNormalized} to - The target route being navigated to
+ * @param {import('vue-router').RouteLocationNormalized} from - The current route being navigated away from
+ * @returns {Promise<boolean|Object>} Navigation result:
+ *   - true: Allow navigation to proceed
+ *   - Object: Redirect to specified route (e.g., dashboard)
+ *
+ * @example
+ * // In router configuration
+ * {
+ *   path: '/sessions',
+ *   component: SessionsView,
+ *   beforeEnter: [authGuard, instructorGuard]
+ * }
+ */
+export const instructorGuard = async (to, from) => {
+  const authStore = useAuthStore()
+
+  // If we're still initializing, wait for initialization
+  if (authStore.getIsLoading) {
+    await authStore.initializeAuth()
+  }
+
+  try {
+    // Check if user is authenticated and has Teacher role
+    if (authStore.getIsAuthenticated && authStore.isTeacher) return true
+
+    // Verify session and check teacher status to avoid races while "loading"
+    const isAuthOk = await authStore.checkAuth()
+    if (isAuthOk && authStore.isTeacher) return true
+
+    // Either not authenticated or not a teacher - redirect to dashboard
+    return { path: '/dashboard', query: { redirect: to.fullPath } }
+  } catch {
+    // Fail closed on errors - redirect to dashboard
+    return { path: '/dashboard', query: { redirect: to.fullPath } }
+  }
+}

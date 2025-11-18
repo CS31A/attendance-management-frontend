@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/DashboardView.vue'
 import UserManagement from '../views/UserManagementView.vue'
-import { authGuard, guestGuard, adminGuard } from './authGuard'
+import { authGuard, guestGuard, adminGuard, instructorGuard } from './authGuard'
 import Reports from '../views/ReportsView.vue'
 
 
@@ -19,7 +19,7 @@ const routes = [
   {
     path: '/sessions',
     component: () => import('../views/SessionsView.vue'),
-    beforeEnter: authGuard
+    beforeEnter: [authGuard, instructorGuard]
   },
   {
     path: '/users',
