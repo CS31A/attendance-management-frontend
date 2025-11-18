@@ -20,10 +20,13 @@ const user = authStore.getUser
 const userRole = computed(() => {
   const role = authStore.userProfile?.role
   if (!role) return 'User'
-  
+
   // Capitalize first letter of role
   return role.charAt(0).toUpperCase() + role.slice(1)
 })
+
+// Computed property to check if user is admin
+const isAdmin = computed(() => authStore.isAdmin)
 
 // Reactive data
 const isSidebarOpen = ref(false)
@@ -122,7 +125,7 @@ onUnmounted(() => {
               <span class="nav-text" v-show="!isCollapsed">Sessions</span>
             </router-link>
           </li>
-          <li>
+          <li v-if="isAdmin">
             <router-link to="/users" class="nav-link" @click="closeSidebar">
               <Users class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Users</span>
