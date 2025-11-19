@@ -19,15 +19,16 @@ export const useUserStore = defineStore('user', {
   }),
 
   getters: {
+    getUsers: (state) => state.users,
     instructors: (state) => state.users.filter(user => user.role === 'Instructor'),
     students: (state) => state.users.filter(user => user.role === 'Student'),
     filteredUsers: (state) => (searchQuery, selectedRole) => {
       let filtered = state.users
-      
+
       if (selectedRole !== 'All Roles') {
         filtered = filtered.filter(user => user.role === selectedRole)
       }
-      
+
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         filtered = filtered.filter(user =>
@@ -36,10 +37,10 @@ export const useUserStore = defineStore('user', {
           user.email.toLowerCase().includes(query)
         )
       }
-      
+
       return filtered
     },
-    
+
     // Pagination getters
     paginatedUsers: (state) => (searchQuery, selectedRole) => {
       const filtered = state.filteredUsers(searchQuery, selectedRole)
@@ -47,18 +48,18 @@ export const useUserStore = defineStore('user', {
       const end = start + state.itemsPerPage
       return filtered.slice(start, end)
     },
-    
+
     totalPages: (state) => (searchQuery, selectedRole) => {
       const filtered = state.filteredUsers(searchQuery, selectedRole)
       return Math.ceil(filtered.length / state.itemsPerPage)
     },
-    
+
     hasNextPage: (state) => (searchQuery, selectedRole) => {
       const filtered = state.filteredUsers(searchQuery, selectedRole)
       const totalPages = Math.ceil(filtered.length / state.itemsPerPage)
       return state.currentPage < totalPages
     },
-    
+
     hasPreviousPage: (state) => {
       return state.currentPage > 1
     }
@@ -68,100 +69,22 @@ export const useUserStore = defineStore('user', {
     async fetchUsers() {
       this.loading = true
       this.error = null
-      
+
       try {
-        console.log('Attempting to fetch users...')
-        const [instructorsResponse, studentsResponse] = await Promise.all([
-          api.get('/instructors'),
-          api.get('/students')
-        ])
-        
-        console.log('Successfully fetched users:', {
-          instructors: instructorsResponse.data,
-          students: studentsResponse.data
-        })
-        
-        const instructors = instructorsResponse.data.map(instructor => ({
-          ...instructor,
-          role: 'Instructor'
-        }))
-        
-        const students = studentsResponse.data.map(student => ({
-          ...student,
-          role: 'Student'
-        }))
-        
-        this.users = [...instructors, ...students]
+        console.log("Attemtpting to fetch users...")
+        const resp = await api.get("/users")
+        this.users = resp.data
       } catch (error) {
-        console.error('Error fetching users:', error)
-        
-        // If 401, use mock data instead of showing error
-        if (error.response?.status === 401) {
-          console.log('Authentication failed, using mock data for demonstration...')
-          this.error = null // Clear error to show mock data
-          
-          // Use mock data that matches what you see in the UI
-          this.users = [
-            {
-              id: 1,
-              firstName: "Donald",
-              lastName: "Francisco",
-              email: "donald@gmail.com",
-              role: "Instructor",
-              sectionId: "1",
-              createdAt: "2024-01-01"
-            },
-            {
-              id: 2,
-              firstName: "Donald",
-              lastName: "Donald",
-              email: "teacher2@gmail.com",
-              role: "Instructor",
-              sectionId: "2",
-              createdAt: "2024-01-02"
-            },
-            {
-              id: 3,
-              firstName: "Noel",
-              lastName: "Lejitimas",
-              email: "teacher@gmail.com",
-              role: "Instructor",
-              sectionId: "3",
-              createdAt: "2024-01-03"
-            },
-            {
-              id: 4,
-              firstName: "Teacher",
-              lastName: "Seven",
-              email: "teacher7@gmail.com",
-              role: "Instructor",
-              sectionId: "4",
-              createdAt: "2024-01-04"
-            }
-          ]
-        } else {
-          // For other errors, use basic mock data
-          this.users = [
-            {
-              id: 1,
-              firstName: "John",
-              lastName: "Doe",
-              email: "john@example.com",
-              role: "Instructor",
-              sectionId: "1",
-              createdAt: "2024-01-01"
-            }
-          ]
-        }
+        console.log("An error has occured:", error.message)
       } finally {
         this.loading = false
+        this.error = null
       }
     },
-
     async createUser(userData) {
       this.loading = true
       this.error = null
-      
+
       try {
         // Transform data to match Scalar API documentation exactly
         const registerData = {
@@ -174,18 +97,18 @@ export const useUserStore = defineStore('user', {
           role: userData.Role === 'Instructor' ? 'teacher' : userData.Role.toLowerCase(),
           sectionId: userData.Role === 'Student' ? parseInt(userData.SectionId) : null
         }
-        
+
         // If section validation fails for students, try with a default section
         if (registerData.sectionId && userData.Role.toLowerCase() === 'student' && !isValidSection(registerData.sectionId)) {
           console.warn('Section validation failed for student, trying with default section 3')
           registerData.sectionId = 3
         }
-        
+
         console.log('Sending registerData to backend:', registerData)
         console.log('Role:', userData.Role, 'SectionId:', registerData.sectionId)
         console.log('Role type:', typeof userData.Role, 'Role value:', JSON.stringify(userData.Role))
         console.log('Final role being sent:', registerData.role)
-        
+
         let response
         try {
           response = await api.post('/account/register', registerData)
@@ -193,7 +116,7 @@ export const useUserStore = defineStore('user', {
           console.error('Backend error details:', error.response?.data)
           console.error('Error status:', error.response?.status)
           console.error('Error message:', error.response?.data?.message)
-          
+
           // If section validation fails for students, try with a different approach
           if (error.response?.status === 400 && error.response?.data?.message?.includes('section') && userData.Role.toLowerCase() === 'student') {
             console.log('Section validation failed for student, trying with section ID as integer...')
@@ -207,9 +130,9 @@ export const useUserStore = defineStore('user', {
             throw error
           }
         }
-        
+
         console.log('Backend response:', response.data)
-        
+
         // Add the new user to the store
         const newUser = {
           id: response.data.id || Date.now(),
@@ -220,17 +143,17 @@ export const useUserStore = defineStore('user', {
           sectionId: response.data.sectionId || userData.SectionId,
           createdAt: response.data.createdAt || new Date().toISOString()
         }
-        
+
         this.users.push(newUser)
-        
+
         return { success: true, data: response.data }
       } catch (error) {
         console.error('Error creating user:', error)
-        
+
         // For development: if backend fails, add to local store anyway
         if (error.response?.status === 401 || error.response?.status === 400) {
           console.log('Backend error, adding user to local store for development...')
-          
+
           const newUser = {
             id: Date.now(), // Simple ID generation
             firstName: userData.FirstName,
@@ -240,11 +163,11 @@ export const useUserStore = defineStore('user', {
             sectionId: userData.SectionId,
             createdAt: new Date().toISOString()
           }
-          
+
           this.users.push(newUser)
           return { success: true, data: newUser }
         }
-        
+
         // Extract detailed error message from backend
         let errorMessage = 'Failed to create user'
         if (error.response?.data?.message) {
@@ -257,7 +180,7 @@ export const useUserStore = defineStore('user', {
         } else if (error.response?.data) {
           errorMessage = JSON.stringify(error.response.data)
         }
-        
+
         this.error = errorMessage
         return { success: false, error: errorMessage }
       } finally {
@@ -268,33 +191,33 @@ export const useUserStore = defineStore('user', {
     async updateUser(userId, userData) {
       this.loading = true
       this.error = null
-      
+
       try {
         // Find the original user to get their current role/endpoint
         const originalUser = this.users.find(user => user.id === userId)
         if (!originalUser) {
           throw new Error('User not found')
         }
-        
+
         // Use the original user's role to determine the correct endpoint
         // This prevents 404 errors when trying to update across different endpoints
         const endpoint = originalUser.role === 'Instructor' ? '/instructors' : '/students'
-        
+
         console.log('Updating user:', {
           userId,
           originalRole: originalUser.role,
           endpoint,
           userData
         })
-        
+
         const response = await api.patch(`${endpoint}/${userId}`, userData)
-        
+
         // Update the user in the store with the original role (role cannot be changed)
         const index = this.users.findIndex(user => user.id === userId)
         if (index !== -1) {
           this.users[index] = { ...response.data, role: originalUser.role }
         }
-        
+
         return { success: true, data: response.data }
       } catch (error) {
         console.error('Error updating user:', error)
@@ -308,14 +231,14 @@ export const useUserStore = defineStore('user', {
     async deleteUser(userId, role) {
       this.loading = true
       this.error = null
-      
+
       try {
         const endpoint = role === 'Instructor' ? '/instructors' : '/students'
         await api.delete(`${endpoint}/${userId}`)
-        
+
         // Remove the user from the store
         this.users = this.users.filter(user => user.id !== userId)
-        
+
         return { success: true }
       } catch (error) {
         console.error('Error deleting user:', error)

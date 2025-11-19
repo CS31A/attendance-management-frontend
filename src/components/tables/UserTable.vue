@@ -1,61 +1,3 @@
-<template>
-  <div class="table-wrapper">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <!-- <th class="th-avatar">Avatar</th> -->
-          <th class="th-name">Name</th>
-          <th class="th-email">Email</th>
-          <th class="th-section">Section</th>
-          <th class="th-joined">Joined</th>
-          <th class="th-actions">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="user in users" :key="user.id" class="user-row">
-          <!-- <td class="td-avatar">
-            <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
-              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
-            </div>
-          </td> -->
-          <td class="td-name">
-            <div class="name-cell">
-              <span class="user-name">{{ getUserName(user) }}</span>
-            </div>
-          </td>
-          <td class="td-email">
-            <div class="email-cell">
-              <Mail class="email-icon" size="16" />
-              <span class="email-text">{{ user?.email || '⚠️ Email Missing' }}</span>
-            </div>
-          </td>
-          <td class="td-section">
-            <div class="section-cell">
-              <span class="section-text">{{ getUserSection(user) }}</span>
-            </div>
-          </td>
-          <td class="td-joined">
-            <div class="joined-cell">
-              <Calendar class="date-icon" size="16" />
-              <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
-            </div>
-          </td>
-          <td class="td-actions">
-            <div class="action-buttons">
-              <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
-                <Edit class="btn-icon" size="16" />
-              </button>
-              <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
-                <Trash2 class="btn-icon" size="16" />
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</template>
-
 <script setup>
 import { GraduationCap, User, Mail, Calendar, Edit, Trash2 } from 'lucide-vue-next'
 
@@ -123,6 +65,70 @@ const formatDate = (value) => {
   }).format(date)
 }
 </script>
+
+<template>
+  <div class="table-wrapper">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <!-- <th class="th-avatar">Avatar</th> -->
+          <th class="th-name">Name</th>
+          <th class="th-email">Email</th>
+          <th class="th-role">Role</th>
+          <!-- <th class="th-section">Section</th> -->
+          <th class="th-joined">Joined</th>
+          <th class="th-actions">Actions</th> 
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in users" :key="user.id" class="user-row">
+          <!-- <td class="td-avatar">
+            <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
+              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
+            </div>
+          </td> -->
+          <td class="td-name">
+            <div class="name-cell">
+              <span class="user-name">{{ getUserName(user) }}</span>
+            </div>
+          </td>
+          <td class="td-email">
+            <div class="email-cell">
+              <Mail class="email-icon" size="16" />
+              <span class="email-text">{{ user?.email || '⚠️ Email Missing' }}</span>
+            </div>
+          </td>
+          <td class="td-role">
+            <div class="role-cell">
+              <span class="role-text">{{ user.role }}</span>
+            </div>
+          </td>
+          <!-- <td class="td-section">
+            <div class="section-cell">
+              <span class="section-text">{{ getUserSection(user) }}</span>
+            </div>
+          </td> -->
+          <td class="td-joined">
+            <div class="joined-cell">
+              <Calendar class="date-icon" size="16" />
+              <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
+            </div>
+          </td>
+          <td class="td-actions">
+            <div class="action-buttons">
+              <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
+                <Edit class="btn-icon" size="16" />
+              </button>
+              <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
+                <Trash2 class="btn-icon" size="16" />
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
 
 <style scoped>
 .table-wrapper {
