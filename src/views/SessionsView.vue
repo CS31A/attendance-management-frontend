@@ -109,6 +109,7 @@ import CreateSessionModal from '@/components/sessions/CreateSessionModal.vue'
 import StartSessionModal from '@/components/sessions/StartSessionModal.vue'
 import EndSessionModal from '@/components/sessions/EndSessionModal.vue'
 import UpdateRoomModal from '@/components/sessions/UpdateRoomModal.vue'
+import { showSuccess, showError } from '@/utils/toast'
 
 const sessionStore = useSessionStore()
 
@@ -168,7 +169,9 @@ const loadSessions = async () => {
     await sessionStore.fetchSessions()
   } catch (error) {
     console.error('Failed to load sessions:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to load sessions. Please try again.'
+    const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
+    showError(message)
+    errorMessage.value = message
   }
 }
 
@@ -177,10 +180,12 @@ const handleCreateSession = async (payload) => {
   try {
     await sessionStore.createSession(payload)
     showCreateModal.value = false
-    // Optionally show success toast
+    showSuccess('Session created successfully!')
   } catch (error) {
     console.error('Failed to create session:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to create session. Please try again.'
+    const message = error.response?.data?.message || 'Failed to create session. Please try again.'
+    showError(message)
+    errorMessage.value = message
   }
 }
 
@@ -195,16 +200,17 @@ const handleConfirmStart = async (payload) => {
     await sessionStore.startSession(selectedSession.value.id, payload)
     showStartModal.value = false
     selectedSession.value = null
-    // Optionally show success toast
+    showSuccess('Session started successfully!')
   } catch (error) {
     console.error('Failed to start session:', error)
+    let message = 'Failed to start session. Please try again.'
     if (error.response?.status === 403) {
-      errorMessage.value = 'You are not authorized to start this session. Only the assigned instructor can manage this session.'
+      message = 'You are not authorized to start this session. Only the assigned instructor can manage this session.'
     } else if (error.response?.status === 400) {
-      errorMessage.value = error.response?.data?.message || 'Cannot start this session. Check the session status.'
-    } else {
-      errorMessage.value = 'Failed to start session. Please try again.'
+      message = error.response?.data?.message || 'Cannot start this session. Check the session status.'
     }
+    showError(message)
+    errorMessage.value = message
   }
 }
 
@@ -219,16 +225,17 @@ const handleConfirmEnd = async (payload) => {
     await sessionStore.endSession(selectedSession.value.id, payload)
     showEndModal.value = false
     selectedSession.value = null
-    // Optionally show success toast
+    showSuccess('Session ended successfully!')
   } catch (error) {
     console.error('Failed to end session:', error)
+    let message = 'Failed to end session. Please try again.'
     if (error.response?.status === 403) {
-      errorMessage.value = 'You are not authorized to end this session. Only the assigned instructor can manage this session.'
+      message = 'You are not authorized to end this session. Only the assigned instructor can manage this session.'
     } else if (error.response?.status === 400) {
-      errorMessage.value = error.response?.data?.message || 'Cannot end this session. Check the session status.'
-    } else {
-      errorMessage.value = 'Failed to end session. Please try again.'
+      message = error.response?.data?.message || 'Cannot end this session. Check the session status.'
     }
+    showError(message)
+    errorMessage.value = message
   }
 }
 
@@ -240,16 +247,17 @@ const handleDeleteSession = async (sessionId) => {
   errorMessage.value = ''
   try {
     await sessionStore.deleteSession(sessionId)
-    // Optionally show success toast
+    showSuccess('Session deleted successfully!')
   } catch (error) {
     console.error('Failed to delete session:', error)
+    let message = 'Failed to delete session. Please try again.'
     if (error.response?.status === 403) {
-      errorMessage.value = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
+      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
     } else if (error.response?.status === 400) {
-      errorMessage.value = error.response?.data?.message || 'Cannot delete this session. Only sessions that have not started can be deleted.'
-    } else {
-      errorMessage.value = 'Failed to delete session. Please try again.'
+      message = error.response?.data?.message || 'Cannot delete this session. Only sessions that have not started can be deleted.'
     }
+    showError(message)
+    errorMessage.value = message
   }
 }
 
@@ -264,16 +272,17 @@ const handleConfirmUpdateRoom = async (payload) => {
     await sessionStore.updateSessionRoom(selectedSession.value.id, payload)
     showUpdateRoomModal.value = false
     selectedSession.value = null
-    // Optionally show success toast
+    showSuccess('Session room updated successfully!')
   } catch (error) {
     console.error('Failed to update room:', error)
+    let message = 'Failed to update room. Please try again.'
     if (error.response?.status === 403) {
-      errorMessage.value = 'You are not authorized to update this session. Only the assigned instructor can manage this session.'
+      message = 'You are not authorized to update this session. Only the assigned instructor can manage this session.'
     } else if (error.response?.status === 400) {
-      errorMessage.value = error.response?.data?.message || 'Cannot update room. Check the session status.'
-    } else {
-      errorMessage.value = 'Failed to update room. Please try again.'
+      message = error.response?.data?.message || 'Cannot update room. Check the session status.'
     }
+    showError(message)
+    errorMessage.value = message
   }
 }
 

@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/DashboardView.vue'
-import UserManagement from '../views/UserManagementView.vue'
-import { authGuard, guestGuard, adminGuard, instructorGuard } from './authGuard'
-import Reports from '../views/ReportsView.vue'
+import { authGuard, guestGuard, instructorGuard, adminGuard } from './authGuard'
 
 
 const routes = [
@@ -17,26 +14,29 @@ const routes = [
     beforeEnter: authGuard
   },
   {
+    path: '/users',
+    component: () => import('../views/UserManagementView.vue'),
+    beforeEnter: [authGuard, adminGuard]
+  },
+  {
     path: '/sessions',
     component: () => import('../views/SessionsView.vue'),
     beforeEnter: [authGuard, instructorGuard]
-  },
-  {
-    path: '/users',
-    component: () => import('../views/UserManagementView.vue'),
-    beforeEnter: adminGuard
   },
   {
     path: '/reports',
     component: () => import('../views/ReportsView.vue'),
     beforeEnter: authGuard
   },
-
   {
     path: '/',
-    redirect: '/login'  // Change this from '/dashboard' to '/login'
+    redirect: '/login'  // change this from '/dashboard' to '/login'
   },
-
+  {
+    path: '/sections',
+    component: () => import('../views/SectionsView.vue'),
+    beforeEnter: [authGuard, adminGuard]
+  }
 ]
 
 const router = createRouter({
