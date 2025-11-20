@@ -1,10 +1,46 @@
 <script setup>
+import { ref, defineAsyncComponent, onMounted } from 'vue'
+import { useSectionStore } from '@/stores/sectionStore.js'
+const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
+const sectionsStore = useSectionStore()
+const sections = sectionsStore.getSections
+const showAddSectionModal = ref(false)
+const showEditSectionModal = ref(false)
+const loading = ref(false)
+
+onMounted(async() => {
+  loading.value = true
+  try {
+    await sectionsStore.fetchSections()
+  } catch(error) {
+    console.log(error)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
   <div class="section-management">
-    <div class="container">
+    <!-- Loading overlay -->
+    <div v-if="loading" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    </div>
+    
+    <!-- Error message -->
+    <div v-if="error" class="error-message">
+      <div class="error-content">
+        <AlertTriangle class="error-icon" size="24" />
+        <p>{{ error }}</p>
+        <button @click="sectionsStore.fetchSections" class="retry-btn">Retry</button>
+      </div>
+    </div>
+
+    <div class="container" v-else-if="sectionsStore.getNumberOfSections || !sectionsStore.error">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -12,12 +48,18 @@
             <h1 class="page-title">Section Management</h1>
             <p class="page-subtitle">Manage Sections</p>
           </div>
-          <button @click="showAddUser = true" class="btn-add-user">
+          <button @click="" class="btn-add">
             <Plus class="icon" size="20" />
-            <span>Add User</span>
+            <span>Add Section</span>
           </button>
         </div>
       </div>
+
+      <SectionTableSection v-if="sectionsStore.getFilteredSections.length > 0"
+        :sections="sections" title="All Sections" :pagination="{
+          currentPage, totalPages, hasNextPage, hasPreviousPage, totalSections, itemsPerPage: sectionsStore.getItemsPerPage
+        }"
+      />
     </div>
   </div>
 </template>
