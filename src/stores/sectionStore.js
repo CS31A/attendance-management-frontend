@@ -26,6 +26,38 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     }
   }
 
+  const addSections = async () => {
+    try {
+      const resp = await api.post('/sections')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updateSections = async () => {
+    try {
+      const resp = await api.patch('/sections/{id}')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const deleteSection = async () => {
+    try {
+      const resp = await api.delete('/sections/{id}')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const getSection = async () => {
+    try {
+      const resp = await api.get('/sections/{id}')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return {
     // state
     sections,
@@ -35,6 +67,10 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     getFilteredSections,
     getItemsPerPage,
     // actions
-    fetchSections
+    fetchSections,
+    addSections,
+    updateSections,
+    deleteSection,
+    getSection
   }
 }) 

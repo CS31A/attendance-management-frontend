@@ -1,20 +1,65 @@
 <script setup>
-import { ref, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
+import { Plus, AlertTriangle } from 'lucide-vue-next'
 import { useSectionStore } from '@/stores/sectionStore.js'
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
 const sectionsStore = useSectionStore()
-const sections = sectionsStore.getSections
 const showAddSectionModal = ref(false)
 const showEditSectionModal = ref(false)
 const loading = ref(false)
+const error = ref('')
+
+// Pagination state
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+// Computed values
+const sections = computed(() => sectionsStore.getSections)
+const totalSections = computed(() => sectionsStore.getNumberOfSections)
+const totalPages = computed(() => Math.ceil(totalSections.value / itemsPerPage.value))
+const hasNextPage = computed(() => currentPage.value < totalPages.value)
+const hasPreviousPage = computed(() => currentPage.value > 1)
+
+// Paginated sections
+const paginatedSections = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return sections.value?.slice(start, end) || []
+})
+
+// Pagination handlers
+const handleNextPage = () => {
+  if (hasNextPage.value) {
+    currentPage.value++
+  }
+}
+
+const handlePreviousPage = () => {
+  if (hasPreviousPage.value) {
+    currentPage.value--
+  }
+}
+
+const handleGoToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+const handleSetItemsPerPage = (value) => {
+  itemsPerPage.value = value
+  currentPage.value = 1 // Reset to first page
+}
 
 onMounted(async() => {
   loading.value = true
+  error.value = ''
   try {
     await sectionsStore.fetchSections()
-  } catch(error) {
-    console.log(error)
+  } catch(err) {
+    console.log(err)
+    error.value = 'Failed to load sections. Please try again.'
   } finally {
     loading.value = false
   }
@@ -55,10 +100,22 @@ onMounted(async() => {
         </div>
       </div>
 
-      <SectionTableSection v-if="sectionsStore.getFilteredSections.length > 0"
-        :sections="sections" title="All Sections" :pagination="{
-          currentPage, totalPages, hasNextPage, hasPreviousPage, totalSections, itemsPerPage: sectionsStore.getItemsPerPage
+      <SectionTableSection 
+        v-if="sectionsStore.getFilteredSections.length > 0"
+        :sections="paginatedSections" 
+        title="All Sections" 
+        :pagination="{
+          currentPage,
+          totalPages,
+          hasNextPage,
+          hasPreviousPage,
+          totalSections,
+          itemsPerPage
         }"
+        @next-page="handleNextPage"
+        @previous-page="handlePreviousPage"
+        @go-to-page="handleGoToPage"
+        @set-items-per-page="handleSetItemsPerPage"
       />
     </div>
   </div>

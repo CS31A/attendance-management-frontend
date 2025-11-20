@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { authGuard, guestGuard, instructorGuard } from './authGuard'
+import { authGuard, guestGuard, instructorGuard, adminGuard } from './authGuard'
 
 
 const routes = [
@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/users',
     component: () => import('../views/UserManagementView.vue'),
-    beforeEnter: authGuard
+    beforeEnter: [authGuard, adminGuard]
   },
   {
     path: '/sessions',
@@ -35,7 +35,7 @@ const routes = [
   {
     path: '/sections',
     component: () => import('../views/SectionsView.vue'),
-    beforeEnter: authGuard
+    beforeEnter: [authGuard, adminGuard]
   }
 ]
 

@@ -131,7 +131,7 @@ onUnmounted(() => {
               <span class="nav-text" v-show="!isCollapsed">Users</span>
             </router-link>
           </li>
-          <li>
+          <li v-if="isAdmin">
             <router-link to="/sections" class="nav-link" @click="closeSidebar">
               <Group class="nav-icon" size="20" />
               <span class="nav-text" v-show="!isCollapsed">Sections</span>
