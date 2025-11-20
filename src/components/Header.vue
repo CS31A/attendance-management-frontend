@@ -120,7 +120,6 @@ header {
   align-items: center;
   justify-content: flex-start;
   transition: all 0.3s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
 }
 
