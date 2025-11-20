@@ -3,7 +3,9 @@ import { ref, computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
 import { useAuthStore } from '@/stores/authStore'
-import { useUserStore } from '@/stores/userStore' 
+import { useUserStore } from '@/stores/userStore'
+import { useSessionStore } from '@/stores/sessionStore'
+import SessionCard from '@/components/sessions/SessionCard.vue'
 import router from '@/router'
 
 // Register Chart.js components
@@ -11,10 +13,29 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const sessionStore = useSessionStore()
 
 // Computed properties for auth state
 const isAuthenticated = authStore.getIsAuthenticated
 const user = authStore.user
+
+// Check if user is a student
+const isStudent = computed(() => user?.role === 'Student')
+
+// Get upcoming and active sessions for students
+const upcomingSessions = computed(() => {
+  if (!isStudent.value) return []
+  return sessionStore.upcomingSessions.slice(0, 3) // Show max 3 upcoming sessions
+})
+
+const activeSessions = computed(() => {
+  if (!isStudent.value) return []
+  return sessionStore.activeSessions
+})
+
+const hasAnySessions = computed(() => {
+  return upcomingSessions.value.length > 0 || activeSessions.value.length > 0
+})
 
 // Get real data from userStore
 const totalStudents = computed(() => userStore.students.length)
@@ -109,6 +130,15 @@ const clearProfilePicture = () => {
 onMounted(async () => {
   if (userStore.users.length === 0) {
     await userStore.fetchUsers()
+  }
+  
+  // Fetch sessions for students
+  if (isStudent.value && sessionStore.sessions.length === 0) {
+    try {
+      await sessionStore.fetchSessions()
+    } catch (error) {
+      console.error('Failed to load sessions:', error)
+    }
   }
 })
 
@@ -312,6 +342,35 @@ const getUserInitials = computed(() => {
               </div>
               <span class="progress-label">{{ managementPercentage.toFixed(0) }}%</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Sessions Section -->
+      <div v-if="!isLoading && isStudent && hasAnySessions" class="sessions-section">
+        <h2 class="section-title">My Sessions</h2>
+        
+        <!-- Active Sessions -->
+        <div v-if="activeSessions.length > 0" class="sessions-group">
+          <h3 class="sessions-group-title">Active Sessions</h3>
+          <div class="sessions-grid">
+            <SessionCard 
+              v-for="session in activeSessions" 
+              :key="session.id" 
+              :session="session" 
+            />
+          </div>
+        </div>
+
+        <!-- Upcoming Sessions -->
+        <div v-if="upcomingSessions.length > 0" class="sessions-group">
+          <h3 class="sessions-group-title">Upcoming Sessions</h3>
+          <div class="sessions-grid">
+            <SessionCard 
+              v-for="session in upcomingSessions" 
+              :key="session.id" 
+              :session="session" 
+            />
           </div>
         </div>
       </div>
@@ -760,5 +819,42 @@ const getUserInitials = computed(() => {
     align-items: flex-start;
     gap: 1rem;
   }
+
+  .sessions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sessions Section */
+.sessions-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 1.5rem 0;
+}
+
+.sessions-group {
+  margin-bottom: 2rem;
+}
+
+.sessions-group:last-child {
+  margin-bottom: 0;
+}
+
+.sessions-group-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1rem 0;
+}
+
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 </style>
