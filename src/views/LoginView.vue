@@ -37,7 +37,7 @@ function validateUsername(username) {
   }
 
   // Check if it's an email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
   const isEmail = emailRegex.test(username)
 
   if (username.includes('@') && !isEmail) {
