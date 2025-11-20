@@ -1,0 +1,378 @@
+<template>
+  <div class="table-wrapper">
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th class="th-date">Date</th>
+          <th class="th-course">Course/Schedule</th>
+          <th class="th-status">Status</th>
+          <th class="th-room">Room</th>
+          <th class="th-time">Time</th>
+          <th class="th-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="session in sessions" :key="session.id" class="session-row">
+          <!-- Date Column -->
+          <td class="td-date">
+            <div class="date-cell">
+              <Calendar class="date-icon" size="16" />
+              <span class="date-text">{{ formatDate(session.sessionDate) }}</span>
+            </div>
+          </td>
+
+          <!-- Course/Schedule Column -->
+          <td class="td-course">
+            <div class="course-cell">
+              <span class="course-name">{{ getCourseName(session) }}</span>
+              <span class="schedule-info">{{ getScheduleInfo(session) }}</span>
+            </div>
+          </td>
+
+          <!-- Status Column -->
+          <td class="td-status">
+            <SessionStatusBadge :status="session.status" />
+          </td>
+
+          <!-- Room Column -->
+          <td class="td-room">
+            <div class="room-cell">
+              <MapPin class="room-icon" size="16" />
+              <span class="room-text">{{ session.actualRoomName || session.scheduledRoomName || 'TBD' }}</span>
+            </div>
+          </td>
+
+          <!-- Time Column -->
+          <td class="td-time">
+            <div class="time-cell">
+              <Clock class="time-icon" size="16" />
+              <span class="time-text">{{ getTimeRange(session) }}</span>
+            </div>
+          </td>
+
+          <!-- Actions Column -->
+          <td class="td-actions">
+            <div class="action-buttons">
+              <!-- Not Started Actions -->
+              <template v-if="session.status === 'not_started'">
+                <button
+                  class="btn-action btn-start"
+                  @click="$emit('start', session)"
+                  title="Start Session"
+                >
+                  <Play class="btn-icon" size="16" />
+                  <span>Start</span>
+                </button>
+                <button
+                  class="btn-action btn-delete"
+                  @click="$emit('delete', session.id)"
+                  title="Delete Session"
+                >
+                  <Trash2 class="btn-icon" size="16" />
+                </button>
+              </template>
+
+              <!-- Active Actions -->
+              <template v-else-if="session.status === 'active'">
+                <button
+                  class="btn-action btn-end"
+                  @click="$emit('end', session)"
+                  title="End Session"
+                >
+                  <StopCircle class="btn-icon" size="16" />
+                  <span>End</span>
+                </button>
+                <button
+                  class="btn-action btn-room"
+                  @click="$emit('update-room', session)"
+                  title="Change Room"
+                >
+                  <MapPin class="btn-icon" size="16" />
+                </button>
+              </template>
+
+              <!-- Completed/Cancelled - View Only -->
+              <template v-else>
+                <span class="status-readonly">View Only</span>
+              </template>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<script setup>
+import { Calendar, MapPin, Clock, Play, StopCircle, Trash2 } from 'lucide-vue-next'
+import SessionStatusBadge from './SessionStatusBadge.vue'
+
+defineProps({
+  sessions: {
+    type: Array,
+    required: true
+  }
+})
+
+defineEmits(['start', 'end', 'delete', 'update-room'])
+
+// Helper functions
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+const getCourseName = (session) => {
+  return session.courseName || session.courseCode || 'Unknown Course'
+}
+
+const getScheduleInfo = (session) => {
+  const parts = []
+  if (session.scheduleCode) parts.push(session.scheduleCode)
+  if (session.section) parts.push(`Section ${session.section}`)
+  return parts.join(' • ') || 'No schedule info'
+}
+
+const getTimeRange = (session) => {
+  if (session.actualStartTime && session.actualEndTime) {
+    return `${formatTime(session.actualStartTime)} - ${formatTime(session.actualEndTime)}`
+  }
+  if (session.scheduledStartTime && session.scheduledEndTime) {
+    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
+  }
+  return 'Time TBD'
+}
+
+const formatTime = (timeString) => {
+  if (!timeString) return ''
+
+  // Handle HH:mm:ss format
+  const [hours, minutes] = timeString.split(':')
+  const hour = parseInt(hours, 10)
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+
+  return `${displayHour}:${minutes} ${period}`
+}
+</script>
+
+<style scoped>
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+/* Table Header */
+thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.th-date { width: 15%; }
+.th-course { width: 25%; }
+.th-status { width: 12%; }
+.th-room { width: 12%; }
+.th-time { width: 16%; }
+.th-actions { width: 20%; }
+
+/* Table Body */
+tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+}
+
+tbody tr:hover {
+  background: #f9fafb;
+}
+
+td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Date Cell */
+.date-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-icon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.date-text {
+  font-weight: 500;
+}
+
+/* Course Cell */
+.course-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.course-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.schedule-info {
+  font-size: 0.813rem;
+  color: #6b7280;
+}
+
+/* Room Cell */
+.room-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.room-icon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.room-text {
+  font-weight: 500;
+}
+
+/* Time Cell */
+.time-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-icon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.time-text {
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action:hover {
+  background: #f9fafb;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+}
+
+/* Start Button */
+.btn-start {
+  color: #059669;
+  border-color: #059669;
+}
+
+.btn-start:hover {
+  background: #d1fae5;
+}
+
+/* End Button */
+.btn-end {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn-end:hover {
+  background: #fee2e2;
+}
+
+/* Room Button */
+.btn-room {
+  color: #2563eb;
+  border-color: #2563eb;
+  padding: 0.5rem;
+}
+
+.btn-room:hover {
+  background: #dbeafe;
+}
+
+/* Delete Button */
+.btn-delete {
+  color: #dc2626;
+  border-color: #dc2626;
+  padding: 0.5rem;
+}
+
+.btn-delete:hover {
+  background: #fee2e2;
+}
+
+/* Read Only Status */
+.status-readonly {
+  font-size: 0.813rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .th-time,
+  .td-time {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .th-room,
+  .td-room,
+  .th-time,
+  .td-time {
+    display: none;
+  }
+
+  .btn-action span {
+    display: none;
+  }
+}
+</style>

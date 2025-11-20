@@ -1,3 +1,154 @@
+<script setup>
+import { ref, computed, watch } from "vue";
+import { X, AlertTriangle, GraduationCap, User } from 'lucide-vue-next';
+import { useAuthStore } from '@/stores/authStore';
+
+const props = defineProps({
+  // No props needed for create mode
+});
+
+const emit = defineEmits(["create", "cancel"]);
+
+// Get auth store to determine role restrictions
+const authStore = useAuthStore();
+
+// Computed property to determine available roles based on current user's role
+const availableRoles = computed(() => {
+  if (authStore.isAdmin) {
+    // Admins can create both instructors and students
+    return ['Instructor', 'Student'];
+  } else if (authStore.isTeacher) {
+    // Teachers can only create students
+    return ['Student'];
+  } 
+});
+
+// Form data
+const email = ref("");
+const firstName = ref("");
+const lastName = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const role = ref("");
+const sectionId = ref("");
+const errorMessage = ref("");
+const passwordMismatchError = ref("");
+
+// Computed properties
+const modalTitle = computed(() => 'Create User');
+const submitButtonText = computed(() => 'Create Account');
+
+const isFormValid = computed(() => {
+  console.log('Create form validation check:', {
+    role: role.value,
+    availableRoles: availableRoles.value,
+    sectionId: sectionId.value,
+    password: password.value,
+    confirmPassword: confirmPassword.value,
+    passwordsMatch: password.value === confirmPassword.value
+  });
+
+  // Reset error message
+  passwordMismatchError.value = '';
+
+  if (!role.value || !availableRoles.value.includes(role.value)) return false;
+  if (role.value === 'Student' && !sectionId.value?.trim()) return false;
+
+  // In create mode, password is required
+  if (password.value !== confirmPassword.value) {
+    if (password.value && confirmPassword.value) {
+      passwordMismatchError.value = 'Passwords do not match';
+    }
+    return false;
+  }
+  return true;
+});
+
+// Watch for password changes to clear error
+watch([password, confirmPassword], () => {
+  if (password.value === confirmPassword.value) {
+    passwordMismatchError.value = '';
+  }
+});
+
+// Watch for changes in available roles to set default role
+watch(availableRoles, (newAvailableRoles) => {
+  // If the currently selected role is not available, reset it
+  if (role.value && !newAvailableRoles.includes(role.value)) {
+    role.value = '';
+  }
+
+  // If only student role is available, default to student
+  if (newAvailableRoles.length === 1 && newAvailableRoles[0] === 'Student') {
+    role.value = 'Student';
+  }
+}, { immediate: true });
+
+// Main form submission
+const createUser = () => {
+  errorMessage.value = "";
+
+  // Validation
+  if (!role.value) {
+    errorMessage.value = "Please select a role";
+    return;
+  }
+
+  // Validate that selected role is available to current user
+  if (!availableRoles.value.includes(role.value)) {
+    errorMessage.value = "You don't have permission to create this role";
+    return;
+  }
+
+  // Password validation - required in create mode
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = "Passwords do not match";
+    return;
+  }
+
+  if (role.value === 'Student') {
+    if (!sectionId.value?.trim()) {
+      errorMessage.value = "Please enter a section for students";
+      return;
+    }
+  }
+
+  // Prepare data according to Scalar API documentation
+  const userData = {
+    Username: email.value,
+    Email: email.value,
+    Password: password.value,
+    RepeatedPassword: confirmPassword.value,
+    FirstName: firstName.value,
+    LastName: lastName.value,
+    Role: role.value,
+    SectionId: role.value === "Student" ? sectionId.value.trim() : null,
+  };
+
+  console.log('Sending userData to backend for creation:', userData);
+
+  // Emit the create event
+  emit("create", userData);
+
+  // Clear form after successful creation
+  email.value = "";
+  firstName.value = "";
+  lastName.value = "";
+  password.value = "";
+  confirmPassword.value = "";
+  role.value = "";
+  sectionId.value = "";
+};
+
+// Handle error from parent
+const handleError = (error) => {
+  errorMessage.value = error;
+};
+
+// Expose methods to parent
+defineExpose({ handleError });
+</script>
+
 <template>
   <div class="overlay">
     <div class="modal">
@@ -86,7 +237,8 @@
         <div class="form-group">
           <label>Role *</label>
           <div class="role-selector">
-            <div 
+            <div
+              v-if="availableRoles.includes('Instructor')"
               @click="role = 'Instructor'"
               class="role-option"
               :class="{ 'role-selected': role === 'Instructor' }"
@@ -94,7 +246,8 @@
               <GraduationCap class="role-icon" size="32" />
               <span class="role-name">Instructor</span>
             </div>
-            <div 
+            <div
+              v-if="availableRoles.includes('Student')"
               @click="role = 'Student'"
               class="role-option"
               :class="{ 'role-selected': role === 'Student' }"
@@ -132,122 +285,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, watch } from "vue";
-import { X, AlertTriangle, GraduationCap, User } from 'lucide-vue-next';
-
-const props = defineProps({
-  // No props needed for create mode
-});
-
-const emit = defineEmits(["create", "cancel"]);
-
-// Form data
-const email = ref("");
-const firstName = ref("");
-const lastName = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const role = ref("");
-const sectionId = ref("");
-const errorMessage = ref("");
-const passwordMismatchError = ref("");
-
-// Computed properties
-const modalTitle = computed(() => 'Create User');
-const submitButtonText = computed(() => 'Create Account');
-
-const isFormValid = computed(() => {
-  console.log('Create form validation check:', {
-    role: role.value,
-    sectionId: sectionId.value,
-    password: password.value,
-    confirmPassword: confirmPassword.value,
-    passwordsMatch: password.value === confirmPassword.value
-  });
-  
-  // Reset error message
-  passwordMismatchError.value = '';
-
-  if (!role.value) return false;
-  if (role.value === 'Student' && !sectionId.value?.trim()) return false;
-
-  // In create mode, password is required
-  if (password.value !== confirmPassword.value) {
-    if (password.value && confirmPassword.value) {
-      passwordMismatchError.value = 'Passwords do not match';
-    }
-    return false;
-  }
-  return true;
-});
-
-// Watch for password changes to clear error
-watch([password, confirmPassword], () => {
-  if (password.value === confirmPassword.value) {
-    passwordMismatchError.value = '';
-  }
-});
-
-// Main form submission
-const createUser = () => {
-  errorMessage.value = "";
-  
-  // Validation
-  if (!role.value) {
-    errorMessage.value = "Please select a role";
-    return;
-  }
-  
-  // Password validation - required in create mode
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = "Passwords do not match";
-    return;
-  }
-  
-  if (role.value === 'Student') {
-    if (!sectionId.value?.trim()) {
-      errorMessage.value = "Please enter a section for students";
-      return;
-    }
-  }
-  
-  // Prepare data according to Scalar API documentation
-  const userData = {
-    Username: email.value,
-    Email: email.value,
-    Password: password.value,
-    RepeatedPassword: confirmPassword.value,
-    FirstName: firstName.value,
-    LastName: lastName.value,
-    Role: role.value,
-    SectionId: role.value === "Student" ? sectionId.value.trim() : null,
-  };
-  
-  console.log('Sending userData to backend for creation:', userData);
-  
-  // Emit the create event
-  emit("create", userData);
-  
-  // Clear form after successful creation
-  email.value = "";
-  firstName.value = "";
-  lastName.value = "";
-  password.value = "";
-  confirmPassword.value = "";
-  role.value = "";
-  sectionId.value = "";
-};
-
-// Handle error from parent
-const handleError = (error) => {
-  errorMessage.value = error;
-};
-
-// Expose methods to parent
-defineExpose({ handleError });
-</script>
 
 <style scoped>
 .overlay {
