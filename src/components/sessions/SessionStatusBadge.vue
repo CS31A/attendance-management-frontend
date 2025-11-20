@@ -1,43 +1,36 @@
-<template>
-  <span class="status-badge" :class="statusClass">
-    <component :is="statusIcon" :size="16" class="status-icon" />
-    <span class="status-text">{{ statusLabel }}</span>
-  </span>
-</template>
-
 <script setup>
+import { CheckCircle, Clock, PlayCircle, XCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
-import { Clock, PlayCircle, CheckCircle, XCircle } from 'lucide-vue-next'
 
 const props = defineProps({
   status: {
     type: String,
     required: true,
-    validator: (value) => ['not_started', 'active', 'completed', 'cancelled'].includes(value)
-  }
+    validator: value => ['not_started', 'active', 'completed', 'cancelled'].includes(value),
+  },
 })
 
 const statusConfig = {
   not_started: {
     label: 'Not Started',
     icon: Clock,
-    class: 'status-not-started'
+    class: 'status-not-started',
   },
   active: {
     label: 'Active',
     icon: PlayCircle,
-    class: 'status-active'
+    class: 'status-active',
   },
   completed: {
     label: 'Completed',
     icon: CheckCircle,
-    class: 'status-completed'
+    class: 'status-completed',
   },
   cancelled: {
     label: 'Cancelled',
     icon: XCircle,
-    class: 'status-cancelled'
-  }
+    class: 'status-cancelled',
+  },
 }
 
 const statusLabel = computed(() => {
@@ -52,6 +45,13 @@ const statusClass = computed(() => {
   return statusConfig[props.status]?.class || 'status-unknown'
 })
 </script>
+
+<template>
+  <span class="status-badge" :class="statusClass">
+    <component :is="statusIcon" :size="16" class="status-icon" />
+    <span class="status-text">{{ statusLabel }}</span>
+  </span>
+</template>
 
 <style scoped>
 .status-badge {

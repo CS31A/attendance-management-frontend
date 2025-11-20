@@ -1,3 +1,61 @@
+<script setup>
+import { computed, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCourseStore } from '@/stores/courseStore'
+
+const router = useRouter()
+const courseStore = useCourseStore()
+
+const formData = reactive({
+  name: '',
+})
+
+const validationError = reactive({
+  name: '',
+})
+
+const isFormValid = computed(() => {
+  return formData.name.length >= 20 && formData.name.length <= 100
+})
+
+function validateForm() {
+  let isValid = true
+
+  // Reset errors
+  validationError.name = ''
+
+  // Validate name
+  if (!formData.name) {
+    validationError.name = 'Course name is required'
+    isValid = false
+  }
+  else if (formData.name.length < 20) {
+    validationError.name = 'Course name must be at least 20 characters'
+    isValid = false
+  }
+  else if (formData.name.length > 100) {
+    validationError.name = 'Course name must not exceed 100 characters'
+    isValid = false
+  }
+
+  return isValid
+}
+
+async function handleSubmit() {
+  if (!validateForm()) {
+    return
+  }
+
+  try {
+    await courseStore.createCourse(formData)
+    router.push('/courses')
+  }
+  catch {
+    // Error is handled in store
+  }
+}
+</script>
+
 <template>
   <div class="course-create">
     <h1>Create New Course</h1>
@@ -15,7 +73,7 @@
           required
           minlength="20"
           maxlength="100"
-        />
+        >
         <small class="help-text">
           {{ formData.name.length }}/100 characters (minimum 20 required)
         </small>
@@ -31,16 +89,16 @@
 
       <!-- Form Actions -->
       <div class="form-actions">
-        <button 
-          type="button" 
-          @click="$router.back()"
+        <button
+          type="button"
           class="btn-cancel"
           :disabled="courseStore.loading"
+          @click="$router.back()"
         >
           Cancel
         </button>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn-submit"
           :disabled="courseStore.loading || !isFormValid"
         >
@@ -50,61 +108,6 @@
     </form>
   </div>
 </template>
-
-<script setup>
-import { reactive, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useCourseStore } from '@/stores/courseStore';
-
-const router = useRouter();
-const courseStore = useCourseStore();
-
-const formData = reactive({
-  name: '',
-});
-
-const validationError = reactive({
-  name: '',
-});
-
-const isFormValid = computed(() => {
-  return formData.name.length >= 20 && formData.name.length <= 100;
-});
-
-const validateForm = () => {
-  let isValid = true;
-  
-  // Reset errors
-  validationError.name = '';
-  
-  // Validate name
-  if (!formData.name) {
-    validationError.name = 'Course name is required';
-    isValid = false;
-  } else if (formData.name.length < 20) {
-    validationError.name = 'Course name must be at least 20 characters';
-    isValid = false;
-  } else if (formData.name.length > 100) {
-    validationError.name = 'Course name must not exceed 100 characters';
-    isValid = false;
-  }
-  
-  return isValid;
-};
-
-const handleSubmit = async () => {
-  if (!validateForm()) {
-    return;
-  }
-  
-  try {
-    await courseStore.createCourse(formData);
-    router.push('/courses');
-  } catch (err) {
-    // Error is handled in store
-  }
-};
-</script>
 
 <style scoped>
 /* Add your styles here */

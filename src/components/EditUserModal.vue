@@ -1,3 +1,112 @@
+<script setup>
+import { AlertTriangle, GraduationCap, User, X } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+
+const props = defineProps({
+  user: { type: Object, required: true },
+})
+
+const emit = defineEmits(['update', 'cancel'])
+
+// Form data
+const email = ref('')
+const firstName = ref('')
+const lastName = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const role = ref('')
+const sectionId = ref('')
+const errorMessage = ref('')
+const passwordMismatchError = ref('')
+
+// Load user data when component mounts
+watch(() => props.user, (newUser) => {
+  if (newUser) {
+    email.value = newUser.email || ''
+    firstName.value = newUser.firstName || newUser.firstname || ''
+    lastName.value = newUser.lastName || newUser.lastname || ''
+    password.value = ''
+    confirmPassword.value = ''
+    role.value = newUser.role || ''
+    sectionId.value = newUser.sectionId || ''
+  }
+}, { immediate: true })
+
+// Form validation
+const isFormValid = computed(() => {
+  if (!role.value)
+    return false
+  if (role.value === 'Student' && !String(sectionId.value || '').trim())
+    return false
+
+  // Password validation - optional but must match if provided
+  if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
+    return false
+  }
+  if ((password.value && !confirmPassword.value) || (!password.value && confirmPassword.value)) {
+    return false
+  }
+
+  return true
+})
+
+// Watch for password changes to manage error message
+watch([password, confirmPassword], () => {
+  if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
+    passwordMismatchError.value = 'Passwords do not match'
+  }
+  else if ((password.value && !confirmPassword.value) || (!password.value && confirmPassword.value)) {
+    passwordMismatchError.value = 'Please fill both password fields or leave both empty'
+  }
+  else {
+    passwordMismatchError.value = ''
+  }
+})
+
+// Get role icon component
+function getRoleIcon(role) {
+  const icons = {
+    Instructor: GraduationCap,
+    Student: User,
+  }
+  return icons[role] || User
+}
+
+// Form submission
+function updateUser() {
+  errorMessage.value = ''
+
+  if (!isFormValid.value) {
+    errorMessage.value = 'Please check all required fields'
+    return
+  }
+
+  const userData = {
+    Username: email.value,
+    Email: email.value,
+    FirstName: firstName.value,
+    LastName: lastName.value,
+    SectionId: role.value === 'Student' ? String(sectionId.value || '').trim() : null,
+  }
+
+  // Only include password if provided
+  if (password.value && confirmPassword.value) {
+    userData.Password = password.value
+    userData.RepeatedPassword = confirmPassword.value
+  }
+
+  emit('update', userData)
+}
+
+// Handle error from parent
+function handleError(error) {
+  errorMessage.value = error
+}
+
+// Expose methods to parent
+defineExpose({ handleError })
+</script>
+
 <template>
   <div class="overlay">
     <div class="modal">
@@ -18,65 +127,65 @@
       </div>
 
       <!-- Modal Body -->
-      <form @submit.prevent="updateUser" class="modal-body">
+      <form class="modal-body" @submit.prevent="updateUser">
         <!-- Email Field (Read-only) -->
         <div class="form-group">
           <label>Email *</label>
-          <input 
-            v-model="email" 
+          <input
+            v-model="email"
             type="email"
-            placeholder="Enter email address" 
-            required 
+            placeholder="Enter email address"
+            required
             disabled
-          />
+          >
           <small class="helper-text info">Email cannot be changed</small>
         </div>
 
         <!-- First Name Field -->
         <div class="form-group">
           <label>First Name *</label>
-          <input 
-            v-model="firstName" 
+          <input
+            v-model="firstName"
             type="text"
-            placeholder="Enter first name" 
-            required 
-          />
+            placeholder="Enter first name"
+            required
+          >
           <small class="helper-text info">User's first name</small>
         </div>
 
         <!-- Last Name Field -->
         <div class="form-group">
           <label>Last Name *</label>
-          <input 
-            v-model="lastName" 
+          <input
+            v-model="lastName"
             type="text"
-            placeholder="Enter last name" 
-            required 
-          />
+            placeholder="Enter last name"
+            required
+          >
           <small class="helper-text info">User's last name</small>
         </div>
 
         <!-- Password Field (Optional) -->
         <div class="form-group">
           <label>Password (Optional)</label>
-          <input 
-            v-model="password" 
+          <input
+            v-model="password"
             type="password"
-            placeholder="Leave empty to keep current password" 
+            placeholder="Leave empty to keep current password"
             minlength="6"
-          />
+          >
           <small class="helper-text info">Leave empty to keep current password</small>
         </div>
 
         <!-- Confirm Password Field (Optional) -->
         <div class="form-group">
           <label>Confirm Password (Optional)</label>
-          <input 
-            v-model="confirmPassword" 
+          <input
+            v-model="confirmPassword"
             type="password"
-            placeholder="Leave empty to keep current password" 
+            placeholder="Leave empty to keep current password"
             minlength="6"
-          />
+          >
           <small class="helper-text info">Leave empty to keep current password</small>
           <small v-if="passwordMismatchError" class="helper-text error">{{ passwordMismatchError }}</small>
         </div>
@@ -101,7 +210,7 @@
             type="text"
             placeholder="Enter section (e.g., 3, 4, 5, CS101, MATH201...)"
             required
-          />
+          >
           <small class="helper-text info">Required for students</small>
         </div>
 
@@ -119,112 +228,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch } from "vue";
-import { X, AlertTriangle, GraduationCap, User } from 'lucide-vue-next';
-
-const props = defineProps({
-  user: { type: Object, required: true }
-});
-
-const emit = defineEmits(["update", "cancel"]);
-
-// Form data
-const email = ref("");
-const firstName = ref("");
-const lastName = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const role = ref("");
-const sectionId = ref("");
-const errorMessage = ref("");
-const passwordMismatchError = ref("");
-
-// Load user data when component mounts
-watch(() => props.user, (newUser) => {
-  if (newUser) {
-    console.log('Loading user data for edit:', newUser);
-    email.value = newUser.email || '';
-    firstName.value = newUser.firstName || newUser.firstname || '';
-    lastName.value = newUser.lastName || newUser.lastname || '';
-    password.value = '';
-    confirmPassword.value = '';
-    role.value = newUser.role || '';
-    sectionId.value = newUser.sectionId || '';
-  }
-}, { immediate: true });
-
-// Form validation
-const isFormValid = computed(() => {
-  console.log('Edit form validation check:', {
-    role: role.value,
-    sectionId: sectionId.value,
-    password: password.value,
-    confirmPassword: confirmPassword.value
-  });
-  
-  if (!role.value) return false;
-  if (role.value === 'Student' && !String(sectionId.value || '').trim()) return false;
-  
-  // Password validation - optional but must match if provided
-  if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
-    passwordMismatchError.value = 'Passwords do not match';
-    return false;
-  }
-  if ((password.value && !confirmPassword.value) || (!password.value && confirmPassword.value)) {
-    passwordMismatchError.value = 'Please fill both password fields or leave both empty';
-    return false;
-  }
-  
-  passwordMismatchError.value = '';
-  return true;
-});
-
-// Get role icon component
-const getRoleIcon = (role) => {
-  const icons = {
-    Instructor: GraduationCap,
-    Student: User
-  }
-  return icons[role] || User
-}
-
-// Form submission
-const updateUser = () => {
-  errorMessage.value = "";
-  
-  if (!isFormValid.value) {
-    errorMessage.value = "Please check all required fields";
-    return;
-  }
-  
-  const userData = {
-    Username: email.value,
-    Email: email.value,
-    FirstName: firstName.value,
-    LastName: lastName.value,
-    SectionId: role.value === "Student" ? String(sectionId.value || '').trim() : null,
-  };
-  
-  // Only include password if provided
-  if (password.value && confirmPassword.value) {
-    userData.Password = password.value;
-    userData.RepeatedPassword = confirmPassword.value;
-  }
-  
-  console.log('Sending userData to backend for update:', userData);
-  emit("update", userData);
-};
-
-// Handle error from parent
-const handleError = (error) => {
-  errorMessage.value = error;
-};
-
-// Expose methods to parent
-defineExpose({ handleError });
-</script>
-
 <style scoped>
 /* Overlay */
 .overlay {
@@ -235,8 +238,8 @@ defineExpose({ handleError });
   align-items: center;
   justify-content: center;
   z-index: 1100;
-  padding: 1.25rem 1.25rem 1.5rem; 
-  padding-top: 5.25rem; 
+  padding: 1.25rem 1.25rem 1.5rem;
+  padding-top: 5.25rem;
 }
 
 /* Modal */
@@ -244,9 +247,9 @@ defineExpose({ handleError });
   background: white;
   border-radius: 0.75rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 440px; 
+  max-width: 440px;
   width: 100%;
-  max-height: calc(100vh - 6.5rem); 
+  max-height: calc(100vh - 6.5rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -255,7 +258,7 @@ defineExpose({ handleError });
 /* Modal Header */
 .modal-header {
   background: linear-gradient(to right, #1e3a8a, #1e40af);
-  padding: 0.875rem 1rem; 
+  padding: 0.875rem 1rem;
   border-radius: 0.75rem 0.75rem 0 0;
   display: flex;
   justify-content: space-between;
@@ -264,7 +267,7 @@ defineExpose({ handleError });
 
 .modal-header h2 {
   color: white;
-  font-size: 1.25rem; 
+  font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
 }
@@ -290,7 +293,7 @@ defineExpose({ handleError });
 
 /* Modal Body */
 .modal-body {
-  padding: 1rem; 
+  padding: 1rem;
   overflow-y: auto;
 }
 
@@ -471,11 +474,11 @@ defineExpose({ handleError });
   .modal {
     max-width: 420px; /* extra slim on very large screens */
   }
-  
+
   .modal-body {
     padding: 1.125rem;
   }
-  
+
   .form-group {
     margin-bottom: 0.875rem;
   }
@@ -488,39 +491,39 @@ defineExpose({ handleError });
     padding-top: 4.5rem; /* smaller header height on tablet */
     align-items: center;
   }
-  
+
   .modal {
     max-width: 100%;
     max-height: calc(100vh - 5rem);
     border-radius: 0.875rem;
   }
-  
+
   .modal-header {
     padding: 0.75rem 1rem;
   }
-  
+
   .modal-header h2 {
     font-size: 1.125rem;
   }
-  
+
   .modal-body {
     padding: 0.875rem;
   }
-  
+
   .form-group {
     margin-bottom: 0.75rem;
   }
-  
+
   .form-group input {
     padding: 0.625rem 0.875rem;
     font-size: 0.9rem;
   }
-  
+
   .actions {
     flex-direction: column-reverse;
     gap: 0.5rem;
   }
-  
+
   .btn-update,
   .btn-cancel {
     width: 100%;
@@ -535,91 +538,91 @@ defineExpose({ handleError });
     padding-top: 4rem; /* header ~56px */
     align-items: flex-end;
   }
-  
+
   .modal {
     max-width: 100%;
     max-height: calc(100vh - 4.5rem);
     border-radius: 0.875rem 0.875rem 0 0;
   }
-  
+
   .modal-header {
     border-radius: 1rem 1rem 0 0;
     padding: 0.875rem 1rem;
   }
-  
+
   .modal-header h2 {
     font-size: 1rem;
   }
-  
+
   .btn-close svg {
     width: 1rem;
     height: 1rem;
   }
-  
+
   .modal-body {
     padding: 0.75rem;
   }
-  
+
   .form-group {
     margin-bottom: 0.875rem;
   }
-  
+
   .form-group label {
     font-size: 0.8rem;
     margin-bottom: 0.25rem;
   }
-  
+
   .form-group input {
     padding: 0.625rem 0.875rem;
     font-size: 0.85rem;
   }
-  
+
   .role-badge {
     padding: 0.5rem 0.75rem;
   }
-  
+
   .role-icon {
     width: 1rem;
     height: 1rem;
   }
-  
+
   .actions {
     flex-direction: column-reverse;
     gap: 0.5rem;
   }
-  
+
   .btn-update,
   .btn-cancel {
     width: 100%;
     padding: 0.625rem 1rem;
   }
-  
+
   .error-message {
     margin: 0.75rem 1rem 0;
     padding: 0.625rem;
   }
-  
+
   .modal-header {
     padding: 0.625rem 0.875rem;
   }
-  
+
   .modal-header h2 {
     font-size: 0.9rem;
   }
-  
+
   .modal-body {
     padding: 0.75rem;
   }
-  
+
   .form-group input {
     padding: 0.5rem 0.625rem;
     font-size: 0.75rem;
   }
-  
+
   .actions {
     margin-top: 0.875rem;
   }
-  
+
   .btn-update,
   .btn-cancel {
     padding: 0.5rem 0.875rem;
@@ -634,82 +637,82 @@ defineExpose({ handleError });
     padding-top: 3.5rem; /* header ~48px */
     align-items: flex-end;
   }
-  
+
   .modal {
     max-width: 100%;
     max-height: calc(100vh - 3.75rem);
     border-radius: 0.75rem 0.75rem 0 0;
   }
-  
+
   .modal-header {
     border-radius: 0.75rem 0.75rem 0 0;
     padding: 0.75rem 1rem;
   }
-  
+
   .modal-header h2 {
     font-size: 0.95rem;
   }
-  
+
   .modal-body {
     padding: 0.75rem;
     max-height: calc(100vh - 4.25rem);
   }
-  
+
   .form-group {
     margin-bottom: 0.75rem;
   }
-  
+
   .form-group label {
     font-size: 0.75rem;
     margin-bottom: 0.25rem;
   }
-  
+
   .form-group input {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }
-  
+
   .role-badge {
     padding: 0.375rem 0.625rem;
   }
-  
+
   .role-icon {
     width: 0.875rem;
     height: 0.875rem;
   }
-  
+
   .actions {
     margin-top: 0.875rem;
   }
-  
+
   .btn-update,
   .btn-cancel {
     padding: 0.5rem 0.875rem;
     font-size: 0.8rem;
   }
-  
+
   .error-message {
     margin: 0.75rem 1rem 0;
     padding: 0.625rem;
   }
-  
+
   .modal-header {
     padding: 0.625rem 0.875rem;
   }
-  
+
   .modal-header h2 {
     font-size: 0.9rem;
   }
-  
+
   .modal-body {
     padding: 0.75rem;
   }
-  
+
   .form-group input {
     padding: 0.5rem 0.625rem;
     font-size: 0.75rem;
   }
-  
+
   .btn-update,
   .btn-cancel {
     padding: 0.5rem 0.75rem;

@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
-import { Plus, AlertTriangle } from 'lucide-vue-next'
-import { useSectionStore } from '@/stores/sectionStore.js'
+import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import SectionModal from '@/components/SectionModal.vue'
+import { useSectionStore } from '@/stores/sectionStore.js'
 
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
@@ -30,63 +30,65 @@ const paginatedSections = computed(() => {
 })
 
 // Pagination handlers
-const handleNextPage = () => {
+function handleNextPage() {
   if (hasNextPage.value) {
     currentPage.value++
   }
 }
 
-const handlePreviousPage = () => {
+function handlePreviousPage() {
   if (hasPreviousPage.value) {
     currentPage.value--
   }
 }
 
-const handleGoToPage = (page) => {
+function handleGoToPage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-const handleSetItemsPerPage = (value) => {
+function handleSetItemsPerPage(value) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
 
 // Modal Handlers
-const openAddModal = () => {
+function openAddModal() {
   selectedSection.value = null
   showModal.value = true
 }
 
-const openEditModal = (section) => {
+function openEditModal(section) {
   selectedSection.value = { ...section }
   showModal.value = true
 }
 
-const closeModal = () => {
+function closeModal() {
   showModal.value = false
   selectedSection.value = null
 }
 
-const handleSaveSection = async (sectionData) => {
+async function handleSaveSection(sectionData) {
   try {
     if (selectedSection.value) {
       // Edit mode
       await sectionsStore.updateSection(selectedSection.value.id, sectionData)
-    } else {
+    }
+    else {
       // Create mode
       await sectionsStore.addSection(sectionData)
     }
     closeModal()
-  } catch (error) {
+  }
+  catch (error) {
     if (modalRef.value) {
       modalRef.value.handleError(error.response?.data?.message || 'Failed to save section')
     }
   }
 }
 
-const handleDeleteSection = async (sectionId) => {
+async function handleDeleteSection(sectionId) {
   if (confirm('Are you sure you want to delete this section? This action cannot be undone.')) {
     try {
       await sectionsStore.deleteSection(sectionId)
@@ -94,17 +96,19 @@ const handleDeleteSection = async (sectionId) => {
       if (paginatedSections.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
-    } catch (error) {
-      alert('Failed to delete section: ' + (error.response?.data?.message || error.message))
+    }
+    catch (error) {
+      alert(`Failed to delete section: ${error.response?.data?.message || error.message}`)
     }
   }
 }
 
-onMounted(async() => {
+onMounted(async () => {
   try {
     await sectionsStore.fetchSections()
-  } catch(err) {
-    console.log(err)
+  }
+  catch {
+    // Error handled silently
   }
 })
 </script>
@@ -114,45 +118,51 @@ onMounted(async() => {
     <!-- Loading overlay -->
     <div v-if="sectionsStore.loading" class="loading-overlay">
       <div class="loading-spinner">
-        <div class="spinner"></div>
+        <div class="spinner" />
         <p>Loading...</p>
       </div>
     </div>
-    
+
     <!-- Error message -->
     <div v-if="sectionsStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ sectionsStore.error }}</p>
-        <button @click="sectionsStore.fetchSections" class="retry-btn">Retry</button>
+        <button class="retry-btn" @click="sectionsStore.fetchSections">
+          Retry
+        </button>
       </div>
     </div>
 
-    <div class="container" v-else>
+    <div v-else class="container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
           <div class="header-text">
-            <h1 class="page-title">Section Management</h1>
-            <p class="page-subtitle">Manage Sections</p>
+            <h1 class="page-title">
+              Section Management
+            </h1>
+            <p class="page-subtitle">
+              Manage Sections
+            </p>
           </div>
-          <button @click="openAddModal" class="btn-add">
+          <button class="btn-add" @click="openAddModal">
             <Plus class="icon" size="20" />
             <span>Add Section</span>
           </button>
         </div>
       </div>
 
-      <SectionTableSection 
-        :sections="paginatedSections" 
-        title="All Sections" 
+      <SectionTableSection
+        :sections="paginatedSections"
+        title="All Sections"
         :pagination="{
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
           totalSections,
-          itemsPerPage
+          itemsPerPage,
         }"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"

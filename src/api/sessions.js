@@ -26,7 +26,7 @@ import api from '@/api'
  * const sessions = await fetchSessions()
  * console.log(`Found ${sessions.length} sessions`)
  */
-export const fetchSessions = async () => {
+export async function fetchSessions() {
   const response = await api.get('/sessions')
   return response.data
 }
@@ -42,7 +42,7 @@ export const fetchSessions = async () => {
  * const session = await fetchSessionById(123)
  * console.log(`Session status: ${session.status}`)
  */
-export const fetchSessionById = async (sessionId) => {
+export async function fetchSessionById(sessionId) {
   const response = await api.get(`/sessions/${sessionId}`)
   return response.data
 }
@@ -60,7 +60,7 @@ export const fetchSessionById = async (sessionId) => {
  * const sessions = await fetchSessionsBySchedule(456)
  * const upcoming = sessions.filter(s => s.status === 'not_started')
  */
-export const fetchSessionsBySchedule = async (scheduleId) => {
+export async function fetchSessionsBySchedule(scheduleId) {
   const response = await api.get(`/sessions/schedule/${scheduleId}`)
   return response.data
 }
@@ -78,7 +78,7 @@ export const fetchSessionsBySchedule = async (scheduleId) => {
  * const activeSessions = await fetchSessionsByStatus('active')
  * activeSessions.forEach(s => console.log(`Active: ${s.subjectName}`))
  */
-export const fetchSessionsByStatus = async (status) => {
+export async function fetchSessionsByStatus(status) {
   const response = await api.get(`/sessions/status/${status}`)
   return response.data
 }
@@ -96,7 +96,7 @@ export const fetchSessionsByStatus = async (status) => {
  * const today = new Date().toISOString().split('T')[0]
  * const todaySessions = await fetchSessionsByDate(today)
  */
-export const fetchSessionsByDate = async (date) => {
+export async function fetchSessionsByDate(date) {
   const response = await api.get(`/sessions/date/${date}`)
   return response.data
 }
@@ -125,7 +125,7 @@ export const fetchSessionsByDate = async (date) => {
  * })
  * console.log(`Created session ${newSession.id}`)
  */
-export const createSession = async (payload) => {
+export async function createSession(payload) {
   const response = await api.post('/sessions', payload)
   return response.data
 }
@@ -138,9 +138,9 @@ export const createSession = async (payload) => {
  * start a session.
  *
  * @param {number} sessionId - Session ID
- * @param {StartSessionPayload} [payload={}] - Start session options
+ * @param {StartSessionPayload} [payload] - Start session options
  * @param {number} [payload.actualRoomId] - Actual room ID if different from scheduled
- * @param {number} [payload.attendanceCutoffMinutes=15] - Minutes after start for late cutoff (0-120)
+ * @param {number} [payload.attendanceCutoffMinutes] - Minutes after start for late cutoff (0-120)
  * @returns {Promise<SessionResponseDto>} Updated session object with status 'active'
  * @throws {Error} 403 if not assigned instructor, 400 if not in 'not_started' status
  *
@@ -154,7 +154,7 @@ export const createSession = async (payload) => {
  *   attendanceCutoffMinutes: 20
  * })
  */
-export const startSession = async (sessionId, payload = {}) => {
+export async function startSession(sessionId, payload = {}) {
   const response = await api.patch(`/sessions/${sessionId}/start`, payload)
   return response.data
 }
@@ -167,7 +167,7 @@ export const startSession = async (sessionId, payload = {}) => {
  * a session.
  *
  * @param {number} sessionId - Session ID
- * @param {EndSessionPayload} [payload={}] - End session options
+ * @param {EndSessionPayload} [payload] - End session options
  * @param {string} [payload.description] - Completion notes (optional, max 500 chars)
  * @returns {Promise<SessionResponseDto>} Updated session object with status 'ended'
  * @throws {Error} 403 if not assigned instructor, 400 if not in 'active' status
@@ -177,7 +177,7 @@ export const startSession = async (sessionId, payload = {}) => {
  *   description: 'Covered chapters 1-3. Quiz next week.'
  * })
  */
-export const endSession = async (sessionId, payload = {}) => {
+export async function endSession(sessionId, payload = {}) {
   const response = await api.patch(`/sessions/${sessionId}/end`, payload)
   return response.data
 }
@@ -197,7 +197,7 @@ export const endSession = async (sessionId, payload = {}) => {
  * await deleteSession(123)
  * console.log('Session cancelled successfully')
  */
-export const deleteSession = async (sessionId) => {
+export async function deleteSession(sessionId) {
   const response = await api.delete(`/sessions/${sessionId}`)
   return response.data
 }
@@ -221,7 +221,7 @@ export const deleteSession = async (sessionId) => {
  * })
  * console.log(`Room changed to ${updated.actualRoomName}`)
  */
-export const updateSessionRoom = async (sessionId, payload) => {
+export async function updateSessionRoom(sessionId, payload) {
   const response = await api.patch(`/sessions/${sessionId}/room`, payload)
   return response.data
 }
@@ -243,7 +243,7 @@ export const updateSessionRoom = async (sessionId, payload) => {
  * const formatted = formatDateForApi("2024-03-15T10:30:00Z")
  * // Returns: "2024-03-15"
  */
-export const formatDateForApi = (date) => {
+export function formatDateForApi(date) {
   if (date instanceof Date) {
     return date.toISOString().split('T')[0]
   }
@@ -265,7 +265,7 @@ export const formatDateForApi = (date) => {
  * isValidStatus('active')  // true
  * isValidStatus('pending') // false
  */
-export const isValidStatus = (status) => {
+export function isValidStatus(status) {
   return ['not_started', 'active', 'ended', 'cancelled'].includes(status)
 }
 
@@ -282,7 +282,7 @@ export const isValidStatus = (status) => {
  *   await startSession(session.id)
  * }
  */
-export const canStartSession = (session) => {
+export function canStartSession(session) {
   return session && session.status === 'not_started'
 }
 
@@ -294,7 +294,7 @@ export const canStartSession = (session) => {
  * @param {SessionResponseDto} session - Session object
  * @returns {boolean} Whether session can be ended
  */
-export const canEndSession = (session) => {
+export function canEndSession(session) {
   return session && session.status === 'active'
 }
 
@@ -306,7 +306,7 @@ export const canEndSession = (session) => {
  * @param {SessionResponseDto} session - Session object
  * @returns {boolean} Whether session can be deleted
  */
-export const canDeleteSession = (session) => {
+export function canDeleteSession(session) {
   return session && session.status === 'not_started'
 }
 
@@ -318,7 +318,7 @@ export const canDeleteSession = (session) => {
  * @param {SessionResponseDto} session - Session object
  * @returns {boolean} Whether session room can be updated
  */
-export const canUpdateRoom = (session) => {
+export function canUpdateRoom(session) {
   return session && session.status === 'active'
 }
 
@@ -336,7 +336,7 @@ export const canUpdateRoom = (session) => {
  *   console.log(`Session lasted ${duration} minutes`)
  * }
  */
-export const calculateSessionDuration = (session) => {
+export function calculateSessionDuration(session) {
   if (!session?.actualStartTime || !session?.actualEndTime) {
     return null
   }
@@ -357,13 +357,17 @@ export const calculateSessionDuration = (session) => {
  * const name = getSessionDisplayName(session)
  * // Returns: "CS101 - Data Structures (Section A)"
  */
-export const getSessionDisplayName = (session) => {
-  if (!session) return 'Unknown Session'
+export function getSessionDisplayName(session) {
+  if (!session)
+    return 'Unknown Session'
 
   const parts = []
-  if (session.subjectCode) parts.push(session.subjectCode)
-  if (session.subjectName) parts.push(session.subjectName)
-  if (session.sectionName) parts.push(`(${session.sectionName})`)
+  if (session.subjectCode)
+    parts.push(session.subjectCode)
+  if (session.subjectName)
+    parts.push(session.subjectName)
+  if (session.sectionName)
+    parts.push(`(${session.sectionName})`)
 
   return parts.join(' - ') || `Session ${session.id}`
 }

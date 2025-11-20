@@ -1,86 +1,84 @@
 <script setup>
-import { defineAsyncComponent, ref, onMounted, onUnmounted, computed } from 'vue';
-import { useAuthStore } from './stores/authStore';
-import { useRoute } from 'vue-router';
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from './stores/authStore'
 
 const SideBar = defineAsyncComponent(() => import('./components/SideBar.vue'))
 const Header = defineAsyncComponent(() => import('./components/Header.vue'))
 const authStore = useAuthStore()
 const route = useRoute()
 
-const isMobile = ref(false);
-const isSidebarOpen = ref(false);
-const isSidebarCollapsed = ref(false);
+const isMobile = ref(false)
+const isSidebarOpen = ref(false)
+const isSidebarCollapsed = ref(false)
 
 // Computed properties
-const isAuthInitializing = computed(() => authStore.getIsLoading);
-const isAuthenticated = computed(() => authStore.getIsAuthenticated);
+const isAuthInitializing = computed(() => authStore.getIsLoading)
+const isAuthenticated = computed(() => authStore.getIsAuthenticated)
 const showSidebar = computed(() => {
   // Show sidebar if authenticated and not on login page
-  return isAuthenticated.value && route.path !== '/login';
-});
+  return isAuthenticated.value && route.path !== '/login'
+})
 
-const checkIsMobile = () => {
-  isMobile.value = window.innerWidth <= 768;
-};
+function checkIsMobile() {
+  isMobile.value = window.innerWidth <= 768
+}
 
 // Initialize authentication state
 onMounted(async () => {
   await authStore.initializeAuth()
-  checkIsMobile();
-  window.addEventListener('resize', checkIsMobile);
-});
+  checkIsMobile()
+  window.addEventListener('resize', checkIsMobile)
+})
 
 // Event listener to detect when sidebar opens/closes
-const handleSidebarToggle = (event) => {
+function handleSidebarToggle(event) {
   if (event.detail) {
-    isSidebarOpen.value = event.detail.isOpen ?? false;
-    isSidebarCollapsed.value = event.detail.isCollapsed ?? false;
+    isSidebarOpen.value = event.detail.isOpen ?? false
+    isSidebarCollapsed.value = event.detail.isCollapsed ?? false
   }
-};
+}
 
 onMounted(() => {
-  window.addEventListener('sidebar-toggle', handleSidebarToggle);
-});
+  window.addEventListener('sidebarToggle', handleSidebarToggle)
+})
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkIsMobile);
-  window.removeEventListener('sidebar-toggle', handleSidebarToggle);
-});
+  window.removeEventListener('resize', checkIsMobile)
+  window.removeEventListener('sidebarToggle', handleSidebarToggle)
+})
 
 // Notification badge count (you can make this dynamic)
-const notificationCount = ref(1);
+const notificationCount = ref(1)
 
 // Handle notification click
-const handleNotificationClick = () => {
+function handleNotificationClick() {
   // Add your notification logic here
-  console.log('Notification clicked');
-};
+}
 
 // Handle profile click
-const handleProfileClick = () => {
+function handleProfileClick() {
   // Add your profile logic here
-  console.log('Profile clicked');
-};
+}
 
 // Handle collapse toggle from Header
-const handleToggleCollapse = (isCollapsed) => {
-  isSidebarCollapsed.value = isCollapsed;
-};
+function handleToggleCollapse(isCollapsed) {
+  isSidebarCollapsed.value = isCollapsed
+}
 </script>
 
 <template>
   <div class="container">
     <!-- Show loading state while initializing auth -->
     <div v-if="isAuthInitializing" class="auth-loading">
-      <div class="spinner"></div>
+      <div class="spinner" />
       <p>Authenticating...</p>
     </div>
-    
+
     <!-- Show app content when auth is ready -->
     <template v-else>
       <SideBar v-if="showSidebar" :is-collapsed="isSidebarCollapsed" />
-      
+
       <!-- Header Component -->
       <Header
         v-if="showSidebar"
@@ -94,13 +92,15 @@ const handleToggleCollapse = (isCollapsed) => {
         @toggle-collapse="handleToggleCollapse"
         @sidebar-toggle="handleSidebarToggle"
       />
-      
-      <main :class="{ 
-        'no-sidebar': !showSidebar || isMobile,
-        'sidebar-open': showSidebar && isMobile && isSidebarOpen,
-        'sidebar-collapsed': showSidebar && !isMobile && isSidebarCollapsed,
-        'with-header': showSidebar
-      }">
+
+      <main
+        :class="{
+          'no-sidebar': !showSidebar || isMobile,
+          'sidebar-open': showSidebar && isMobile && isSidebarOpen,
+          'sidebar-collapsed': showSidebar && !isMobile && isSidebarCollapsed,
+          'with-header': showSidebar,
+        }"
+      >
         <router-view />
       </main>
     </template>
@@ -125,7 +125,6 @@ body {
   min-height: 100vh;
   background: #f8fafc;
 }
-
 
 /* Main Content Styles */
 main {

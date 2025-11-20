@@ -4,14 +4,14 @@ import { BookOpen, Calendar, Edit, Trash2 } from 'lucide-vue-next'
 defineProps({
   sections: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
 })
 
 defineEmits(['edit', 'delete'])
 
 // Get section name - handle different possible field names
-const getSectionName = (section) => {
+function getSectionName(section) {
   if (section.name) {
     return section.name
   }
@@ -25,15 +25,17 @@ const getSectionName = (section) => {
 }
 
 // Format date for display
-const formatDate = (value) => {
-  if (!value) return 'N/A'
+function formatDate(value) {
+  if (!value)
+    return 'N/A'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'N/A'
-  
+  if (Number.isNaN(date.getTime()))
+    return 'N/A'
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
-    day: '2-digit'
+    day: '2-digit',
   }).format(date)
 }
 </script>
@@ -43,11 +45,21 @@ const formatDate = (value) => {
     <table class="sections-table">
       <thead>
         <tr>
-          <th class="th-id">ID</th>
-          <th class="th-name">Section Name</th>
-          <th class="th-course">Course ID</th>
-          <th class="th-created">Created</th>
-          <th class="th-actions">Actions</th> 
+          <th class="th-id">
+            ID
+          </th>
+          <th class="th-name">
+            Section Name
+          </th>
+          <th class="th-course">
+            Course ID
+          </th>
+          <th class="th-created">
+            Created
+          </th>
+          <th class="th-actions">
+            Actions
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -72,10 +84,10 @@ const formatDate = (value) => {
           </td>
           <td class="td-actions">
             <div class="action-buttons">
-              <button class="btn-edit" @click="$emit('edit', section)" title="Edit Section">
+              <button class="btn-edit" title="Edit Section" @click="$emit('edit', section)">
                 <Edit class="btn-icon" size="16" />
               </button>
-              <button class="btn-delete" @click="$emit('delete', section.id)" title="Delete Section">
+              <button class="btn-delete" title="Delete Section" @click="$emit('delete', section.id)">
                 <Trash2 class="btn-icon" size="16" />
               </button>
             </div>

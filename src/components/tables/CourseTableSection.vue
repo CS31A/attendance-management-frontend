@@ -1,3 +1,25 @@
+<script setup>
+import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import CourseTable from './CourseTable.vue'
+
+defineProps({
+  courses: {
+    type: Array,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  pagination: {
+    type: Object,
+    default: null,
+  },
+})
+
+defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+</script>
+
 <template>
   <div class="table-section">
     <div class="table-header">
@@ -6,10 +28,10 @@
         <h2>{{ title }} ({{ pagination ? pagination.totalCourses : courses.length }})</h2>
       </div>
     </div>
-    
+
     <div class="table-container">
-      <CourseTable 
-        :courses="courses" 
+      <CourseTable
+        :courses="courses"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
       />
@@ -18,62 +40,70 @@
       <div v-if="pagination" class="pagination-section">
         <div class="pagination-info">
           <span class="pagination-text">
-            Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }} to 
-            {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalCourses) }} of 
+            Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }} to
+            {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalCourses) }} of
             {{ pagination.totalCourses }} courses
           </span>
           <div class="items-per-page">
             <label for="itemsPerPage">Show:</label>
-            <select 
-              id="itemsPerPage" 
-              :value="pagination.itemsPerPage" 
-              @change="$emit('set-items-per-page', parseInt($event.target.value))"
+            <select
+              id="itemsPerPage"
+              :value="pagination.itemsPerPage"
               class="items-select"
+              @change="$emit('setItemsPerPage', parseInt($event.target.value))"
             >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
+              <option value="5">
+                5
+              </option>
+              <option value="10">
+                10
+              </option>
+              <option value="20">
+                20
+              </option>
+              <option value="50">
+                50
+              </option>
             </select>
           </div>
         </div>
-        
+
         <div class="pagination-controls">
-          <button 
-            @click="$emit('previous-page')" 
+          <button
             :disabled="!pagination.hasPreviousPage"
             class="pagination-btn"
             :class="{ disabled: !pagination.hasPreviousPage }"
+            @click="$emit('previousPage')"
           >
             <ChevronLeft class="pagination-icon" size="16" />
             Previous
           </button>
-          
+
           <div class="page-numbers">
-            <button 
-              v-for="page in Math.min(5, pagination.totalPages)" 
+            <button
+              v-for="page in Math.min(5, pagination.totalPages)"
               :key="page"
-              @click="$emit('go-to-page', page)"
               class="page-btn"
               :class="{ active: page === pagination.currentPage }"
+              @click="$emit('goToPage', page)"
             >
               {{ page }}
             </button>
             <span v-if="pagination.totalPages > 5" class="page-ellipsis">...</span>
-            <button 
+            <button
               v-if="pagination.totalPages > 5 && pagination.currentPage < pagination.totalPages - 2"
-              @click="$emit('go-to-page', pagination.totalPages)"
               class="page-btn"
+              @click="$emit('goToPage', pagination.totalPages)"
             >
               {{ pagination.totalPages }}
             </button>
           </div>
-          
-          <button 
-            @click="$emit('next-page')" 
+
+          <button
             :disabled="!pagination.hasNextPage"
             class="pagination-btn"
             :class="{ disabled: !pagination.hasNextPage }"
+            @click="$emit('nextPage')"
           >
             Next
             <ChevronRight class="pagination-icon" size="16" />
@@ -83,28 +113,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import CourseTable from './CourseTable.vue'
-import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-
-defineProps({
-  courses: {
-    type: Array,
-    required: true
-  },
-  title: {
-    type: String,
-    required: true
-  },
-  pagination: {
-    type: Object,
-    default: null
-  }
-})
-
-defineEmits(['edit', 'delete', 'next-page', 'previous-page', 'go-to-page', 'set-items-per-page'])
-</script>
 
 <style scoped>
 .table-section {
@@ -282,32 +290,32 @@ defineEmits(['edit', 'delete', 'next-page', 'previous-page', 'go-to-page', 'set-
   .table-section {
     margin-bottom: 1.5rem;
   }
-  
+
   .table-container {
     border-radius: 12px;
   }
-  
+
   .table-title h2 {
     font-size: 1.25rem;
   }
-  
+
   .pagination-section {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
     padding: 1rem;
   }
-  
+
   .pagination-info {
     justify-content: center;
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .pagination-controls {
     justify-content: center;
   }
-  
+
   .page-numbers {
     flex-wrap: wrap;
     justify-content: center;
@@ -318,24 +326,24 @@ defineEmits(['edit', 'delete', 'next-page', 'previous-page', 'go-to-page', 'set-
   .table-section {
     margin-bottom: 1rem;
   }
-  
+
   .table-title h2 {
     font-size: 1.125rem;
   }
-  
+
   .pagination-section {
     padding: 0.75rem;
   }
-  
+
   .pagination-text {
     font-size: 0.8rem;
   }
-  
+
   .pagination-btn {
     padding: 0.5rem;
     font-size: 0.8rem;
   }
-  
+
   .pagination-icon {
     width: 0.875rem;
     height: 0.875rem;

@@ -1,68 +1,74 @@
 <script setup>
+import { Bell, ChevronLeft, ChevronRight, User } from 'lucide-vue-next'
 import { ref } from 'vue'
-import { ChevronLeft, ChevronRight, Bell, User } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
   notificationCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   isMobile: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isSidebarOpen: {
     type: Boolean,
-    default: false
+    default: false,
   },
   showSidebar: {
     type: Boolean,
-    default: true
-  }
-});
+    default: true,
+  },
+})
 
 // Emits
-const emit = defineEmits(['notification-click', 'profile-click', 'toggle-collapse', 'sidebar-toggle']);
+const emit = defineEmits(['notificationClick', 'profileClick', 'toggleCollapse', 'sidebarToggle'])
 
 // Reactive state
-const isCollapsed = ref(false);
+const isCollapsed = ref(false)
 
 // Handle notification click
-const handleNotificationClick = () => {
-  emit('notification-click');
-};
+function handleNotificationClick() {
+  emit('notificationClick')
+}
 
 // Handle profile click
-const handleProfileClick = () => {
-  emit('profile-click');
-};
+function handleProfileClick() {
+  emit('profileClick')
+}
 
 // Methods
-const toggleCollapse = () => {
+function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value
-  emit('toggle-collapse', isCollapsed.value)
-  emit('sidebar-toggle', { isOpen: props.isSidebarOpen, isCollapsed: isCollapsed.value })
+  emit('toggleCollapse', isCollapsed.value)
+  emit('sidebarToggle', { isOpen: props.isSidebarOpen, isCollapsed: isCollapsed.value })
 }
 
 // Handle collapse toggle (for backward compatibility)
-const handleToggleCollapse = () => {
+function handleToggleCollapse() {
   toggleCollapse()
-};
+}
 </script>
 
 <template>
   <header>
-    <div class="header-left" :class="{
-      'sidebar-collapsed': showSidebar && !isMobile && isCollapsed
-    }">
+    <div
+      class="header-left" :class="{
+        'sidebar-collapsed': showSidebar && !isMobile && isCollapsed,
+      }"
+    >
       <div class="logo-container">
         <div class="logo">
-          <img src="@/components/icons/ACLCLogo.png" alt="Logo" class="logo-image" loading="lazy" />
+          <img src="@/components/icons/ACLCLogo.png" alt="Logo" class="logo-image" loading="lazy">
         </div>
-        <div class="brand-info" v-show="true">
-          <h1 class="brand-name">Attendance</h1>
-          <p class="brand-subtitle">Monitoring System</p>
+        <div v-show="true" class="brand-info">
+          <h1 class="brand-name">
+            Attendance
+          </h1>
+          <p class="brand-subtitle">
+            Monitoring System
+          </p>
         </div>
         <!-- Collapse Toggle Button (Desktop Only) -->
         <button
@@ -133,7 +139,6 @@ header {
   width: 100%;
   padding-right: 8px;
 }
-
 
 .logo {
   display: flex;
@@ -224,11 +229,11 @@ header {
   .header-left {
     width: 260px;
   }
-  
+
   .brand-name {
     font-size: 20px;
   }
-  
+
   .brand-subtitle {
     font-size: 12px;
   }
@@ -238,20 +243,20 @@ header {
   header {
     padding: 0 20px 0 0;
   }
-  
+
   .header-left {
     width: 240px;
     padding: 0 16px;
   }
-  
+
   .brand-name {
     font-size: 18px;
   }
-  
+
   .brand-subtitle {
     font-size: 11px;
   }
-  
+
   .logo-image {
     width: 3rem;
     height: 3rem;
@@ -263,40 +268,40 @@ header {
     padding: 0 16px 0 0;
     height: 60px;
   }
-  
+
   .header-left {
     width: auto;
     padding: 0 20px;
     border-right: none;
     flex: 1;
   }
-  
+
   .brand-name {
     font-size: 18px;
   }
-  
+
   .brand-subtitle {
     font-size: 11px;
   }
-  
+
   .logo-image {
     width: 2.5rem;
     height: 2.5rem;
   }
-  
+
   .logo {
     padding: 8px;
   }
-  
+
   .header-right {
     gap: 8px;
   }
-  
+
   .icon-button {
     width: 36px;
     height: 36px;
   }
-  
+
   .notification-badge {
     width: 14px;
     height: 14px;
@@ -309,42 +314,42 @@ header {
     padding: 0 12px 0 0;
     height: 56px;
   }
-  
+
   .header-left {
     padding: 0 16px;
   }
-  
+
   .brand-name {
     font-size: 16px;
   }
-  
+
   .brand-subtitle {
     font-size: 10px;
   }
-  
+
   .logo-image {
     width: 2.25rem;
     height: 2.25rem;
   }
-  
+
   .logo {
     padding: 6px;
   }
-  
+
   .header-right {
     gap: 6px;
   }
-  
+
   .icon-button {
     width: 32px;
     height: 32px;
   }
-  
+
   .icon-button svg {
     width: 16px;
     height: 16px;
   }
-  
+
   .notification-badge {
     width: 12px;
     height: 12px;
@@ -359,42 +364,42 @@ header {
     padding: 0 8px 0 0;
     height: 52px;
   }
-  
+
   .header-left {
     padding: 0 12px;
   }
-  
+
   .brand-name {
     font-size: 14px;
   }
-  
+
   .brand-subtitle {
     font-size: 9px;
   }
-  
+
   .logo-image {
     width: 2rem;
     height: 2rem;
   }
-  
+
   .logo {
     padding: 4px;
   }
-  
+
   .header-right {
     gap: 4px;
   }
-  
+
   .icon-button {
     width: 28px;
     height: 28px;
   }
-  
+
   .icon-button svg {
     width: 14px;
     height: 14px;
   }
-  
+
   .notification-badge {
     width: 10px;
     height: 10px;
@@ -409,42 +414,42 @@ header {
     padding: 0 4px 0 0;
     height: 48px;
   }
-  
+
   .header-left {
     padding: 0 8px;
   }
-  
+
   .brand-name {
     font-size: 12px;
   }
-  
+
   .brand-subtitle {
     font-size: 8px;
   }
-  
+
   .logo-image {
     width: 1.75rem;
     height: 1.75rem;
   }
-  
+
   .logo {
     padding: 2px;
   }
-  
+
   .header-right {
     gap: 2px;
   }
-  
+
   .icon-button {
     width: 24px;
     height: 24px;
   }
-  
+
   .icon-button svg {
     width: 12px;
     height: 12px;
   }
-  
+
   .notification-badge {
     width: 8px;
     height: 8px;

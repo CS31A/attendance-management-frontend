@@ -9,11 +9,12 @@ import api from './index'
  * Get all classrooms
  * @returns {Promise<Array>} List of ClassroomDto objects
  */
-export const getClassrooms = async () => {
+export async function getClassrooms() {
   try {
     const response = await api.get('/classrooms')
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to fetch classrooms:', error)
     return Promise.reject(error)
   }
@@ -22,13 +23,14 @@ export const getClassrooms = async () => {
 /**
  * Get a specific classroom by ID
  * @param {number} id - Classroom ID
- * @returns {Promise<Object>} ClassroomDto object
+ * @returns {Promise<object>} ClassroomDto object
  */
-export const getClassroomById = async (id) => {
+export async function getClassroomById(id) {
   try {
     const response = await api.get(`/classrooms/${id}`)
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Failed to fetch classroom ${id}:`, error)
     return Promise.reject(error)
   }
@@ -36,5 +38,5 @@ export const getClassroomById = async (id) => {
 
 export default {
   getClassrooms,
-  getClassroomById
+  getClassroomById,
 }

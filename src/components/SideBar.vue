@@ -1,17 +1,17 @@
 <script setup>
+import { BarChart3, BookOpen, Calendar, Grid3X3, Group, UserCircle, Users } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
-import { Grid3X3, Users, BarChart3, UserCircle, Calendar, Group, BookOpen } from 'lucide-vue-next'
-
-const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
 
 // Props
 const props = defineProps({
   isCollapsed: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
+
+const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
 
 const authStore = useAuthStore()
 const user = authStore.getUser
@@ -19,7 +19,8 @@ const user = authStore.getUser
 // Computed property for user role with fallback
 const userRole = computed(() => {
   const role = authStore.userProfile?.role
-  if (!role) return 'User'
+  if (!role)
+    return 'User'
 
   // Capitalize first letter of role
   return role.charAt(0).toUpperCase() + role.slice(1)
@@ -37,19 +38,19 @@ let clickOutsideHandler
 let resizeHandler
 
 // Helper function to dispatch sidebar toggle event
-const dispatchSidebarToggle = (isOpen = isSidebarOpen.value) => {
-  window.dispatchEvent(new CustomEvent('sidebar-toggle', {
-    detail: { isOpen, isCollapsed: props.isCollapsed }
+function dispatchSidebarToggle(isOpen = isSidebarOpen.value) {
+  window.dispatchEvent(new CustomEvent('sidebarToggle', {
+    detail: { isOpen, isCollapsed: props.isCollapsed },
   }))
 }
 
 // Methods
-const toggleSidebar = () => {
+function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value
   dispatchSidebarToggle()
 }
 
-const closeSidebar = () => {
+function closeSidebar() {
   isSidebarOpen.value = false
   dispatchSidebarToggle(false)
 }
@@ -60,7 +61,7 @@ onMounted(() => {
     if (window.innerWidth <= 768) {
       const sidebar = document.querySelector('.sidebar')
       const burgerBtn = document.querySelector('.burger-btn')
-      
+
       if (sidebar && burgerBtn && !sidebar.contains(e.target) && !burgerBtn.contains(e.target)) {
         isSidebarOpen.value = false
         dispatchSidebarToggle(false)
@@ -92,61 +93,60 @@ onUnmounted(() => {
 <template>
   <div>
     <!-- Mobile Burger Button -->
-    <button 
+    <button
       class="burger-btn"
+      :class="{ active: isSidebarOpen }"
       @click="toggleSidebar"
-      :class="{ 'active': isSidebarOpen }"
     >
-      <span></span>
-      <span></span>
-      <span></span>
+      <span />
+      <span />
+      <span />
     </button>
 
-    <div 
+    <div
       class="sidebar-overlay"
-      :class="{ 'active': isSidebarOpen }"
+      :class="{ active: isSidebarOpen }"
       @click="closeSidebar"
-    ></div>
+    />
 
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'mobile-open': isSidebarOpen, 'collapsed': isCollapsed }">
-
       <nav class="nav-menu">
         <ul>
           <li>
             <router-link to="/dashboard" class="nav-link" @click="closeSidebar">
               <Grid3X3 class="nav-icon" size="20" />
-              <span class="nav-text" v-show="!isCollapsed">Dashboard</span>
+              <span v-show="!isCollapsed" class="nav-text">Dashboard</span>
             </router-link>
           </li>
           <li v-if="authStore.isTeacher">
             <router-link to="/sessions" class="nav-link" @click="closeSidebar">
               <Calendar class="nav-icon" size="20" />
-              <span class="nav-text" v-show="!isCollapsed">Sessions</span>
+              <span v-show="!isCollapsed" class="nav-text">Sessions</span>
             </router-link>
           </li>
           <li v-if="isAdmin">
             <router-link to="/users" class="nav-link" @click="closeSidebar">
               <Users class="nav-icon" size="20" />
-              <span class="nav-text" v-show="!isCollapsed">Users</span>
+              <span v-show="!isCollapsed" class="nav-text">Users</span>
             </router-link>
           </li>
           <li v-if="isAdmin">
             <router-link to="/sections" class="nav-link" @click="closeSidebar">
               <Group class="nav-icon" size="20" />
-              <span class="nav-text" v-show="!isCollapsed">Sections</span>
+              <span v-show="!isCollapsed" class="nav-text">Sections</span>
             </router-link>
           </li>
           <li v-if="isAdmin">
             <router-link to="/courses" class="nav-link" @click="closeSidebar">
               <BookOpen class="nav-icon" size="20" />
-              <span class="nav-text" v-show="!isCollapsed">Courses</span>
+              <span v-show="!isCollapsed" class="nav-text">Courses</span>
             </router-link>
           </li>
           <li>
             <router-link to="/reports" class="nav-link" @click="closeSidebar">
               <BarChart3 class="nav-icon" size="20" />
-              <span class="nav-text" v-show="!isCollapsed">Reports</span>
+              <span v-show="!isCollapsed" class="nav-text">Reports</span>
             </router-link>
           </li>
         </ul>
@@ -157,7 +157,7 @@ onUnmounted(() => {
           <div class="user-avatar">
             <UserCircle size="20" />
           </div>
-          <div class="user-details" v-show="!isCollapsed">
+          <div v-show="!isCollapsed" class="user-details">
             <span class="user-name">{{ user }}</span>
             <span class="user-role">{{ userRole }}</span>
           </div>
@@ -258,7 +258,6 @@ onUnmounted(() => {
 .sidebar.collapsed {
   width: 80px;
 }
-
 
 .nav-menu {
   flex: 1;
@@ -444,16 +443,16 @@ onUnmounted(() => {
   .sidebar {
     width: 260px;
   }
-  
+
   .sidebar.collapsed {
     width: 70px;
   }
-  
+
   .nav-link {
     padding: 12px 14px;
     font-size: 13px;
   }
-  
+
   .nav-icon {
     width: 18px;
     height: 18px;
@@ -464,34 +463,34 @@ onUnmounted(() => {
   .sidebar {
     width: 240px;
   }
-  
+
   .sidebar.collapsed {
     width: 70px;
   }
-  
+
   .nav-link {
     padding: 11px 13px;
     font-size: 12px;
   }
-  
+
   .nav-icon {
     width: 17px;
     height: 17px;
   }
-  
+
   .user-info {
     padding: 11px;
   }
-  
+
   .user-avatar {
     width: 38px;
     height: 38px;
   }
-  
+
   .user-name {
     font-size: 13px;
   }
-  
+
   .user-role {
     font-size: 11px;
   }
@@ -501,57 +500,57 @@ onUnmounted(() => {
   .burger-btn {
     display: flex;
   }
-  
+
   .sidebar-overlay {
     display: block;
   }
-  
+
   .sidebar {
     transform: translateX(-100%);
     padding-top: 60px;
     width: 280px;
   }
-  
+
   .sidebar.mobile-open {
     transform: translateX(0);
   }
-  
+
   .sidebar.mobile-open.collapsed .user-info {
     justify-content: flex-start;
     gap: 12px;
   }
-  
+
   .sidebar.mobile-open.collapsed .user-details {
     display: flex;
   }
-  
+
   .nav-link {
     padding: 14px 16px;
     font-size: 14px;
   }
-  
+
   .nav-icon {
     width: 20px;
     height: 20px;
   }
-  
+
   .sidebar-footer {
     padding: 20px;
   }
-  
+
   .user-info {
     padding: 12px;
   }
-  
+
   .user-avatar {
     width: 40px;
     height: 40px;
   }
-  
+
   .user-name {
     font-size: 14px;
   }
-  
+
   .user-role {
     font-size: 12px;
   }
@@ -564,44 +563,44 @@ onUnmounted(() => {
     top: 8px;
     left: 16px;
   }
-  
+
   .burger-btn span {
     width: 22px;
     height: 2px;
   }
-  
+
   .sidebar {
     width: 260px;
     padding-top: 56px;
   }
-  
+
   .nav-link {
     padding: 12px 14px;
     font-size: 13px;
   }
-  
+
   .nav-icon {
     width: 18px;
     height: 18px;
   }
-  
+
   .sidebar-footer {
     padding: 18px;
   }
-  
+
   .user-info {
     padding: 10px;
   }
-  
+
   .user-avatar {
     width: 36px;
     height: 36px;
   }
-  
+
   .user-name {
     font-size: 13px;
   }
-  
+
   .user-role {
     font-size: 11px;
   }
@@ -614,44 +613,44 @@ onUnmounted(() => {
     top: 6px;
     left: 12px;
   }
-  
+
   .burger-btn span {
     width: 20px;
     height: 2px;
   }
-  
+
   .sidebar {
     width: 240px;
     padding-top: 52px;
   }
-  
+
   .nav-link {
     font-size: 12px;
     padding: 11px 13px;
   }
-  
+
   .nav-icon {
     width: 17px;
     height: 17px;
   }
-  
+
   .sidebar-footer {
     padding: 16px;
   }
-  
+
   .user-info {
     padding: 9px;
   }
-  
+
   .user-avatar {
     width: 34px;
     height: 34px;
   }
-  
+
   .user-name {
     font-size: 12px;
   }
-  
+
   .user-role {
     font-size: 10px;
   }
@@ -664,44 +663,44 @@ onUnmounted(() => {
     top: 4px;
     left: 8px;
   }
-  
+
   .burger-btn span {
     width: 18px;
     height: 2px;
   }
-  
+
   .sidebar {
     width: 220px;
     padding-top: 48px;
   }
-  
+
   .nav-link {
     font-size: 11px;
     padding: 10px 12px;
   }
-  
+
   .nav-icon {
     width: 16px;
     height: 16px;
   }
-  
+
   .sidebar-footer {
     padding: 14px;
   }
-  
+
   .user-info {
     padding: 8px;
   }
-  
+
   .user-avatar {
     width: 32px;
     height: 32px;
   }
-  
+
   .user-name {
     font-size: 11px;
   }
-  
+
   .user-role {
     font-size: 9px;
   }
@@ -730,30 +729,29 @@ onUnmounted(() => {
   .sidebar {
     width: 300px;
   }
-  
+
   .sidebar.collapsed {
     width: 80px;
   }
-  
-  
+
   .nav-link {
     padding: 16px 18px;
     font-size: 15px;
   }
-  
+
   .user-info {
     padding: 14px;
   }
-  
+
   .user-avatar {
     width: 44px;
     height: 44px;
   }
-  
+
   .user-name {
     font-size: 15px;
   }
-  
+
   .user-role {
     font-size: 13px;
   }

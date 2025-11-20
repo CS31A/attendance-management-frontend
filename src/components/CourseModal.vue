@@ -1,62 +1,63 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { X, AlertTriangle, BookOpen } from 'lucide-vue-next';
+import { AlertTriangle, BookOpen, X } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   course: {
     type: Object,
-    default: null
-  }
-});
+    default: null,
+  },
+})
 
-const emit = defineEmits(["save", "cancel"]);
+const emit = defineEmits(['save', 'cancel'])
 
 // Form data
-const name = ref("");
-const errorMessage = ref("");
+const name = ref('')
+const errorMessage = ref('')
 
 // Initialize form if editing
 watch(() => props.course, (newCourse) => {
   if (newCourse) {
-    name.value = newCourse.name || "";
-  } else {
-    name.value = "";
+    name.value = newCourse.name || ''
   }
-}, { immediate: true });
+  else {
+    name.value = ''
+  }
+}, { immediate: true })
 
 // Computed properties
-const isEditMode = computed(() => !!props.course);
-const modalTitle = computed(() => isEditMode.value ? 'Edit Course' : 'Create Course');
-const submitButtonText = computed(() => isEditMode.value ? 'Save Changes' : 'Create Course');
+const isEditMode = computed(() => !!props.course)
+const modalTitle = computed(() => isEditMode.value ? 'Edit Course' : 'Create Course')
+const submitButtonText = computed(() => isEditMode.value ? 'Save Changes' : 'Create Course')
 
 const isFormValid = computed(() => {
-  return name.value && name.value.length >= 20;
-});
+  return name.value && name.value.length >= 20
+})
 
 // Main form submission
-const handleSubmit = () => {
-  errorMessage.value = "";
+function handleSubmit() {
+  errorMessage.value = ''
 
   // Validation
   if (name.value.length < 20) {
-    errorMessage.value = "Course name must be at least 20 characters";
-    return;
+    errorMessage.value = 'Course name must be at least 20 characters'
+    return
   }
 
   const courseData = {
     name: name.value,
-  };
+  }
 
-  emit("save", courseData);
-};
+  emit('save', courseData)
+}
 
 // Handle error from parent
-const handleError = (error) => {
-  errorMessage.value = error;
-};
+function handleError(error) {
+  errorMessage.value = error
+}
 
 // Expose methods to parent
-defineExpose({ handleError });
+defineExpose({ handleError })
 </script>
 
 <template>
@@ -79,19 +80,19 @@ defineExpose({ handleError });
       </div>
 
       <!-- Modal Body -->
-      <form @submit.prevent="handleSubmit" class="modal-body">
+      <form class="modal-body" @submit.prevent="handleSubmit">
         <!-- Name Field -->
         <div class="form-group">
           <label>Course Name *</label>
           <div class="input-wrapper">
             <BookOpen class="input-icon" size="18" />
-            <input 
-              v-model="name" 
+            <input
+              v-model="name"
               type="text"
-              placeholder="Enter course name (min 20 chars)" 
-              required 
+              placeholder="Enter course name (min 20 chars)"
+              required
               minlength="20"
-            />
+            >
           </div>
           <small class="helper-text info">Must be at least 20 characters</small>
         </div>
@@ -138,7 +139,7 @@ defineExpose({ handleError });
 
 .modal-header {
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  padding: 1.25rem 1.5rem; 
+  padding: 1.25rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -146,7 +147,7 @@ defineExpose({ handleError });
 
 .modal-header h2 {
   color: white;
-  font-size: 1.25rem; 
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -231,7 +232,7 @@ defineExpose({ handleError });
 .actions {
   display: flex;
   gap: 1rem;
-  margin-top: 2rem; 
+  margin-top: 2rem;
 }
 
 .btn-submit {
@@ -239,7 +240,7 @@ defineExpose({ handleError });
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem; 
+  padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.95rem;
@@ -264,10 +265,10 @@ defineExpose({ handleError });
   background-color: white;
   color: #4b5563;
   border: 1px solid #e5e7eb;
-  padding: 0.75rem 1.5rem; 
+  padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 600;
-  font-size: 0.95rem; 
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -319,11 +320,11 @@ defineExpose({ handleError });
     max-width: 100%;
     margin: 1rem;
   }
-  
+
   .actions {
     flex-direction: column-reverse;
   }
-  
+
   .btn-submit, .btn-cancel {
     width: 100%;
   }

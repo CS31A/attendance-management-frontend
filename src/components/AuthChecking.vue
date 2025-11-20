@@ -3,7 +3,7 @@
 
 <template>
   <div class="auth-checking">
-    <div class="spinner"></div>
+    <div class="spinner" />
     <p>Checking authentication...</p>
   </div>
 </template>

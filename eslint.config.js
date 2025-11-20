@@ -11,4 +11,8 @@ export default antfu({
     '**/dist/**',
     '**/node_modules/**',
   ],
+  rules: {
+    'no-alert': 'off',
+    'no-console': ['error', { allow: ['warn', 'error'] }],
+  },
 })

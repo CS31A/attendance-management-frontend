@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
-import { Plus, AlertTriangle } from 'lucide-vue-next'
-import { useCourseStore } from '@/stores/courseStore.js'
+import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import CourseModal from '@/components/CourseModal.vue'
+import { useCourseStore } from '@/stores/courseStore.js'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 
@@ -30,63 +30,65 @@ const paginatedCourses = computed(() => {
 })
 
 // Pagination handlers
-const handleNextPage = () => {
+function handleNextPage() {
   if (hasNextPage.value) {
     currentPage.value++
   }
 }
 
-const handlePreviousPage = () => {
+function handlePreviousPage() {
   if (hasPreviousPage.value) {
     currentPage.value--
   }
 }
 
-const handleGoToPage = (page) => {
+function handleGoToPage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-const handleSetItemsPerPage = (value) => {
+function handleSetItemsPerPage(value) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
 
 // Modal Handlers
-const openAddModal = () => {
+function openAddModal() {
   selectedCourse.value = null
   showModal.value = true
 }
 
-const openEditModal = (course) => {
+function openEditModal(course) {
   selectedCourse.value = { ...course }
   showModal.value = true
 }
 
-const closeModal = () => {
+function closeModal() {
   showModal.value = false
   selectedCourse.value = null
 }
 
-const handleSaveCourse = async (courseData) => {
+async function handleSaveCourse(courseData) {
   try {
     if (selectedCourse.value) {
       // Edit mode
       await courseStore.updateCourse(selectedCourse.value.id, courseData)
-    } else {
+    }
+    else {
       // Create mode
       await courseStore.createCourse(courseData)
     }
     closeModal()
-  } catch (error) {
+  }
+  catch (error) {
     if (modalRef.value) {
       modalRef.value.handleError(error.response?.data?.message || 'Failed to save course')
     }
   }
 }
 
-const handleDeleteCourse = async (courseId) => {
+async function handleDeleteCourse(courseId) {
   if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
     try {
       await courseStore.deleteCourse(courseId)
@@ -94,17 +96,19 @@ const handleDeleteCourse = async (courseId) => {
       if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
-    } catch (error) {
-      alert('Failed to delete course: ' + (error.response?.data?.message || error.message))
+    }
+    catch (error) {
+      alert(`Failed to delete course: ${error.response?.data?.message || error.message}`)
     }
   }
 }
 
-onMounted(async() => {
+onMounted(async () => {
   try {
     await courseStore.fetchCourses()
-  } catch(err) {
-    console.log(err)
+  }
+  catch {
+    // Error handled silently
   }
 })
 </script>
@@ -114,45 +118,51 @@ onMounted(async() => {
     <!-- Loading overlay -->
     <div v-if="courseStore.loading" class="loading-overlay">
       <div class="loading-spinner">
-        <div class="spinner"></div>
+        <div class="spinner" />
         <p>Loading...</p>
       </div>
     </div>
-    
+
     <!-- Error message -->
     <div v-if="courseStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ courseStore.error }}</p>
-        <button @click="courseStore.fetchCourses" class="retry-btn">Retry</button>
+        <button class="retry-btn" @click="courseStore.fetchCourses">
+          Retry
+        </button>
       </div>
     </div>
 
-    <div class="container" v-else>
+    <div v-else class="container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
           <div class="header-text">
-            <h1 class="page-title">Course Management</h1>
-            <p class="page-subtitle">Manage Courses</p>
+            <h1 class="page-title">
+              Course Management
+            </h1>
+            <p class="page-subtitle">
+              Manage Courses
+            </p>
           </div>
-          <button @click="openAddModal" class="btn-add">
+          <button class="btn-add" @click="openAddModal">
             <Plus class="icon" size="20" />
             <span>Add Course</span>
           </button>
         </div>
       </div>
 
-      <CourseTableSection 
-        :courses="paginatedCourses" 
-        title="All Courses" 
+      <CourseTableSection
+        :courses="paginatedCourses"
+        title="All Courses"
         :pagination="{
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
           totalCourses,
-          itemsPerPage
+          itemsPerPage,
         }"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"

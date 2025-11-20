@@ -1,18 +1,73 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCourseStore } from '@/stores/courseStore'
+
+const router = useRouter()
+const courseStore = useCourseStore()
+
+const showDeleteDialog = ref(false)
+const courseToDelete = ref(null)
+
+// Check if user is admin (adjust based on your auth implementation)
+const isAdmin = computed(() => {
+  const userRole = localStorage.getItem('user_role')
+  return userRole === 'Admin'
+})
+
+onMounted(() => {
+  courseStore.fetchCourses()
+})
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function editCourse(id) {
+  router.push(`/courses/edit/${id}`)
+}
+
+function confirmDelete(course) {
+  courseToDelete.value = course
+  showDeleteDialog.value = true
+}
+
+async function handleDelete() {
+  if (!courseToDelete.value)
+    return
+
+  try {
+    await courseStore.deleteCourse(courseToDelete.value.id)
+    showDeleteDialog.value = false
+    courseToDelete.value = null
+  }
+  catch {
+    // Error is already handled in store
+  }
+}
+</script>
+
 <template>
   <div class="course-list">
     <div class="header">
       <h1>Course Management</h1>
-      <button 
-        v-if="isAdmin" 
-        @click="$router.push('/courses/create')"
+      <button
+        v-if="isAdmin"
         class="btn-primary"
+        @click="$router.push('/courses/create')"
       >
         Create Course
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="courseStore.loading" class="loading">Loading courses...</div>
+    <div v-if="courseStore.loading" class="loading">
+      Loading courses...
+    </div>
 
     <!-- Error State -->
     <div v-if="courseStore.error" class="error-message">
@@ -33,7 +88,9 @@
             <th>Course Name</th>
             <th>Created At</th>
             <th>Updated At</th>
-            <th v-if="isAdmin">Actions</th>
+            <th v-if="isAdmin">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -43,15 +100,15 @@
             <td>{{ formatDate(course.createdAt) }}</td>
             <td>{{ formatDate(course.updatedAt) }}</td>
             <td v-if="isAdmin" class="actions">
-              <button 
-                @click="editCourse(course.id)" 
+              <button
                 class="btn-edit"
+                @click="editCourse(course.id)"
               >
                 Edit
               </button>
-              <button 
-                @click="confirmDelete(course)" 
+              <button
                 class="btn-delete"
+                @click="confirmDelete(course)"
               >
                 Delete
               </button>
@@ -67,64 +124,17 @@
         <h3>Confirm Delete</h3>
         <p>Are you sure you want to delete "{{ courseToDelete?.name }}"?</p>
         <div class="dialog-actions">
-          <button @click="showDeleteDialog = false" class="btn-cancel">Cancel</button>
-          <button @click="handleDelete" class="btn-delete">Delete</button>
+          <button class="btn-cancel" @click="showDeleteDialog = false">
+            Cancel
+          </button>
+          <button class="btn-delete" @click="handleDelete">
+            Delete
+          </button>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useCourseStore } from '@/stores/courseStore';
-
-const router = useRouter();
-const courseStore = useCourseStore();
-
-const showDeleteDialog = ref(false);
-const courseToDelete = ref(null);
-
-// Check if user is admin (adjust based on your auth implementation)
-const isAdmin = computed(() => {
-  const userRole = localStorage.getItem('user_role');
-  return userRole === 'Admin';
-});
-
-onMounted(() => {
-  courseStore.fetchCourses();
-});
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
-const editCourse = (id) => {
-  router.push(`/courses/edit/${id}`);
-};
-
-const confirmDelete = (course) => {
-  courseToDelete.value = course;
-  showDeleteDialog.value = true;
-};
-
-const handleDelete = async () => {
-  if (!courseToDelete.value) return;
-  
-  try {
-    await courseStore.deleteCourse(courseToDelete.value.id);
-    showDeleteDialog.value = false;
-    courseToDelete.value = null;
-  } catch (err) {
-    // Error is already handled in store
-  }
-};
-</script>
 
 <style scoped>
 /* Add your styles here */

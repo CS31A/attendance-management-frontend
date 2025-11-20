@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
+import { computed, onMounted, ref } from 'vue'
 import { Line } from 'vue-chartjs'
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
-import { useAuthStore } from '@/stores/authStore'
-import { useUserStore } from '@/stores/userStore'
-import { useSessionStore } from '@/stores/sessionStore'
 import SessionCard from '@/components/sessions/SessionCard.vue'
-import router from '@/router'
+import { useAuthStore } from '@/stores/authStore'
+import { useSessionStore } from '@/stores/sessionStore'
+import { useUserStore } from '@/stores/userStore'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -24,12 +23,14 @@ const isStudent = computed(() => user?.role === 'Student')
 
 // Get upcoming and active sessions for students
 const upcomingSessions = computed(() => {
-  if (!isStudent.value) return []
+  if (!isStudent.value)
+    return []
   return sessionStore.upcomingSessions.slice(0, 3) // Show max 3 upcoming sessions
 })
 
 const activeSessions = computed(() => {
-  if (!isStudent.value) return []
+  if (!isStudent.value)
+    return []
   return sessionStore.activeSessions
 })
 
@@ -73,13 +74,14 @@ const fileInput = ref(null)
 const isUploading = ref(false)
 
 // Profile picture methods
-const triggerFileUpload = () => {
+function _triggerFileUpload() {
   fileInput.value?.click()
 }
 
-const handleFileUpload = async (event) => {
+async function _handleFileUpload(event) {
   const file = event.target.files[0]
-  if (!file) return
+  if (!file)
+    return
 
   // Validate file type
   if (!file.type.startsWith('image/')) {
@@ -94,7 +96,7 @@ const handleFileUpload = async (event) => {
   }
 
   isUploading.value = true
-  
+
   try {
     // Convert to base64 for preview
     const reader = new FileReader()
@@ -102,28 +104,25 @@ const handleFileUpload = async (event) => {
       userProfilePicture.value = e.target.result
       // Save to localStorage to persist across refreshes
       localStorage.setItem('userProfilePicture', e.target.result)
-      console.log('Profile picture set:', userProfilePicture.value ? 'Yes' : 'No')
     }
     reader.readAsDataURL(file)
-    
+
     // Here you would upload to your backend
     // await uploadProfilePicture(file)
-    console.log('Profile picture uploaded:', file.name)
-    
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error uploading profile picture:', error)
     alert('Failed to upload profile picture')
-  } finally {
+  }
+  finally {
     isUploading.value = false
   }
 }
 
 // Method to clear profile picture
-const clearProfilePicture = () => {
-  console.log('Clearing profile picture...')
+function _clearProfilePicture() {
   userProfilePicture.value = null
   localStorage.removeItem('userProfilePicture')
-  console.log('Profile picture cleared')
 }
 
 // Load data when component mounts
@@ -131,12 +130,13 @@ onMounted(async () => {
   if (userStore.users.length === 0) {
     await userStore.fetchUsers()
   }
-  
+
   // Fetch sessions for students
   if (isStudent.value && sessionStore.sessions.length === 0) {
     try {
       await sessionStore.fetchSessions()
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load sessions:', error)
     }
   }
@@ -171,8 +171,8 @@ const chartData = computed(() => ({
       pointHoverBackgroundColor: '#000000',
       pointHoverBorderColor: '#fff',
       pointHoverBorderWidth: 2,
-    }
-  ]
+    },
+  ],
 }))
 
 const chartOptions = {
@@ -184,7 +184,7 @@ const chartOptions = {
   },
   plugins: {
     legend: {
-      display: false
+      display: false,
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -192,12 +192,12 @@ const chartOptions = {
       borderRadius: 8,
       titleFont: {
         size: 14,
-        weight: 'bold'
+        weight: 'bold',
       },
       bodyFont: {
-        size: 13
-      }
-    }
+        size: 13,
+      },
+    },
   },
   scales: {
     y: {
@@ -206,34 +206,35 @@ const chartOptions = {
       ticks: {
         stepSize: 10,
         font: {
-          size: 12
+          size: 12,
         },
-        color: '#999'
+        color: '#999',
       },
       grid: {
         color: '#f0f0f0',
-        drawBorder: false
-      }
+        drawBorder: false,
+      },
     },
     x: {
       grid: {
         display: false,
-        drawBorder: false
+        drawBorder: false,
       },
       ticks: {
         font: {
           size: 12,
-          weight: '500'
+          weight: '500',
         },
-        color: '#999'
-      }
-    }
-  }
+        color: '#999',
+      },
+    },
+  },
 }
 
 // Get user initials
-const getUserInitials = computed(() => {
-  if (!user?.name) return 'U'
+const _getUserInitials = computed(() => {
+  if (!user?.name)
+    return 'U'
   return user.name.split(' ').map(n => n[0]).join('').toUpperCase()
 })
 </script>
@@ -244,46 +245,52 @@ const getUserInitials = computed(() => {
     <div v-if="!isAuthenticated" class="unauthenticated">
       <h2>Access Denied</h2>
       <p>You need to be logged in to view this page.</p>
-      <router-link to="/login" class="login-link">Go to Login</router-link>
+      <router-link to="/login" class="login-link">
+        Go to Login
+      </router-link>
     </div>
-    
+
     <!-- Authenticated content -->
     <template v-else>
       <!-- Header -->
       <div class="dashboard-header">
         <div>
-          <h1 class="title">Dashboard</h1>
-          <p class="subtitle">Welcome back, {{ user?.name || 'Admin' }}</p>
+          <h1 class="title">
+            Dashboard
+          </h1>
+          <p class="subtitle">
+            Welcome back, {{ user?.name || 'Admin' }}
+          </p>
         </div>
-        <!--<div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
+        <!-- <div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
           <img v-if="userProfilePicture" :src="userProfilePicture" alt="Profile" class="avatar-image" />
           <span v-else>{{ getUserInitials }}</span>
-          <input 
-            ref="fileInput" 
-            type="file" 
-            accept="image/*" 
-            @change="handleFileUpload" 
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            @change="handleFileUpload"
             style="display: none"
           />
           <div v-if="isUploading" class="upload-overlay">
             <div class="upload-spinner"></div>
           </div>
-       
-          <button 
-            v-if="userProfilePicture && !isUploading" 
-            @click.stop="clearProfilePicture" 
+
+          <button
+            v-if="userProfilePicture && !isUploading"
+            @click.stop="clearProfilePicture"
             class="remove-profile-btn"
             title="Remove profile picture"
             style="display: block !important; visibility: visible !important; opacity: 1 !important;"
           >
             ×
           </button>
-        </div>-->
+        </div> -->
       </div>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="loading-state">
-        <div class="loading-spinner"></div>
+        <div class="loading-spinner" />
         <p>Loading dashboard data...</p>
       </div>
 
@@ -292,11 +299,15 @@ const getUserInitials = computed(() => {
         <!-- Total Registered -->
         <div class="stat-card primary-card">
           <div class="stat-content">
-            <h2 class="stat-value">{{ totalUsers.toLocaleString() }}</h2>
-            <p class="stat-label">Total Registered</p>
+            <h2 class="stat-value">
+              {{ totalUsers.toLocaleString() }}
+            </h2>
+            <p class="stat-label">
+              Total Registered
+            </p>
             <div class="stat-progress">
               <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: registeredPercentage + '%' }"></div>
+                <div class="progress-fill" :style="{ width: `${registeredPercentage}%` }" />
               </div>
               <span class="progress-label">{{ registeredPercentage.toFixed(0) }}%</span>
             </div>
@@ -306,11 +317,15 @@ const getUserInitials = computed(() => {
         <!-- Total Students -->
         <div class="stat-card">
           <div class="stat-content">
-            <h2 class="stat-value">{{ totalStudents }}</h2>
-            <p class="stat-label">Total Students</p>
+            <h2 class="stat-value">
+              {{ totalStudents }}
+            </h2>
+            <p class="stat-label">
+              Total Students
+            </p>
             <div class="stat-progress">
               <div class="progress-bar">
-                <div class="progress-fill green" :style="{ width: studentsPercentage + '%' }"></div>
+                <div class="progress-fill green" :style="{ width: `${studentsPercentage}%` }" />
               </div>
               <span class="progress-label">{{ studentsPercentage.toFixed(0) }}%</span>
             </div>
@@ -320,11 +335,15 @@ const getUserInitials = computed(() => {
         <!-- Total Teachers -->
         <div class="stat-card">
           <div class="stat-content">
-            <h2 class="stat-value">{{ totalTeachers }}</h2>
-            <p class="stat-label">Total Teachers</p>
+            <h2 class="stat-value">
+              {{ totalTeachers }}
+            </h2>
+            <p class="stat-label">
+              Total Teachers
+            </p>
             <div class="stat-progress">
               <div class="progress-bar">
-                <div class="progress-fill orange" :style="{ width: teachersPercentage + '%' }"></div>
+                <div class="progress-fill orange" :style="{ width: `${teachersPercentage}%` }" />
               </div>
               <span class="progress-label">{{ teachersPercentage.toFixed(0) }}%</span>
             </div>
@@ -334,11 +353,15 @@ const getUserInitials = computed(() => {
         <!-- User Management -->
         <div class="stat-card">
           <div class="stat-content">
-            <h2 class="stat-value">{{ userManagement.toLocaleString() }}</h2>
-            <p class="stat-label">User Management</p>
+            <h2 class="stat-value">
+              {{ userManagement.toLocaleString() }}
+            </h2>
+            <p class="stat-label">
+              User Management
+            </p>
             <div class="stat-progress">
               <div class="progress-bar">
-                <div class="progress-fill navy" :style="{ width: managementPercentage + '%' }"></div>
+                <div class="progress-fill navy" :style="{ width: `${managementPercentage}%` }" />
               </div>
               <span class="progress-label">{{ managementPercentage.toFixed(0) }}%</span>
             </div>
@@ -348,28 +371,34 @@ const getUserInitials = computed(() => {
 
       <!-- Student Sessions Section -->
       <div v-if="!isLoading && isStudent && hasAnySessions" class="sessions-section">
-        <h2 class="section-title">My Sessions</h2>
-        
+        <h2 class="section-title">
+          My Sessions
+        </h2>
+
         <!-- Active Sessions -->
         <div v-if="activeSessions.length > 0" class="sessions-group">
-          <h3 class="sessions-group-title">Active Sessions</h3>
+          <h3 class="sessions-group-title">
+            Active Sessions
+          </h3>
           <div class="sessions-grid">
-            <SessionCard 
-              v-for="session in activeSessions" 
-              :key="session.id" 
-              :session="session" 
+            <SessionCard
+              v-for="session in activeSessions"
+              :key="session.id"
+              :session="session"
             />
           </div>
         </div>
 
         <!-- Upcoming Sessions -->
         <div v-if="upcomingSessions.length > 0" class="sessions-group">
-          <h3 class="sessions-group-title">Upcoming Sessions</h3>
+          <h3 class="sessions-group-title">
+            Upcoming Sessions
+          </h3>
           <div class="sessions-grid">
-            <SessionCard 
-              v-for="session in upcomingSessions" 
-              :key="session.id" 
-              :session="session" 
+            <SessionCard
+              v-for="session in upcomingSessions"
+              :key="session.id"
+              :session="session"
             />
           </div>
         </div>
@@ -380,9 +409,15 @@ const getUserInitials = computed(() => {
         <div class="performance-header">
           <h2>Performance</h2>
           <div class="time-filters">
-            <button class="time-btn active">Today</button>
-            <button class="time-btn">Weeks</button>
-            <button class="time-btn">Months</button>
+            <button class="time-btn active">
+              Today
+            </button>
+            <button class="time-btn">
+              Weeks
+            </button>
+            <button class="time-btn">
+              Months
+            </button>
           </div>
         </div>
         <div class="chart-container">
@@ -390,11 +425,11 @@ const getUserInitials = computed(() => {
         </div>
         <div class="chart-legend">
           <div class="legend-item">
-            <span class="legend-dot pink"></span>
+            <span class="legend-dot pink" />
             <span>This Week</span>
           </div>
           <div class="legend-item">
-            <span class="legend-dot black"></span>
+            <span class="legend-dot black" />
             <span>Last Week</span>
           </div>
         </div>

@@ -1,3 +1,100 @@
+<script setup>
+import { AlertTriangle, Loader2, Plus, X } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { getMySchedules } from '@/api/instructors'
+
+const emit = defineEmits(['create', 'cancel'])
+
+// State
+const scheduleId = ref('')
+const sessionDate = ref('')
+const description = ref('')
+const errorMessage = ref('')
+const schedules = ref([])
+const loadingSchedules = ref(false)
+
+// Computed
+const todayDate = computed(() => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+})
+
+const isFormValid = computed(() => {
+  return scheduleId.value !== '' && schedules.value.length > 0
+})
+
+// Methods
+async function loadSchedules() {
+  loadingSchedules.value = true
+  errorMessage.value = ''
+
+  try {
+    // Fetch schedules assigned to the current instructor
+    schedules.value = await getMySchedules()
+
+    if (schedules.value.length === 0) {
+      errorMessage.value = 'No schedules found. Please contact your administrator to assign schedules.'
+    }
+  }
+  catch (error) {
+    console.error('Failed to load schedules:', error)
+    errorMessage.value = error.response?.data?.message || 'Failed to load schedules. Please try again.'
+    schedules.value = []
+  }
+  finally {
+    loadingSchedules.value = false
+  }
+}
+
+function getScheduleLabel(schedule) {
+  // Build a descriptive label from schedule data
+  const parts = []
+
+  if (schedule.courseCode)
+    parts.push(schedule.courseCode)
+  if (schedule.courseName)
+    parts.push(schedule.courseName)
+  if (schedule.section)
+    parts.push(`Section ${schedule.section}`)
+  if (schedule.dayOfWeek && schedule.startTime) {
+    parts.push(`${schedule.dayOfWeek} ${schedule.startTime}`)
+  }
+
+  return parts.length > 0 ? parts.join(' - ') : `Schedule ${schedule.id}`
+}
+
+function createSession() {
+  errorMessage.value = ''
+
+  if (!scheduleId.value) {
+    errorMessage.value = 'Please select a schedule'
+    return
+  }
+
+  // Build payload
+  const payload = {
+    scheduleId: Number.parseInt(scheduleId.value, 10),
+  }
+
+  // Add optional date if provided
+  if (sessionDate.value) {
+    payload.sessionDate = sessionDate.value
+  }
+
+  // Add optional description if provided
+  if (description.value.trim()) {
+    payload.description = description.value.trim()
+  }
+
+  emit('create', payload)
+}
+
+// Lifecycle
+onMounted(() => {
+  loadSchedules()
+})
+</script>
+
 <template>
   <div class="overlay">
     <div class="modal">
@@ -24,7 +121,7 @@
       </div>
 
       <!-- Modal Body -->
-      <form @submit.prevent="createSession" class="modal-body">
+      <form class="modal-body" @submit.prevent="createSession">
         <!-- Schedule Dropdown -->
         <div class="form-group">
           <label>Schedule *</label>
@@ -33,7 +130,9 @@
             required
             :disabled="loadingSchedules || !schedules.length"
           >
-            <option value="" disabled>Select a schedule</option>
+            <option value="" disabled>
+              Select a schedule
+            </option>
             <option
               v-for="schedule in schedules"
               :key="schedule.id"
@@ -57,7 +156,7 @@
             v-model="sessionDate"
             type="date"
             :min="todayDate"
-          />
+          >
           <small class="helper-text info">
             Defaults to today if not specified
           </small>
@@ -71,7 +170,7 @@
             placeholder="Enter session description or notes (optional)"
             rows="4"
             maxlength="500"
-          ></textarea>
+          />
           <small class="helper-text info">
             {{ description.length }}/500 characters
           </small>
@@ -95,98 +194,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { X, AlertTriangle, Plus, Loader2 } from 'lucide-vue-next'
-import { getMySchedules } from '@/api/instructors'
-
-const emit = defineEmits(['create', 'cancel'])
-
-// State
-const scheduleId = ref('')
-const sessionDate = ref('')
-const description = ref('')
-const errorMessage = ref('')
-const schedules = ref([])
-const loadingSchedules = ref(false)
-
-// Computed
-const todayDate = computed(() => {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
-})
-
-const isFormValid = computed(() => {
-  return scheduleId.value !== '' && schedules.value.length > 0
-})
-
-// Methods
-const loadSchedules = async () => {
-  loadingSchedules.value = true
-  errorMessage.value = ''
-
-  try {
-    // Fetch schedules assigned to the current instructor
-    schedules.value = await getMySchedules()
-
-    if (schedules.value.length === 0) {
-      errorMessage.value = 'No schedules found. Please contact your administrator to assign schedules.'
-    }
-  } catch (error) {
-    console.error('Failed to load schedules:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to load schedules. Please try again.'
-    schedules.value = []
-  } finally {
-    loadingSchedules.value = false
-  }
-}
-
-const getScheduleLabel = (schedule) => {
-  // Build a descriptive label from schedule data
-  const parts = []
-
-  if (schedule.courseCode) parts.push(schedule.courseCode)
-  if (schedule.courseName) parts.push(schedule.courseName)
-  if (schedule.section) parts.push(`Section ${schedule.section}`)
-  if (schedule.dayOfWeek && schedule.startTime) {
-    parts.push(`${schedule.dayOfWeek} ${schedule.startTime}`)
-  }
-
-  return parts.length > 0 ? parts.join(' - ') : `Schedule ${schedule.id}`
-}
-
-const createSession = () => {
-  errorMessage.value = ''
-
-  if (!scheduleId.value) {
-    errorMessage.value = 'Please select a schedule'
-    return
-  }
-
-  // Build payload
-  const payload = {
-    scheduleId: parseInt(scheduleId.value, 10)
-  }
-
-  // Add optional date if provided
-  if (sessionDate.value) {
-    payload.sessionDate = sessionDate.value
-  }
-
-  // Add optional description if provided
-  if (description.value.trim()) {
-    payload.description = description.value.trim()
-  }
-
-  emit('create', payload)
-}
-
-// Lifecycle
-onMounted(() => {
-  loadSchedules()
-})
-</script>
 
 <style scoped>
 .overlay {
