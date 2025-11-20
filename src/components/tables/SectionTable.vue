@@ -1,5 +1,5 @@
 <script setup>
-import { BookOpen, Users, Calendar, Edit, Trash2 } from 'lucide-vue-next'
+import { BookOpen, Calendar, Edit, Trash2 } from 'lucide-vue-next'
 
 defineProps({
   sections: {
@@ -24,59 +24,6 @@ const getSectionName = (section) => {
   return `Section ${section.id}`
 }
 
-// Get section code
-const getSectionCode = (section) => {
-  if (section.code) {
-    return section.code
-  }
-  if (section.sectionCode) {
-    return section.sectionCode
-  }
-  return '-'
-}
-
-// Get subject or course
-const getSubject = (section) => {
-  if (section.subject) {
-    return section.subject
-  }
-  if (section.subjectName) {
-    return section.subjectName
-  }
-  if (section.course) {
-    return section.course
-  }
-  if (section.courseName) {
-    return section.courseName
-  }
-  return '-'
-}
-
-// Get instructor name
-const getInstructor = (section) => {
-  if (section.instructorName) {
-    return section.instructorName
-  }
-  if (section.instructor) {
-    return section.instructor
-  }
-  return '-'
-}
-
-// Get student count
-const getStudentCount = (section) => {
-  if (section.studentCount !== undefined) {
-    return section.studentCount
-  }
-  if (section.enrolledStudents !== undefined) {
-    return section.enrolledStudents
-  }
-  if (section.students && Array.isArray(section.students)) {
-    return section.students.length
-  }
-  return 0
-}
-
 // Format date for display
 const formatDate = (value) => {
   if (!value) return 'N/A'
@@ -97,10 +44,6 @@ const formatDate = (value) => {
       <thead>
         <tr>
           <th class="th-name">Section Name</th>
-          <th class="th-code">Code</th>
-          <th class="th-subject">Subject</th>
-          <th class="th-instructor">Instructor</th>
-          <th class="th-students">Students</th>
           <th class="th-created">Created</th>
           <th class="th-actions">Actions</th> 
         </tr>
@@ -111,23 +54,6 @@ const formatDate = (value) => {
             <div class="name-cell">
               <BookOpen class="section-icon" size="18" />
               <span class="section-name">{{ getSectionName(section) }}</span>
-            </div>
-          </td>
-          <td class="td-code">
-            <span class="code-badge">{{ getSectionCode(section) }}</span>
-          </td>
-          <td class="td-subject">
-            <span class="subject-text">{{ getSubject(section) }}</span>
-          </td>
-          <td class="td-instructor">
-            <div class="instructor-cell">
-              <Users class="instructor-icon" size="16" />
-              <span class="instructor-text">{{ getInstructor(section) }}</span>
-            </div>
-          </td>
-          <td class="td-students">
-            <div class="student-count">
-              <span class="count-badge">{{ getStudentCount(section) }}</span>
             </div>
           </td>
           <td class="td-created">
@@ -181,33 +107,16 @@ const formatDate = (value) => {
 }
 
 .th-name {
-  min-width: 200px;
-}
-
-.th-code {
-  width: 120px;
-}
-
-.th-subject {
-  min-width: 180px;
-}
-
-.th-instructor {
-  min-width: 150px;
-}
-
-.th-students {
-  width: 100px;
-  text-align: center;
+  width: 60%;
 }
 
 .th-created {
-  width: 130px;
+  width: 25%;
   text-align: center;
 }
 
 .th-actions {
-  width: 120px;
+  width: 15%;
   text-align: center;
 }
 
@@ -245,71 +154,6 @@ const formatDate = (value) => {
 
 .section-name {
   font-size: 0.875rem;
-}
-
-/* Code Column */
-.td-code {
-  text-align: center;
-}
-
-.code-badge {
-  background: #eff6ff;
-  color: #1e3a8a;
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  font-family: monospace;
-}
-
-/* Subject Column */
-.td-subject {
-  color: #4b5563;
-}
-
-.subject-text {
-  font-size: 0.875rem;
-}
-
-/* Instructor Column */
-.td-instructor {
-  color: #6b7280;
-}
-
-.instructor-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.instructor-icon {
-  color: #9ca3af;
-  flex-shrink: 0;
-}
-
-.instructor-text {
-  font-size: 0.875rem;
-}
-
-/* Students Column */
-.td-students {
-  text-align: center;
-}
-
-.student-count {
-  display: flex;
-  justify-content: center;
-}
-
-.count-badge {
-  background: #f0fdf4;
-  color: #16a34a;
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  min-width: 40px;
-  text-align: center;
 }
 
 /* Created Column */
@@ -391,7 +235,7 @@ const formatDate = (value) => {
   }
 
   .sections-table {
-    min-width: 800px;
+    min-width: 500px;
   }
 
   .th-name,
@@ -414,19 +258,19 @@ const formatDate = (value) => {
 
 @media (max-width: 640px) {
   .sections-table {
-    min-width: 700px;
+    min-width: 100%;
   }
 
   .th-name,
   .td-name {
-    width: 150px;
-    min-width: 150px;
+    width: auto;
+    min-width: 120px;
   }
 
   .th-actions,
   .td-actions {
-    width: 120px;
-    min-width: 120px;
+    width: 100px;
+    min-width: 100px;
     position: sticky;
     right: 0;
     background: white;
@@ -459,8 +303,6 @@ const formatDate = (value) => {
   }
 
   .section-name,
-  .subject-text,
-  .instructor-text,
   .date-text {
     font-size: 0.75rem;
     white-space: nowrap;

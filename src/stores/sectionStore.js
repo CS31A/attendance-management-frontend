@@ -1,76 +1,118 @@
 import { defineStore } from "pinia";
-import api from '@/api/index.js'
+import sectionsApi from '@/api/sections.js'
 import { ref, computed } from "vue";
 
 export const useSectionStore = defineStore('sectionsStore', () => {
   const sections = ref([])
   const itemsPerPage = ref(10)
+  const loading = ref(false)
+  const error = ref(null)
 
   const getSections = computed(() => sections.value)
   const getItemsPerPage = computed(() => itemsPerPage.value)
   const getNumberOfSections = computed(() => sections.value.length)
-  const getFilteredSections = computed((searchQuery, selectedLevel) => {
 
-    if (selectedLevel !== 'All Levels') {
-    }
+  // Basic filtering - can be expanded based on requirements
+  const getFilteredSections = computed(() => {
     return sections.value
   })
 
   const fetchSections = async () => {
+    loading.value = true
+    error.value = null
     try {
-      const resp = await api.get('/sections')
+      const resp = await sectionsApi.getAllSections()
       sections.value = resp.data
-      console.log(resp.data)
-    } catch (error) {
-      console.log(error)
+    } catch (err) {
+      console.error('Error fetching sections:', err)
+      error.value = 'Failed to fetch sections'
+      throw err
+    } finally {
+      loading.value = false
     }
   }
 
-  const addSections = async () => {
+  const addSection = async (sectionData) => {
+    loading.value = true
+    error.value = null
     try {
-      const resp = await api.post('/sections')
-    } catch (error) {
-      console.log(error)
+      const resp = await sectionsApi.createSection(sectionData)
+      // Optimistically add to list or re-fetch
+      sections.value.push(resp.data)
+      return resp.data
+    } catch (err) {
+      console.error('Error adding section:', err)
+      error.value = 'Failed to add section'
+      throw err
+    } finally {
+      loading.value = false
     }
   }
 
-  const updateSections = async () => {
+  const updateSection = async (id, sectionData) => {
+    loading.value = true
+    error.value = null
     try {
-      const resp = await api.patch('/sections/{id}')
-    } catch (error) {
-      console.log(error)
+      const resp = await sectionsApi.updateSection(id, sectionData)
+      // Update in local list
+      const index = sections.value.findIndex(s => s.id === id)
+      if (index !== -1) {
+        sections.value[index] = resp.data
+      }
+      return resp.data
+    } catch (err) {
+      console.error('Error updating section:', err)
+      error.value = 'Failed to update section'
+      throw err
+    } finally {
+      loading.value = false
     }
   }
 
-  const deleteSection = async () => {
+  const deleteSection = async (id) => {
+    loading.value = true
+    error.value = null
     try {
-      const resp = await api.delete('/sections/{id}')
-    } catch (error) {
-      console.log(error)
+      await sectionsApi.deleteSection(id)
+      // Remove from local list
+      sections.value = sections.value.filter(s => s.id !== id)
+    } catch (err) {
+      console.error('Error deleting section:', err)
+      error.value = 'Failed to delete section'
+      throw err
+    } finally {
+      loading.value = false
     }
   }
 
-  const getSection = async () => {
+  const getSection = async (id) => {
+    loading.value = true
     try {
-      const resp = await api.get('/sections/{id}')
-    } catch (error) {
-      console.log(error)
+      const resp = await sectionsApi.getSection(id)
+      return resp.data
+    } catch (err) {
+      console.error('Error fetching section:', err)
+      throw err
+    } finally {
+      loading.value = false
     }
   }
 
   return {
     // state
     sections,
-    //getters
+    loading,
+    error,
+    // getters
     getSections,
     getNumberOfSections,
     getFilteredSections,
     getItemsPerPage,
     // actions
     fetchSections,
-    addSections,
-    updateSections,
+    addSection,
+    updateSection,
     deleteSection,
     getSection
   }
-}) 
+})
