@@ -3,7 +3,7 @@ import { AlertTriangle, BookOpen, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
-  section: {
+  course: {
     type: Object,
     default: null,
   },
@@ -13,28 +13,25 @@ const emit = defineEmits(['save', 'cancel'])
 
 // Form data
 const name = ref('')
-const courseId = ref('')
 const errorMessage = ref('')
 
 // Initialize form if editing
-watch(() => props.section, (newSection) => {
-  if (newSection) {
-    name.value = newSection.name || ''
-    courseId.value = newSection.courseId || ''
+watch(() => props.course, (newCourse) => {
+  if (newCourse) {
+    name.value = newCourse.name || ''
   }
   else {
     name.value = ''
-    courseId.value = ''
   }
 }, { immediate: true })
 
 // Computed properties
-const isEditMode = computed(() => !!props.section)
-const modalTitle = computed(() => isEditMode.value ? 'Edit Section' : 'Create Section')
-const submitButtonText = computed(() => isEditMode.value ? 'Save Changes' : 'Create Section')
+const isEditMode = computed(() => !!props.course)
+const modalTitle = computed(() => isEditMode.value ? 'Edit Course' : 'Create Course')
+const submitButtonText = computed(() => isEditMode.value ? 'Save Changes' : 'Create Course')
 
 const isFormValid = computed(() => {
-  return name.value && name.value.length >= 4 && courseId.value
+  return name.value && name.value.length >= 20
 })
 
 // Main form submission
@@ -42,22 +39,16 @@ function handleSubmit() {
   errorMessage.value = ''
 
   // Validation
-  if (name.value.length < 4) {
-    errorMessage.value = 'Section name must be at least 4 characters'
+  if (name.value.length < 20) {
+    errorMessage.value = 'Course name must be at least 20 characters'
     return
   }
 
-  if (!courseId.value) {
-    errorMessage.value = 'Course ID is required'
-    return
-  }
-
-  const sectionData = {
+  const courseData = {
     name: name.value,
-    courseId: Number.parseInt(courseId.value),
   }
 
-  emit('save', sectionData)
+  emit('save', courseData)
 }
 
 // Handle error from parent
@@ -92,31 +83,18 @@ defineExpose({ handleError })
       <form class="modal-body" @submit.prevent="handleSubmit">
         <!-- Name Field -->
         <div class="form-group">
-          <label>Section Name *</label>
+          <label>Course Name *</label>
           <div class="input-wrapper">
             <BookOpen class="input-icon" size="18" />
             <input
               v-model="name"
               type="text"
-              placeholder="Enter section name (e.g. BSIT 3A)"
+              placeholder="Enter course name (min 20 chars)"
               required
-              minlength="4"
+              minlength="20"
             >
           </div>
-          <small class="helper-text info">Must be at least 4 characters</small>
-        </div>
-
-        <!-- Course ID Field -->
-        <div class="form-group">
-          <label>Course ID *</label>
-          <input
-            v-model="courseId"
-            type="number"
-            placeholder="Enter course ID"
-            required
-            min="1"
-          >
-          <small class="helper-text info">The ID of the course this section belongs to</small>
+          <small class="helper-text info">Must be at least 20 characters</small>
         </div>
 
         <!-- Actions -->
@@ -233,11 +211,6 @@ defineExpose({ handleError })
   outline: none;
   transition: all 0.2s;
   background-color: #f9fafb;
-}
-
-/* Adjust padding for inputs without icons */
-.form-group input[type="number"] {
-  padding-left: 1rem;
 }
 
 .form-group input:focus {

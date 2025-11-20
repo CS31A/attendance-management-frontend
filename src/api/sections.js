@@ -27,5 +27,5 @@ export default {
 
   getAllStudents(sectionId) {
     return api.get(`/sections/${sectionId}/all-students`)
-  }
+  },
 }

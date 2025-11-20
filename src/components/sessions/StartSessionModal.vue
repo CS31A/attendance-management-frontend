@@ -1,3 +1,107 @@
+<script setup>
+import { AlertTriangle, Loader2, Play, X } from 'lucide-vue-next'
+import { onMounted, ref } from 'vue'
+import { getClassrooms } from '@/api/classrooms'
+
+defineProps({
+  session: {
+    type: Object,
+    required: true,
+  },
+})
+
+const emit = defineEmits(['start', 'cancel'])
+
+// State
+const actualRoomId = ref(null)
+const attendanceCutoffMinutes = ref(15)
+const errorMessage = ref('')
+const classrooms = ref([])
+const loadingClassrooms = ref(false)
+
+// Methods
+async function loadClassrooms() {
+  loadingClassrooms.value = true
+  errorMessage.value = ''
+
+  try {
+    classrooms.value = await getClassrooms()
+  }
+  catch (error) {
+    console.error('Failed to load classrooms:', error)
+    errorMessage.value = 'Failed to load classrooms. You can still start the session.'
+    classrooms.value = []
+  }
+  finally {
+    loadingClassrooms.value = false
+  }
+}
+
+function getCourseName(session) {
+  if (!session)
+    return 'N/A'
+  return session.courseName || session.courseCode || 'Unknown Course'
+}
+
+function formatDate(dateString) {
+  if (!dateString)
+    return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function getScheduledTime(session) {
+  if (!session)
+    return 'N/A'
+  if (session.scheduledStartTime && session.scheduledEndTime) {
+    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
+  }
+  return 'Time not specified'
+}
+
+function formatTime(timeString) {
+  if (!timeString)
+    return ''
+  const [hours, minutes] = timeString.split(':')
+  const hour = Number.parseInt(hours, 10)
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+  return `${displayHour}:${minutes} ${period}`
+}
+
+function startSession() {
+  errorMessage.value = ''
+
+  // Validate cutoff minutes
+  if (attendanceCutoffMinutes.value < 0 || attendanceCutoffMinutes.value > 120) {
+    errorMessage.value = 'Attendance cutoff must be between 0 and 120 minutes'
+    return
+  }
+
+  // Build payload
+  const payload = {
+    attendanceCutoffMinutes: attendanceCutoffMinutes.value,
+  }
+
+  // Add actual room ID if different from scheduled
+  if (actualRoomId.value !== null) {
+    payload.actualRoomId = actualRoomId.value
+  }
+
+  emit('start', payload)
+}
+
+// Lifecycle
+onMounted(() => {
+  loadClassrooms()
+})
+</script>
+
 <template>
   <div class="overlay">
     <div class="modal">
@@ -40,7 +144,7 @@
       </div>
 
       <!-- Modal Body -->
-      <form @submit.prevent="startSession" class="modal-body">
+      <form class="modal-body" @submit.prevent="startSession">
         <!-- Actual Room Dropdown -->
         <div class="form-group">
           <label>Actual Room (Optional)</label>
@@ -48,14 +152,18 @@
             v-model="actualRoomId"
             :disabled="loadingClassrooms"
           >
-            <option :value="null">Use scheduled room ({{ session?.scheduledRoom || 'TBD' }})</option>
+            <option :value="null">
+              Use scheduled room ({{ session?.scheduledRoom || 'TBD' }})
+            </option>
             <option
               v-for="classroom in classrooms"
               :key="classroom.id"
               :value="classroom.id"
             >
               {{ classroom.name }}
-              <template v-if="classroom.building">- {{ classroom.building }}</template>
+              <template v-if="classroom.building">
+                - {{ classroom.building }}
+              </template>
             </option>
           </select>
           <small class="helper-text info">
@@ -73,7 +181,7 @@
               min="0"
               max="120"
               step="5"
-            />
+            >
             <span class="input-suffix">minutes</span>
           </div>
           <small class="helper-text info">
@@ -87,7 +195,9 @@
             <Play size="20" />
           </div>
           <div class="notice-content">
-            <p class="notice-title">Ready to start?</p>
+            <p class="notice-title">
+              Ready to start?
+            </p>
             <p class="notice-text">
               The session will begin immediately and students can start checking in.
             </p>
@@ -112,104 +222,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue'
-import { X, AlertTriangle, Play, Loader2 } from 'lucide-vue-next'
-import { getClassrooms } from '@/api/classrooms'
-
-const props = defineProps({
-  session: {
-    type: Object,
-    required: true
-  }
-})
-
-const emit = defineEmits(['start', 'cancel'])
-
-// State
-const actualRoomId = ref(null)
-const attendanceCutoffMinutes = ref(15)
-const errorMessage = ref('')
-const classrooms = ref([])
-const loadingClassrooms = ref(false)
-
-// Methods
-const loadClassrooms = async () => {
-  loadingClassrooms.value = true
-  errorMessage.value = ''
-
-  try {
-    classrooms.value = await getClassrooms()
-  } catch (error) {
-    console.error('Failed to load classrooms:', error)
-    errorMessage.value = 'Failed to load classrooms. You can still start the session.'
-    classrooms.value = []
-  } finally {
-    loadingClassrooms.value = false
-  }
-}
-
-const getCourseName = (session) => {
-  if (!session) return 'N/A'
-  return session.courseName || session.courseCode || 'Unknown Course'
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
-const getScheduledTime = (session) => {
-  if (!session) return 'N/A'
-  if (session.scheduledStartTime && session.scheduledEndTime) {
-    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
-  }
-  return 'Time not specified'
-}
-
-const formatTime = (timeString) => {
-  if (!timeString) return ''
-  const [hours, minutes] = timeString.split(':')
-  const hour = parseInt(hours, 10)
-  const period = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-  return `${displayHour}:${minutes} ${period}`
-}
-
-const startSession = () => {
-  errorMessage.value = ''
-
-  // Validate cutoff minutes
-  if (attendanceCutoffMinutes.value < 0 || attendanceCutoffMinutes.value > 120) {
-    errorMessage.value = 'Attendance cutoff must be between 0 and 120 minutes'
-    return
-  }
-
-  // Build payload
-  const payload = {
-    attendanceCutoffMinutes: attendanceCutoffMinutes.value
-  }
-
-  // Add actual room ID if different from scheduled
-  if (actualRoomId.value !== null) {
-    payload.actualRoomId = actualRoomId.value
-  }
-
-  emit('start', payload)
-}
-
-// Lifecycle
-onMounted(() => {
-  loadClassrooms()
-})
-</script>
 
 <style scoped>
 .overlay {

@@ -1,26 +1,26 @@
 <script setup>
-import { GraduationCap, User, Mail, Calendar, Edit, Trash2 } from 'lucide-vue-next'
+import { Calendar, Edit, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
 
 defineProps({
   users: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
 })
 
 defineEmits(['edit', 'delete'])
 
 // Get role icon component
-const getRoleIcon = (role) => {
+function _getRoleIcon(role) {
   const icons = {
     Instructor: GraduationCap,
-    Student: User
+    Student: User,
   }
   return icons[role] || User
 }
 
 // Get user name - handle different possible field names
-const getUserName = (user) => {
+function getUserName(user) {
   // Try different possible field name combinations
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`
@@ -39,7 +39,7 @@ const getUserName = (user) => {
 }
 
 // Get user section - handle different possible field names
-const getUserSection = (user) => {
+function _getUserSection(user) {
   if (user.sectionId) {
     return user.sectionId
   }
@@ -53,15 +53,17 @@ const getUserSection = (user) => {
 }
 
 // Format date for display
-const formatDate = (value) => {
-  if (!value) return 'N/A'
+function formatDate(value) {
+  if (!value)
+    return 'N/A'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'N/A'
-  
+  if (Number.isNaN(date.getTime()))
+    return 'N/A'
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
-    day: '2-digit'
+    day: '2-digit',
   }).format(date)
 }
 </script>
@@ -72,12 +74,22 @@ const formatDate = (value) => {
       <thead>
         <tr>
           <!-- <th class="th-avatar">Avatar</th> -->
-          <th class="th-name">Name</th>
-          <th class="th-email">Email</th>
-          <th class="th-role">Role</th>
+          <th class="th-name">
+            Name
+          </th>
+          <th class="th-email">
+            Email
+          </th>
+          <th class="th-role">
+            Role
+          </th>
           <!-- <th class="th-section">Section</th> -->
-          <th class="th-joined">Joined</th>
-          <th class="th-actions">Actions</th> 
+          <th class="th-joined">
+            Joined
+          </th>
+          <th class="th-actions">
+            Actions
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -116,10 +128,10 @@ const formatDate = (value) => {
           </td>
           <td class="td-actions">
             <div class="action-buttons">
-              <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
+              <button class="btn-edit" title="Edit User" @click="$emit('edit', user)">
                 <Edit class="btn-icon" size="16" />
               </button>
-              <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
+              <button class="btn-delete" title="Delete User" @click="$emit('delete', user.id)">
                 <Trash2 class="btn-icon" size="16" />
               </button>
             </div>

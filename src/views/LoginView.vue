@@ -1,8 +1,8 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -17,13 +17,13 @@ onMounted(() => {
 const formData = reactive({
   username: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
 })
 
 const errors = reactive({
   username: '',
   password: '',
-  general: ''
+  general: '',
 })
 
 const isLoading = ref(false)
@@ -31,42 +31,43 @@ const hasAttemptedSubmit = ref(false)
 const showPassword = ref(false)
 
 // Validation rules
-const validateUsername = (username) => {
+function validateUsername(username) {
   if (!username || username.trim() === '') {
     return 'Username or email is required'
   }
-  
+
   // Check if it's an email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const isEmail = emailRegex.test(username)
-  
+
   if (username.includes('@') && !isEmail) {
     return 'Please enter a valid email address'
   }
-  
+
   if (!isEmail && username.length < 3) {
     return 'Username must be at least 8 characters long'
   }
-  
+
   return ''
 }
 
-const validatePassword = (password) => {
+function validatePassword(password) {
   if (!password || password.trim() === '') {
     return 'Password is required'
   }
-  
+
   if (password.length < 6) {
     return 'Password must be at least 6 characters long'
   }
-  
+
   return ''
 }
 
 // Real-time validation
-const validateField = (field) => {
-  if (!hasAttemptedSubmit.value) return
-  
+function validateField(field) {
+  if (!hasAttemptedSubmit.value)
+    return
+
   switch (field) {
     case 'username':
       errors.username = validateUsername(formData.username)
@@ -79,57 +80,50 @@ const validateField = (field) => {
 
 // Computed properties for form state
 const isFormValid = computed(() => {
-  return validateUsername(formData.username) === '' && 
-         validatePassword(formData.password) === ''
+  return validateUsername(formData.username) === ''
+    && validatePassword(formData.password) === ''
 })
 
-const hasErrors = computed(() => {
-  return errors.username || errors.password || errors.general
-})
-
-const handleLogin = async () => {
+async function handleLogin() {
   hasAttemptedSubmit.value = true
-  
+
   // Clear previous errors
   errors.username = ''
   errors.password = ''
   errors.general = ''
-  
+
   // Validate all fields
   errors.username = validateUsername(formData.username)
   errors.password = validatePassword(formData.password)
-  
+
   // If validation fails, don't submit
   if (!isFormValid.value) {
     return
   }
-  
+
   isLoading.value = true
-  
+
   try {
     // Using the authStore login method
     const result = await authStore.login(formData.username, formData.password)
-    
+
     if (result.success) {
-      console.log('Login successful:', {
-        username: formData.username,
-        rememberMe: formData.rememberMe
-      })
-      
       router.push('/dashboard')
-    } else {
+    }
+    else {
       throw new Error(result.message || 'Invalid credentials')
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Login failed:', error)
     errors.general = error.message || 'Invalid username or password. Please try again.'
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
 
-const handleForgotPassword = () => {
-  console.log('Forgot password clicked')
+function handleForgotPassword() {
   // router.push('/forgot-password')
 }
 </script>
@@ -140,16 +134,16 @@ const handleForgotPassword = () => {
     <div class="left-panel">
       <!-- Background Logo -->
       <div class="background-logo">
-        <img src="@/components/icons/ACLCLogo.png" alt="ACLC Logo Background" class="background-logo-image" />
+        <img src="@/components/icons/ACLCLogo.png" alt="ACLC Logo Background" class="background-logo-image">
       </div>
-      
+
       <!-- Decorative Grid Pattern -->
-      <div class="grid-pattern"></div>
-      
+      <div class="grid-pattern" />
+
       <div class="logo-section">
         <div class="logo-content">
           <div class="brand-badge">
-            <span class="badge-dot"></span>
+            <span class="badge-dot" />
             <span class="badge-text">Education Excellence</span>
           </div>
           <h1 class="logo-title">
@@ -157,18 +151,24 @@ const handleForgotPassword = () => {
             <span class="title-secondary">Attendance</span>
             <span class="title-accent">Monitoring System</span>
           </h1>
-          <p class="logo-subtitle"> A reliable and efficient way to monitor student attendance with precision and care.</p>
-          
+          <p class="logo-subtitle">
+            A reliable and efficient way to monitor student attendance with precision and care.
+          </p>
+
           <div class="feature-grid">
             <div class="feature-card">
-              <div class="feature-icon">⚡</div>
+              <div class="feature-icon">
+                ⚡
+              </div>
               <div class="feature-text">
                 <span class="feature-title">Lightning Fast</span>
                 <span class="feature-desc">Quick access</span>
               </div>
             </div>
             <div class="feature-card">
-              <div class="feature-icon">🔒</div>
+              <div class="feature-icon">
+                🔒
+              </div>
               <div class="feature-text">
                 <span class="feature-title">Secure</span>
                 <span class="feature-desc">Protected data</span>
@@ -177,14 +177,16 @@ const handleForgotPassword = () => {
           </div>
         </div>
       </div>
-      
+
       <div class="footer">
         <div class="footer-content">
-          <p class="footer-text">© 2025 Toma Sigma • Built with ❤️</p>
+          <p class="footer-text">
+            © 2025 Toma Sigma • Built with ❤️
+          </p>
           <div class="footer-dots">
-            <span class="dot-indicator active"></span>
-            <span class="dot-indicator"></span>
-            <span class="dot-indicator"></span>
+            <span class="dot-indicator active" />
+            <span class="dot-indicator" />
+            <span class="dot-indicator" />
           </div>
         </div>
       </div>
@@ -203,10 +205,12 @@ const handleForgotPassword = () => {
             <h2 class="form-title">
               Ready to <span class="title-gradient">sign in</span>?
             </h2>
-            <p class="form-subtitle">Enter your credentials to access your dashboard and start managing attendance.</p>
+            <p class="form-subtitle">
+              Enter your credentials to access your dashboard and start managing attendance.
+            </p>
           </div>
 
-          <form @submit.prevent="handleLogin" class="form-content">
+          <form class="form-content" @submit.prevent="handleLogin">
             <!-- General Error Message -->
             <div v-if="errors.general" class="error-message general-error">
               <span class="error-emoji">⚠️</span>
@@ -224,15 +228,15 @@ const handleForgotPassword = () => {
                   v-model="formData.username"
                   type="text"
                   class="form-input"
-                  :class="{ 
+                  :class="{
                     'form-input-error': errors.username,
-                    'form-input-success': formData.username && !errors.username && hasAttemptedSubmit
+                    'form-input-success': formData.username && !errors.username && hasAttemptedSubmit,
                   }"
                   placeholder="e.g., john.doe@example.com"
                   @blur="validateField('username')"
                   @input="validateField('username')"
-                />
-                <div class="input-border"></div>
+                >
+                <div class="input-border" />
               </div>
               <div v-if="errors.username" class="error-message">
                 <span class="error-emoji">❌</span>
@@ -253,22 +257,22 @@ const handleForgotPassword = () => {
                   class="form-input"
                   :class="{
                     'form-input-error': errors.password,
-                    'form-input-success': formData.password && !errors.password && hasAttemptedSubmit
+                    'form-input-success': formData.password && !errors.password && hasAttemptedSubmit,
                   }"
                   placeholder="Enter your password"
                   @blur="validateField('password')"
                   @input="validateField('password')"
-                />
+                >
                 <button
                   type="button"
                   class="password-toggle-btn"
-                  @click="showPassword = !showPassword"
                   :title="showPassword ? 'Hide password' : 'Show password'"
                   :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  @click="showPassword = !showPassword"
                 >
                   <component :is="showPassword ? EyeOff : Eye" class="password-toggle-icon" />
                 </button>
-                <div class="input-border"></div>
+                <div class="input-border" />
               </div>
               <div v-if="errors.password" class="error-message">
                 <span class="error-emoji">❌</span>
@@ -284,7 +288,7 @@ const handleForgotPassword = () => {
                     v-model="formData.rememberMe"
                     type="checkbox"
                     class="checkbox-input"
-                  />
+                  >
                   <label for="remember" class="checkbox-label">
                     <span class="checkbox-box">
                       <span class="checkbox-check">✓</span>
@@ -304,9 +308,9 @@ const handleForgotPassword = () => {
                 <span class="button-icon">{{ isLoading ? '⏳' : '🚀' }}</span>
                 <span class="button-text">{{ isLoading ? 'Logging in...' : 'Login to Dashboard' }}</span>
               </span>
-              <div class="button-glow"></div>
+              <div class="button-glow" />
             </button>
-            
+
             <!-- Additional Options -->
             <div class="form-footer">
               <p class="security-note">
@@ -347,7 +351,7 @@ const handleForgotPassword = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 40% 60%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
@@ -541,7 +545,7 @@ const handleForgotPassword = () => {
   background: #ffffff;
   border-radius: 24px;
   padding: 32px;
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(255, 255, 255, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -855,7 +859,7 @@ const handleForgotPassword = () => {
   outline: none;
   position: relative;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 10px 25px rgba(59, 130, 246, 0.3),
     0 4px 12px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -895,7 +899,7 @@ const handleForgotPassword = () => {
 .login-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(59, 130, 246, 0.4),
     0 8px 16px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -967,16 +971,16 @@ const handleForgotPassword = () => {
   .left-panel {
     padding: 48px 32px;
   }
-  
+
   .logo-title {
     font-size: 36px;
   }
-  
+
   .feature-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .login-form {
     padding: 40px;
   }
@@ -987,20 +991,20 @@ const handleForgotPassword = () => {
     flex: 0 0 380px;
     padding: 40px 32px;
   }
-  
+
   .background-logo-image {
     width: 400px;
     height: 400px;
   }
-  
+
   .logo-title {
     font-size: 32px;
   }
-  
+
   .login-form {
     padding: 36px;
   }
-  
+
   .login-form-container {
     max-width: 420px;
   }
@@ -1011,47 +1015,47 @@ const handleForgotPassword = () => {
     flex-direction: column;
     background: linear-gradient(180deg, #1e293b 0%, #f1f5f9 50%);
   }
-  
+
   .left-panel {
     flex: none;
     padding: 40px 32px;
     min-height: 280px;
   }
-  
+
   .feature-grid {
     display: none;
   }
-  
+
   .logo-title {
     font-size: 28px;
   }
-  
+
   .logo-subtitle {
     font-size: 16px;
   }
-  
+
   .background-logo-image {
     width: 200px;
     height: 200px;
     opacity: 0.1;
   }
-  
+
   .right-panel {
     padding: 32px 24px;
     background: transparent;
   }
-  
+
   .login-form {
     padding: 32px;
-    box-shadow: 
+    box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.1),
       0 0 0 1px rgba(255, 255, 255, 0.9);
   }
-  
+
   .form-title {
     font-size: 28px;
   }
-  
+
   .form-subtitle {
     font-size: 15px;
   }
@@ -1062,38 +1066,38 @@ const handleForgotPassword = () => {
     padding: 32px 24px;
     min-height: 220px;
   }
-  
+
   .logo-title {
     font-size: 24px;
   }
-  
+
   .logo-subtitle {
     font-size: 14px;
   }
-  
+
   .brand-badge {
     font-size: 11px;
     padding: 6px 12px;
   }
-  
+
   .right-panel {
     padding: 24px 20px;
   }
-  
+
   .login-form {
     padding: 28px;
     border-radius: 20px;
   }
-  
+
   .form-title {
     font-size: 26px;
   }
-  
+
   .form-input {
     padding: 14px 16px;
     font-size: 16px;
   }
-  
+
   .login-button {
     padding: 16px 28px;
     font-size: 15px;
@@ -1105,41 +1109,41 @@ const handleForgotPassword = () => {
     padding: 24px 20px;
     min-height: 180px;
   }
-  
+
   .logo-section {
     margin-top: 0;
   }
-  
+
   .logo-title {
     font-size: 22px;
   }
-  
+
   .background-logo-image {
     width: 120px;
     height: 120px;
   }
-  
+
   .right-panel {
     padding: 20px 16px;
   }
-  
+
   .login-form {
     padding: 24px;
   }
-  
+
   .form-options {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
     padding: 16px 0;
   }
-  
+
   .footer-content {
     flex-direction: column;
     gap: 12px;
     text-align: center;
   }
-  
+
   .footer-dots {
     justify-content: center;
   }

@@ -9,11 +9,12 @@ import api from './index'
  * Get current instructor's schedules
  * @returns {Promise<Array>} List of schedule objects
  */
-export const getMySchedules = async () => {
+export async function getMySchedules() {
   try {
     const response = await api.get('/instructors/me/schedules')
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to fetch instructor schedules:', error)
     return Promise.reject(error)
   }
@@ -21,13 +22,14 @@ export const getMySchedules = async () => {
 
 /**
  * Get current instructor's information
- * @returns {Promise<Object>} Instructor object
+ * @returns {Promise<object>} Instructor object
  */
-export const getMyProfile = async () => {
+export async function getMyProfile() {
   try {
     const response = await api.get('/instructors/me')
     return response.data
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to fetch instructor profile:', error)
     return Promise.reject(error)
   }
@@ -35,5 +37,5 @@ export const getMyProfile = async () => {
 
 export default {
   getMySchedules,
-  getMyProfile
+  getMyProfile,
 }

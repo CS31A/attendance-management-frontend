@@ -1,3 +1,50 @@
+<script setup>
+import { Calendar, Clock, MapPin } from 'lucide-vue-next'
+import SessionStatusBadge from './SessionStatusBadge.vue'
+
+/**
+ * Props
+ */
+defineProps({
+  session: {
+    type: Object,
+    required: true,
+  },
+})
+
+/**
+ * Format date to readable string
+ * @param {string} dateString - ISO date string
+ * @returns {string} Formatted date
+ */
+function formatDate(dateString) {
+  if (!dateString)
+    return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+/**
+ * Format time to readable string
+ * @param {string} dateString - ISO datetime string
+ * @returns {string} Formatted time
+ */
+function formatTime(dateString) {
+  if (!dateString)
+    return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+</script>
+
 <template>
   <div class="session-card" :class="`session-${session.status}`">
     <div class="session-header">
@@ -13,83 +60,40 @@
       <h3 class="session-title">
         {{ session.subjectCode }} - {{ session.subjectName }}
       </h3>
-      <p class="session-section">{{ session.sectionName }}</p>
+      <p class="session-section">
+        {{ session.sectionName }}
+      </p>
 
       <div class="session-details">
         <div class="detail-item">
           <Calendar :size="16" />
           <span>{{ formatTime(session.actualStartTime || session.sessionDate) }}</span>
         </div>
-        
-        <div class="detail-item" v-if="session.actualRoomName || session.scheduledRoomName">
+
+        <div v-if="session.actualRoomName || session.scheduledRoomName" class="detail-item">
           <MapPin :size="16" />
           <span>{{ session.actualRoomName || session.scheduledRoomName }}</span>
         </div>
 
-        <div class="detail-item" v-if="session.status === 'active' && session.attendanceCutOff">
+        <div v-if="session.status === 'active' && session.attendanceCutOff" class="detail-item">
           <Clock :size="16" />
           <span>Cutoff: {{ formatTime(session.attendanceCutOff) }}</span>
         </div>
       </div>
 
-      <div class="session-description" v-if="session.description">
+      <div v-if="session.description" class="session-description">
         <p>{{ session.description }}</p>
       </div>
     </div>
 
-    <div class="session-footer" v-if="session.status === 'active'">
+    <div v-if="session.status === 'active'" class="session-footer">
       <div class="active-indicator">
-        <div class="pulse"></div>
+        <div class="pulse" />
         <span>Session is live</span>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { Calendar, MapPin, Clock } from 'lucide-vue-next'
-import SessionStatusBadge from './SessionStatusBadge.vue'
-
-/**
- * Props
- */
-defineProps({
-  session: {
-    type: Object,
-    required: true
-  }
-})
-
-/**
- * Format date to readable string
- * @param {string} dateString - ISO date string
- * @returns {string} Formatted date
- */
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-/**
- * Format time to readable string
- * @param {string} dateString - ISO datetime string
- * @returns {string} Formatted time
- */
-const formatTime = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-</script>
 
 <style scoped>
 .session-card {

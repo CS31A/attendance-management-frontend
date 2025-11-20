@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { AlertTriangle, Plus, Search, Users } from 'lucide-vue-next'
+import { computed, onMounted, ref, watch } from 'vue'
 import CreateUserModal from '@/components/CreateUserModal.vue'
 import EditUserModal from '@/components/EditUserModal.vue'
 import UserTableSection from '@/components/tables/UserTableSection.vue'
 import { useUserStore } from '@/stores/userStore'
-import { AlertTriangle, Plus, Search, Users } from 'lucide-vue-next'
 
 const userStore = useUserStore()
 
@@ -21,121 +21,108 @@ const roleFilters = ['All Roles', 'Instructor', 'Student']
 onMounted(async () => {
   try {
     await userStore.fetchUsers()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to load users:', error)
   }
 })
 
-const filteredUsers = computed(() => 
-  userStore.filteredUsers(searchQuery.value, selectedRole.value)
+const filteredUsers = computed(() =>
+  userStore.filteredUsers(searchQuery.value, selectedRole.value),
 )
 
-const paginatedUsers = computed(() => 
-  userStore.paginatedUsers(searchQuery.value, selectedRole.value)
+const paginatedUsers = computed(() =>
+  userStore.paginatedUsers(searchQuery.value, selectedRole.value),
 )
 
-const filteredInstructors = computed(() => 
-  paginatedUsers.value.filter(u => u.role === 'Instructor')
+const filteredInstructors = computed(() =>
+  paginatedUsers.value.filter(u => u.role === 'Instructor'),
 )
 
-const filteredStudents = computed(() => 
-  paginatedUsers.value.filter(u => u.role === 'Student')
+const filteredStudents = computed(() =>
+  paginatedUsers.value.filter(u => u.role === 'Student'),
 )
 
 // Pagination computed properties
-const totalPages = computed(() => 
-  userStore.totalPages(searchQuery.value, selectedRole.value)
+const totalPages = computed(() =>
+  userStore.totalPages(searchQuery.value, selectedRole.value),
 )
 
-const hasNextPage = computed(() => 
-  userStore.hasNextPage(searchQuery.value, selectedRole.value)
+const hasNextPage = computed(() =>
+  userStore.hasNextPage(searchQuery.value, selectedRole.value),
 )
 
-const hasPreviousPage = computed(() => 
-  userStore.hasPreviousPage
+const hasPreviousPage = computed(() =>
+  userStore.hasPreviousPage,
 )
 
-const currentPage = computed(() => 
-  userStore.currentPage
+const currentPage = computed(() =>
+  userStore.currentPage,
 )
 
-const totalUsers = computed(() => 
-  filteredUsers.value.length
+const totalUsers = computed(() =>
+  filteredUsers.value.length,
 )
 
-const getRoleColor = (role) => {
-  const colors = {
-    Instructor: 'instructor-badge',
-    Student: 'student-badge'
-  }
-  return colors[role] || 'default-badge'
-}
-
-const getRoleIcon = (role) => {
-  const icons = {
-    Instructor: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
-    Student: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222'
-  }
-  return icons[role] || ''
-}
-
-const handleCreateUser = async (userData) => {
+async function handleCreateUser(userData) {
   const result = await userStore.createUser(userData)
   if (result.success) {
     showAddUser.value = false
-  } else {
+  }
+  else {
     createModal.value?.handleError(result.error)
   }
 }
 
-const handleUpdateUser = async (updatedUserData) => {
+async function handleUpdateUser(updatedUserData) {
   const result = await userStore.updateUser(editingUser.value.id, updatedUserData)
   if (result.success) {
     showEditUser.value = false
     editingUser.value = null
-  } else {
+  }
+  else {
     editModal.value?.handleError(result.error)
   }
 }
 
-const handleCancel = () => {
+function handleCancel() {
   showAddUser.value = false
   showEditUser.value = false
   editingUser.value = null
 }
 
-const deleteUser = async (id) => {
+async function deleteUser(id) {
   if (!confirm('Are you sure you want to delete this user?')) {
     return
   }
-  
+
   const userToDelete = userStore.users.find(u => u.id === id)
   const result = await userStore.deleteUser(id, userToDelete.role)
-  
+
   if (!result.success) {
     console.error('Delete error:', result.error)
   }
 }
 
-const handleEditUser = (user) => {
+function handleEditUser(user) {
   editingUser.value = user
   showEditUser.value = true
 }
 
 // Pagination methods
-const nextPage = () => {
+function nextPage() {
   userStore.nextPage(searchQuery.value, selectedRole.value)
 }
 
-const previousPage = () => {
+function previousPage() {
   userStore.previousPage()
 }
 
-const goToPage = (page) => {
+function goToPage(page) {
   userStore.goToPage(page, searchQuery.value, selectedRole.value)
 }
 
-const setItemsPerPage = (itemsPerPage) => {
+function setItemsPerPage(itemsPerPage) {
   userStore.setItemsPerPage(itemsPerPage)
 }
 
@@ -144,35 +131,42 @@ watch([searchQuery, selectedRole], () => {
   userStore.setCurrentPage(1)
 })
 </script>
+
 <template>
   <div class="user-management">
     <!-- Loading overlay -->
     <div v-if="userStore.loading" class="loading-overlay">
       <div class="loading-spinner">
-        <div class="spinner"></div>
+        <div class="spinner" />
         <p>Loading...</p>
       </div>
     </div>
-    
+
     <!-- Error message -->
     <div v-if="userStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ userStore.error }}</p>
-        <button @click="userStore.fetchUsers" class="retry-btn">Retry</button>
+        <button class="retry-btn" @click="userStore.fetchUsers">
+          Retry
+        </button>
       </div>
     </div>
-    
+
     <!-- Main content - only show if we have users or no error -->
     <div v-else-if="userStore.users.length > 0 || !userStore.error" class="container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
           <div class="header-text">
-            <h1 class="page-title">User Management</h1>
-            <p class="page-subtitle">Manage teachers and students</p>
+            <h1 class="page-title">
+              User Management
+            </h1>
+            <p class="page-subtitle">
+              Manage teachers and students
+            </p>
           </div>
-          <button @click="showAddUser = true" class="btn-add-user">
+          <button class="btn-add-user" @click="showAddUser = true">
             <Plus class="icon" size="20" />
             <span>Add User</span>
           </button>
@@ -183,12 +177,12 @@ watch([searchQuery, selectedRole], () => {
       <div class="filters-section">
         <div class="search-box">
           <Search class="search-icon" size="20" />
-          <input 
+          <input
             v-model="searchQuery"
-            type="text" 
+            type="text"
             placeholder="Search by name or email..."
             class="search-input"
-          />
+          >
         </div>
 
         <div class="role-filter">
@@ -212,7 +206,7 @@ watch([searchQuery, selectedRole], () => {
           hasNextPage,
           hasPreviousPage,
           totalUsers,
-          itemsPerPage: userStore.itemsPerPage
+          itemsPerPage: userStore.itemsPerPage,
         }"
         @edit="handleEditUser"
         @delete="deleteUser"
@@ -247,18 +241,19 @@ watch([searchQuery, selectedRole], () => {
         <div class="empty-icon-container">
           <Users class="empty-icon" size="48" />
         </div>
-        <h3 class="empty-title">No Users Found</h3>
+        <h3 class="empty-title">
+          No Users Found
+        </h3>
         <p class="empty-description">
           {{ searchQuery ? 'Try adjusting your search or filters' : 'Get started by adding your first user' }}
         </p>
-        <button v-if="!searchQuery" @click="showAddUser = true" class="btn-empty-action">
+        <button v-if="!searchQuery" class="btn-empty-action" @click="showAddUser = true">
           <Plus class="icon" size="20" />
           <span>Add Your First User</span>
         </button>
       </div>
-
     </div>
-    
+
     <!-- Empty state -->
     <div v-else class="empty-state">
       <p>No users found</p>
@@ -267,18 +262,18 @@ watch([searchQuery, selectedRole], () => {
     <!-- Create User Modal -->
     <CreateUserModal
       v-if="showAddUser"
+      ref="createModal"
       @create="handleCreateUser"
       @cancel="handleCancel"
-      ref="createModal"
     />
 
     <!-- Edit User Modal -->
     <EditUserModal
       v-if="showEditUser"
+      ref="editModal"
       :user="editingUser"
       @update="handleUpdateUser"
       @cancel="handleCancel"
-      ref="editModal"
     />
   </div>
 </template>
@@ -773,11 +768,11 @@ watch([searchQuery, selectedRole], () => {
     max-width: 100%;
     padding: 0 1rem;
   }
-  
+
   .page-title {
     font-size: 2.25rem;
   }
-  
+
   .filters-section {
     gap: 0.75rem;
   }
@@ -787,35 +782,35 @@ watch([searchQuery, selectedRole], () => {
   .user-management {
     padding: 1.5rem;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
-  
+
   .page-subtitle {
     font-size: 1rem;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
-  
+
   .btn-add-user {
     justify-content: center;
     width: 100%;
   }
-  
+
   .filters-section {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .search-box {
     order: 1;
   }
-  
+
   .role-filter {
     order: 2;
     min-width: 100%;
@@ -826,38 +821,38 @@ watch([searchQuery, selectedRole], () => {
   .user-management {
     padding: 1rem;
   }
-  
+
   .page-title {
     font-size: 1.75rem;
   }
-  
+
   .page-subtitle {
     font-size: 0.95rem;
   }
-  
+
   .btn-add-user {
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
   }
-  
+
   .search-input {
     padding: 0.75rem 1rem 0.75rem 2.5rem;
     font-size: 0.9rem;
   }
-  
+
   .filter-select {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
   }
-  
+
   .empty-state {
     padding: 3rem 1.5rem;
   }
-  
+
   .empty-title {
     font-size: 1.5rem;
   }
-  
+
   .empty-description {
     font-size: 1rem;
   }
@@ -870,73 +865,73 @@ watch([searchQuery, selectedRole], () => {
     height: auto;
     overflow: visible;
   }
-  
+
   .container {
     width: 100%;
     max-width: 100%;
     margin: 0;
     padding: 0;
   }
-  
+
   .page-header {
     margin-bottom: 1.5rem;
   }
-  
+
   .page-title {
     font-size: 1.5rem;
   }
-  
+
   .page-subtitle {
     font-size: 0.9rem;
   }
-  
+
   .btn-add-user {
     padding: 0.625rem 1.25rem;
     font-size: 0.85rem;
   }
-  
+
   .filters-section {
     margin-bottom: 1.5rem;
   }
-  
+
   .search-input {
     padding: 0.625rem 0.875rem 0.625rem 2.25rem;
     font-size: 0.85rem;
   }
-  
+
   .search-icon {
     width: 1rem;
     height: 1rem;
     left: 0.75rem;
   }
-  
+
   .filter-select {
     padding: 0.625rem 0.875rem;
     font-size: 0.85rem;
   }
-  
+
   .empty-state {
     padding: 2rem 1rem;
   }
-  
+
   .empty-icon-container {
     padding: 1rem;
     margin-bottom: 1rem;
   }
-  
+
   .empty-icon {
     width: 2rem;
     height: 2rem;
   }
-  
+
   .empty-title {
     font-size: 1.25rem;
   }
-  
+
   .empty-description {
     font-size: 0.9rem;
   }
-  
+
   .btn-empty-action {
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
@@ -950,59 +945,59 @@ watch([searchQuery, selectedRole], () => {
     height: auto;
     overflow: visible;
   }
-  
+
   .container {
     width: 100%;
     max-width: 100%;
     margin: 0;
     padding: 0;
   }
-  
+
   .page-title {
     font-size: 1.25rem;
   }
-  
+
   .page-subtitle {
     font-size: 0.85rem;
   }
-  
+
   .btn-add-user {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
   }
-  
+
   .filters-section {
     margin-bottom: 1rem;
   }
-  
+
   .search-input {
     padding: 0.5rem 0.75rem 0.5rem 2rem;
     font-size: 0.8rem;
   }
-  
+
   .search-icon {
     width: 0.875rem;
     height: 0.875rem;
     left: 0.625rem;
   }
-  
+
   .filter-select {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }
-  
+
   .empty-state {
     padding: 1.5rem 0.75rem;
   }
-  
+
   .empty-title {
     font-size: 1.125rem;
   }
-  
+
   .empty-description {
     font-size: 0.85rem;
   }
-  
+
   .btn-empty-action {
     padding: 0.625rem 1.25rem;
     font-size: 0.85rem;
@@ -1146,15 +1141,15 @@ watch([searchQuery, selectedRole], () => {
     align-items: stretch;
     text-align: center;
   }
-  
+
   .pagination-info {
     justify-content: center;
   }
-  
+
   .pagination-controls {
     justify-content: center;
   }
-  
+
   .page-numbers {
     flex-wrap: wrap;
     justify-content: center;

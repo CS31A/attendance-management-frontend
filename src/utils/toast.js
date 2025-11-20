@@ -17,32 +17,32 @@ const TOAST_TYPES = {
   success: {
     icon: '✓',
     bgColor: '#10b981',
-    textColor: '#ffffff'
+    textColor: '#ffffff',
   },
   error: {
     icon: '✕',
     bgColor: '#ef4444',
-    textColor: '#ffffff'
+    textColor: '#ffffff',
   },
   warning: {
     icon: '⚠',
     bgColor: '#f59e0b',
-    textColor: '#ffffff'
+    textColor: '#ffffff',
   },
   info: {
     icon: 'ℹ',
     bgColor: '#3b82f6',
-    textColor: '#ffffff'
-  }
+    textColor: '#ffffff',
+  },
 }
 
 /**
  * Ensure toast container exists in DOM
  * @returns {HTMLElement} Toast container element
  */
-const getOrCreateToastContainer = () => {
+function getOrCreateToastContainer() {
   let container = document.getElementById(TOAST_CONTAINER_ID)
-  
+
   if (!container) {
     container = document.createElement('div')
     container.id = TOAST_CONTAINER_ID
@@ -58,7 +58,7 @@ const getOrCreateToastContainer = () => {
     `
     document.body.appendChild(container)
   }
-  
+
   return container
 }
 
@@ -68,10 +68,10 @@ const getOrCreateToastContainer = () => {
  * @param {string} type - Toast type ('success' | 'error' | 'warning' | 'info')
  * @param {number} duration - Duration in milliseconds (default: 4000)
  */
-const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
+function showToast(message, type = 'info', duration = TOAST_DURATION) {
   const container = getOrCreateToastContainer()
   const config = TOAST_TYPES[type] || TOAST_TYPES.info
-  
+
   // Create toast element
   const toast = document.createElement('div')
   toast.style.cssText = `
@@ -90,7 +90,7 @@ const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
     font-size: 14px;
     font-weight: 500;
   `
-  
+
   // Add icon
   const icon = document.createElement('span')
   icon.textContent = config.icon
@@ -99,7 +99,7 @@ const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
     font-weight: bold;
     flex-shrink: 0;
   `
-  
+
   // Add message
   const messageEl = document.createElement('span')
   messageEl.textContent = message
@@ -107,10 +107,10 @@ const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
     flex: 1;
     word-wrap: break-word;
   `
-  
+
   toast.appendChild(icon)
   toast.appendChild(messageEl)
-  
+
   // Add animation keyframes if not already present
   if (!document.getElementById('toast-animations')) {
     const style = document.createElement('style')
@@ -140,10 +140,10 @@ const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
     `
     document.head.appendChild(style)
   }
-  
+
   // Add to container
   container.appendChild(toast)
-  
+
   // Auto remove after duration
   setTimeout(() => {
     toast.style.animation = 'slideOut 0.3s ease-in'
@@ -153,7 +153,7 @@ const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
       }
     }, 300)
   }, duration)
-  
+
   // Click to dismiss
   toast.style.cursor = 'pointer'
   toast.addEventListener('click', () => {
@@ -171,7 +171,7 @@ const showToast = (message, type = 'info', duration = TOAST_DURATION) => {
  * @param {string} message - Success message
  * @param {number} duration - Duration in milliseconds
  */
-export const showSuccess = (message, duration) => {
+export function showSuccess(message, duration) {
   showToast(message, 'success', duration)
 }
 
@@ -180,7 +180,7 @@ export const showSuccess = (message, duration) => {
  * @param {string} message - Error message
  * @param {number} duration - Duration in milliseconds
  */
-export const showError = (message, duration) => {
+export function showError(message, duration) {
   showToast(message, 'error', duration)
 }
 
@@ -189,7 +189,7 @@ export const showError = (message, duration) => {
  * @param {string} message - Warning message
  * @param {number} duration - Duration in milliseconds
  */
-export const showWarning = (message, duration) => {
+export function showWarning(message, duration) {
   showToast(message, 'warning', duration)
 }
 
@@ -198,7 +198,7 @@ export const showWarning = (message, duration) => {
  * @param {string} message - Info message
  * @param {number} duration - Duration in milliseconds
  */
-export const showInfo = (message, duration) => {
+export function showInfo(message, duration) {
   showToast(message, 'info', duration)
 }
 
@@ -206,5 +206,5 @@ export default {
   success: showSuccess,
   error: showError,
   warning: showWarning,
-  info: showInfo
+  info: showInfo,
 }

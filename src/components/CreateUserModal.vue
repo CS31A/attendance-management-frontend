@@ -1,115 +1,105 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { X, AlertTriangle, GraduationCap, User } from 'lucide-vue-next';
-import { useAuthStore } from '@/stores/authStore';
+import { AlertTriangle, GraduationCap, User, X } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
 
-const props = defineProps({
-  // No props needed for create mode
-});
+// No props needed for create mode
 
-const emit = defineEmits(["create", "cancel"]);
+const emit = defineEmits(['create', 'cancel'])
 
 // Get auth store to determine role restrictions
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 
 // Computed property to determine available roles based on current user's role
 const availableRoles = computed(() => {
   if (authStore.isAdmin) {
     // Admins can create both instructors and students
-    return ['Instructor', 'Student'];
-  } else if (authStore.isTeacher) {
+    return ['Instructor', 'Student']
+  }
+  else if (authStore.isTeacher) {
     // Teachers can only create students
-    return ['Student'];
-  } 
-});
+    return ['Student']
+  }
+  return []
+})
 
 // Form data
-const email = ref("");
-const firstName = ref("");
-const lastName = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const role = ref("");
-const sectionId = ref("");
-const errorMessage = ref("");
-const passwordMismatchError = ref("");
+const email = ref('')
+const firstName = ref('')
+const lastName = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const role = ref('')
+const sectionId = ref('')
+const errorMessage = ref('')
+const passwordMismatchError = ref('')
 
 // Computed properties
-const modalTitle = computed(() => 'Create User');
-const submitButtonText = computed(() => 'Create Account');
+const modalTitle = computed(() => 'Create User')
+const submitButtonText = computed(() => 'Create Account')
 
 const isFormValid = computed(() => {
-  console.log('Create form validation check:', {
-    role: role.value,
-    availableRoles: availableRoles.value,
-    sectionId: sectionId.value,
-    password: password.value,
-    confirmPassword: confirmPassword.value,
-    passwordsMatch: password.value === confirmPassword.value
-  });
-
-  // Reset error message
-  passwordMismatchError.value = '';
-
-  if (!role.value || !availableRoles.value.includes(role.value)) return false;
-  if (role.value === 'Student' && !sectionId.value?.trim()) return false;
+  if (!role.value || !availableRoles.value.includes(role.value))
+    return false
+  if (role.value === 'Student' && !sectionId.value?.trim())
+    return false
 
   // In create mode, password is required
   if (password.value !== confirmPassword.value) {
-    if (password.value && confirmPassword.value) {
-      passwordMismatchError.value = 'Passwords do not match';
-    }
-    return false;
+    return false
   }
-  return true;
-});
+  return true
+})
 
-// Watch for password changes to clear error
+// Watch for password changes to manage error message
 watch([password, confirmPassword], () => {
   if (password.value === confirmPassword.value) {
-    passwordMismatchError.value = '';
+    passwordMismatchError.value = ''
   }
-});
+  else if (password.value && confirmPassword.value) {
+    passwordMismatchError.value = 'Passwords do not match'
+  }
+}, { immediate: true })
 
 // Watch for changes in available roles to set default role
 watch(availableRoles, (newAvailableRoles) => {
   // If the currently selected role is not available, reset it
   if (role.value && !newAvailableRoles.includes(role.value)) {
-    role.value = '';
+    role.value = ''
   }
 
   // If only student role is available, default to student
   if (newAvailableRoles.length === 1 && newAvailableRoles[0] === 'Student') {
-    role.value = 'Student';
+    role.value = 'Student'
   }
-}, { immediate: true });
+}, { immediate: true })
 
 // Main form submission
-const createUser = () => {
-  errorMessage.value = "";
+function createUser() {
+  errorMessage.value = ''
 
   // Validation
   if (!role.value) {
-    errorMessage.value = "Please select a role";
-    return;
+    errorMessage.value = 'Please select a role'
+    return
   }
 
   // Validate that selected role is available to current user
   if (!availableRoles.value.includes(role.value)) {
-    errorMessage.value = "You don't have permission to create this role";
-    return;
+    errorMessage.value = 'You don\'t have permission to create this role'
+    return
   }
 
   // Password validation - required in create mode
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = "Passwords do not match";
-    return;
+    errorMessage.value = 'Passwords do not match'
+    return
   }
 
   if (role.value === 'Student') {
     if (!sectionId.value?.trim()) {
-      errorMessage.value = "Please enter a section for students";
-      return;
+      errorMessage.value = 'Please enter a section for students'
+      return
     }
   }
 
@@ -122,31 +112,29 @@ const createUser = () => {
     FirstName: firstName.value,
     LastName: lastName.value,
     Role: role.value,
-    SectionId: role.value === "Student" ? sectionId.value.trim() : null,
-  };
-
-  console.log('Sending userData to backend for creation:', userData);
+    SectionId: role.value === 'Student' ? sectionId.value.trim() : null,
+  }
 
   // Emit the create event
-  emit("create", userData);
+  emit('create', userData)
 
   // Clear form after successful creation
-  email.value = "";
-  firstName.value = "";
-  lastName.value = "";
-  password.value = "";
-  confirmPassword.value = "";
-  role.value = "";
-  sectionId.value = "";
-};
+  email.value = ''
+  firstName.value = ''
+  lastName.value = ''
+  password.value = ''
+  confirmPassword.value = ''
+  role.value = ''
+  sectionId.value = ''
+}
 
 // Handle error from parent
-const handleError = (error) => {
-  errorMessage.value = error;
-};
+function handleError(error) {
+  errorMessage.value = error
+}
 
 // Expose methods to parent
-defineExpose({ handleError });
+defineExpose({ handleError })
 </script>
 
 <template>
@@ -169,66 +157,66 @@ defineExpose({ handleError });
       </div>
 
       <!-- Modal Body -->
-      <form @submit.prevent="createUser" class="modal-body">
+      <form class="modal-body" @submit.prevent="createUser">
         <!-- Email Field -->
         <div class="form-group">
           <label>Email *</label>
-          <input 
-            v-model="email" 
+          <input
+            v-model="email"
             type="email"
-            placeholder="Enter email address" 
-            required 
-          />
+            placeholder="Enter email address"
+            required
+          >
           <small class="helper-text info">Email address for login</small>
         </div>
 
         <!-- First Name Field -->
         <div class="form-group">
           <label>First Name *</label>
-          <input 
-            v-model="firstName" 
+          <input
+            v-model="firstName"
             type="text"
-            placeholder="Enter first name" 
-            required 
-          />
+            placeholder="Enter first name"
+            required
+          >
           <small class="helper-text info">User's first name</small>
         </div>
 
         <!-- Last Name Field -->
         <div class="form-group">
           <label>Last Name *</label>
-          <input 
-            v-model="lastName" 
+          <input
+            v-model="lastName"
             type="text"
-            placeholder="Enter last name" 
-            required 
-          />
+            placeholder="Enter last name"
+            required
+          >
           <small class="helper-text info">User's last name</small>
         </div>
 
         <!-- Password Field -->
         <div class="form-group">
           <label>Password *</label>
-          <input 
-            v-model="password" 
+          <input
+            v-model="password"
             type="password"
-            placeholder="Enter password" 
-            required 
+            placeholder="Enter password"
+            required
             minlength="6"
-          />
+          >
           <small class="helper-text info">Must be at least 6 characters</small>
         </div>
 
         <!-- Confirm Password Field -->
         <div class="form-group">
           <label>Confirm Password *</label>
-          <input 
-            v-model="confirmPassword" 
+          <input
+            v-model="confirmPassword"
             type="password"
-            placeholder="Confirm password" 
-            required 
+            placeholder="Confirm password"
+            required
             minlength="6"
-          />
+          >
           <small class="helper-text info">Must match the password above</small>
           <small v-if="passwordMismatchError" class="helper-text error">{{ passwordMismatchError }}</small>
         </div>
@@ -239,24 +227,24 @@ defineExpose({ handleError });
           <div class="role-selector">
             <div
               v-if="availableRoles.includes('Instructor')"
-              @click="role = 'Instructor'"
               class="role-option"
               :class="{ 'role-selected': role === 'Instructor' }"
+              @click="role = 'Instructor'"
             >
               <GraduationCap class="role-icon" size="32" />
               <span class="role-name">Instructor</span>
             </div>
             <div
               v-if="availableRoles.includes('Student')"
-              @click="role = 'Student'"
               class="role-option"
               :class="{ 'role-selected': role === 'Student' }"
+              @click="role = 'Student'"
             >
               <User class="role-icon" size="32" />
               <span class="role-name">Student</span>
             </div>
           </div>
-          <small class="helper-text" v-if="!role">Please select a role</small>
+          <small v-if="!role" class="helper-text">Please select a role</small>
         </div>
 
         <!-- Section ID Field (for Students only) -->
@@ -268,7 +256,7 @@ defineExpose({ handleError });
             class="form-input"
             placeholder="Enter section (e.g., 3, 4, 5, CS101, MATH201...)"
             required
-          />
+          >
           <small class="helper-text info">Required for students (enter any valid section)</small>
         </div>
 
@@ -314,7 +302,7 @@ defineExpose({ handleError });
 
 .modal-header {
   background: linear-gradient(to right, #1e3a8a, #1e40af);
-  padding: 1rem 1.25rem; 
+  padding: 1rem 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -325,7 +313,7 @@ defineExpose({ handleError });
 
 .modal-header h2 {
   color: white;
-  font-size: 1.25rem; 
+  font-size: 1.25rem;
   font-weight: bold;
   margin: 0;
 }
@@ -435,10 +423,10 @@ defineExpose({ handleError });
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem; 
-  padding: 1rem 0.75rem; 
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
   border: 2px solid #e5e7eb;
-  border-radius: 0.5rem; 
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
@@ -447,7 +435,7 @@ defineExpose({ handleError });
 .role-option:hover {
   border-color: #1e3a8a;
   background: #f8f9ff;
-  transform: translateY(-1px); 
+  transform: translateY(-1px);
 }
 
 .role-selector.disabled {
@@ -473,13 +461,13 @@ defineExpose({ handleError });
 }
 
 .role-icon {
-  width: 2rem; 
+  width: 2rem;
   height: 2rem;
   color: #1e3a8a;
 }
 
 .role-name {
-  font-size: 0.875rem; 
+  font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
 }
@@ -487,7 +475,7 @@ defineExpose({ handleError });
 .actions {
   display: flex;
   gap: 0.75rem;
-  margin-top: 1.25rem; 
+  margin-top: 1.25rem;
 }
 
 .btn-create {
@@ -495,7 +483,7 @@ defineExpose({ handleError });
   background-color: #1e3a8a;
   color: white;
   border: none;
-  padding: 0.625rem 1.25rem; 
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
   font-size: 0.875rem;
@@ -516,10 +504,10 @@ defineExpose({ handleError });
   background-color: #e5e7eb;
   color: #374151;
   border: none;
-  padding: 0.625rem 1.25rem; 
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem; 
+  font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -567,11 +555,11 @@ defineExpose({ handleError });
   .modal {
     max-width: 450px;
   }
-  
+
   .modal-body {
     padding: 1.5rem;
   }
-  
+
   .form-group {
     margin-bottom: 1.25rem;
   }
@@ -589,37 +577,37 @@ defineExpose({ handleError });
     border-radius: 1rem;
     margin: 0;
   }
-  
+
   .modal-header {
     padding: 1rem 1.25rem;
   }
-  
+
   .modal-header h2 {
     font-size: 1.125rem;
   }
-  
+
   .modal-body {
     padding: 1.25rem;
   }
-  
+
   .form-group {
     margin-bottom: 1rem;
   }
-  
+
   .form-group input {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
   }
-  
+
   .role-selector {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  
+
   .role-option {
     padding: 0.875rem 0.75rem;
   }
-  
+
   .actions {
     flex-direction: column-reverse;
     gap: 0.5rem;
@@ -650,11 +638,11 @@ defineExpose({ handleError });
     border-radius: 1rem 1rem 0 0;
     padding: 0.875rem 1rem;
   }
-  
+
   .modal-header h2 {
     font-size: 1rem;
   }
-  
+
   .btn-close svg {
     width: 1rem;
     height: 1rem;
@@ -663,40 +651,40 @@ defineExpose({ handleError });
   .modal-body {
     padding: 1rem;
   }
-  
+
   .form-group {
     margin-bottom: 0.875rem;
   }
-  
+
   .form-group label {
     font-size: 0.8rem;
     margin-bottom: 0.25rem;
   }
-  
+
   .form-group input {
     padding: 0.625rem 0.875rem;
     font-size: 0.85rem;
   }
-  
+
   .helper-text {
     font-size: 0.7rem;
   }
-  
+
   .role-selector {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  
+
   .role-option {
     padding: 0.75rem 0.625rem;
     gap: 0.375rem;
   }
-  
+
   .role-icon {
     width: 1.5rem;
     height: 1.5rem;
   }
-  
+
   .role-name {
     font-size: 0.8rem;
   }
@@ -731,7 +719,7 @@ defineExpose({ handleError });
     border-radius: 0.75rem 0.75rem 0 0;
     padding: 0.75rem 1rem;
   }
-  
+
   .modal-header h2 {
     font-size: 0.95rem;
   }
@@ -741,35 +729,35 @@ defineExpose({ handleError });
     max-height: calc(98vh - 60px);
     overflow-y: auto;
   }
-  
+
   .form-group {
     margin-bottom: 0.75rem;
   }
-  
+
   .form-group label {
     font-size: 0.75rem;
     margin-bottom: 0.25rem;
   }
-  
+
   .form-group input {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }
-  
+
   .helper-text {
     font-size: 0.65rem;
   }
-  
+
   .role-option {
     padding: 0.625rem 0.5rem;
     gap: 0.25rem;
   }
-  
+
   .role-icon {
     width: 1.25rem;
     height: 1.25rem;
   }
-  
+
   .role-name {
     font-size: 0.75rem;
   }
@@ -783,12 +771,12 @@ defineExpose({ handleError });
     padding: 0.5rem 0.875rem;
     font-size: 0.8rem;
   }
-  
+
   .error-message {
     margin: 0.75rem 1rem 0;
     padding: 0.625rem;
   }
-  
+
   .error-content p {
     font-size: 0.8rem;
   }
@@ -798,7 +786,7 @@ defineExpose({ handleError });
   .modal-header {
     padding: 0.625rem 0.875rem;
   }
-  
+
   .modal-header h2 {
     font-size: 0.9rem;
   }
@@ -806,21 +794,21 @@ defineExpose({ handleError });
   .modal-body {
     padding: 0.75rem;
   }
-  
+
   .form-group input {
     padding: 0.5rem 0.625rem;
     font-size: 0.75rem;
   }
-  
+
   .role-option {
     padding: 0.5rem 0.375rem;
   }
-  
+
   .role-icon {
     width: 1rem;
     height: 1rem;
   }
-  
+
   .role-name {
     font-size: 0.7rem;
   }

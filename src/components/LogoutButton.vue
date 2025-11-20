@@ -1,28 +1,30 @@
 <script setup>
 import { ref } from 'vue'
-import { useAuthStore } from '@/stores/authStore'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const isLoading = ref(false)
 
-const handleLogout = async () => {
+async function handleLogout() {
   isLoading.value = true
   try {
     await authStore.logout()
     router.push('/login')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Logout error:', error)
     router.push('/login')
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
 </script>
 
 <template>
-  <button @click="handleLogout" class="logout-button" :disabled="isLoading">
+  <button class="logout-button" :disabled="isLoading" @click="handleLogout">
     <span v-if="isLoading">Logging out...</span>
     <span v-else>Logout</span>
   </button>

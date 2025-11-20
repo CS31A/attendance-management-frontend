@@ -2,27 +2,13 @@
 import { BookOpen, Calendar, Edit, Trash2 } from 'lucide-vue-next'
 
 defineProps({
-  sections: {
+  courses: {
     type: Array,
     required: true,
   },
 })
 
 defineEmits(['edit', 'delete'])
-
-// Get section name - handle different possible field names
-function getSectionName(section) {
-  if (section.name) {
-    return section.name
-  }
-  if (section.sectionName) {
-    return section.sectionName
-  }
-  if (section.code) {
-    return section.code
-  }
-  return `Section ${section.id}`
-}
 
 // Format date for display
 function formatDate(value) {
@@ -42,20 +28,20 @@ function formatDate(value) {
 
 <template>
   <div class="table-wrapper">
-    <table class="sections-table">
+    <table class="courses-table">
       <thead>
         <tr>
           <th class="th-id">
             ID
           </th>
           <th class="th-name">
-            Section Name
-          </th>
-          <th class="th-course">
-            Course ID
+            Course Name
           </th>
           <th class="th-created">
             Created
+          </th>
+          <th class="th-updated">
+            Updated
           </th>
           <th class="th-actions">
             Actions
@@ -63,31 +49,34 @@ function formatDate(value) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="section in sections" :key="section.id" class="section-row">
+        <tr v-for="course in courses" :key="course.id" class="course-row">
           <td class="td-id">
-            <span class="id-text">{{ section.id }}</span>
+            <span class="id-text">{{ course.id }}</span>
           </td>
           <td class="td-name">
             <div class="name-cell">
-              <BookOpen class="section-icon" size="18" />
-              <span class="section-name">{{ getSectionName(section) }}</span>
+              <BookOpen class="course-icon" size="18" />
+              <span class="course-name">{{ course.name }}</span>
             </div>
           </td>
-          <td class="td-course">
-            <span class="course-badge">{{ section.courseId }}</span>
-          </td>
           <td class="td-created">
-            <div class="created-cell">
+            <div class="date-cell">
               <Calendar class="date-icon" size="16" />
-              <span class="date-text">{{ formatDate(section?.createdAt) }}</span>
+              <span class="date-text">{{ formatDate(course?.createdAt) }}</span>
+            </div>
+          </td>
+          <td class="td-updated">
+            <div class="date-cell">
+              <Calendar class="date-icon" size="16" />
+              <span class="date-text">{{ formatDate(course?.updatedAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="action-buttons">
-              <button class="btn-edit" title="Edit Section" @click="$emit('edit', section)">
+              <button class="btn-edit" title="Edit Course" @click="$emit('edit', course)">
                 <Edit class="btn-icon" size="16" />
               </button>
-              <button class="btn-delete" title="Delete Section" @click="$emit('delete', section.id)">
+              <button class="btn-delete" title="Delete Course" @click="$emit('delete', course.id)">
                 <Trash2 class="btn-icon" size="16" />
               </button>
             </div>
@@ -103,19 +92,19 @@ function formatDate(value) {
   overflow-x: auto;
 }
 
-/* Sections Table */
-.sections-table {
+/* Courses Table */
+.courses-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
 
 /* Table Header */
-.sections-table thead {
+.courses-table thead {
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
 }
 
-.sections-table th {
+.courses-table th {
   padding: 1rem 1.5rem;
   text-align: left;
   font-weight: 600;
@@ -135,12 +124,8 @@ function formatDate(value) {
   width: 35%;
 }
 
-.th-course {
-  width: 15%;
-}
-
-.th-created {
-  width: 25%;
+.th-created, .th-updated {
+  width: 20%;
   text-align: left;
 }
 
@@ -150,16 +135,16 @@ function formatDate(value) {
 }
 
 /* Table Body */
-.sections-table tbody tr {
+.courses-table tbody tr {
   border-bottom: 1px solid #e5e7eb;
   transition: background-color 0.2s ease;
 }
 
-.sections-table tbody tr:hover {
+.courses-table tbody tr:hover {
   background-color: #f8fafc;
 }
 
-.sections-table td {
+.courses-table td {
   padding: 1rem 1.5rem;
   vertical-align: middle;
 }
@@ -183,36 +168,22 @@ function formatDate(value) {
   gap: 0.75rem;
 }
 
-.section-icon {
+.course-icon {
   color: #1e3a8a;
   flex-shrink: 0;
 }
 
-.section-name {
+.course-name {
   font-size: 0.875rem;
 }
 
-/* Course Column */
-.td-course {
-  color: #4b5563;
-}
-
-.course-badge {
-  background: #f3f4f6;
-  color: #374151;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* Created Column */
-.td-created {
+/* Date Columns */
+.td-created, .td-updated {
   text-align: left;
   color: #6b7280;
 }
 
-.created-cell {
+.date-cell {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -284,7 +255,7 @@ function formatDate(value) {
     border-radius: 12px;
   }
 
-  .sections-table {
+  .courses-table {
     min-width: 500px;
   }
 
@@ -307,7 +278,7 @@ function formatDate(value) {
 }
 
 @media (max-width: 640px) {
-  .sections-table {
+  .courses-table {
     min-width: 100%;
   }
 
@@ -333,8 +304,8 @@ function formatDate(value) {
     color: white;
   }
 
-  .sections-table th,
-  .sections-table td {
+  .courses-table th,
+  .courses-table td {
     padding: 0.5rem 0.75rem;
   }
 
@@ -352,7 +323,7 @@ function formatDate(value) {
     gap: 0.375rem;
   }
 
-  .section-name,
+  .course-name,
   .date-text {
     font-size: 0.75rem;
     white-space: nowrap;

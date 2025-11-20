@@ -1,9 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { Line, Bar } from 'vue-chartjs'
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js'
-import { useStudentStore } from '@/stores/studentStore' 
-import { Users, CheckCircle, XCircle, BarChart3, TrendingUp, MoreVertical, GraduationCap, Clock } from 'lucide-vue-next'
+import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
+import { BarChart3, CheckCircle, GraduationCap, MoreVertical, TrendingUp, Users, XCircle } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { Bar, Line } from 'vue-chartjs'
+import { useStudentStore } from '@/stores/studentStore'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
@@ -35,8 +35,8 @@ const attendanceTrendData = computed(() => ({
     pointBorderColor: '#fff',
     pointBorderWidth: 2,
     pointHoverRadius: 8,
-    fill: true
-  }]
+    fill: true,
+  }],
 }))
 
 const attendanceTrendOptions = {
@@ -44,7 +44,7 @@ const attendanceTrendOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      display: false,
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -52,9 +52,9 @@ const attendanceTrendOptions = {
       borderRadius: 8,
       displayColors: false,
       callbacks: {
-        label: (context) => `${context.parsed.y}% Attendance`
-      }
-    }
+        label: context => `${context.parsed.y}% Attendance`,
+      },
+    },
   },
   scales: {
     y: {
@@ -62,30 +62,30 @@ const attendanceTrendOptions = {
       max: 100,
       ticks: {
         stepSize: 20,
-        callback: (value) => value + '%',
+        callback: value => `${value}%`,
         font: {
-          size: 12
+          size: 12,
         },
-        color: '#9ca3af'
+        color: '#9ca3af',
       },
       grid: {
         color: '#f0f0f0',
-        drawBorder: false
-      }
+        drawBorder: false,
+      },
     },
     x: {
       grid: {
         display: false,
-        drawBorder: false
+        drawBorder: false,
       },
       ticks: {
         font: {
-          size: 12
+          size: 12,
         },
-        color: '#9ca3af'
-      }
-    }
-  }
+        color: '#9ca3af',
+      },
+    },
+  },
 }
 
 // Class Performance Chart Data
@@ -99,11 +99,11 @@ const classPerformanceData = computed(() => ({
       '#3b5998',
       '#10b981',
       '#3b5998',
-      '#10b981'
+      '#10b981',
     ],
     borderRadius: 8,
-    barThickness: 40
-  }]
+    barThickness: 40,
+  }],
 }))
 
 const classPerformanceOptions = {
@@ -111,7 +111,7 @@ const classPerformanceOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      display: false,
     },
     tooltip: {
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -119,9 +119,9 @@ const classPerformanceOptions = {
       borderRadius: 8,
       displayColors: false,
       callbacks: {
-        label: (context) => `${context.parsed.y}% Performance`
-      }
-    }
+        label: context => `${context.parsed.y}% Performance`,
+      },
+    },
   },
   scales: {
     y: {
@@ -129,33 +129,33 @@ const classPerformanceOptions = {
       max: 100,
       ticks: {
         stepSize: 20,
-        callback: (value) => value + '%',
+        callback: value => `${value}%`,
         font: {
-          size: 12
+          size: 12,
         },
-        color: '#9ca3af'
+        color: '#9ca3af',
       },
       grid: {
         color: '#f0f0f0',
-        drawBorder: false
-      }
+        drawBorder: false,
+      },
     },
     x: {
       grid: {
         display: false,
-        drawBorder: false
+        drawBorder: false,
       },
       ticks: {
         font: {
-          size: 12
+          size: 12,
         },
-        color: '#9ca3af'
-      }
-    }
-  }
+        color: '#9ca3af',
+      },
+    },
+  },
 }
 
-const setActiveTab = (tab) => {
+function setActiveTab(tab) {
   activeTab.value = tab
 }
 </script>
@@ -167,17 +167,21 @@ const setActiveTab = (tab) => {
       <div class="page-header">
         <div class="header-content">
           <div class="header-text">
-            <h1 class="page-title">Reports & Analytics</h1>
-            <p class="page-subtitle">Track attendance and performance metrics</p>
+            <h1 class="page-title">
+              Reports & Analytics
+            </h1>
+            <p class="page-subtitle">
+              Track attendance and performance metrics
+            </p>
           </div>
-          
+
           <!-- Time Period Tabs -->
           <div class="tabs-container">
-            <button 
-              v-for="tab in tabs" 
+            <button
+              v-for="tab in tabs"
               :key="tab"
+              class="tab" :class="[{ active: activeTab === tab }]"
               @click="setActiveTab(tab)"
-              :class="['tab', { active: activeTab === tab }]"
             >
               {{ tab }}
             </button>
@@ -194,8 +198,12 @@ const setActiveTab = (tab) => {
             </div>
             <span class="stat-trend positive">+5.2%</span>
           </div>
-          <h3 class="stat-value">{{ totalStudents.toLocaleString() }}</h3>
-          <p class="stat-label">Total Students</p>
+          <h3 class="stat-value">
+            {{ totalStudents.toLocaleString() }}
+          </h3>
+          <p class="stat-label">
+            Total Students
+          </p>
         </div>
 
         <div class="stat-card">
@@ -205,8 +213,12 @@ const setActiveTab = (tab) => {
             </div>
             <span class="stat-trend positive">+2.1%</span>
           </div>
-          <h3 class="stat-value">{{ presentToday.toLocaleString() }}</h3>
-          <p class="stat-label">Present Today</p>
+          <h3 class="stat-value">
+            {{ presentToday.toLocaleString() }}
+          </h3>
+          <p class="stat-label">
+            Present Today
+          </p>
         </div>
 
         <div class="stat-card">
@@ -216,8 +228,12 @@ const setActiveTab = (tab) => {
             </div>
             <span class="stat-trend negative">-1.3%</span>
           </div>
-          <h3 class="stat-value">{{ absentToday }}</h3>
-          <p class="stat-label">Absent Today</p>
+          <h3 class="stat-value">
+            {{ absentToday }}
+          </h3>
+          <p class="stat-label">
+            Absent Today
+          </p>
         </div>
 
         <div class="stat-card">
@@ -227,8 +243,12 @@ const setActiveTab = (tab) => {
             </div>
             <span class="stat-trend positive">+0.8%</span>
           </div>
-          <h3 class="stat-value">{{ attendanceRate }}%</h3>
-          <p class="stat-label">Attendance Rate</p>
+          <h3 class="stat-value">
+            {{ attendanceRate }}%
+          </h3>
+          <p class="stat-label">
+            Attendance Rate
+          </p>
         </div>
       </div>
 
@@ -242,8 +262,12 @@ const setActiveTab = (tab) => {
                 <TrendingUp size="24" />
               </div>
               <div>
-                <h2 class="chart-title">Attendance Trend</h2>
-                <p class="chart-subtitle">Weekly attendance overview</p>
+                <h2 class="chart-title">
+                  Attendance Trend
+                </h2>
+                <p class="chart-subtitle">
+                  Weekly attendance overview
+                </p>
               </div>
             </div>
             <button class="chart-action-btn">
@@ -263,8 +287,12 @@ const setActiveTab = (tab) => {
                 <GraduationCap size="24" />
               </div>
               <div>
-                <h2 class="chart-title">Class Performance</h2>
-                <p class="chart-subtitle">Subject-wise performance</p>
+                <h2 class="chart-title">
+                  Class Performance
+                </h2>
+                <p class="chart-subtitle">
+                  Subject-wise performance
+                </p>
               </div>
             </div>
             <button class="chart-action-btn">

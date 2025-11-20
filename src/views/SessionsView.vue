@@ -1,12 +1,218 @@
+<script setup>
+import { AlertTriangle, Calendar, Loader2, Plus, RefreshCw } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import CreateSessionModal from '@/components/sessions/CreateSessionModal.vue'
+import EndSessionModal from '@/components/sessions/EndSessionModal.vue'
+import SessionTable from '@/components/sessions/SessionTable.vue'
+import StartSessionModal from '@/components/sessions/StartSessionModal.vue'
+import UpdateRoomModal from '@/components/sessions/UpdateRoomModal.vue'
+import { useSessionStore } from '@/stores/sessionStore'
+import { showError, showSuccess } from '@/utils/toast'
+
+const sessionStore = useSessionStore()
+
+// State
+const currentFilter = ref('all')
+const showCreateModal = ref(false)
+const showStartModal = ref(false)
+const showEndModal = ref(false)
+const showUpdateRoomModal = ref(false)
+const selectedSession = ref(null)
+const errorMessage = ref('')
+
+// Computed properties
+const sessions = computed(() => sessionStore.sessions)
+
+const filteredSessions = computed(() => {
+  if (currentFilter.value === 'all') {
+    return sessions.value
+  }
+  return sessionStore.sessionsByStatus(currentFilter.value)
+})
+
+const statusFilters = computed(() => [
+  { label: 'All', value: 'all', count: sessions.value.length },
+  { label: 'Not Started', value: 'not_started', count: sessionStore.notStartedSessions.length },
+  { label: 'Active', value: 'active', count: sessionStore.activeSessions.length },
+  { label: 'Completed', value: 'completed', count: sessionStore.completedSessions.length },
+  { label: 'Cancelled', value: 'cancelled', count: sessionStore.cancelledSessions.length },
+])
+
+const emptyStateTitle = computed(() => {
+  const titles = {
+    all: 'No Sessions Yet',
+    not_started: 'No Upcoming Sessions',
+    active: 'No Active Sessions',
+    completed: 'No Completed Sessions',
+    cancelled: 'No Cancelled Sessions',
+  }
+  return titles[currentFilter.value] || 'No Sessions'
+})
+
+const emptyStateMessage = computed(() => {
+  const messages = {
+    all: 'Create your first session to start managing attendance',
+    not_started: 'All your upcoming sessions will appear here',
+    active: 'Start a session to begin tracking attendance',
+    completed: 'Completed sessions will be listed here',
+    cancelled: 'Cancelled sessions will appear here',
+  }
+  return messages[currentFilter.value] || 'No sessions to display'
+})
+
+// Methods
+async function loadSessions() {
+  errorMessage.value = ''
+  try {
+    await sessionStore.fetchSessions()
+  }
+  catch (error) {
+    console.error('Failed to load sessions:', error)
+    const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
+    showError(message)
+    errorMessage.value = message
+  }
+}
+
+async function handleCreateSession(payload) {
+  errorMessage.value = ''
+  try {
+    await sessionStore.createSession(payload)
+    showCreateModal.value = false
+    showSuccess('Session created successfully!')
+  }
+  catch (error) {
+    console.error('Failed to create session:', error)
+    const message = error.response?.data?.message || 'Failed to create session. Please try again.'
+    showError(message)
+    errorMessage.value = message
+  }
+}
+
+function handleStartSession(session) {
+  selectedSession.value = session
+  showStartModal.value = true
+}
+
+async function handleConfirmStart(payload) {
+  errorMessage.value = ''
+  try {
+    await sessionStore.startSession(selectedSession.value.id, payload)
+    showStartModal.value = false
+    selectedSession.value = null
+    showSuccess('Session started successfully!')
+  }
+  catch (error) {
+    console.error('Failed to start session:', error)
+    let message = 'Failed to start session. Please try again.'
+    if (error.response?.status === 403) {
+      message = 'You are not authorized to start this session. Only the assigned instructor can manage this session.'
+    }
+    else if (error.response?.status === 400) {
+      message = error.response?.data?.message || 'Cannot start this session. Check the session status.'
+    }
+    showError(message)
+    errorMessage.value = message
+  }
+}
+
+function handleEndSession(session) {
+  selectedSession.value = session
+  showEndModal.value = true
+}
+
+async function handleConfirmEnd(payload) {
+  errorMessage.value = ''
+  try {
+    await sessionStore.endSession(selectedSession.value.id, payload)
+    showEndModal.value = false
+    selectedSession.value = null
+    showSuccess('Session ended successfully!')
+  }
+  catch (error) {
+    console.error('Failed to end session:', error)
+    let message = 'Failed to end session. Please try again.'
+    if (error.response?.status === 403) {
+      message = 'You are not authorized to end this session. Only the assigned instructor can manage this session.'
+    }
+    else if (error.response?.status === 400) {
+      message = error.response?.data?.message || 'Cannot end this session. Check the session status.'
+    }
+    showError(message)
+    errorMessage.value = message
+  }
+}
+
+async function handleDeleteSession(sessionId) {
+  if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+    return
+  }
+
+  errorMessage.value = ''
+  try {
+    await sessionStore.deleteSession(sessionId)
+    showSuccess('Session deleted successfully!')
+  }
+  catch (error) {
+    console.error('Failed to delete session:', error)
+    let message = 'Failed to delete session. Please try again.'
+    if (error.response?.status === 403) {
+      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
+    }
+    else if (error.response?.status === 400) {
+      message = error.response?.data?.message || 'Cannot delete this session. Only sessions that have not started can be deleted.'
+    }
+    showError(message)
+    errorMessage.value = message
+  }
+}
+
+function handleUpdateRoom(session) {
+  selectedSession.value = session
+  showUpdateRoomModal.value = true
+}
+
+async function handleConfirmUpdateRoom(payload) {
+  errorMessage.value = ''
+  try {
+    await sessionStore.updateSessionRoom(selectedSession.value.id, payload)
+    showUpdateRoomModal.value = false
+    selectedSession.value = null
+    showSuccess('Session room updated successfully!')
+  }
+  catch (error) {
+    console.error('Failed to update room:', error)
+    let message = 'Failed to update room. Please try again.'
+    if (error.response?.status === 403) {
+      message = 'You are not authorized to update this session. Only the assigned instructor can manage this session.'
+    }
+    else if (error.response?.status === 400) {
+      message = error.response?.data?.message || 'Cannot update room. Check the session status.'
+    }
+    showError(message)
+    errorMessage.value = message
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  loadSessions()
+})
+</script>
+
 <template>
   <div class="sessions-view">
     <!-- Header Section -->
     <div class="sessions-header">
       <div class="header-content">
-        <h1 class="page-title">Session Management</h1>
-        <p class="page-subtitle">Manage your class sessions and attendance tracking</p>
+        <h1 class="page-title">
+          Session Management
+        </h1>
+        <p class="page-subtitle">
+          Manage your class sessions and attendance tracking
+        </p>
       </div>
-      <button @click="showCreateModal = true" class="btn-create-session">
+      <button class="btn-create-session" @click="showCreateModal = true">
         <Plus size="20" />
         <span>Create Session</span>
       </button>
@@ -17,9 +223,9 @@
       <button
         v-for="filter in statusFilters"
         :key="filter.value"
-        @click="currentFilter = filter.value"
         class="filter-tab"
         :class="{ 'filter-active': currentFilter === filter.value }"
+        @click="currentFilter = filter.value"
       >
         {{ filter.label }}
         <span v-if="filter.count !== undefined" class="count-badge">
@@ -39,7 +245,7 @@
       <AlertTriangle size="48" class="error-icon" />
       <h3>Failed to Load Sessions</h3>
       <p>{{ errorMessage }}</p>
-      <button @click="loadSessions" class="btn-retry">
+      <button class="btn-retry" @click="loadSessions">
         <RefreshCw size="18" />
         <span>Retry</span>
       </button>
@@ -50,7 +256,7 @@
       <Calendar size="64" class="empty-icon" />
       <h3>{{ emptyStateTitle }}</h3>
       <p>{{ emptyStateMessage }}</p>
-      <button v-if="currentFilter === 'all'" @click="showCreateModal = true" class="btn-empty-action">
+      <button v-if="currentFilter === 'all'" class="btn-empty-action" @click="showCreateModal = true">
         <Plus size="20" />
         <span>Create Your First Session</span>
       </button>
@@ -99,198 +305,6 @@
     />
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { Plus, Calendar, Loader2, AlertTriangle, RefreshCw } from 'lucide-vue-next'
-import { useSessionStore } from '@/stores/sessionStore'
-import SessionTable from '@/components/sessions/SessionTable.vue'
-import CreateSessionModal from '@/components/sessions/CreateSessionModal.vue'
-import StartSessionModal from '@/components/sessions/StartSessionModal.vue'
-import EndSessionModal from '@/components/sessions/EndSessionModal.vue'
-import UpdateRoomModal from '@/components/sessions/UpdateRoomModal.vue'
-import { showSuccess, showError } from '@/utils/toast'
-
-const sessionStore = useSessionStore()
-
-// State
-const currentFilter = ref('all')
-const showCreateModal = ref(false)
-const showStartModal = ref(false)
-const showEndModal = ref(false)
-const showUpdateRoomModal = ref(false)
-const selectedSession = ref(null)
-const errorMessage = ref('')
-
-// Computed properties
-const sessions = computed(() => sessionStore.sessions)
-
-const filteredSessions = computed(() => {
-  if (currentFilter.value === 'all') {
-    return sessions.value
-  }
-  return sessionStore.sessionsByStatus(currentFilter.value)
-})
-
-const statusFilters = computed(() => [
-  { label: 'All', value: 'all', count: sessions.value.length },
-  { label: 'Not Started', value: 'not_started', count: sessionStore.notStartedSessions.length },
-  { label: 'Active', value: 'active', count: sessionStore.activeSessions.length },
-  { label: 'Completed', value: 'completed', count: sessionStore.completedSessions.length },
-  { label: 'Cancelled', value: 'cancelled', count: sessionStore.cancelledSessions.length }
-])
-
-const emptyStateTitle = computed(() => {
-  const titles = {
-    all: 'No Sessions Yet',
-    not_started: 'No Upcoming Sessions',
-    active: 'No Active Sessions',
-    completed: 'No Completed Sessions',
-    cancelled: 'No Cancelled Sessions'
-  }
-  return titles[currentFilter.value] || 'No Sessions'
-})
-
-const emptyStateMessage = computed(() => {
-  const messages = {
-    all: 'Create your first session to start managing attendance',
-    not_started: 'All your upcoming sessions will appear here',
-    active: 'Start a session to begin tracking attendance',
-    completed: 'Completed sessions will be listed here',
-    cancelled: 'Cancelled sessions will appear here'
-  }
-  return messages[currentFilter.value] || 'No sessions to display'
-})
-
-// Methods
-const loadSessions = async () => {
-  errorMessage.value = ''
-  try {
-    await sessionStore.fetchSessions()
-  } catch (error) {
-    console.error('Failed to load sessions:', error)
-    const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
-    showError(message)
-    errorMessage.value = message
-  }
-}
-
-const handleCreateSession = async (payload) => {
-  errorMessage.value = ''
-  try {
-    await sessionStore.createSession(payload)
-    showCreateModal.value = false
-    showSuccess('Session created successfully!')
-  } catch (error) {
-    console.error('Failed to create session:', error)
-    const message = error.response?.data?.message || 'Failed to create session. Please try again.'
-    showError(message)
-    errorMessage.value = message
-  }
-}
-
-const handleStartSession = (session) => {
-  selectedSession.value = session
-  showStartModal.value = true
-}
-
-const handleConfirmStart = async (payload) => {
-  errorMessage.value = ''
-  try {
-    await sessionStore.startSession(selectedSession.value.id, payload)
-    showStartModal.value = false
-    selectedSession.value = null
-    showSuccess('Session started successfully!')
-  } catch (error) {
-    console.error('Failed to start session:', error)
-    let message = 'Failed to start session. Please try again.'
-    if (error.response?.status === 403) {
-      message = 'You are not authorized to start this session. Only the assigned instructor can manage this session.'
-    } else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot start this session. Check the session status.'
-    }
-    showError(message)
-    errorMessage.value = message
-  }
-}
-
-const handleEndSession = (session) => {
-  selectedSession.value = session
-  showEndModal.value = true
-}
-
-const handleConfirmEnd = async (payload) => {
-  errorMessage.value = ''
-  try {
-    await sessionStore.endSession(selectedSession.value.id, payload)
-    showEndModal.value = false
-    selectedSession.value = null
-    showSuccess('Session ended successfully!')
-  } catch (error) {
-    console.error('Failed to end session:', error)
-    let message = 'Failed to end session. Please try again.'
-    if (error.response?.status === 403) {
-      message = 'You are not authorized to end this session. Only the assigned instructor can manage this session.'
-    } else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot end this session. Check the session status.'
-    }
-    showError(message)
-    errorMessage.value = message
-  }
-}
-
-const handleDeleteSession = async (sessionId) => {
-  if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-    return
-  }
-
-  errorMessage.value = ''
-  try {
-    await sessionStore.deleteSession(sessionId)
-    showSuccess('Session deleted successfully!')
-  } catch (error) {
-    console.error('Failed to delete session:', error)
-    let message = 'Failed to delete session. Please try again.'
-    if (error.response?.status === 403) {
-      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
-    } else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot delete this session. Only sessions that have not started can be deleted.'
-    }
-    showError(message)
-    errorMessage.value = message
-  }
-}
-
-const handleUpdateRoom = (session) => {
-  selectedSession.value = session
-  showUpdateRoomModal.value = true
-}
-
-const handleConfirmUpdateRoom = async (payload) => {
-  errorMessage.value = ''
-  try {
-    await sessionStore.updateSessionRoom(selectedSession.value.id, payload)
-    showUpdateRoomModal.value = false
-    selectedSession.value = null
-    showSuccess('Session room updated successfully!')
-  } catch (error) {
-    console.error('Failed to update room:', error)
-    let message = 'Failed to update room. Please try again.'
-    if (error.response?.status === 403) {
-      message = 'You are not authorized to update this session. Only the assigned instructor can manage this session.'
-    } else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot update room. Check the session status.'
-    }
-    showError(message)
-    errorMessage.value = message
-  }
-}
-
-// Lifecycle
-onMounted(() => {
-  loadSessions()
-})
-</script>
 
 <style scoped>
 .sessions-view {

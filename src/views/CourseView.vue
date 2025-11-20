@@ -1,14 +1,14 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import SectionModal from '@/components/SectionModal.vue'
-import { useSectionStore } from '@/stores/sectionStore.js'
+import CourseModal from '@/components/CourseModal.vue'
+import { useCourseStore } from '@/stores/courseStore.js'
 
-const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
+const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 
-const sectionsStore = useSectionStore()
+const courseStore = useCourseStore()
 const showModal = ref(false)
-const selectedSection = ref(null)
+const selectedCourse = ref(null)
 const modalRef = ref(null)
 
 // Pagination state
@@ -16,17 +16,17 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
 // Computed values
-const sections = computed(() => sectionsStore.getSections)
-const totalSections = computed(() => sectionsStore.getNumberOfSections)
-const totalPages = computed(() => Math.ceil(totalSections.value / itemsPerPage.value))
+const courses = computed(() => courseStore.sortedCourses)
+const totalCourses = computed(() => courses.value.length)
+const totalPages = computed(() => Math.ceil(totalCourses.value / itemsPerPage.value))
 const hasNextPage = computed(() => currentPage.value < totalPages.value)
 const hasPreviousPage = computed(() => currentPage.value > 1)
 
-// Paginated sections
-const paginatedSections = computed(() => {
+// Paginated courses
+const paginatedCourses = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return sections.value?.slice(start, end) || []
+  return courses.value.slice(start, end)
 })
 
 // Pagination handlers
@@ -55,57 +55,57 @@ function handleSetItemsPerPage(value) {
 
 // Modal Handlers
 function openAddModal() {
-  selectedSection.value = null
+  selectedCourse.value = null
   showModal.value = true
 }
 
-function openEditModal(section) {
-  selectedSection.value = { ...section }
+function openEditModal(course) {
+  selectedCourse.value = { ...course }
   showModal.value = true
 }
 
 function closeModal() {
   showModal.value = false
-  selectedSection.value = null
+  selectedCourse.value = null
 }
 
-async function handleSaveSection(sectionData) {
+async function handleSaveCourse(courseData) {
   try {
-    if (selectedSection.value) {
+    if (selectedCourse.value) {
       // Edit mode
-      await sectionsStore.updateSection(selectedSection.value.id, sectionData)
+      await courseStore.updateCourse(selectedCourse.value.id, courseData)
     }
     else {
       // Create mode
-      await sectionsStore.addSection(sectionData)
+      await courseStore.createCourse(courseData)
     }
     closeModal()
   }
   catch (error) {
     if (modalRef.value) {
-      modalRef.value.handleError(error.response?.data?.message || 'Failed to save section')
+      modalRef.value.handleError(error.response?.data?.message || 'Failed to save course')
     }
   }
 }
 
-async function handleDeleteSection(sectionId) {
-  if (confirm('Are you sure you want to delete this section? This action cannot be undone.')) {
+async function handleDeleteCourse(courseId) {
+  if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
     try {
-      await sectionsStore.deleteSection(sectionId)
+      await courseStore.deleteCourse(courseId)
       // Adjust pagination if needed
-      if (paginatedSections.value.length === 0 && currentPage.value > 1) {
+      if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
     }
     catch (error) {
-      alert(`Failed to delete section: ${error.response?.data?.message || error.message}`)
+      alert(`Failed to delete course: ${error.response?.data?.message || error.message}`)
     }
   }
 }
 
 onMounted(async () => {
   try {
-    await sectionsStore.fetchSections()
+    await courseStore.fetchCourses()
   }
   catch {
     // Error handled silently
@@ -114,9 +114,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="section-management">
+  <div class="course-management">
     <!-- Loading overlay -->
-    <div v-if="sectionsStore.loading" class="loading-overlay">
+    <div v-if="courseStore.loading" class="loading-overlay">
       <div class="loading-spinner">
         <div class="spinner" />
         <p>Loading...</p>
@@ -124,11 +124,11 @@ onMounted(async () => {
     </div>
 
     <!-- Error message -->
-    <div v-if="sectionsStore.error" class="error-message">
+    <div v-if="courseStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
-        <p>{{ sectionsStore.error }}</p>
-        <button class="retry-btn" @click="sectionsStore.fetchSections">
+        <p>{{ courseStore.error }}</p>
+        <button class="retry-btn" @click="courseStore.fetchCourses">
           Retry
         </button>
       </div>
@@ -140,28 +140,28 @@ onMounted(async () => {
         <div class="header-content">
           <div class="header-text">
             <h1 class="page-title">
-              Section Management
+              Course Management
             </h1>
             <p class="page-subtitle">
-              Manage Sections
+              Manage Courses
             </p>
           </div>
           <button class="btn-add" @click="openAddModal">
             <Plus class="icon" size="20" />
-            <span>Add Section</span>
+            <span>Add Course</span>
           </button>
         </div>
       </div>
 
-      <SectionTableSection
-        :sections="paginatedSections"
-        title="All Sections"
+      <CourseTableSection
+        :courses="paginatedCourses"
+        title="All Courses"
         :pagination="{
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
-          totalSections,
+          totalCourses,
           itemsPerPage,
         }"
         @next-page="handleNextPage"
@@ -169,16 +169,16 @@ onMounted(async () => {
         @go-to-page="handleGoToPage"
         @set-items-per-page="handleSetItemsPerPage"
         @edit="openEditModal"
-        @delete="handleDeleteSection"
+        @delete="handleDeleteCourse"
       />
     </div>
 
     <!-- Modal -->
-    <SectionModal
+    <CourseModal
       v-if="showModal"
       ref="modalRef"
-      :section="selectedSection"
-      @save="handleSaveSection"
+      :course="selectedCourse"
+      @save="handleSaveCourse"
       @cancel="closeModal"
     />
   </div>
@@ -186,7 +186,7 @@ onMounted(async () => {
 
 <style scoped>
 /* Main Container */
-.section-management {
+.course-management {
   min-height: 100vh;
   background: #f8fafc;
   padding: 2rem;
@@ -194,7 +194,7 @@ onMounted(async () => {
   overflow-x: hidden;
 }
 
-.section-management::before {
+.course-management::before {
   content: '';
   position: absolute;
   top: 0;

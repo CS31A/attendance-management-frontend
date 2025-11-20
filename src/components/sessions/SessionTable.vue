@@ -1,14 +1,89 @@
+<script setup>
+import { Calendar, Clock, MapPin, Play, StopCircle, Trash2 } from 'lucide-vue-next'
+import SessionStatusBadge from './SessionStatusBadge.vue'
+
+defineProps({
+  sessions: {
+    type: Array,
+    required: true,
+  },
+})
+
+defineEmits(['start', 'end', 'delete', 'updateRoom'])
+
+// Helper functions
+function formatDate(dateString) {
+  if (!dateString)
+    return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function getCourseName(session) {
+  return session.courseName || session.courseCode || 'Unknown Course'
+}
+
+function getScheduleInfo(session) {
+  const parts = []
+  if (session.scheduleCode)
+    parts.push(session.scheduleCode)
+  if (session.section)
+    parts.push(`Section ${session.section}`)
+  return parts.join(' • ') || 'No schedule info'
+}
+
+function getTimeRange(session) {
+  if (session.actualStartTime && session.actualEndTime) {
+    return `${formatTime(session.actualStartTime)} - ${formatTime(session.actualEndTime)}`
+  }
+  if (session.scheduledStartTime && session.scheduledEndTime) {
+    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
+  }
+  return 'Time TBD'
+}
+
+function formatTime(timeString) {
+  if (!timeString)
+    return ''
+
+  // Handle HH:mm:ss format
+  const [hours, minutes] = timeString.split(':')
+  const hour = Number.parseInt(hours, 10)
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+
+  return `${displayHour}:${minutes} ${period}`
+}
+</script>
+
 <template>
   <div class="table-wrapper">
     <table class="sessions-table">
       <thead>
         <tr>
-          <th class="th-date">Date</th>
-          <th class="th-course">Course/Schedule</th>
-          <th class="th-status">Status</th>
-          <th class="th-room">Room</th>
-          <th class="th-time">Time</th>
-          <th class="th-actions">Actions</th>
+          <th class="th-date">
+            Date
+          </th>
+          <th class="th-course">
+            Course/Schedule
+          </th>
+          <th class="th-status">
+            Status
+          </th>
+          <th class="th-room">
+            Room
+          </th>
+          <th class="th-time">
+            Time
+          </th>
+          <th class="th-actions">
+            Actions
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -57,16 +132,16 @@
               <template v-if="session.status === 'not_started'">
                 <button
                   class="btn-action btn-start"
-                  @click="$emit('start', session)"
                   title="Start Session"
+                  @click="$emit('start', session)"
                 >
                   <Play class="btn-icon" size="16" />
                   <span>Start</span>
                 </button>
                 <button
                   class="btn-action btn-delete"
-                  @click="$emit('delete', session.id)"
                   title="Delete Session"
+                  @click="$emit('delete', session.id)"
                 >
                   <Trash2 class="btn-icon" size="16" />
                 </button>
@@ -76,16 +151,16 @@
               <template v-else-if="session.status === 'active'">
                 <button
                   class="btn-action btn-end"
-                  @click="$emit('end', session)"
                   title="End Session"
+                  @click="$emit('end', session)"
                 >
                   <StopCircle class="btn-icon" size="16" />
                   <span>End</span>
                 </button>
                 <button
                   class="btn-action btn-room"
-                  @click="$emit('update-room', session)"
                   title="Change Room"
+                  @click="$emit('updateRoom', session)"
                 >
                   <MapPin class="btn-icon" size="16" />
                 </button>
@@ -102,65 +177,6 @@
     </table>
   </div>
 </template>
-
-<script setup>
-import { Calendar, MapPin, Clock, Play, StopCircle, Trash2 } from 'lucide-vue-next'
-import SessionStatusBadge from './SessionStatusBadge.vue'
-
-defineProps({
-  sessions: {
-    type: Array,
-    required: true
-  }
-})
-
-defineEmits(['start', 'end', 'delete', 'update-room'])
-
-// Helper functions
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const getCourseName = (session) => {
-  return session.courseName || session.courseCode || 'Unknown Course'
-}
-
-const getScheduleInfo = (session) => {
-  const parts = []
-  if (session.scheduleCode) parts.push(session.scheduleCode)
-  if (session.section) parts.push(`Section ${session.section}`)
-  return parts.join(' • ') || 'No schedule info'
-}
-
-const getTimeRange = (session) => {
-  if (session.actualStartTime && session.actualEndTime) {
-    return `${formatTime(session.actualStartTime)} - ${formatTime(session.actualEndTime)}`
-  }
-  if (session.scheduledStartTime && session.scheduledEndTime) {
-    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
-  }
-  return 'Time TBD'
-}
-
-const formatTime = (timeString) => {
-  if (!timeString) return ''
-
-  // Handle HH:mm:ss format
-  const [hours, minutes] = timeString.split(':')
-  const hour = parseInt(hours, 10)
-  const period = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-
-  return `${displayHour}:${minutes} ${period}`
-}
-</script>
 
 <style scoped>
 .table-wrapper {

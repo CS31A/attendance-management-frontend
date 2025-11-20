@@ -1,9 +1,9 @@
 <script setup>
 import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import SectionTable from './SectionTable.vue'
+import CourseTable from './CourseTable.vue'
 
 defineProps({
-  sections: {
+  courses: {
     type: Array,
     required: true,
   },
@@ -25,13 +25,13 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
     <div class="table-header">
       <div class="table-title">
         <BookOpen class="table-icon" size="24" />
-        <h2>{{ title }} ({{ pagination ? pagination.totalSections : sections.length }})</h2>
+        <h2>{{ title }} ({{ pagination ? pagination.totalCourses : courses.length }})</h2>
       </div>
     </div>
 
     <div class="table-container">
-      <SectionTable
-        :sections="sections"
+      <CourseTable
+        :courses="courses"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
       />
@@ -41,8 +41,8 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
         <div class="pagination-info">
           <span class="pagination-text">
             Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }} to
-            {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalSections) }} of
-            {{ pagination.totalSections }} sections
+            {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalCourses) }} of
+            {{ pagination.totalCourses }} courses
           </span>
           <div class="items-per-page">
             <label for="itemsPerPage">Show:</label>

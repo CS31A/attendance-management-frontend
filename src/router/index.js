@@ -1,42 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { authGuard, guestGuard, instructorGuard, adminGuard } from './authGuard'
-
+import { adminGuard, authGuard, guestGuard, instructorGuard } from './authGuard'
 
 const routes = [
   {
     path: '/login',
     component: () => import('../views/LoginView.vue'),
-    beforeEnter: guestGuard
+    beforeEnter: guestGuard,
   },
   {
     path: '/dashboard',
     component: () => import('../views/DashboardView.vue'),
-    beforeEnter: authGuard
+    beforeEnter: authGuard,
   },
   {
     path: '/users',
     component: () => import('../views/UserManagementView.vue'),
-    beforeEnter: [authGuard, adminGuard]
+    beforeEnter: [authGuard, adminGuard],
   },
   {
     path: '/sessions',
     component: () => import('../views/SessionsView.vue'),
-    beforeEnter: [authGuard, instructorGuard]
+    beforeEnter: [authGuard, instructorGuard],
   },
   {
     path: '/reports',
     component: () => import('../views/ReportsView.vue'),
-    beforeEnter: authGuard
+    beforeEnter: authGuard,
   },
   {
     path: '/',
-    redirect: '/login'  // change this from '/dashboard' to '/login'
+    redirect: '/login', // change this from '/dashboard' to '/login'
   },
   {
     path: '/sections',
     component: () => import('../views/SectionsView.vue'),
-    beforeEnter: [authGuard, adminGuard]
-  }
+    beforeEnter: [authGuard, adminGuard],
+  },
+  {
+    path: '/courses',
+    component: () => import('../views/CourseView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
 ]
 
 const router = createRouter({

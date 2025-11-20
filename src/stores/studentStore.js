@@ -8,20 +8,14 @@ export const useStudentStore = defineStore('students', () => {
 
   // Actions
   function addStudent(studentData) {
-    console.log('addStudent called with:', studentData)
-    console.log('Current students before:', students.value)
-    
     const newStudent = {
       id: Date.now(),
-      ...studentData
+      ...studentData,
     }
-    
+
     // Direct push without checking
     students.value = [...students.value, newStudent]
-    
-    console.log('Student added:', newStudent)
-    console.log('All students after:', students.value)
-    
+
     return newStudent
   }
 
@@ -32,6 +26,6 @@ export const useStudentStore = defineStore('students', () => {
   return {
     students,
     addStudent,
-    removeStudent
+    removeStudent,
   }
 })

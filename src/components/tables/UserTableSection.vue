@@ -1,130 +1,138 @@
-<template>
-    <div class="table-section">
-      <div class="table-header">
-        <div class="table-title">
-          <component :is="getRoleIcon(role)" class="table-icon" :class="role.toLowerCase()" size="24" />
-          <h2>{{ title }} ({{ pagination ? pagination.totalUsers : users.length }})</h2>
-        </div>
-      </div>
-      
-      <div class="table-container">
-        <UserTable 
-          :users="users" 
-          @edit="$emit('edit', $event)"
-          @delete="$emit('delete', $event)"
-        />
+<script setup>
+import { ChevronLeft, ChevronRight, GraduationCap, User, Users } from 'lucide-vue-next'
+import UserTable from './UserTable.vue'
 
-        <!-- Pagination Controls -->
-        <div v-if="pagination" class="pagination-section">
-          <div class="pagination-info">
-            <span class="pagination-text">
-              Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }} to 
-              {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalUsers) }} of 
-              {{ pagination.totalUsers }} users
-            </span>
-            <div class="items-per-page">
-              <label for="itemsPerPage">Show:</label>
-              <select 
-                id="itemsPerPage" 
-                :value="pagination.itemsPerPage" 
-                @change="$emit('set-items-per-page', parseInt($event.target.value))"
-                class="items-select"
-              >
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="pagination-controls">
-            <button 
-              @click="$emit('previous-page')" 
-              :disabled="!pagination.hasPreviousPage"
-              class="pagination-btn"
-              :class="{ disabled: !pagination.hasPreviousPage }"
+defineProps({
+  users: {
+    type: Array,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    required: true,
+  },
+  pagination: {
+    type: Object,
+    default: null,
+  },
+})
+
+defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+
+function getRoleIcon(role) {
+  const icons = {
+    Instructor: GraduationCap,
+    Student: User,
+    All: Users,
+  }
+  return icons[role] || Users
+}
+</script>
+
+<template>
+  <div class="table-section">
+    <div class="table-header">
+      <div class="table-title">
+        <component :is="getRoleIcon(role)" class="table-icon" :class="role.toLowerCase()" size="24" />
+        <h2>{{ title }} ({{ pagination ? pagination.totalUsers : users.length }})</h2>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <UserTable
+        :users="users"
+        @edit="$emit('edit', $event)"
+        @delete="$emit('delete', $event)"
+      />
+
+      <!-- Pagination Controls -->
+      <div v-if="pagination" class="pagination-section">
+        <div class="pagination-info">
+          <span class="pagination-text">
+            Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }} to
+            {{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalUsers) }} of
+            {{ pagination.totalUsers }} users
+          </span>
+          <div class="items-per-page">
+            <label for="itemsPerPage">Show:</label>
+            <select
+              id="itemsPerPage"
+              :value="pagination.itemsPerPage"
+              class="items-select"
+              @change="$emit('setItemsPerPage', parseInt($event.target.value))"
             >
-              <ChevronLeft class="pagination-icon" size="16" />
-              Previous
-            </button>
-            
-            <div class="page-numbers">
-              <button 
-                v-for="page in Math.min(5, pagination.totalPages)" 
-                :key="page"
-                @click="$emit('go-to-page', page)"
-                class="page-btn"
-                :class="{ active: page === pagination.currentPage }"
-              >
-                {{ page }}
-              </button>
-              <span v-if="pagination.totalPages > 5" class="page-ellipsis">...</span>
-              <button 
-                v-if="pagination.totalPages > 5 && pagination.currentPage < pagination.totalPages - 2"
-                @click="$emit('go-to-page', pagination.totalPages)"
-                class="page-btn"
-              >
-                {{ pagination.totalPages }}
-              </button>
-            </div>
-            
-            <button 
-              @click="$emit('next-page')" 
-              :disabled="!pagination.hasNextPage"
-              class="pagination-btn"
-              :class="{ disabled: !pagination.hasNextPage }"
+              <option value="5">
+                5
+              </option>
+              <option value="10">
+                10
+              </option>
+              <option value="20">
+                20
+              </option>
+              <option value="50">
+                50
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pagination-controls">
+          <button
+            :disabled="!pagination.hasPreviousPage"
+            class="pagination-btn"
+            :class="{ disabled: !pagination.hasPreviousPage }"
+            @click="$emit('previousPage')"
+          >
+            <ChevronLeft class="pagination-icon" size="16" />
+            Previous
+          </button>
+
+          <div class="page-numbers">
+            <button
+              v-for="page in Math.min(5, pagination.totalPages)"
+              :key="page"
+              class="page-btn"
+              :class="{ active: page === pagination.currentPage }"
+              @click="$emit('goToPage', page)"
             >
-              Next
-              <ChevronRight class="pagination-icon" size="16" />
+              {{ page }}
+            </button>
+            <span v-if="pagination.totalPages > 5" class="page-ellipsis">...</span>
+            <button
+              v-if="pagination.totalPages > 5 && pagination.currentPage < pagination.totalPages - 2"
+              class="page-btn"
+              @click="$emit('goToPage', pagination.totalPages)"
+            >
+              {{ pagination.totalPages }}
             </button>
           </div>
+
+          <button
+            :disabled="!pagination.hasNextPage"
+            class="pagination-btn"
+            :class="{ disabled: !pagination.hasNextPage }"
+            @click="$emit('nextPage')"
+          >
+            Next
+            <ChevronRight class="pagination-icon" size="16" />
+          </button>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import UserTable from './UserTable.vue'
-  import { GraduationCap, User, Users, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-  
-  defineProps({
-    users: {
-      type: Array,
-      required: true
-    },
-    title: {
-      type: String,
-      required: true
-    },
-    role: {
-      type: String,
-      required: true
-    },
-    pagination: {
-      type: Object,
-      default: null
-    }
-  })
-  
-  defineEmits(['edit', 'delete', 'next-page', 'previous-page', 'go-to-page', 'set-items-per-page'])
-  
-  const getRoleIcon = (role) => {
-    const icons = {
-      Instructor: GraduationCap,
-      Student: User,
-      All: Users
-    }
-    return icons[role] || Users
-  }
-  </script>
-  
+  </div>
+</template>
+
   <style scoped>
   .table-section {
     margin-bottom: 2rem;
     animation: fadeIn 0.8s ease-out;
   }
-  
+
   .table-header {
     margin-bottom: 1rem;
   }
@@ -136,23 +144,23 @@
     border: 1px solid #e5e7eb;
     overflow: hidden;
   }
-  
+
   .table-title {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     color: #1e3a8a;
   }
-  
+
   .table-icon {
     width: 1.5rem;
     height: 1.5rem;
   }
-  
+
   .table-icon.instructor {
     color: #1e3a8a;
   }
-  
+
   .table-icon.student {
     color: #16a34a;
   }
@@ -160,14 +168,14 @@
   .table-icon.all {
     color: #1e3a8a;
   }
-  
+
   .table-title h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-  
+
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -306,32 +314,32 @@
     .table-section {
       margin-bottom: 1.5rem;
     }
-    
+
     .table-container {
       border-radius: 12px;
     }
-    
+
     .table-title h2 {
       font-size: 1.25rem;
     }
-    
+
     .pagination-section {
       flex-direction: column;
       align-items: stretch;
       text-align: center;
       padding: 1rem;
     }
-    
+
     .pagination-info {
       justify-content: center;
       flex-direction: column;
       gap: 1rem;
     }
-    
+
     .pagination-controls {
       justify-content: center;
     }
-    
+
     .page-numbers {
       flex-wrap: wrap;
       justify-content: center;
@@ -342,24 +350,24 @@
     .table-section {
       margin-bottom: 1rem;
     }
-    
+
     .table-title h2 {
       font-size: 1.125rem;
     }
-    
+
     .pagination-section {
       padding: 0.75rem;
     }
-    
+
     .pagination-text {
       font-size: 0.8rem;
     }
-    
+
     .pagination-btn {
       padding: 0.5rem;
       font-size: 0.8rem;
     }
-    
+
     .pagination-icon {
       width: 0.875rem;
       height: 0.875rem;

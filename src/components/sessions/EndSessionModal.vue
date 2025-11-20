@@ -1,3 +1,65 @@
+<script setup>
+import { AlertTriangle, StopCircle, X } from 'lucide-vue-next'
+import { ref } from 'vue'
+
+defineProps({
+  session: {
+    type: Object,
+    required: true,
+  },
+})
+
+const emit = defineEmits(['end', 'cancel'])
+
+// State
+const notes = ref('')
+const errorMessage = ref('')
+
+// Methods
+function getCourseName(session) {
+  if (!session)
+    return 'N/A'
+  return session.courseName || session.courseCode || 'Unknown Course'
+}
+
+function formatDate(dateString) {
+  if (!dateString)
+    return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function formatDateTime(datetimeString) {
+  if (!datetimeString)
+    return 'N/A'
+  const date = new Date(datetimeString)
+  return date.toLocaleString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function endSession() {
+  errorMessage.value = ''
+
+  // Build payload
+  const payload = {}
+
+  // Add notes if provided
+  if (notes.value.trim()) {
+    payload.notes = notes.value.trim()
+  }
+
+  emit('end', payload)
+}
+</script>
+
 <template>
   <div class="overlay">
     <div class="modal">
@@ -38,7 +100,7 @@
       </div>
 
       <!-- Modal Body -->
-      <form @submit.prevent="endSession" class="modal-body">
+      <form class="modal-body" @submit.prevent="endSession">
         <!-- Notes/Description -->
         <div class="form-group">
           <label>Session Notes (Optional)</label>
@@ -47,7 +109,7 @@
             placeholder="Add any notes or comments about this session (optional)"
             rows="5"
             maxlength="1000"
-          ></textarea>
+          />
           <small class="helper-text info">
             {{ notes.length }}/1000 characters
           </small>
@@ -59,7 +121,9 @@
             <AlertTriangle size="20" />
           </div>
           <div class="notice-content">
-            <p class="notice-title">Confirm Session End</p>
+            <p class="notice-title">
+              Confirm Session End
+            </p>
             <p class="notice-text">
               Ending this session will stop attendance tracking and mark it as completed.
               This action cannot be undone.
@@ -84,65 +148,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { X, AlertTriangle, StopCircle } from 'lucide-vue-next'
-
-const props = defineProps({
-  session: {
-    type: Object,
-    required: true
-  }
-})
-
-const emit = defineEmits(['end', 'cancel'])
-
-// State
-const notes = ref('')
-const errorMessage = ref('')
-
-// Methods
-const getCourseName = (session) => {
-  if (!session) return 'N/A'
-  return session.courseName || session.courseCode || 'Unknown Course'
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
-const formatDateTime = (datetimeString) => {
-  if (!datetimeString) return 'N/A'
-  const date = new Date(datetimeString)
-  return date.toLocaleString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  })
-}
-
-const endSession = () => {
-  errorMessage.value = ''
-
-  // Build payload
-  const payload = {}
-
-  // Add notes if provided
-  if (notes.value.trim()) {
-    payload.notes = notes.value.trim()
-  }
-
-  emit('end', payload)
-}
-</script>
 
 <style scoped>
 .overlay {

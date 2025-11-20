@@ -1,6 +1,6 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import sectionsApi from '@/api/sections.js'
-import { ref, computed } from "vue";
 
 export const useSectionStore = defineStore('sectionsStore', () => {
   const sections = ref([])
@@ -23,11 +23,13 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     try {
       const resp = await sectionsApi.getAllSections()
       sections.value = resp.data
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error fetching sections:', err)
       error.value = 'Failed to fetch sections'
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -40,11 +42,13 @@ export const useSectionStore = defineStore('sectionsStore', () => {
       // Optimistically add to list or re-fetch
       sections.value.push(resp.data)
       return resp.data
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error adding section:', err)
       error.value = 'Failed to add section'
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -60,11 +64,13 @@ export const useSectionStore = defineStore('sectionsStore', () => {
         sections.value[index] = resp.data
       }
       return resp.data
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error updating section:', err)
       error.value = 'Failed to update section'
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -76,11 +82,13 @@ export const useSectionStore = defineStore('sectionsStore', () => {
       await sectionsApi.deleteSection(id)
       // Remove from local list
       sections.value = sections.value.filter(s => s.id !== id)
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error deleting section:', err)
       error.value = 'Failed to delete section'
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -90,10 +98,12 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     try {
       const resp = await sectionsApi.getSection(id)
       return resp.data
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error fetching section:', err)
       throw err
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -113,6 +123,6 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     addSection,
     updateSection,
     deleteSection,
-    getSection
+    getSection,
   }
 })
