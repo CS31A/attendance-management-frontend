@@ -1,61 +1,3 @@
-<template>
-  <div class="table-wrapper">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th class="th-avatar">Avatar</th>
-          <th class="th-name">Name</th>
-          <th class="th-email">Email</th>
-          <th class="th-section">Section</th>
-          <th class="th-joined">Joined</th>
-          <th class="th-actions">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="user in users" :key="user.id" class="user-row">
-          <td class="td-avatar">
-            <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
-              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
-            </div>
-          </td>
-          <td class="td-name">
-            <div class="name-cell">
-              <span class="user-name">{{ getUserName(user) }}</span>
-            </div>
-          </td>
-          <td class="td-email">
-            <div class="email-cell">
-              <Mail class="email-icon" size="16" />
-              <span class="email-text">{{ user?.email || '⚠️ Email Missing' }}</span>
-            </div>
-          </td>
-          <td class="td-section">
-            <div class="section-cell">
-              <span class="section-text">{{ getUserSection(user) }}</span>
-            </div>
-          </td>
-          <td class="td-joined">
-            <div class="joined-cell">
-              <Calendar class="date-icon" size="16" />
-              <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
-            </div>
-          </td>
-          <td class="td-actions">
-            <div class="action-buttons">
-              <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
-                <Edit class="btn-icon" size="16" />
-              </button>
-              <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
-                <Trash2 class="btn-icon" size="16" />
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</template>
-
 <script setup>
 import { GraduationCap, User, Mail, Calendar, Edit, Trash2 } from 'lucide-vue-next'
 
@@ -123,6 +65,70 @@ const formatDate = (value) => {
   }).format(date)
 }
 </script>
+
+<template>
+  <div class="table-wrapper">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <!-- <th class="th-avatar">Avatar</th> -->
+          <th class="th-name">Name</th>
+          <th class="th-email">Email</th>
+          <th class="th-role">Role</th>
+          <!-- <th class="th-section">Section</th> -->
+          <th class="th-joined">Joined</th>
+          <th class="th-actions">Actions</th> 
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in users" :key="user.id" class="user-row">
+          <!-- <td class="td-avatar">
+            <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
+              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
+            </div>
+          </td> -->
+          <td class="td-name">
+            <div class="name-cell">
+              <span class="user-name">{{ getUserName(user) }}</span>
+            </div>
+          </td>
+          <td class="td-email">
+            <div class="email-cell">
+              <Mail class="email-icon" size="16" />
+              <span class="email-text">{{ user?.email || '⚠️ Email Missing' }}</span>
+            </div>
+          </td>
+          <td class="td-role">
+            <div class="role-cell">
+              <span class="role-text">{{ user.role }}</span>
+            </div>
+          </td>
+          <!-- <td class="td-section">
+            <div class="section-cell">
+              <span class="section-text">{{ getUserSection(user) }}</span>
+            </div>
+          </td> -->
+          <td class="td-joined">
+            <div class="joined-cell">
+              <Calendar class="date-icon" size="16" />
+              <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
+            </div>
+          </td>
+          <td class="td-actions">
+            <div class="action-buttons">
+              <button class="btn-edit" @click="$emit('edit', user)" title="Edit User">
+                <Edit class="btn-icon" size="16" />
+              </button>
+              <button class="btn-delete" @click="$emit('delete', user.id)" title="Delete User">
+                <Trash2 class="btn-icon" size="16" />
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
 
 <style scoped>
 .table-wrapper {
@@ -196,7 +202,7 @@ const formatDate = (value) => {
 }
 
 /* Avatar Column */
-.td-avatar {
+/* .td-avatar {
   text-align: center;
 }
 
@@ -227,7 +233,7 @@ const formatDate = (value) => {
 .avatar-icon {
   width: 1.25rem;
   height: 1.25rem;
-}
+} */
 
 /* Name Column */
 .td-name {
@@ -354,40 +360,39 @@ const formatDate = (value) => {
     -webkit-overflow-scrolling: touch;
     border-radius: 12px;
   }
-  
+
   .users-table {
     min-width: 700px; /* Increased to ensure Actions column is visible */
   }
-  
+
   /* Sticky first column (Avatar + Name) */
-  .th-avatar,
+  /* .th-avatar,
   .td-avatar {
     position: sticky;
     left: 0;
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
     z-index: 10;
   }
-  
+
   .td-avatar {
     background: white;
     border-right: 2px solid #e5e7eb;
-  }
-  
+  } */
+
   .th-name,
   .td-name {
     position: sticky;
-    left: 80px; /* Width of avatar column */
+    left: 0; /* Reset to 0 since avatar column is removed */
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
     z-index: 10;
   }
-  
+
   .td-name {
     background: white;
     border-right: 2px solid #e5e7eb;
   }
-  
+
   /* Adjust header colors for sticky columns */
-  .th-avatar,
   .th-name {
     color: white;
   }
@@ -398,63 +403,63 @@ const formatDate = (value) => {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .users-table {
     min-width: 600px; /* Increased to ensure Actions column is visible */
   }
-  
+
   /* Make avatar and name columns stickier on smaller screens */
-  .th-avatar,
+  /* .th-avatar,
   .td-avatar {
     left: 0;
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   }
-  
+
   .td-avatar {
     background: white;
-  }
-  
+  } */
+
   .th-name,
   .td-name {
-    left: 60px; /* Smaller avatar width on mobile */
+    left: 0; /* Reset to 0 since avatar column is removed */
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   }
-  
+
   .td-name {
     background: white;
   }
-  
+
   /* Adjust column widths for mobile - ensure Actions column is accessible */
-  .th-avatar,
+  /* .th-avatar,
   .td-avatar {
     width: 60px;
     min-width: 60px;
-  }
-  
+  } */
+
   .th-name,
   .td-name {
-    width: 100px; /* Reduced to make room for other columns */
-    min-width: 100px;
+    width: 120px; /* Increased since avatar column is removed */
+    min-width: 120px;
   }
-  
+
   .th-email,
   .td-email {
     width: 120px; /* Reduced to make room for Actions */
     min-width: 120px;
   }
-  
+
   .th-section,
   .td-section {
     width: 70px; /* Reduced to make room for Actions */
     min-width: 70px;
   }
-  
+
   .th-joined,
   .td-joined {
     width: 90px; /* Reduced to make room for Actions */
     min-width: 90px;
   }
-  
+
   .th-actions,
   .td-actions {
     width: 120px; /* Increased to ensure buttons are accessible */
@@ -465,45 +470,45 @@ const formatDate = (value) => {
     border-left: 2px solid #e5e7eb;
     z-index: 5;
   }
-  
+
   .th-actions {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
     color: white;
   }
-  
+
   /* Adjust padding for mobile */
   .users-table th,
   .users-table td {
     padding: 0.5rem 0.375rem; /* Reduced padding to fit more content */
   }
-  
-  .avatar-circle {
-    width: 1.75rem; /* Slightly smaller */
+
+  /* .avatar-circle {
+    width: 1.75rem; / Slightly smaller
     height: 1.75rem;
   }
-  
+
   .avatar-icon {
     width: 0.875rem;
     height: 0.875rem;
-  }
-  
+  } */
+
   .btn-edit,
   .btn-delete {
     padding: 0.25rem; /* Smaller buttons */
     margin: 0 0.125rem; /* Small margin between buttons */
   }
-  
+
   .btn-icon {
     width: 0.75rem; /* Smaller icons */
     height: 0.75rem;
   }
-  
+
   /* Make action buttons more compact */
   .action-buttons {
     gap: 0.25rem;
     justify-content: center;
   }
-  
+
   /* Ensure text doesn't wrap in action column */
   .user-name,
   .email-text,

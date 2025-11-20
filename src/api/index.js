@@ -23,7 +23,7 @@ const processQueue = (error = null) => {
             promise.resolve();
         }
     });
-    
+
     failedRequestsQueue = [];
 }
 
@@ -35,11 +35,11 @@ api.interceptors.response.use(
     },
     async (error) => {
         const originalRequest = error.config;
-        
+
         // Check if error is 401 and not from the refresh endpoint itself
         if (error.response?.status === 401 && !originalRequest._retry) {
             console.log('401 error detected for:', originalRequest.url)
-            
+
             // Prevent retry loop for the refresh endpoint
             if (originalRequest.url === "/account/web/refresh") {
                 console.log('Refresh endpoint failed, clearing auth state')
@@ -47,24 +47,23 @@ api.interceptors.response.use(
                 processQueue(error);
                 return Promise.reject(error);
             }
-            
+
             // Mark request as retried to prevent infinite loops
             originalRequest._retry = true;
-            
+
             if (!isRefreshing) {
                 isRefreshing = true;
-                
+
                 try {
                     console.log('Attempting token refresh...')
                     // Call refresh endpoint (cookie-based, no body needed)
                     const response = await api.post("/account/web/refresh");
-                    
                     if (response.data.success) {
                         console.log('Token refresh successful')
                         // Token refreshed successfully
                         isRefreshing = false;
                         processQueue(null);
-                        
+
                         // Retry the original request
                         return api(originalRequest);
                     } else {
@@ -73,14 +72,14 @@ api.interceptors.response.use(
                         throw new Error("Token refresh failed");
                     }
                 } catch (refreshError) {
-                    console.log('Token refresh error:', refreshError)
+                    console.log('Token refresh error:', refreshError.message)
                     // Refresh failed, reject all queued requests
                     isRefreshing = false;
                     processQueue(refreshError);
                     return Promise.reject(refreshError);
                 }
             }
-            
+
             // If already refreshing, queue this request
             return new Promise((resolve, reject) => {
                 failedRequestsQueue.push({
@@ -93,7 +92,7 @@ api.interceptors.response.use(
                 });
             });
         }
-        
+
         // For non-401 errors, reject normally
         return Promise.reject(error);
     }
