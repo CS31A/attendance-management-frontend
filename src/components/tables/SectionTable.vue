@@ -43,18 +43,26 @@ const formatDate = (value) => {
     <table class="sections-table">
       <thead>
         <tr>
+          <th class="th-id">ID</th>
           <th class="th-name">Section Name</th>
+          <th class="th-course">Course ID</th>
           <th class="th-created">Created</th>
           <th class="th-actions">Actions</th> 
         </tr>
       </thead>
       <tbody>
         <tr v-for="section in sections" :key="section.id" class="section-row">
+          <td class="td-id">
+            <span class="id-text">{{ section.id }}</span>
+          </td>
           <td class="td-name">
             <div class="name-cell">
               <BookOpen class="section-icon" size="18" />
               <span class="section-name">{{ getSectionName(section) }}</span>
             </div>
+          </td>
+          <td class="td-course">
+            <span class="course-badge">{{ section.courseId }}</span>
           </td>
           <td class="td-created">
             <div class="created-cell">
@@ -106,13 +114,22 @@ const formatDate = (value) => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.th-id {
+  width: 8%;
+  min-width: 60px;
+}
+
 .th-name {
-  width: 60%;
+  width: 35%;
+}
+
+.th-course {
+  width: 15%;
 }
 
 .th-created {
   width: 25%;
-  text-align: center;
+  text-align: left;
 }
 
 .th-actions {
@@ -133,6 +150,13 @@ const formatDate = (value) => {
 .sections-table td {
   padding: 1rem 1.5rem;
   vertical-align: middle;
+}
+
+/* ID Column */
+.td-id {
+  color: #6b7280;
+  font-family: monospace;
+  font-weight: 600;
 }
 
 /* Name Column */
@@ -156,16 +180,30 @@ const formatDate = (value) => {
   font-size: 0.875rem;
 }
 
+/* Course Column */
+.td-course {
+  color: #4b5563;
+}
+
+.course-badge {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 /* Created Column */
 .td-created {
-  text-align: center;
+  text-align: left;
   color: #6b7280;
 }
 
 .created-cell {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
 }
 
