@@ -244,7 +244,6 @@ onUnmounted(() => {
   color: white;
   height: 100vh;
   padding: 70px 0 0 0;
-  box-shadow: 4px 0 20px rgba(30, 58, 138, 0.3);
   position: fixed;
   top: 0;
   left: 0;
