@@ -6,4 +6,9 @@ export default antfu({
     indent: 2,
     quotes: 'single',
   },
+  ignores: [
+    '**/*.md',
+    '**/dist/**',
+    '**/node_modules/**',
+  ],
 })
