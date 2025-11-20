@@ -36,6 +36,11 @@ const routes = [
     path: '/sections',
     component: () => import('../views/SectionsView.vue'),
     beforeEnter: [authGuard, adminGuard]
+  },
+  {
+    path: '/courses',
+    component: () => import('../views/CourseView.vue'),
+    beforeEnter: [authGuard, adminGuard]
   }
 ]
 
