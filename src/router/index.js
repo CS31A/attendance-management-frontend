@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/DashboardView.vue'
-import UserManagement from '../views/UserManagementView.vue'
-import { authGuard, guestGuard, adminGuard, instructorGuard } from './authGuard'
-import Reports from '../views/ReportsView.vue'
+import { authGuard, guestGuard, instructorGuard } from './authGuard'
 
 
 const routes = [
