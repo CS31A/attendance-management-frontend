@@ -1,9 +1,9 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import CourseModal from '@/components/CourseModal.vue'
 import { useCourseStore } from '@/stores/courseStore.js'
 
+const CourseModal = defineAsyncComponent(() => import('@/components/CourseModal.vue'))
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 
 const courseStore = useCourseStore()

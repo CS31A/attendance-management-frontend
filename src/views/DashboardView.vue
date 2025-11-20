@@ -1,11 +1,12 @@
 <script setup>
 import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { computed, onMounted, ref } from 'vue'
-import { Line } from 'vue-chartjs'
-import SessionCard from '@/components/sessions/SessionCard.vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { useUserStore } from '@/stores/userStore'
+
+const SessionCard = defineAsyncComponent(() => import('@/components/sessions/SessionCard.vue'))
+const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)

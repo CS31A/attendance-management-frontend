@@ -1,13 +1,14 @@
 <script setup>
 import { AlertTriangle, Calendar, Loader2, Plus, RefreshCw } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
-import CreateSessionModal from '@/components/sessions/CreateSessionModal.vue'
-import EndSessionModal from '@/components/sessions/EndSessionModal.vue'
-import SessionTable from '@/components/sessions/SessionTable.vue'
-import StartSessionModal from '@/components/sessions/StartSessionModal.vue'
-import UpdateRoomModal from '@/components/sessions/UpdateRoomModal.vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useSessionStore } from '@/stores/sessionStore'
 import { showError, showSuccess } from '@/utils/toast'
+
+const CreateSessionModal = defineAsyncComponent(() => import('@/components/sessions/CreateSessionModal.vue'))
+const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions/EndSessionModal.vue'))
+const SessionTable = defineAsyncComponent(() => import('@/components/sessions/SessionTable.vue'))
+const StartSessionModal = defineAsyncComponent(() => import('@/components/sessions/StartSessionModal.vue'))
+const UpdateRoomModal = defineAsyncComponent(() => import('@/components/sessions/UpdateRoomModal.vue'))
 
 const sessionStore = useSessionStore()
 

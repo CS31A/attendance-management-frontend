@@ -1,9 +1,9 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import SectionModal from '@/components/SectionModal.vue'
 import { useSectionStore } from '@/stores/sectionStore.js'
 
+const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
 const sectionsStore = useSectionStore()

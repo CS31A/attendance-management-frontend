@@ -1,9 +1,11 @@
 <script setup>
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { BarChart3, CheckCircle, GraduationCap, MoreVertical, TrendingUp, Users, XCircle } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
-import { Bar, Line } from 'vue-chartjs'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useStudentStore } from '@/stores/studentStore'
+
+const Bar = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Bar })))
+const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)

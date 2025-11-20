@@ -1,10 +1,11 @@
 <script setup>
 import { AlertTriangle, Plus, Search, Users } from 'lucide-vue-next'
-import { computed, onMounted, ref, watch } from 'vue'
-import CreateUserModal from '@/components/CreateUserModal.vue'
-import EditUserModal from '@/components/EditUserModal.vue'
-import UserTableSection from '@/components/tables/UserTableSection.vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
+
+const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
+const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
+const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
 
 const userStore = useUserStore()
 
