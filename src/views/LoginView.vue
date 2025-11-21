@@ -36,16 +36,16 @@ function validateUsername(username) {
     return 'Username or email is required'
   }
 
-  // Check if it's an email format
-  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+  // Simple email format check - backend validates properly
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const isEmail = emailRegex.test(username)
 
   if (username.includes('@') && !isEmail) {
     return 'Please enter a valid email address'
   }
 
-  if (!isEmail && username.length < 3) {
-    return 'Username must be at least 8 characters long'
+  if (!isEmail && username.length < 6) {
+    return 'Username must be at least 6 characters long'
   }
 
   return ''
@@ -56,8 +56,8 @@ function validatePassword(password) {
     return 'Password is required'
   }
 
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters long'
+  if (password.length < 8) {
+    return 'Password must be at least 8 characters long'
   }
 
   return ''

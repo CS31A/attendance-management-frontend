@@ -23,6 +23,16 @@ const routes = [
     beforeEnter: [authGuard, instructorGuard],
   },
   {
+    path: '/attendance',
+    component: () => import('../views/AttendanceView.vue'),
+    beforeEnter: [authGuard, instructorGuard],
+  },
+  {
+    path: '/attendance/session/:sessionId',
+    component: () => import('../views/AttendanceView.vue'),
+    beforeEnter: [authGuard, instructorGuard],
+  },
+  {
     path: '/reports',
     component: () => import('../views/ReportsView.vue'),
     beforeEnter: authGuard,
