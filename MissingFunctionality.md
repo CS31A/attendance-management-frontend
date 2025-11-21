@@ -1,6 +1,6 @@
 # Missing Functionality in Frontend
 
-**Analysis Date:** 2025-11-20  
+**Date of Birth:** 2025-11-20  
 **Backend Version:** ASP.NET Core 9.0 Attendance Monitoring System
 
 This document outlines the features available in the backend API that are not yet implemented in the frontend application.
@@ -21,7 +21,7 @@ This document outlines the features available in the backend API that are not ye
 
 ### 1.1 Attendance Recording & Management ⚠️ **CRITICAL**
 
-The backend has extensive attendance functionality, but there is **no attendance-related API service or views** in the frontend.
+The backend has attendance functionality, but there is **no attendance-related API service or views** in the frontend.
 
 **Missing Components:**
 - ❌ No `src/api/attendance.js` file
@@ -30,7 +30,7 @@ The backend has extensive attendance functionality, but there is **no attendance
 
 **Missing Features:**
 - Record attendance for students in active sessions
-- View attendance records by session, student, or date range
+- View attendance records by session or student
 - Mark students as present/absent/late
 - Bulk attendance recording
 - QR code scanning for attendance (backend supports QR code generation)
@@ -40,13 +40,14 @@ The backend has extensive attendance functionality, but there is **no attendance
 
 **Backend Endpoints Available:**
 ```
-POST   /api/attendance/record
-GET    /api/attendance/session/{sessionId}
-GET    /api/attendance/student/{studentId}
-GET    /api/attendance/section/{sectionId}
-GET    /api/attendance/date/{date}
-PUT    /api/attendance/{id}
-DELETE /api/attendance/{id}
+POST   /api/attendance                          (Admin, Instructor only)
+GET    /api/attendance/{id}                     (Get specific record)
+GET    /api/attendance                          (Get all with filtering/pagination)
+GET    /api/attendance/student/{studentId}      (Get student attendance history)
+GET    /api/attendance/session/{sessionId}      (Get session attendance - Admin, Instructor only)
+GET    /api/attendance/summary                  (Get attendance statistics)
+PUT    /api/attendance/{id}                     (Admin, Instructor only)
+DELETE /api/attendance/{id}                     (Admin only)
 ```
 
 **Impact:** This is the **core functionality** of the system. Without it, the application cannot fulfill its primary purpose.
