@@ -56,6 +56,11 @@ const routes = [
     component: () => import('../views/SubjectView.vue'),
     beforeEnter: [authGuard, adminGuard],
   },
+  {
+    path: '/schedules',
+    component: () => import('../views/SchedulesView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
 ]
 
 const router = createRouter({
