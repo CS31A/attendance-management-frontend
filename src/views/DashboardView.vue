@@ -260,7 +260,7 @@ const _getUserInitials = computed(() => {
             Dashboard
           </h1>
           <p class="subtitle">
-            Welcome back, {{ user?.name || 'Admin' }}
+            Welcome back, {{ user }}
           </p>
         </div>
         <!-- <div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
