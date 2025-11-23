@@ -35,7 +35,23 @@ export async function getMyProfile() {
   }
 }
 
+/**
+ * Get all instructors (admin functionality)
+ * @returns {Promise<Array>} List of instructor objects
+ */
+export async function getAllInstructors() {
+  try {
+    const response = await api.get('/instructors')
+    return response.data
+  }
+  catch (error) {
+    console.error('Failed to fetch all instructors:', error)
+    return Promise.reject(error)
+  }
+}
+
 export default {
   getMySchedules,
   getMyProfile,
+  getAllInstructors,
 }
