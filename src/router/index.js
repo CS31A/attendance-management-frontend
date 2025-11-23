@@ -51,6 +51,11 @@ const routes = [
     component: () => import('../views/CourseView.vue'),
     beforeEnter: [authGuard, adminGuard],
   },
+  {
+    path: '/subjects',
+    component: () => import('../views/SubjectView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
 ]
 
 const router = createRouter({
