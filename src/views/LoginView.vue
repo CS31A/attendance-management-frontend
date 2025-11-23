@@ -1,7 +1,8 @@
 <script setup>
 import { Eye, EyeOff } from 'lucide-vue-next'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Toast from '@/components/common/Toast.vue'
 import { useAuthStore } from '@/stores/authStore'
 
 const router = useRouter()
@@ -29,6 +30,25 @@ const errors = reactive({
 const isLoading = ref(false)
 const hasAttemptedSubmit = ref(false)
 const showPassword = ref(false)
+let navigationTimeout = null
+
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 1000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
 
 // Validation rules
 function validateUsername(username) {
@@ -108,7 +128,16 @@ async function handleLogin() {
     const result = await authStore.login(formData.username, formData.password)
 
     if (result.success) {
-      router.push('/dashboard')
+      showToast('Login successful! Redirecting to dashboard...', 'success', 1000)
+      navigationTimeout = setTimeout(async () => {
+        try {
+          await router.push('/dashboard')
+        }
+        catch (error) {
+          console.error('Navigation failed:', error)
+          errors.general = 'Navigation failed. Please try again.'
+        }
+      }, 1000)
     }
     else {
       throw new Error(result.message || 'Invalid credentials')
@@ -126,6 +155,13 @@ async function handleLogin() {
 function handleForgotPassword() {
   // router.push('/forgot-password')
 }
+
+// Cleanup timeout on component unmount
+onUnmounted(() => {
+  if (navigationTimeout) {
+    clearTimeout(navigationTimeout)
+  }
+})
 </script>
 
 <template>
@@ -322,6 +358,13 @@ function handleForgotPassword() {
         </div>
       </div>
     </div>
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
+    />
   </div>
 </template>
 

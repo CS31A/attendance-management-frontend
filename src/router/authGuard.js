@@ -33,7 +33,7 @@ export async function authGuard(to, _from) {
     if (authStore.getIsAuthenticated)
       return true
     // Verify session to avoid races while "loading"
-    const ok = await authStore.checkAuth()
+    const ok = await authStore.checkAuth(true)
     if (ok)
       return true
     return { path: '/login', query: { redirect: to.fullPath } }
@@ -81,7 +81,7 @@ export async function guestGuard(_to, _from) {
 
   // Check authentication status
   try {
-    const isAuthenticated = await authStore.checkAuth()
+    const isAuthenticated = await authStore.checkAuth(true)
     if (isAuthenticated) {
       // User is authenticated, redirect to dashboard
       return '/dashboard'
@@ -130,7 +130,7 @@ export async function adminGuard(to, _from) {
       return true
 
     // Verify session and check admin status to avoid races while "loading"
-    const isAuthOk = await authStore.checkAuth()
+    const isAuthOk = await authStore.checkAuth(true)
     if (isAuthOk && authStore.isAdmin)
       return true
 
@@ -180,7 +180,7 @@ export async function instructorGuard(to, _from) {
       return true
 
     // Verify session and check teacher status to avoid races while "loading"
-    const isAuthOk = await authStore.checkAuth()
+    const isAuthOk = await authStore.checkAuth(true)
     if (isAuthOk && authStore.isTeacher)
       return true
 

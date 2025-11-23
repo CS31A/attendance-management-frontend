@@ -123,8 +123,9 @@ export const useAuthStore = defineStore('authStore', () => {
    *
    * @returns {Promise<boolean>} True if user is authenticated, false otherwise
    */
-  const checkAuth = async () => {
-    isLoading.value = true
+  const checkAuth = async (background = false) => {
+    if (!background)
+      isLoading.value = true
     try {
       const response = await api.get('/account/check')
 
@@ -159,7 +160,8 @@ export const useAuthStore = defineStore('authStore', () => {
       return false
     }
     finally {
-      isLoading.value = false
+      if (!background)
+        isLoading.value = false
     }
   }
 
@@ -188,7 +190,7 @@ export const useAuthStore = defineStore('authStore', () => {
 
       if (response.data.success) {
         isAuthenticated.value = true
-        await checkAuth()
+        await checkAuth(true)
         return { success: true }
       }
       else {
