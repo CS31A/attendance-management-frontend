@@ -1,5 +1,5 @@
 <script setup>
-import { BookOpen, Calendar, Edit, Trash2 } from 'lucide-vue-next'
+import { BookOpen, Calendar, Edit, Trash2, Users } from 'lucide-vue-next'
 
 defineProps({
   sections: {
@@ -8,7 +8,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'delete'])
+defineEmits(['edit', 'delete', 'manageEnrollments'])
 
 // Get section name - handle different possible field names
 function getSectionName(section) {
@@ -84,6 +84,9 @@ function formatDate(value) {
           </td>
           <td class="td-actions">
             <div class="action-buttons">
+              <button class="btn-enroll" title="Manage Enrollments" @click="$emit('manageEnrollments', section)">
+                <Users class="btn-icon" size="16" />
+              </button>
               <button class="btn-edit" title="Edit Section" @click="$emit('edit', section)">
                 <Edit class="btn-icon" size="16" />
               </button>
@@ -249,6 +252,16 @@ function formatDate(value) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn-enroll {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.btn-enroll:hover {
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .btn-edit {

@@ -4,11 +4,14 @@ import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useSectionStore } from '@/stores/sectionStore.js'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
+const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
 const sectionsStore = useSectionStore()
 const showModal = ref(false)
+const showEnrollmentModal = ref(false)
 const selectedSection = ref(null)
+const selectedEnrollmentSection = ref(null)
 const modalRef = ref(null)
 
 // Pagination state
@@ -67,6 +70,16 @@ function openEditModal(section) {
 function closeModal() {
   showModal.value = false
   selectedSection.value = null
+}
+
+function openEnrollmentModal(section) {
+  selectedEnrollmentSection.value = section
+  showEnrollmentModal.value = true
+}
+
+function closeEnrollmentModal() {
+  showEnrollmentModal.value = false
+  selectedEnrollmentSection.value = null
 }
 
 async function handleSaveSection(sectionData) {
@@ -170,6 +183,7 @@ onMounted(async () => {
         @set-items-per-page="handleSetItemsPerPage"
         @edit="openEditModal"
         @delete="handleDeleteSection"
+        @manage-enrollments="openEnrollmentModal"
       />
     </div>
 
@@ -180,6 +194,13 @@ onMounted(async () => {
       :section="selectedSection"
       @save="handleSaveSection"
       @cancel="closeModal"
+    />
+
+    <!-- Enrollment Modal -->
+    <EnrollmentModal
+      v-if="showEnrollmentModal"
+      :section="selectedEnrollmentSection"
+      @close="closeEnrollmentModal"
     />
   </div>
 </template>

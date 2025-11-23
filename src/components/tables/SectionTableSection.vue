@@ -17,7 +17,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage', 'manageEnrollments'])
 </script>
 
 <template>
@@ -34,6 +34,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
         :sections="sections"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
+        @manage-enrollments="$emit('manageEnrollments', $event)"
       />
 
       <!-- Pagination Controls -->
