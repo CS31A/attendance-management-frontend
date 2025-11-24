@@ -5,7 +5,6 @@ import {
   Check,
   CheckCheck,
   Clock,
-  Loader2,
   MapPin,
   Save,
   Search,
@@ -14,7 +13,7 @@ import {
   Users,
   UserX,
 } from 'lucide-vue-next'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance.js'
 
 const props = defineProps({
@@ -44,6 +43,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['submit', 'back'])
+
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // Local state for attendance records
 const localAttendance = ref([])
@@ -305,17 +306,18 @@ onMounted(() => {
         :disabled="submitting || loading || !hasChanges"
         @click="handleSubmit"
       >
-        <Loader2 v-if="submitting" size="18" class="spinner" />
+        <LoadingSpinner v-if="submitting" type="spinner-only" size="small" />
         <Save v-else size="18" />
         <span>{{ hasExistingAttendance ? 'Update Attendance' : 'Save Attendance' }}</span>
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <Loader2 class="spinner" size="40" />
-      <p>Loading student list...</p>
-    </div>
+    <LoadingSpinner
+      v-if="loading"
+      type="inline"
+      message="Loading student list..."
+    />
 
     <!-- Students Table -->
     <div v-else class="students-table-container">
@@ -667,28 +669,6 @@ onMounted(() => {
 .btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Loading State */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  color: var(--color-gray-500);
 }
 
 /* Students Table */

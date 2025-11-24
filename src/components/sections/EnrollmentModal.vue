@@ -1,6 +1,6 @@
 <script setup>
 import { AlertTriangle, Check, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useStudentStore } from '@/stores/studentStore'
 
@@ -12,6 +12,8 @@ const props = defineProps({
 })
 
 defineEmits(['close'])
+
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const enrollmentStore = useEnrollmentStore()
 const studentStore = useStudentStore()
@@ -232,10 +234,12 @@ watch(() => props.section, () => {
 
         <!-- Students List -->
         <div class="students-list">
-          <div v-if="isLoading && !enrolledStudents.length" class="loading-state">
-            <div class="spinner" />
-            <p>Loading students...</p>
-          </div>
+          <LoadingSpinner
+            v-if="isLoading && !enrolledStudents.length"
+            type="inline"
+            message="Loading students..."
+            size="medium"
+          />
 
           <table v-else class="data-table">
             <thead>
@@ -603,26 +607,6 @@ watch(() => props.section, () => {
   text-align: center;
   color: var(--color-gray-500);
   padding: 3rem !important;
-}
-
-.loading-state {
-  padding: 3rem;
-  text-align: center;
-  color: var(--color-gray-500);
-}
-
-.spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid var(--color-gray-200);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 @keyframes slideUp {

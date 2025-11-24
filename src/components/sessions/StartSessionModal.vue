@@ -1,6 +1,6 @@
 <script setup>
-import { AlertTriangle, Loader2, Play, X } from 'lucide-vue-next'
-import { onMounted, ref } from 'vue'
+import { AlertTriangle, Play, X } from 'lucide-vue-next'
+import { defineAsyncComponent, onMounted, ref } from 'vue'
 import { getClassrooms } from '@/api/classrooms'
 
 defineProps({
@@ -11,6 +11,8 @@ defineProps({
 })
 
 const emit = defineEmits(['start', 'cancel'])
+
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // State
 const actualRoomId = ref(null)
@@ -138,10 +140,12 @@ onMounted(() => {
       </div>
 
       <!-- Loading State for Classrooms -->
-      <div v-if="loadingClassrooms" class="loading-message">
-        <Loader2 class="spinner" size="20" />
-        <p>Loading classrooms...</p>
-      </div>
+      <LoadingSpinner
+        v-if="loadingClassrooms"
+        type="inline"
+        message="Loading classrooms..."
+        size="small"
+      />
 
       <!-- Modal Body -->
       <form class="modal-body" @submit.prevent="startSession">
@@ -352,16 +356,6 @@ onMounted(() => {
   border-radius: 8px;
   color: var(--color-info);
   font-size: 0.875rem;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .loading-message p {

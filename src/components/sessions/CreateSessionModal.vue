@@ -1,9 +1,11 @@
 <script setup>
-import { AlertTriangle, Loader2, Plus, X } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { AlertTriangle, Plus, X } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { getMySchedules } from '@/api/instructors'
 
 const emit = defineEmits(['create', 'cancel'])
+
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // State
 const scheduleId = ref('')
@@ -115,10 +117,12 @@ onMounted(() => {
       </div>
 
       <!-- Loading State for Schedules -->
-      <div v-if="loadingSchedules" class="loading-message">
-        <Loader2 class="spinner" size="20" />
-        <p>Loading your schedules...</p>
-      </div>
+      <LoadingSpinner
+        v-if="loadingSchedules"
+        type="inline"
+        message="Loading your schedules..."
+        size="small"
+      />
 
       <!-- Modal Body -->
       <form class="modal-body" @submit.prevent="createSession">
@@ -295,16 +299,6 @@ onMounted(() => {
   border-radius: 8px;
   color: var(--color-info);
   font-size: 0.875rem;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .loading-message p {

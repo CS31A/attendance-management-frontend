@@ -7,6 +7,7 @@ import { useStudentStore } from '@/stores/studentStore'
 const StudentModal = defineAsyncComponent(() => import('@/components/StudentModal.vue'))
 const StudentTableSection = defineAsyncComponent(() => import('@/components/tables/StudentTableSection.vue'))
 const SearchBar = defineAsyncComponent(() => import('@/components/common/SearchBar.vue'))
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const router = useRouter()
 const studentStore = useStudentStore()
@@ -106,12 +107,11 @@ async function handleRestoreStudent(student) {
 <template>
   <div class="student-management">
     <!-- Loading overlay -->
-    <div v-if="studentStore.loading" class="loading-overlay">
-      <div class="loading-spinner">
-        <div class="spinner" />
-        <p>Loading...</p>
-      </div>
-    </div>
+    <LoadingSpinner
+      v-if="studentStore.loading"
+      type="overlay"
+      full-screen
+    />
 
     <!-- Error message -->
     <div v-if="studentStore.error" class="error-message">
@@ -275,12 +275,6 @@ async function handleRestoreStudent(student) {
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Error Message */

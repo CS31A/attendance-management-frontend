@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, Loader2, Plus, Users } from 'lucide-vue-next'
+import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 
@@ -7,6 +7,7 @@ const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUs
 const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
 const SearchBar = defineAsyncComponent(() => import('@/components/common/SearchBar.vue'))
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const userStore = useUserStore()
 
@@ -137,10 +138,11 @@ watch([searchQuery, selectedRole], () => {
 <template>
   <div class="user-management">
     <!-- Loading State -->
-    <div v-if="userStore.loading && !userStore.users.length" class="loading-state">
-      <Loader2 class="spinner" size="40" />
-      <p>Loading users...</p>
-    </div>
+    <LoadingSpinner
+      v-if="userStore.loading && !userStore.users.length"
+      type="inline"
+      message="Loading users..."
+    />
 
     <!-- Error message -->
     <div v-else-if="userStore.error" class="error-message">
@@ -587,26 +589,6 @@ watch([searchQuery, selectedRole], () => {
 .btn-empty-action:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 15px rgba(30, 58, 138, 0.4);
-}
-
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  color: var(--color-gray-500);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* Error Message */

@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, ClipboardCheck, Loader2, RefreshCw } from 'lucide-vue-next'
+import { AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAttendanceStore } from '@/stores/attendanceStore'
@@ -8,6 +8,7 @@ import { showError, showSuccess } from '@/utils/toast'
 
 const AttendanceList = defineAsyncComponent(() => import('@/components/attendance/AttendanceList.vue'))
 const AttendanceRecord = defineAsyncComponent(() => import('@/components/attendance/AttendanceRecord.vue'))
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -124,10 +125,10 @@ onMounted(() => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading && !sessions.length && !selectedSession" class="loading-state">
-      <Loader2 class="spinner" size="40" />
-      <p>Loading...</p>
-    </div>
+    <LoadingSpinner
+      v-if="loading && !sessions.length && !selectedSession"
+      type="inline"
+    />
 
     <!-- Error State -->
     <div v-else-if="errorMessage && !sessions.length && !selectedSession" class="error-state">
@@ -218,26 +219,6 @@ onMounted(() => {
 .btn-back:hover {
   background: var(--color-gray-200);
   border-color: var(--color-gray-400);
-}
-
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  color: var(--color-gray-500);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* Error State */

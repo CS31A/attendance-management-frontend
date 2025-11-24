@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/userStore'
 
 const SessionCard = defineAsyncComponent(() => import('@/components/sessions/SessionCard.vue'))
 const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -290,10 +291,11 @@ const _getUserInitials = computed(() => {
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="loading-state">
-        <div class="loading-spinner" />
-        <p>Loading dashboard data...</p>
-      </div>
+      <LoadingSpinner
+        v-if="isLoading"
+        type="inline"
+        message="Loading dashboard data..."
+      />
 
       <!-- Stats Grid -->
       <div v-if="!isLoading" class="stats-grid">
@@ -758,40 +760,6 @@ const _getUserInitials = computed(() => {
 
 .legend-dot.black {
   background: var(--color-gray-900);
-}
-
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  background: white;
-  border-radius: 20px;
-  margin: 2rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--color-gray-100);
-  border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-state p {
-  color: var(--color-gray-500);
-  font-size: 1rem;
-  margin: 0;
 }
 
 /* Unauthenticated */

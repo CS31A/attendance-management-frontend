@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, Calendar, Loader2, Plus, RefreshCw } from 'lucide-vue-next'
+import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useSessionStore } from '@/stores/sessionStore'
 import { showError, showSuccess } from '@/utils/toast'
@@ -9,6 +9,7 @@ const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions
 const SessionTable = defineAsyncComponent(() => import('@/components/sessions/SessionTable.vue'))
 const StartSessionModal = defineAsyncComponent(() => import('@/components/sessions/StartSessionModal.vue'))
 const UpdateRoomModal = defineAsyncComponent(() => import('@/components/sessions/UpdateRoomModal.vue'))
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const sessionStore = useSessionStore()
 
@@ -236,10 +237,11 @@ onMounted(() => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="sessionStore.loading && !sessions.length" class="loading-state">
-      <Loader2 class="spinner" size="40" />
-      <p>Loading sessions...</p>
-    </div>
+    <LoadingSpinner
+      v-if="sessionStore.loading && !sessions.length"
+      type="inline"
+      message="Loading sessions..."
+    />
 
     <!-- Error State -->
     <div v-else-if="errorMessage" class="error-state">
@@ -412,26 +414,6 @@ onMounted(() => {
 .filter-active .count-badge {
   background: var(--color-secondary);
   color: white;
-}
-
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  color: var(--color-gray-500);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* Error State */

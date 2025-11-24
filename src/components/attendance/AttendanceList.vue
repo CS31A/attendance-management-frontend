@@ -1,6 +1,6 @@
 <script setup>
-import { Calendar, ChevronRight, Clock, Filter, Loader2, MapPin, Search, Users } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { Calendar, ChevronRight, Clock, Filter, MapPin, Search, Users } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, ref } from 'vue'
 
 const props = defineProps({
   sessions: {
@@ -14,6 +14,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select'])
+
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // State
 const searchQuery = ref('')
@@ -179,10 +181,12 @@ function clearFilters() {
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <Loader2 class="spinner" size="32" />
-      <p>Loading sessions...</p>
-    </div>
+    <LoadingSpinner
+      v-if="loading"
+      type="inline"
+      message="Loading sessions..."
+      size="medium"
+    />
 
     <!-- Empty State -->
     <div v-else-if="!filteredSessions.length" class="empty-state">
@@ -380,26 +384,6 @@ function clearFilters() {
 .summary-badge.ended {
   background: var(--color-gray-200);
   color: var(--color-gray-600);
-}
-
-/* Loading State */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem;
-  color: var(--color-gray-500);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* Empty State */

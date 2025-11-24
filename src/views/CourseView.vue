@@ -5,6 +5,7 @@ import { useCourseStore } from '@/stores/courseStore.js'
 
 const CourseModal = defineAsyncComponent(() => import('@/components/CourseModal.vue'))
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const courseStore = useCourseStore()
 const showModal = ref(false)
@@ -116,12 +117,11 @@ onMounted(async () => {
 <template>
   <div class="course-management">
     <!-- Loading overlay -->
-    <div v-if="courseStore.loading" class="loading-overlay">
-      <div class="loading-spinner">
-        <div class="spinner" />
-        <p>Loading...</p>
-      </div>
-    </div>
+    <LoadingSpinner
+      v-if="courseStore.loading"
+      type="overlay"
+      full-screen
+    />
 
     <!-- Error message -->
     <div v-if="courseStore.error" class="error-message">
@@ -263,33 +263,7 @@ onMounted(async () => {
   box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
 }
 
-/* Loading & Error States */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 50;
-  backdrop-filter: blur(4px);
-}
-
-.loading-spinner {
-  text-align: center;
-  color: var(--color-primary);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--color-slate-200);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
+/* Error States */
 .error-message {
   max-width: 600px;
   margin: 2rem auto;
@@ -315,9 +289,5 @@ onMounted(async () => {
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 </style>

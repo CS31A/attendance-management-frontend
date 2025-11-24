@@ -1,6 +1,6 @@
 <script setup>
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, User, X } from 'lucide-vue-next'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { getClassrooms } from '@/api/classrooms'
 import { getAllInstructors } from '@/api/instructors'
 import sectionsApi from '@/api/sections'
@@ -14,6 +14,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel'])
+
+const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // Form data
 const timeIn = ref('')
@@ -194,10 +196,12 @@ onMounted(() => {
       </div>
 
       <!-- Loading State -->
-      <div v-if="loadingDropdowns" class="loading-state">
-        <div class="spinner" />
-        <p>Loading form data...</p>
-      </div>
+      <LoadingSpinner
+        v-if="loadingDropdowns"
+        type="inline"
+        message="Loading form data..."
+        size="medium"
+      />
 
       <!-- Modal Body -->
       <form v-else class="modal-body" @submit.prevent="handleSubmit">
@@ -392,22 +396,6 @@ onMounted(() => {
   padding: 1.5rem;
 }
 
-.loading-state {
-  padding: 3rem 1.5rem;
-  text-align: center;
-  color: var(--color-gray-500);
-}
-
-.loading-state .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--color-slate-200);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -543,10 +531,6 @@ onMounted(() => {
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* Responsive */
