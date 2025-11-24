@@ -2,6 +2,7 @@
 import { AlertTriangle, GraduationCap, Plus, Trash2, UserPlus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import BaseButton from '@/components/common/BaseButton.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { useStudentStore } from '@/stores/studentStore'
 
@@ -140,9 +141,9 @@ async function handleRestoreStudent(student) {
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ studentStore.error }}</p>
-        <button class="retry-btn" @click="studentStore.fetchStudents">
+        <BaseButton variant="secondary" size="small" @click="studentStore.fetchStudents">
           Retry
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -158,10 +159,9 @@ async function handleRestoreStudent(student) {
               Manage student records and information
             </p>
           </div>
-          <button class="btn-add" @click="navigateToUserManagement">
-            <UserPlus class="icon" size="20" />
-            <span>Create Student (User Management)</span>
-          </button>
+          <BaseButton variant="primary" :icon="UserPlus" @click="navigateToUserManagement">
+            Create Student (User Management)
+          </BaseButton>
         </div>
       </div>
 
@@ -169,24 +169,22 @@ async function handleRestoreStudent(student) {
       <div class="controls-section">
         <!-- Tabs -->
         <div class="tabs">
-          <button
-            class="tab"
-            :class="{ active: activeTab === 'active' }"
+          <BaseButton
+            :variant="activeTab === 'active' ? 'primary' : 'ghost'"
+            size="small"
+            :icon="GraduationCap"
             @click="activeTab = 'active'"
           >
-            <GraduationCap :size="18" />
-            <span>Active Students</span>
-            <span class="badge">{{ activeStudents.length }}</span>
-          </button>
-          <button
-            class="tab"
-            :class="{ active: activeTab === 'deleted' }"
+            Active Students ({{ activeStudents.length }})
+          </BaseButton>
+          <BaseButton
+            :variant="activeTab === 'deleted' ? 'primary' : 'ghost'"
+            size="small"
+            :icon="Trash2"
             @click="activeTab = 'deleted'"
           >
-            <Trash2 :size="18" />
-            <span>Deleted Students</span>
-            <span class="badge">{{ deletedStudents.length }}</span>
-          </button>
+            Deleted Students ({{ deletedStudents.length }})
+          </BaseButton>
         </div>
 
         <!-- Search -->
@@ -224,10 +222,9 @@ async function handleRestoreStudent(student) {
               : 'No students have been deleted yet'
           }}
         </p>
-        <button v-if="!searchQuery && activeTab === 'active'" class="btn-empty-action" @click="navigateToUserManagement">
-          <Plus class="icon" size="20" />
-          <span>Create Your First Student</span>
-        </button>
+        <BaseButton v-if="!searchQuery && activeTab === 'active'" variant="primary" :icon="Plus" @click="navigateToUserManagement">
+          Create Your First Student
+        </BaseButton>
       </div>
     </div>
 
@@ -321,22 +318,6 @@ async function handleRestoreStudent(student) {
   color: var(--color-error-dark);
 }
 
-.retry-btn {
-  background: white;
-  border: 1px solid var(--color-error-light);
-  color: var(--color-error-darkest);
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.retry-btn:hover {
-  background: var(--color-error-bg);
-}
-
 /* Header */
 .page-header {
   margin-bottom: 1.5rem;
@@ -370,30 +351,6 @@ async function handleRestoreStudent(student) {
   font-weight: 300;
 }
 
-.btn-add {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: white;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
-  border: none;
-  cursor: pointer;
-}
-
-.btn-add:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
-}
-
-.btn-add .icon {
-  flex-shrink: 0;
-}
-
 /* Controls Section */
 .controls-section {
   background: white;
@@ -409,62 +366,6 @@ async function handleRestoreStudent(student) {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1rem;
-  border-bottom: 2px solid var(--color-gray-200);
-  padding-bottom: 0.375rem;
-}
-
-.tab {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: transparent;
-  color: var(--color-gray-500);
-  border-radius: 8px 8px 0 0;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  position: relative;
-  border: none;
-  cursor: pointer;
-}
-
-.tab:hover {
-  color: var(--color-primary);
-  background: var(--color-slate-100);
-}
-
-.tab.active {
-  color: var(--color-primary);
-  background: var(--color-info-bg);
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -0.5rem;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--color-primary);
-}
-
-.tab .badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.5rem;
-  background: var(--color-gray-200);
-  color: var(--color-gray-700);
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.tab.active .badge {
-  background: var(--color-primary);
-  color: white;
 }
 
 .student-search-bar {
@@ -508,26 +409,6 @@ async function handleRestoreStudent(student) {
   margin-bottom: 2rem;
 }
 
-.btn-empty-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: white;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
-  border: none;
-  cursor: pointer;
-}
-
-.btn-empty-action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .student-management {
@@ -543,22 +424,9 @@ async function handleRestoreStudent(student) {
     align-items: stretch;
   }
 
-  .btn-add {
-    width: 100%;
-    justify-content: center;
-  }
-
   .tabs {
     flex-direction: column;
     gap: 0.5rem;
-  }
-
-  .tab {
-    border-radius: 8px;
-  }
-
-  .tab.active::after {
-    display: none;
   }
 
   .search-box {

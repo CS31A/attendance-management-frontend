@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { useCourseStore } from '@/stores/courseStore.js'
 
 const CourseModal = defineAsyncComponent(() => import('@/components/CourseModal.vue'))
@@ -143,9 +144,9 @@ onMounted(async () => {
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ courseStore.error }}</p>
-        <button class="retry-btn" @click="courseStore.fetchCourses">
+        <BaseButton variant="secondary" size="small" @click="courseStore.fetchCourses">
           Retry
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -161,10 +162,9 @@ onMounted(async () => {
               Manage Courses
             </p>
           </div>
-          <button class="btn-add" @click="openAddModal">
-            <Plus class="icon" size="20" />
-            <span>Add Course</span>
-          </button>
+          <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
+            Add Course
+          </BaseButton>
         </div>
       </div>
 
@@ -258,26 +258,6 @@ onMounted(async () => {
   font-weight: 300;
 }
 
-.btn-add {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: white;
-  border: none;
-  padding: 0.625rem 1.25rem;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
-}
-
-.btn-add:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
-}
-
 /* Error States */
 .error-message {
   max-width: 600px;
@@ -294,15 +274,5 @@ onMounted(async () => {
   align-items: center;
   gap: 1rem;
   justify-content: center;
-}
-
-.retry-btn {
-  background: white;
-  border: 1px solid var(--color-error-light);
-  color: var(--color-error-darkest);
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
 }
 </style>
