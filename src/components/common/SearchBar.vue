@@ -41,7 +41,7 @@ defineEmits(['update:modelValue'])
   transform: translateY(-50%);
   width: 1.25rem;
   height: 1.25rem;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   pointer-events: none;
   transition: color 0.2s ease;
 }
@@ -49,7 +49,7 @@ defineEmits(['update:modelValue'])
 .search-input {
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 3rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-gray-200);
   border-radius: 16px;
   font-size: 1rem;
   background: white;
@@ -59,12 +59,12 @@ defineEmits(['update:modelValue'])
 
 .search-input:focus {
   outline: none;
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
   transform: translateY(-2px);
 }
 
 .search-input:focus + .search-icon {
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 </style>

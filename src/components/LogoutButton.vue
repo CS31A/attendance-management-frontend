@@ -51,7 +51,7 @@ async function handleLogout() {
 <style scoped>
 .logout-button {
   padding: 8px 16px;
-  background-color: #ef4444;
+  background-color: var(--color-error);
   color: white;
   border: none;
   border-radius: 4px;
@@ -61,7 +61,7 @@ async function handleLogout() {
 }
 
 .logout-button:hover:not(:disabled) {
-  background-color: #dc2626;
+  background-color: var(--color-error-dark);
 }
 
 .logout-button:disabled {

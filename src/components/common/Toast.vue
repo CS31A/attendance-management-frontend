@@ -178,14 +178,14 @@ function resume() {
 .toast-message {
   font-size: 14px;
   font-weight: 500;
-  color: #1e293b;
+  color: var(--color-primary-dark);
   line-height: 1.4;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--color-slate-400);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -197,29 +197,29 @@ function resume() {
 
 .close-btn:hover {
   background: rgba(0, 0, 0, 0.05);
-  color: #64748b;
+  color: var(--color-slate-500);
 }
 
 .progress-bar {
   height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(90deg, var(--color-primary-lightest), rgb(139, 92, 246));
   transition: width 0.01s linear;
 }
 
 /* Type variants */
-.success .toast-icon { color: #22c55e; }
-.success .progress-bar { background: #22c55e; }
+.success .toast-icon { color: rgb(34, 197, 94); }
+.success .progress-bar { background: rgb(34, 197, 94); }
 
-.error .toast-icon { color: #ef4444; }
-.error .progress-bar { background: #ef4444; }
+.error .toast-icon { color: var(--color-error); }
+.error .progress-bar { background: var(--color-error); }
 
-.warning .toast-icon { color: #f59e0b; }
-.warning .progress-bar { background: #f59e0b; }
+.warning .toast-icon { color: var(--color-warning); }
+.warning .progress-bar { background: var(--color-warning); }
 
-.info .toast-icon { color: #3b82f6; }
-.info .progress-bar { background: #3b82f6; }
+.info .toast-icon { color: var(--color-primary-lightest); }
+.info .progress-bar { background: var(--color-primary-lightest); }
 
-.loading .toast-icon { color: #6366f1; }
+.loading .toast-icon { color: var(--color-secondary-light); }
 
 /* Transition */
 .toast-enter-active,

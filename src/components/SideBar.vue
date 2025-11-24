@@ -199,28 +199,28 @@ onUnmounted(() => {
   position: fixed;
   top: 10px;
   left: 20px;
-  z-index: 1100;
-  background: #1e3a8a;
+  z-index: var(--z-burger);
+  background: var(--color-primary);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 50px;
   height: 50px;
   cursor: pointer;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
-  transition: all 0.3s ease;
+  gap: var(--spacing-xs);
+  box-shadow: var(--shadow-primary-lg);
+  transition: all var(--transition-base);
 }
 
 .burger-btn span {
   display: block;
   width: 25px;
   height: 3px;
-  background: white;
+  background: var(--text-white);
   border-radius: 2px;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   transform-origin: center;
 }
 
@@ -237,7 +237,7 @@ onUnmounted(() => {
 }
 
 .burger-btn:hover {
-  background: #1e40af;
+  background: var(--color-primary-light);
   transform: scale(1.05);
 }
 
@@ -249,11 +249,11 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  background: var(--bg-overlay);
+  z-index: var(--z-modal-backdrop);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .sidebar-overlay.active {
@@ -263,53 +263,53 @@ onUnmounted(() => {
 
 /* Main Sidebar */
 .sidebar {
-  width: 280px;
-  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
-  color: white;
+  width: var(--sidebar-width);
+  background: var(--gradient-primary);
+  color: var(--text-white);
   height: 100vh;
-  padding: 70px 0 0 0;
+  padding: var(--header-height) 0 0 0;
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: var(--z-fixed);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .sidebar.collapsed {
-  width: 80px;
+  width: var(--sidebar-collapsed-width);
 }
 
 .nav-menu {
   flex: 1;
-  padding: 24px 0;
+  padding: var(--spacing-lg) 0;
   overflow-y: auto;
 }
 
 .nav-menu ul {
   list-style: none;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 var(--spacing-md);
 }
 
 .sidebar.collapsed .nav-menu ul {
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
 }
 
 .nav-menu li {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 14px 16px;
+  padding: 14px var(--spacing-md);
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  transition: all 0.3s ease;
-  border-radius: 12px;
+  transition: all var(--transition-base);
+  border-radius: var(--radius-lg);
   font-weight: 500;
   font-size: 14px;
   gap: 12px;
@@ -322,22 +322,22 @@ onUnmounted(() => {
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+  background: rgba(255, 255, 255, var(--opacity-hover));
+  color: var(--text-white);
   transform: translateX(4px);
 }
 
 .nav-link.router-link-active {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, var(--opacity-active));
+  color: var(--text-white);
+  box-shadow: var(--shadow-md);
 }
 
 .nav-icon {
   width: 20px;
   height: 20px;
   stroke-width: 2;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-base);
 }
 
 .nav-link:hover .nav-icon {
@@ -350,14 +350,14 @@ onUnmounted(() => {
 }
 
 .sidebar-footer {
-  padding: 24px;
+  padding: var(--spacing-lg);
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(0, 0, 0, 0.15);
-  transition: padding 0.3s ease;
+  transition: padding var(--transition-base);
 }
 
 .sidebar.collapsed .sidebar-footer {
-  padding: 16px 8px;
+  padding: var(--spacing-md) var(--spacing-sm);
 }
 
 .user-info {
@@ -366,13 +366,13 @@ onUnmounted(() => {
   gap: 12px;
   padding: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .sidebar.collapsed .user-info {
-  padding: 8px;
+  padding: var(--spacing-sm);
   gap: 0;
   justify-content: center;
   background: transparent;
@@ -380,7 +380,7 @@ onUnmounted(() => {
 }
 
 .user-info:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, var(--opacity-hover));
   transform: translateY(-1px);
 }
 
@@ -397,21 +397,21 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-white);
   flex-shrink: 0;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .sidebar.collapsed .user-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .user-avatar svg {
   width: 20px;
   height: 20px;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .sidebar.collapsed .user-avatar svg {
@@ -424,7 +424,7 @@ onUnmounted(() => {
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-base);
   opacity: 1;
 }
 
@@ -445,7 +445,7 @@ onUnmounted(() => {
 .user-name {
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--text-white);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -531,7 +531,7 @@ onUnmounted(() => {
   .sidebar {
     transform: translateX(-100%);
     padding-top: 60px;
-    width: 280px;
+    width: var(--sidebar-width);
   }
 
   .sidebar.mobile-open {
@@ -783,15 +783,15 @@ onUnmounted(() => {
 /* Logout button styles */
 .sidebar-footer :deep(.logout-button) {
   width: 100%;
-  margin-top: 16px;
+  margin-top: var(--spacing-md);
   background: rgba(239, 68, 68, 0.2);
-  color: #fecaca;
+  color: var(--color-error-light);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .sidebar-footer :deep(.logout-button:hover:not(:disabled)) {
   background: rgba(239, 68, 68, 0.3);
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 .sidebar.collapsed .sidebar-footer :deep(.logout-button) {

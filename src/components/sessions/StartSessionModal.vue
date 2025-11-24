@@ -254,13 +254,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .modal-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0;
 }
 
@@ -273,21 +273,21 @@ onMounted(() => {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: #6b7280;
+  color: var(--color-gray-500);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-close:hover {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--color-gray-100);
+  color: var(--color-gray-800);
 }
 
 /* Session Info */
 .session-info {
   padding: 1rem 1.5rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .info-row {
@@ -303,21 +303,21 @@ onMounted(() => {
 .info-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .info-value {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 /* Error Message */
 .error-message {
   margin: 1rem 1.5rem 0;
   padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 8px;
 }
 
@@ -328,13 +328,13 @@ onMounted(() => {
 }
 
 .error-icon {
-  color: #dc2626;
+  color: var(--color-error-dark);
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
 
 .error-content p {
-  color: #991b1b;
+  color: var(--color-error-darkest);
   font-size: 0.875rem;
   margin: 0;
   line-height: 1.5;
@@ -347,10 +347,10 @@ onMounted(() => {
   gap: 0.75rem;
   margin: 1rem 1.5rem 0;
   padding: 1rem;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-lighter);
   border-radius: 8px;
-  color: #0369a1;
+  color: var(--color-info);
   font-size: 0.875rem;
 }
 
@@ -382,7 +382,7 @@ onMounted(() => {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-700);
   margin-bottom: 0.5rem;
 }
 
@@ -390,24 +390,24 @@ onMounted(() => {
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--color-gray-800);
   transition: all 0.2s;
 }
 
 .form-group select:focus,
 .form-group input:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .form-group select:disabled,
 .form-group input:disabled {
-  background: #f9fafb;
-  color: #9ca3af;
+  background: var(--color-gray-50);
+  color: var(--color-gray-400);
   cursor: not-allowed;
 }
 
@@ -425,7 +425,7 @@ onMounted(() => {
   position: absolute;
   right: 1rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   pointer-events: none;
 }
 
@@ -436,7 +436,7 @@ onMounted(() => {
 }
 
 .helper-text.info {
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 /* Quick Start Notice */
@@ -444,15 +444,15 @@ onMounted(() => {
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-light);
   border-radius: 8px;
   margin-bottom: 1.5rem;
 }
 
 .notice-icon {
   flex-shrink: 0;
-  color: #059669;
+  color: var(--color-success);
 }
 
 .notice-content {
@@ -462,13 +462,13 @@ onMounted(() => {
 .notice-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #065f46;
+  color: var(--color-success);
   margin: 0 0 0.25rem 0;
 }
 
 .notice-text {
   font-size: 0.813rem;
-  color: #047857;
+  color: var(--color-success);
   margin: 0;
   line-height: 1.5;
 }
@@ -478,7 +478,7 @@ onMounted(() => {
   display: flex;
   gap: 0.75rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .btn-start,
@@ -498,27 +498,27 @@ onMounted(() => {
 }
 
 .btn-start {
-  background: #059669;
+  background: var(--color-success);
   color: white;
 }
 
 .btn-start:hover:not(:disabled) {
-  background: #047857;
+  background: var(--color-success-light);
 }
 
 .btn-start:disabled {
-  background: #d1d5db;
-  color: #9ca3af;
+  background: var(--color-gray-300);
+  color: var(--color-gray-400);
   cursor: not-allowed;
 }
 
 .btn-cancel {
   background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
 }
 
 .btn-cancel:hover {
-  background: #f9fafb;
+  background: var(--color-gray-50);
 }
 </style>

@@ -231,7 +231,7 @@ function goToPage(page) {
   background: white;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-gray-200);
   overflow: hidden;
 }
 
@@ -239,13 +239,13 @@ function goToPage(page) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .table-icon {
   width: 1.5rem;
   height: 1.5rem;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .table-title h2 {
@@ -273,7 +273,7 @@ function goToPage(page) {
 
 /* Table Header */
 .students-table thead {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
 }
 
 .students-table th {
@@ -296,12 +296,12 @@ function goToPage(page) {
 
 /* Table Body */
 .students-table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
   transition: background-color 0.2s ease;
 }
 
 .students-table tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: var(--color-slate-100);
 }
 
 .students-table td {
@@ -311,13 +311,13 @@ function goToPage(page) {
 
 .td-loading, .td-empty {
   text-align: center;
-  color: #6b7280;
+  color: var(--color-gray-500);
   padding: 2rem;
 }
 
 /* ID Column */
 .td-id {
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-family: monospace;
   font-weight: 600;
 }
@@ -325,13 +325,13 @@ function goToPage(page) {
 /* Name Column */
 .td-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 /* Student ID Column */
 .student-id-badge {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.875rem;
@@ -341,12 +341,12 @@ function goToPage(page) {
 
 /* Email Column */
 .td-email {
-  color: #4b5563;
+  color: var(--color-gray-600);
 }
 
 /* Section Column */
 .td-section {
-  color: #4b5563;
+  color: var(--color-gray-600);
 }
 
 /* Actions Column */
@@ -374,33 +374,33 @@ function goToPage(page) {
 }
 
 .btn-edit {
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: var(--color-info-bg);
+  color: var(--color-primary);
 }
 
 .btn-edit:hover {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--color-info-lighter);
+  color: var(--color-primary-light);
 }
 
 .btn-delete {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--color-error-bg);
+  color: var(--color-error-dark);
 }
 
 .btn-delete:hover {
-  background: #fecaca;
-  color: #b91c1c;
+  background: var(--color-error-light);
+  color: var(--color-error-darker);
 }
 
 .btn-restore {
-  background: #f0fdf4;
-  color: #166534;
+  background: var(--color-success-bg);
+  color: rgb(22, 101, 52);
 }
 
 .btn-restore:hover {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--color-success-bg);
+  color: rgb(21, 128, 61);
 }
 
 .btn-icon {
@@ -410,8 +410,8 @@ function goToPage(page) {
 
 /* Pagination Styles */
 .pagination-section {
-  background: #f8fafc;
-  border-top: 1px solid #e5e7eb;
+  background: var(--color-slate-100);
+  border-top: 1px solid var(--color-gray-200);
   padding: 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -428,7 +428,7 @@ function goToPage(page) {
 }
 
 .pagination-text {
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -444,10 +444,10 @@ function goToPage(page) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-slate-100);
+  border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
-  color: #475569;
+  color: var(--color-slate-600);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -455,8 +455,8 @@ function goToPage(page) {
 }
 
 .pagination-btn:hover:not(.disabled) {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: var(--color-slate-200);
+  border-color: var(--color-slate-300);
 }
 
 .pagination-btn.disabled {
@@ -481,10 +481,10 @@ function goToPage(page) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-slate-100);
+  border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
-  color: #475569;
+  color: var(--color-slate-600);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -492,13 +492,13 @@ function goToPage(page) {
 }
 
 .page-btn:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: var(--color-slate-200);
+  border-color: var(--color-slate-300);
 }
 
 .page-btn.active {
-  background: #1e3a8a;
-  border-color: #1e3a8a;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: white;
 }
 

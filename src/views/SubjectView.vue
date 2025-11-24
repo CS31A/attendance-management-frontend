@@ -188,7 +188,7 @@ onMounted(async () => {
 /* Main Container */
 .subject-management {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-slate-100);
   padding: 2rem;
   position: relative;
   overflow-x: hidden;
@@ -232,14 +232,14 @@ onMounted(async () => {
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1e3a8a;
+  color: var(--color-primary);
   margin: 0 0 0.5rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
 }
@@ -248,7 +248,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -278,14 +278,14 @@ onMounted(async () => {
 
 .loading-spinner {
   text-align: center;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #1e3a8a;
+  border: 4px solid var(--color-slate-200);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -295,10 +295,10 @@ onMounted(async () => {
   max-width: 600px;
   margin: 2rem auto;
   padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 12px;
-  color: #991b1b;
+  color: var(--color-error-darkest);
 }
 
 .error-content {
@@ -310,8 +310,8 @@ onMounted(async () => {
 
 .retry-btn {
   background: white;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  border: 1px solid var(--color-error-light);
+  color: var(--color-error-darkest);
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
   cursor: pointer;

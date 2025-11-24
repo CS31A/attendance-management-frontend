@@ -101,25 +101,25 @@ header {
   top: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background-color: #2563eb;
+  height: var(--header-height);
+  background-color: var(--color-primary-lighter);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 24px 0 0;
-  z-index: 1001;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  padding: 0 var(--spacing-lg) 0 0;
+  z-index: var(--z-header);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-header);
 }
 
 .header-left {
-  width: 280px;
+  width: var(--sidebar-width);
   height: 100%;
-  background: #2563eb;
+  background: var(--color-primary-lighter);
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   position: relative;
 }
 
@@ -128,15 +128,15 @@ header {
   }
 
 .header-left.sidebar-collapsed .header-collapse-btn {
-  margin-left: 8px;
+  margin-left: var(--spacing-sm);
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-md);
   width: 100%;
-  padding-right: 8px;
+  padding-right: var(--spacing-sm);
 }
 
 .logo {
@@ -150,7 +150,7 @@ header {
   width: 4.25rem;
   height: 4.25rem;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .brand-info {
@@ -164,7 +164,7 @@ header {
   font-size: 22px;
   font-weight: 700;
   margin: 0;
-  color: white;
+  color: var(--text-white);
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
@@ -190,17 +190,17 @@ header {
   height: 40px;
   border: none;
   background-color: transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: white;
-  transition: background-color 0.2s;
+  color: var(--text-white);
+  transition: background-color var(--transition-fast);
 }
 
 .icon-button:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, var(--opacity-hover));
 }
 
 .notification-button {
@@ -211,13 +211,13 @@ header {
   position: absolute;
   top: 6px;
   right: 6px;
-  background-color: #ef4444;
-  color: white;
+  background-color: var(--color-error);
+  color: var(--text-white);
   font-size: 10px;
   font-weight: 600;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -462,15 +462,15 @@ header {
 .header-collapse-btn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   width: 32px;
   height: 32px;
-  color: white;
+  color: var(--text-white);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+  transition: background-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
   margin-left: 12px;
   flex-shrink: 0;
   opacity: 0.8;
@@ -484,13 +484,13 @@ header {
 
 .header-collapse-btn:active {
   transform: translateY(0);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, var(--opacity-hover));
 }
 
 .header-collapse-btn svg {
   width: 16px;
   height: 16px;
-  transition: transform 0.2s ease;
+  transition: transform var(--transition-fast);
 }
 
 .header-collapse-btn:hover svg {

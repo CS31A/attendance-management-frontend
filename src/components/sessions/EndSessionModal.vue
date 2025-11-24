@@ -180,13 +180,13 @@ function endSession() {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .modal-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0;
 }
 
@@ -199,21 +199,21 @@ function endSession() {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: #6b7280;
+  color: var(--color-gray-500);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-close:hover {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--color-gray-100);
+  color: var(--color-gray-800);
 }
 
 /* Session Info */
 .session-info {
   padding: 1rem 1.5rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .info-row {
@@ -229,21 +229,21 @@ function endSession() {
 .info-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .info-value {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 /* Error Message */
 .error-message {
   margin: 1rem 1.5rem 0;
   padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 8px;
 }
 
@@ -254,13 +254,13 @@ function endSession() {
 }
 
 .error-icon {
-  color: #dc2626;
+  color: var(--color-error-dark);
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
 
 .error-content p {
-  color: #991b1b;
+  color: var(--color-error-darkest);
   font-size: 0.875rem;
   margin: 0;
   line-height: 1.5;
@@ -280,17 +280,17 @@ function endSession() {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-700);
   margin-bottom: 0.5rem;
 }
 
 .form-group textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 0.875rem;
-  color: #1f2937;
+  color: var(--color-gray-800);
   font-family: inherit;
   resize: vertical;
   transition: all 0.2s;
@@ -298,7 +298,7 @@ function endSession() {
 
 .form-group textarea:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -309,7 +309,7 @@ function endSession() {
 }
 
 .helper-text.info {
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 /* Confirmation Notice */
@@ -317,15 +317,15 @@ function endSession() {
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-light);
   border-radius: 8px;
   margin-bottom: 1.5rem;
 }
 
 .notice-icon {
   flex-shrink: 0;
-  color: #ea580c;
+  color: var(--color-warning);
 }
 
 .notice-content {
@@ -335,13 +335,13 @@ function endSession() {
 .notice-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #9a3412;
+  color: var(--color-text-secondary);
   margin: 0 0 0.25rem 0;
 }
 
 .notice-text {
   font-size: 0.813rem;
-  color: #c2410c;
+  color: var(--color-warning);
   margin: 0;
   line-height: 1.5;
 }
@@ -351,7 +351,7 @@ function endSession() {
   display: flex;
   gap: 0.75rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .btn-end,
@@ -371,21 +371,21 @@ function endSession() {
 }
 
 .btn-end {
-  background: #dc2626;
+  background: var(--color-error-dark);
   color: white;
 }
 
 .btn-end:hover {
-  background: #b91c1c;
+  background: var(--color-error-darker);
 }
 
 .btn-cancel {
   background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
 }
 
 .btn-cancel:hover {
-  background: #f9fafb;
+  background: var(--color-gray-50);
 }
 </style>

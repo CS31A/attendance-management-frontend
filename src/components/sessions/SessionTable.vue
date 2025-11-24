@@ -191,8 +191,8 @@ function formatTime(timeString) {
 
 /* Table Header */
 thead {
-  background: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-bottom: 2px solid var(--color-gray-200);
 }
 
 th {
@@ -200,7 +200,7 @@ th {
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-700);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -214,18 +214,18 @@ th {
 
 /* Table Body */
 tbody tr {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-gray-100);
   transition: background 0.2s;
 }
 
 tbody tr:hover {
-  background: #f9fafb;
+  background: var(--color-gray-50);
 }
 
 td {
   padding: 1rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--color-gray-700);
 }
 
 /* Date Cell */
@@ -236,7 +236,7 @@ td {
 }
 
 .date-icon {
-  color: #6b7280;
+  color: var(--color-gray-500);
   flex-shrink: 0;
 }
 
@@ -253,12 +253,12 @@ td {
 
 .course-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .schedule-info {
   font-size: 0.813rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 /* Room Cell */
@@ -269,7 +269,7 @@ td {
 }
 
 .room-icon {
-  color: #6b7280;
+  color: var(--color-gray-500);
   flex-shrink: 0;
 }
 
@@ -285,7 +285,7 @@ td {
 }
 
 .time-icon {
-  color: #6b7280;
+  color: var(--color-gray-500);
   flex-shrink: 0;
 }
 
@@ -305,7 +305,7 @@ td {
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 6px;
   background: white;
   font-size: 0.875rem;
@@ -315,7 +315,7 @@ td {
 }
 
 .btn-action:hover {
-  background: #f9fafb;
+  background: var(--color-gray-50);
 }
 
 .btn-icon {
@@ -324,50 +324,50 @@ td {
 
 /* Start Button */
 .btn-start {
-  color: #059669;
-  border-color: #059669;
+  color: var(--color-success);
+  border-color: var(--color-success);
 }
 
 .btn-start:hover {
-  background: #d1fae5;
+  background: var(--color-success-bg);
 }
 
 /* End Button */
 .btn-end {
-  color: #dc2626;
-  border-color: #dc2626;
+  color: var(--color-error-dark);
+  border-color: var(--color-error-dark);
 }
 
 .btn-end:hover {
-  background: #fee2e2;
+  background: var(--color-error-lighter);
 }
 
 /* Room Button */
 .btn-room {
-  color: #2563eb;
-  border-color: #2563eb;
+  color: var(--color-primary-lighter);
+  border-color: var(--color-primary-lighter);
   padding: 0.5rem;
 }
 
 .btn-room:hover {
-  background: #dbeafe;
+  background: var(--color-info-lighter);
 }
 
 /* Delete Button */
 .btn-delete {
-  color: #dc2626;
-  border-color: #dc2626;
+  color: var(--color-error-dark);
+  border-color: var(--color-error-dark);
   padding: 0.5rem;
 }
 
 .btn-delete:hover {
-  background: #fee2e2;
+  background: var(--color-error-lighter);
 }
 
 /* Read Only Status */
 .status-readonly {
   font-size: 0.813rem;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   font-style: italic;
 }
 

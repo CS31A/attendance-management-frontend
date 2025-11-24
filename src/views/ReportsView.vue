@@ -28,13 +28,13 @@ const attendanceTrendData = computed(() => ({
   datasets: [{
     label: 'Attendance Rate (%)',
     data: [75, 90, 78, 85, 92, 82, 88],
-    borderColor: '#3b5998',
-    backgroundColor: 'rgba(59, 89, 152, 0.1)',
+    borderColor: 'rgb(30, 58, 138)',
+    backgroundColor: 'rgba(30, 58, 138, 0.1)',
     tension: 0.4,
     borderWidth: 3,
     pointRadius: 6,
-    pointBackgroundColor: '#3b5998',
-    pointBorderColor: '#fff',
+    pointBackgroundColor: 'rgb(30, 58, 138)',
+    pointBorderColor: 'var(--text-white)',
     pointBorderWidth: 2,
     pointHoverRadius: 8,
     fill: true,
@@ -68,10 +68,10 @@ const attendanceTrendOptions = {
         font: {
           size: 12,
         },
-        color: '#9ca3af',
+        color: 'var(--color-gray-400)',
       },
       grid: {
-        color: '#f0f0f0',
+        color: 'rgb(243, 244, 246)',
         drawBorder: false,
       },
     },
@@ -84,7 +84,7 @@ const attendanceTrendOptions = {
         font: {
           size: 12,
         },
-        color: '#9ca3af',
+        color: 'var(--color-gray-400)',
       },
     },
   },
@@ -97,11 +97,11 @@ const classPerformanceData = computed(() => ({
     label: 'Performance',
     data: [92, 85, 78, 88, 90],
     backgroundColor: [
-      '#10b981',
-      '#3b5998',
-      '#10b981',
-      '#3b5998',
-      '#10b981',
+      'rgb(16, 185, 129)',
+      'rgb(30, 58, 138)',
+      'rgb(16, 185, 129)',
+      'rgb(30, 58, 138)',
+      'rgb(16, 185, 129)',
     ],
     borderRadius: 8,
     barThickness: 40,
@@ -135,10 +135,10 @@ const classPerformanceOptions = {
         font: {
           size: 12,
         },
-        color: '#9ca3af',
+        color: 'var(--color-gray-400)',
       },
       grid: {
-        color: '#f0f0f0',
+        color: 'rgb(243, 244, 246)',
         drawBorder: false,
       },
     },
@@ -151,7 +151,7 @@ const classPerformanceOptions = {
         font: {
           size: 12,
         },
-        color: '#9ca3af',
+        color: 'var(--color-gray-400)',
       },
     },
   },
@@ -314,7 +314,7 @@ function setActiveTab(tab) {
 /* Main Container */
 .reports-dashboard {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-slate-100);
   padding: 2rem;
 }
 
@@ -345,13 +345,13 @@ function setActiveTab(tab) {
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1e3a8a;
+  color: var(--color-primary);
   margin: 0 0 0.5rem 0;
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
 }
@@ -370,7 +370,7 @@ function setActiveTab(tab) {
   padding: 0.75rem 1.5rem;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-weight: 600;
   font-size: 0.938rem;
   border-radius: 8px;
@@ -380,13 +380,13 @@ function setActiveTab(tab) {
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
 }
 
 .tab:not(.active):hover {
-  background: #f3f4f6;
+  background: var(--color-gray-100);
 }
 
 /* Stats Grid */
@@ -440,22 +440,22 @@ function setActiveTab(tab) {
 
 .stat-icon.blue {
   background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  color: var(--color-primary-lightest);
 }
 
 .stat-icon.green {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .stat-icon.red {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .stat-icon.navy {
   background: rgba(30, 58, 138, 0.1);
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .stat-trend {
@@ -467,25 +467,25 @@ function setActiveTab(tab) {
 
 .stat-trend.positive {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .stat-trend.negative {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0 0 0.5rem 0;
   line-height: 1;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   font-weight: 500;
 }
@@ -542,19 +542,19 @@ function setActiveTab(tab) {
 .chart-icon svg {
   width: 24px;
   height: 24px;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .chart-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0;
 }
 
 .chart-subtitle {
   font-size: 0.813rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0.25rem 0 0 0;
 }
 
@@ -563,8 +563,8 @@ function setActiveTab(tab) {
   height: 36px;
   border-radius: 8px;
   border: none;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -573,7 +573,7 @@ function setActiveTab(tab) {
 }
 
 .chart-action-btn:hover {
-  background: #e5e7eb;
+  background: var(--color-gray-200);
 }
 
 .chart-action-btn svg {

@@ -71,14 +71,14 @@ const statusClass = computed(() => {
 
 /* Not Started - Blue/Gray */
 .status-not-started {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--color-info-lighter);
+  color: var(--color-primary-light);
 }
 
 /* Active - Green with pulse animation */
 .status-active {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--color-success-bg);
+  color: var(--color-success);
   position: relative;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -100,7 +100,7 @@ const statusClass = computed(() => {
   transform: translateY(-50%);
   width: 6px;
   height: 6px;
-  background: #10b981;
+  background: var(--color-success);
   border-radius: 50%;
   animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
@@ -118,19 +118,19 @@ const statusClass = computed(() => {
 
 /* Completed - Gray/Dark */
 .status-completed {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
 }
 
 /* Cancelled - Red */
 .status-cancelled {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--color-error-lighter);
+  color: var(--color-error-darkest);
 }
 
 /* Unknown status fallback */
 .status-unknown {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 </style>

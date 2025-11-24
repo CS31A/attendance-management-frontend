@@ -329,13 +329,13 @@ onMounted(() => {
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .page-subtitle {
   font-size: 1rem;
-  color: #666;
+  color: var(--color-gray-500);
   margin: 0;
 }
 
@@ -344,7 +344,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #4f46e5;
+  background: var(--color-secondary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -355,7 +355,7 @@ onMounted(() => {
 }
 
 .btn-create-session:hover {
-  background: #4338ca;
+  background: var(--color-secondary-light);
 }
 
 /* Filter Tabs */
@@ -363,7 +363,7 @@ onMounted(() => {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 2rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--color-gray-200);
   padding-bottom: 0;
   overflow-x: auto;
 }
@@ -378,21 +378,21 @@ onMounted(() => {
   border-bottom: 3px solid transparent;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-gray-500);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .filter-tab:hover {
-  color: #4f46e5;
-  background: #f9fafb;
+  color: var(--color-secondary);
+  background: var(--color-gray-50);
 }
 
 .filter-active {
-  color: #4f46e5;
-  border-bottom-color: #4f46e5;
-  background: #f9fafb;
+  color: var(--color-secondary);
+  border-bottom-color: var(--color-secondary);
+  background: var(--color-gray-50);
 }
 
 .count-badge {
@@ -402,15 +402,15 @@ onMounted(() => {
   min-width: 1.5rem;
   height: 1.5rem;
   padding: 0 0.5rem;
-  background: #e5e7eb;
-  color: #4b5563;
+  background: var(--color-gray-200);
+  color: var(--color-gray-600);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
 }
 
 .filter-active .count-badge {
-  background: #4f46e5;
+  background: var(--color-secondary);
   color: white;
 }
 
@@ -421,7 +421,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .spinner {
@@ -445,20 +445,20 @@ onMounted(() => {
 }
 
 .error-icon {
-  color: #ef4444;
+  color: var(--color-error);
   margin-bottom: 1rem;
 }
 
 .error-state h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .error-state p {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0 0 1.5rem 0;
   max-width: 500px;
 }
@@ -468,7 +468,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #4f46e5;
+  background: var(--color-secondary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -479,7 +479,7 @@ onMounted(() => {
 }
 
 .btn-retry:hover {
-  background: #4338ca;
+  background: var(--color-secondary-light);
 }
 
 /* Empty State */
@@ -493,20 +493,20 @@ onMounted(() => {
 }
 
 .empty-icon {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   margin-bottom: 1.5rem;
 }
 
 .empty-state h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .empty-state p {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0 0 1.5rem 0;
   max-width: 500px;
 }
@@ -516,7 +516,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #4f46e5;
+  background: var(--color-secondary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -527,7 +527,7 @@ onMounted(() => {
 }
 
 .btn-empty-action:hover {
-  background: #4338ca;
+  background: var(--color-secondary-light);
 }
 
 /* Sessions Content */

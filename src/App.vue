@@ -116,27 +116,27 @@ function handleToggleCollapse(isCollapsed) {
 }
 
 body {
-  background: #f8fafc;
+  background: var(--bg-secondary);
 }
 
 .container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg-secondary);
 }
 
 /* Main Content Styles */
 main {
   flex: 1;
-  margin-left: 280px;
+  margin-left: var(--sidebar-width);
   overflow-y: auto;
-  transition: margin-left 0.3s ease;
-  background: #f8fafc;
+  transition: margin-left var(--transition-base);
+  background: var(--bg-secondary);
 }
 
 main.with-header {
-  margin-top: 70px;
+  margin-top: var(--header-height);
 }
 
 main.no-sidebar {
@@ -144,11 +144,11 @@ main.no-sidebar {
 }
 
 main.sidebar-open {
-  margin-left: 280px;
+  margin-left: var(--sidebar-width);
 }
 
 main.sidebar-collapsed {
-  margin-left: 80px;
+  margin-left: var(--sidebar-collapsed-width);
 }
 
 .auth-loading {
@@ -163,11 +163,11 @@ main.sidebar-collapsed {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
+  border: 4px solid var(--color-gray-100);
+  border-top: 4px solid var(--color-info);
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
 }
 
 @keyframes spin {
@@ -182,7 +182,7 @@ main.sidebar-collapsed {
   }
 
   main.sidebar-open {
-    margin-left: 280px;
+    margin-left: var(--sidebar-width);
   }
 }
 </style>

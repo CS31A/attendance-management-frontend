@@ -427,9 +427,9 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -437,7 +437,7 @@ onMounted(() => {
 }
 
 .btn-back:hover {
-  background: #e5e7eb;
+  background: var(--color-gray-200);
 }
 
 .session-title {
@@ -448,8 +448,8 @@ onMounted(() => {
   display: inline-block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #4f46e5;
-  background: #eef2ff;
+  color: var(--color-secondary);
+  background: rgb(238, 242, 255);
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
   margin-bottom: 0.5rem;
@@ -458,13 +458,13 @@ onMounted(() => {
 .session-title h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.25rem 0;
 }
 
 .section-name {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .session-meta {
@@ -478,11 +478,11 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.95rem;
-  color: #4b5563;
+  color: var(--color-gray-600);
 }
 
 .meta-item svg {
-  color: #9ca3af;
+  color: var(--color-gray-400);
 }
 
 /* Stats Summary */
@@ -508,43 +508,43 @@ onMounted(() => {
 }
 
 .stat-card.present {
-  border-left: 4px solid #10b981;
+  border-left: 4px solid var(--color-success);
 }
 
 .stat-card.present svg {
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .stat-card.absent {
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid var(--color-error);
 }
 
 .stat-card.absent svg {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .stat-card.late {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--color-warning);
 }
 
 .stat-card.late svg {
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .stat-card.excused {
-  border-left: 4px solid #6366f1;
+  border-left: 4px solid var(--color-secondary-light);
 }
 
 .stat-card.excused svg {
-  color: #6366f1;
+  color: var(--color-secondary-light);
 }
 
 .stat-card.percentage {
-  border-left: 4px solid #4f46e5;
+  border-left: 4px solid var(--color-secondary);
 }
 
 .stat-card.percentage svg {
-  color: #4f46e5;
+  color: var(--color-secondary);
 }
 
 .stat-content {
@@ -555,13 +555,13 @@ onMounted(() => {
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   line-height: 1;
 }
 
 .stat-label {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin-top: 0.25rem;
 }
 
@@ -589,13 +589,13 @@ onMounted(() => {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-gray-400);
 }
 
 .search-input {
   width: 100%;
   padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -603,7 +603,7 @@ onMounted(() => {
 
 .search-input:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -626,23 +626,23 @@ onMounted(() => {
 }
 
 .btn-quick.present {
-  background: #f0fdf4;
-  color: #166534;
-  border-color: #86efac;
+  background: var(--color-success-bg);
+  color: rgb(22, 101, 52);
+  border-color: var(--color-success-light);
 }
 
 .btn-quick.present:hover {
-  background: #dcfce7;
+  background: var(--color-success-bg);
 }
 
 .btn-quick.absent {
-  background: #fef2f2;
-  color: #991b1b;
-  border-color: #fecaca;
+  background: var(--color-error-bg);
+  color: var(--color-error-darkest);
+  border-color: var(--color-error-light);
 }
 
 .btn-quick.absent:hover {
-  background: #fee2e2;
+  background: var(--color-error-lighter);
 }
 
 .btn-save {
@@ -650,7 +650,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #4f46e5;
+  background: var(--color-secondary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -661,7 +661,7 @@ onMounted(() => {
 }
 
 .btn-save:hover:not(:disabled) {
-  background: #4338ca;
+  background: var(--color-secondary-light);
 }
 
 .btn-save:disabled {
@@ -688,7 +688,7 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 /* Students Table */
@@ -705,20 +705,20 @@ onMounted(() => {
 }
 
 .students-table th {
-  background: #f9fafb;
+  background: var(--color-gray-50);
   padding: 1rem;
   text-align: left;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--color-gray-600);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .students-table td {
   padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
   vertical-align: middle;
 }
 
@@ -727,17 +727,17 @@ onMounted(() => {
 }
 
 .students-table tr:hover {
-  background: #f9fafb;
+  background: var(--color-gray-50);
 }
 
 .students-table tr.row-changed {
-  background: #fef3c7;
+  background: var(--color-warning-bg);
 }
 
 .col-number {
   width: 60px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   font-size: 0.9rem;
 }
 
@@ -753,12 +753,12 @@ onMounted(() => {
 
 .student-name {
   font-weight: 500;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
 }
 
 .student-id {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .col-status {
@@ -776,42 +776,42 @@ onMounted(() => {
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   background: white;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .status-btn:hover {
-  background: #f3f4f6;
+  background: var(--color-gray-100);
 }
 
 .status-btn-present.active {
-  background: #d1fae5;
-  border-color: #10b981;
-  color: #065f46;
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: rgb(6, 95, 70);
 }
 
 .status-btn-absent.active {
-  background: #fee2e2;
-  border-color: #ef4444;
-  color: #991b1b;
+  background: var(--color-error-lighter);
+  border-color: var(--color-error);
+  color: var(--color-error-darkest);
 }
 
 .status-btn-late.active {
-  background: #fef3c7;
-  border-color: #f59e0b;
-  color: #92400e;
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
+  color: rgb(146, 64, 14);
 }
 
 .status-btn-excused.active {
-  background: #e0e7ff;
-  border-color: #6366f1;
-  color: #3730a3;
+  background: rgb(224, 231, 255);
+  border-color: var(--color-secondary-light);
+  color: rgb(55, 48, 163);
 }
 
 .btn-label {
@@ -829,18 +829,18 @@ onMounted(() => {
 .empty-students {
   text-align: center;
   padding: 3rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .empty-icon {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   margin-bottom: 1rem;
 }
 
 .empty-students h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 

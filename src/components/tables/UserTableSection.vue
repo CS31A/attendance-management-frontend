@@ -141,7 +141,7 @@ function getRoleIcon(role) {
     background: white;
     border-radius: 16px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-gray-200);
     overflow: hidden;
   }
 
@@ -149,7 +149,7 @@ function getRoleIcon(role) {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #1e3a8a;
+    color: var(--color-primary);
   }
 
   .table-icon {
@@ -158,15 +158,15 @@ function getRoleIcon(role) {
   }
 
   .table-icon.instructor {
-    color: #1e3a8a;
+    color: var(--color-primary);
   }
 
   .table-icon.student {
-    color: #16a34a;
+    color: var(--color-success);
   }
 
   .table-icon.all {
-    color: #1e3a8a;
+    color: var(--color-primary);
   }
 
   .table-title h2 {
@@ -183,8 +183,8 @@ function getRoleIcon(role) {
 
   /* Pagination Styles */
   .pagination-section {
-    background: #f8fafc;
-    border-top: 1px solid #e5e7eb;
+    background: var(--color-slate-100);
+    border-top: 1px solid var(--color-gray-200);
     padding: 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -201,7 +201,7 @@ function getRoleIcon(role) {
   }
 
   .pagination-text {
-    color: #6b7280;
+    color: var(--color-gray-500);
     font-size: 0.875rem;
     font-weight: 500;
   }
@@ -213,14 +213,14 @@ function getRoleIcon(role) {
   }
 
   .items-per-page label {
-    color: #6b7280;
+    color: var(--color-gray-500);
     font-size: 0.875rem;
     font-weight: 500;
   }
 
   .items-select {
     padding: 0.5rem 0.75rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--color-gray-300);
     border-radius: 0.5rem;
     font-size: 0.875rem;
     background: white;
@@ -230,7 +230,7 @@ function getRoleIcon(role) {
 
   .items-select:focus {
     outline: none;
-    border-color: #1e3a8a;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
   }
 
@@ -245,10 +245,10 @@ function getRoleIcon(role) {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--color-slate-100);
+    border: 1px solid var(--color-slate-200);
     border-radius: 0.5rem;
-    color: #475569;
+    color: var(--color-slate-600);
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -256,8 +256,8 @@ function getRoleIcon(role) {
   }
 
   .pagination-btn:hover:not(.disabled) {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
+    background: var(--color-slate-200);
+    border-color: var(--color-slate-300);
   }
 
   .pagination-btn.disabled {
@@ -282,10 +282,10 @@ function getRoleIcon(role) {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--color-slate-100);
+    border: 1px solid var(--color-slate-200);
     border-radius: 0.5rem;
-    color: #475569;
+    color: var(--color-slate-600);
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -293,18 +293,18 @@ function getRoleIcon(role) {
   }
 
   .page-btn:hover {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
+    background: var(--color-slate-200);
+    border-color: var(--color-slate-300);
   }
 
   .page-btn.active {
-    background: #1e3a8a;
-    border-color: #1e3a8a;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
     color: white;
   }
 
   .page-ellipsis {
-    color: #9ca3af;
+    color: var(--color-gray-400);
     font-size: 0.875rem;
     padding: 0 0.5rem;
   }

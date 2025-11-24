@@ -190,13 +190,13 @@ onMounted(() => {
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .page-subtitle {
   font-size: 1rem;
-  color: #666;
+  color: var(--color-gray-500);
   margin: 0;
 }
 
@@ -205,9 +205,9 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
@@ -216,8 +216,8 @@ onMounted(() => {
 }
 
 .btn-back:hover {
-  background: #e5e7eb;
-  border-color: #9ca3af;
+  background: var(--color-gray-200);
+  border-color: var(--color-gray-400);
 }
 
 /* Loading State */
@@ -227,7 +227,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .spinner {
@@ -251,20 +251,20 @@ onMounted(() => {
 }
 
 .error-icon {
-  color: #ef4444;
+  color: var(--color-error);
   margin-bottom: 1rem;
 }
 
 .error-state h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .error-state p {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0 0 1.5rem 0;
   max-width: 500px;
 }
@@ -274,7 +274,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #4f46e5;
+  background: var(--color-secondary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -285,7 +285,7 @@ onMounted(() => {
 }
 
 .btn-retry:hover {
-  background: #4338ca;
+  background: var(--color-secondary-light);
 }
 
 /* Empty State */
@@ -299,20 +299,20 @@ onMounted(() => {
 }
 
 .empty-icon {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   margin-bottom: 1.5rem;
 }
 
 .empty-state h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .empty-state p {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   max-width: 500px;
 }

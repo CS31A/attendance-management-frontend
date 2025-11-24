@@ -160,7 +160,7 @@ defineExpose({ handleError })
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   padding: 1.25rem 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -205,7 +205,7 @@ defineExpose({ handleError })
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-700);
   margin-bottom: 0.5rem;
 }
 
@@ -218,7 +218,7 @@ defineExpose({ handleError })
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-gray-400);
   pointer-events: none;
 }
 
@@ -227,12 +227,12 @@ defineExpose({ handleError })
   width: 100%;
   padding: 0.75rem 1rem;
   padding-left: 2.5rem; /* Space for icon */
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-gray-200);
   border-radius: 0.5rem;
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s;
-  background-color: #f9fafb;
+  background-color: var(--color-gray-50);
 }
 
 /* Adjust padding for inputs without icons */
@@ -241,7 +241,7 @@ defineExpose({ handleError })
 }
 
 .form-group input:focus {
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   background-color: white;
   box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
 }
@@ -253,7 +253,7 @@ defineExpose({ handleError })
 }
 
 .helper-text.info {
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .actions {
@@ -264,7 +264,7 @@ defineExpose({ handleError })
 
 .btn-submit {
   flex: 1;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -290,8 +290,8 @@ defineExpose({ handleError })
 
 .btn-cancel {
   background-color: white;
-  color: #4b5563;
-  border: 1px solid #e5e7eb;
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-200);
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -301,14 +301,14 @@ defineExpose({ handleError })
 }
 
 .btn-cancel:hover {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
-  color: #1f2937;
+  background-color: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-gray-800);
 }
 
 .error-message {
-  background: #fef2f2;
-  border-left: 4px solid #ef4444;
+  background: var(--color-error-bg);
+  border-left: 4px solid var(--color-error);
   padding: 1rem;
   margin: 0;
 }
@@ -320,13 +320,13 @@ defineExpose({ handleError })
 }
 
 .error-icon {
-  color: #ef4444;
+  color: var(--color-error);
   flex-shrink: 0;
 }
 
 .error-content p {
   margin: 0;
-  color: #b91c1c;
+  color: var(--color-error-darker);
   font-size: 0.875rem;
   font-weight: 500;
 }

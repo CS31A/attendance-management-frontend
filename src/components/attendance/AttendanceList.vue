@@ -279,13 +279,13 @@ function clearFilters() {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-gray-400);
 }
 
 .search-input {
   width: 100%;
   padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -293,7 +293,7 @@ function clearFilters() {
 
 .search-input:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -301,14 +301,14 @@ function clearFilters() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f9fafb;
+  background: var(--color-gray-50);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-gray-200);
 }
 
 .filter-icon {
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .date-input,
@@ -316,7 +316,7 @@ function clearFilters() {
   border: none;
   background: transparent;
   font-size: 0.95rem;
-  color: #374151;
+  color: var(--color-gray-700);
   cursor: pointer;
 }
 
@@ -328,8 +328,8 @@ function clearFilters() {
 .btn-clear {
   padding: 0.75rem 1rem;
   background: transparent;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  color: var(--color-gray-500);
+  border: 1px solid var(--color-gray-300);
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -337,8 +337,8 @@ function clearFilters() {
 }
 
 .btn-clear:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
 }
 
 .results-info {
@@ -347,12 +347,12 @@ function clearFilters() {
   align-items: center;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .results-count {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .status-summary {
@@ -368,18 +368,18 @@ function clearFilters() {
 }
 
 .summary-badge.active {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--color-success-bg);
+  color: rgb(22, 101, 52);
 }
 
 .summary-badge.not-started {
-  background: #fef9c3;
-  color: #854d0e;
+  background: rgb(254, 249, 195);
+  color: rgb(133, 77, 14);
 }
 
 .summary-badge.ended {
-  background: #e5e7eb;
-  color: #4b5563;
+  background: var(--color-gray-200);
+  color: var(--color-gray-600);
 }
 
 /* Loading State */
@@ -389,7 +389,7 @@ function clearFilters() {
   align-items: center;
   justify-content: center;
   padding: 4rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .spinner {
@@ -412,19 +412,19 @@ function clearFilters() {
 }
 
 .empty-icon {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   margin-bottom: 1rem;
 }
 
 .empty-state h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
 }
 
 .empty-state p {
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
 }
 
@@ -451,8 +451,8 @@ function clearFilters() {
 }
 
 .session-card.is-active {
-  border-color: #10b981;
-  background: linear-gradient(135deg, #f0fdf4 0%, white 100%);
+  border-color: var(--color-success);
+  background: linear-gradient(135deg, var(--color-success-bg) 0%, white 100%);
 }
 
 .card-header {
@@ -471,12 +471,12 @@ function clearFilters() {
 .course-code {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #4f46e5;
+  color: var(--color-secondary);
 }
 
 .section-name {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .status-badge {
@@ -488,29 +488,29 @@ function clearFilters() {
 }
 
 .status-not-started {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--color-warning-bg);
+  color: rgb(146, 64, 14);
 }
 
 .status-active {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--color-success-bg);
+  color: rgb(6, 95, 70);
 }
 
 .status-ended {
-  background: #e5e7eb;
-  color: #4b5563;
+  background: var(--color-gray-200);
+  color: var(--color-gray-600);
 }
 
 .status-cancelled {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--color-error-lighter);
+  color: var(--color-error-darkest);
 }
 
 .course-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 1rem 0;
   line-height: 1.3;
 }
@@ -527,11 +527,11 @@ function clearFilters() {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .detail-item svg {
-  color: #9ca3af;
+  color: var(--color-gray-400);
 }
 
 .card-footer {
@@ -539,23 +539,23 @@ function clearFilters() {
   justify-content: space-between;
   align-items: center;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .instructor-name {
   font-size: 0.9rem;
-  color: #374151;
+  color: var(--color-gray-700);
   font-weight: 500;
 }
 
 .arrow-icon {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   transition: transform 0.2s;
 }
 
 .session-card:hover .arrow-icon {
   transform: translateX(4px);
-  color: #4f46e5;
+  color: var(--color-secondary);
 }
 
 /* Responsive */

@@ -102,7 +102,7 @@ function formatTime(dateString) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
-  border-left: 4px solid #e5e7eb;
+  border-left: 4px solid var(--color-gray-200);
 }
 
 .session-card:hover {
@@ -111,19 +111,19 @@ function formatTime(dateString) {
 }
 
 .session-card.session-active {
-  border-left-color: #10b981;
+  border-left-color: var(--color-success);
 }
 
 .session-card.session-not_started {
-  border-left-color: #3b82f6;
+  border-left-color: var(--color-primary-lightest);
 }
 
 .session-card.session-ended {
-  border-left-color: #6b7280;
+  border-left-color: var(--color-gray-500);
 }
 
 .session-card.session-cancelled {
-  border-left-color: #ef4444;
+  border-left-color: var(--color-error);
 }
 
 .session-header {
@@ -131,14 +131,14 @@ function formatTime(dateString) {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .session-date {
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .session-body {
@@ -148,13 +148,13 @@ function formatTime(dateString) {
 .session-title {
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-gray-800);
   margin: 0 0 4px 0;
 }
 
 .session-section {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0 0 16px 0;
 }
 
@@ -170,31 +170,31 @@ function formatTime(dateString) {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--color-gray-600);
 }
 
 .detail-item svg {
-  color: #6b7280;
+  color: var(--color-gray-500);
   flex-shrink: 0;
 }
 
 .session-description {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .session-description p {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   line-height: 1.5;
 }
 
 .session-footer {
   padding: 12px 16px;
-  background: #f0fdf4;
-  border-top: 1px solid #bbf7d0;
+  background: var(--color-success-bg);
+  border-top: 1px solid var(--color-success-light);
 }
 
 .active-indicator {
@@ -203,13 +203,13 @@ function formatTime(dateString) {
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .pulse {
   width: 8px;
   height: 8px;
-  background: #10b981;
+  background: var(--color-success);
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }

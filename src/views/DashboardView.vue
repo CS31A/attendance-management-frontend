@@ -150,27 +150,27 @@ const chartData = computed(() => ({
     {
       label: 'This Week',
       data: [30, 45, 35, 50, 45, 55, 50, 60, 55, 65, 60, 50, 55],
-      borderColor: '#ec4899',
+      borderColor: 'rgb(236, 72, 153)',
       backgroundColor: 'rgba(236, 72, 153, 0.1)',
       tension: 0.4,
       borderWidth: 3,
       pointRadius: 0,
       pointHoverRadius: 6,
-      pointHoverBackgroundColor: '#ec4899',
-      pointHoverBorderColor: '#fff',
+      pointHoverBackgroundColor: 'rgb(236, 72, 153)',
+      pointHoverBorderColor: 'var(--text-white)',
       pointHoverBorderWidth: 2,
     },
     {
       label: 'Last Week',
       data: [25, 35, 40, 35, 45, 40, 50, 45, 55, 50, 45, 35, 40],
-      borderColor: '#000000',
+      borderColor: 'var(--color-gray-900)',
       backgroundColor: 'rgba(0, 0, 0, 0.05)',
       tension: 0.4,
       borderWidth: 3,
       pointRadius: 0,
       pointHoverRadius: 6,
-      pointHoverBackgroundColor: '#000000',
-      pointHoverBorderColor: '#fff',
+      pointHoverBackgroundColor: 'var(--color-gray-900)',
+      pointHoverBorderColor: 'var(--text-white)',
       pointHoverBorderWidth: 2,
     },
   ],
@@ -209,10 +209,10 @@ const chartOptions = {
         font: {
           size: 12,
         },
-        color: '#999',
+        color: 'var(--color-gray-400)',
       },
       grid: {
-        color: '#f0f0f0',
+        color: 'var(--color-gray-100)',
         drawBorder: false,
       },
     },
@@ -226,7 +226,7 @@ const chartOptions = {
           size: 12,
           weight: '500',
         },
-        color: '#999',
+        color: 'var(--color-gray-400)',
       },
     },
   },
@@ -442,7 +442,7 @@ const _getUserInitials = computed(() => {
 <style scoped>
 .dashboard {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-slate-100);
   padding: 2rem;
 }
 
@@ -457,13 +457,13 @@ const _getUserInitials = computed(() => {
 .title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 0.25rem 0;
 }
 
 .subtitle {
   font-size: 0.95rem;
-  color: #666;
+  color: var(--color-gray-500);
   margin: 0;
 }
 
@@ -471,7 +471,7 @@ const _getUserInitials = computed(() => {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -507,7 +507,7 @@ const _getUserInitials = computed(() => {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  background: #1e3a8a;
+  background: var(--color-primary);
   color: white;
   border-radius: 50%;
   width: 20px;
@@ -555,7 +555,7 @@ const _getUserInitials = computed(() => {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #ef4444;
+  background: var(--color-error);
   color: white;
   border: none;
   font-size: 14px;
@@ -570,7 +570,7 @@ const _getUserInitials = computed(() => {
 }
 
 .remove-profile-btn:hover {
-  background: #dc2626;
+  background: var(--color-error-dark);
   transform: scale(1.1);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
@@ -601,7 +601,7 @@ const _getUserInitials = computed(() => {
 }
 
 .primary-card {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-lightest) 100%);
   color: white;
 }
 
@@ -650,7 +650,7 @@ const _getUserInitials = computed(() => {
 
 .progress-fill {
   height: 100%;
-  background: #1e3a8a;
+  background: var(--color-primary);
   border-radius: 10px;
   transition: width 0.6s ease;
 }
@@ -660,15 +660,15 @@ const _getUserInitials = computed(() => {
 }
 
 .progress-fill.green {
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .progress-fill.orange {
-  background: #f59e0b;
+  background: var(--color-warning);
 }
 
 .progress-fill.navy {
-  background: #1e3a8a;
+  background: var(--color-primary);
 }
 
 .progress-label {
@@ -696,7 +696,7 @@ const _getUserInitials = computed(() => {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
 }
 
 .time-filters {
@@ -708,7 +708,7 @@ const _getUserInitials = computed(() => {
   padding: 0.5rem 1.25rem;
   border: none;
   background: transparent;
-  color: #666;
+  color: var(--color-gray-500);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -717,12 +717,12 @@ const _getUserInitials = computed(() => {
 }
 
 .time-btn.active {
-  background: #1e3a8a;
+  background: var(--color-primary);
   color: white;
 }
 
 .time-btn:hover:not(.active) {
-  background: #f5f5f5;
+  background: var(--color-gray-100);
 }
 
 .chart-container {
@@ -735,7 +735,7 @@ const _getUserInitials = computed(() => {
   justify-content: center;
   gap: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-gray-100);
 }
 
 .legend-item {
@@ -743,7 +743,7 @@ const _getUserInitials = computed(() => {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 .legend-dot {
@@ -753,11 +753,11 @@ const _getUserInitials = computed(() => {
 }
 
 .legend-dot.pink {
-  background: #ec4899;
+  background: rgb(236, 72, 153);
 }
 
 .legend-dot.black {
-  background: #000000;
+  background: var(--color-gray-900);
 }
 
 /* Loading State */
@@ -776,8 +776,8 @@ const _getUserInitials = computed(() => {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #1e3a8a;
+  border: 4px solid var(--color-gray-100);
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -789,7 +789,7 @@ const _getUserInitials = computed(() => {
 }
 
 .loading-state p {
-  color: #666;
+  color: var(--color-gray-500);
   font-size: 1rem;
   margin: 0;
 }
@@ -808,11 +808,11 @@ const _getUserInitials = computed(() => {
 .unauthenticated h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
 }
 
 .unauthenticated p {
-  color: #666;
+  color: var(--color-gray-500);
   margin-bottom: 2rem;
   font-size: 1.1rem;
 }
@@ -820,7 +820,7 @@ const _getUserInitials = computed(() => {
 .login-link {
   display: inline-block;
   padding: 1rem 2rem;
-  background: #1e3a8a;
+  background: var(--color-primary);
   color: white;
   text-decoration: none;
   border-radius: 12px;
@@ -829,7 +829,7 @@ const _getUserInitials = computed(() => {
 }
 
 .login-link:hover {
-  background: #3b82f6;
+  background: var(--color-primary-lightest);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -869,7 +869,7 @@ const _getUserInitials = computed(() => {
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-gray-900);
   margin: 0 0 1.5rem 0;
 }
 
@@ -884,7 +884,7 @@ const _getUserInitials = computed(() => {
 .sessions-group-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-700);
   margin: 0 0 1rem 0;
 }
 

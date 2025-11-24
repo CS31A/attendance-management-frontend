@@ -101,7 +101,7 @@ function formatDate(value) {
 
 /* Table Header */
 .courses-table thead {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
 }
 
 .courses-table th {
@@ -136,12 +136,12 @@ function formatDate(value) {
 
 /* Table Body */
 .courses-table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
   transition: background-color 0.2s ease;
 }
 
 .courses-table tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: var(--color-slate-100);
 }
 
 .courses-table td {
@@ -151,7 +151,7 @@ function formatDate(value) {
 
 /* ID Column */
 .td-id {
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-family: monospace;
   font-weight: 600;
 }
@@ -159,7 +159,7 @@ function formatDate(value) {
 /* Name Column */
 .td-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 .name-cell {
@@ -169,7 +169,7 @@ function formatDate(value) {
 }
 
 .course-icon {
-  color: #1e3a8a;
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 
@@ -180,7 +180,7 @@ function formatDate(value) {
 /* Date Columns */
 .td-created, .td-updated {
   text-align: left;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .date-cell {
@@ -191,7 +191,7 @@ function formatDate(value) {
 }
 
 .date-icon {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   flex-shrink: 0;
 }
 
@@ -223,23 +223,23 @@ function formatDate(value) {
 }
 
 .btn-edit {
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: var(--color-info-bg);
+  color: var(--color-primary);
 }
 
 .btn-edit:hover {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--color-info-lighter);
+  color: var(--color-primary-light);
 }
 
 .btn-delete {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--color-error-bg);
+  color: var(--color-error-dark);
 }
 
 .btn-delete:hover {
-  background: #fecaca;
-  color: #b91c1c;
+  background: var(--color-error-light);
+  color: var(--color-error-darker);
 }
 
 .btn-icon {
@@ -263,13 +263,13 @@ function formatDate(value) {
   .td-name {
     position: sticky;
     left: 0;
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
     z-index: 10;
   }
 
   .td-name {
     background: white;
-    border-right: 2px solid #e5e7eb;
+    border-right: 2px solid var(--color-gray-200);
   }
 
   .th-name {
@@ -295,12 +295,12 @@ function formatDate(value) {
     position: sticky;
     right: 0;
     background: white;
-    border-left: 2px solid #e5e7eb;
+    border-left: 2px solid var(--color-gray-200);
     z-index: 5;
   }
 
   .th-actions {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
     color: white;
   }
 

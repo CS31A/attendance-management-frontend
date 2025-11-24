@@ -279,7 +279,7 @@ watch([searchQuery, selectedRole], () => {
 /* Main Container */
 .user-management {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-slate-100);
   padding: 2rem;
   position: relative;
   overflow-x: hidden;
@@ -324,14 +324,14 @@ watch([searchQuery, selectedRole], () => {
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1e3a8a;
+  color: var(--color-primary);
   margin: 0 0 0.5rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
 }
@@ -340,7 +340,7 @@ watch([searchQuery, selectedRole], () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #1e3a8a;
+  background: var(--color-primary);
   color: white;
   border: none;
   padding: 0.875rem 1.75rem;
@@ -353,7 +353,7 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .btn-add-user:hover {
-  background: #1e40af;
+  background: var(--color-primary-light);
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 15px 35px rgba(30, 58, 138, 0.4);
 }
@@ -378,19 +378,19 @@ watch([searchQuery, selectedRole], () => {
 .filter-select {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-gray-200);
   border-radius: 16px;
   font-size: 1rem;
   background: white;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   font-weight: 500;
-  color: #374151;
+  color: var(--color-gray-700);
   transition: all 0.3s ease;
 }
 .filter-select:focus {
   outline: none;
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
   transform: translateY(-2px);
 }
@@ -429,7 +429,7 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   padding: 1.5rem;
 }
 
@@ -473,12 +473,12 @@ watch([searchQuery, selectedRole], () => {
 
 .instructor-badge {
   background-color: rgba(59, 130, 246, 0.2);
-  color: #1e40af;
+  color: var(--color-primary-light);
 }
 
 .student-badge {
-  background-color: rgba(16, 185, 129, 0.2);
-  color: #065f46;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .card-body {
@@ -491,20 +491,20 @@ watch([searchQuery, selectedRole], () => {
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   padding: 0.75rem;
-  background: #f9fafb;
+  background: var(--color-gray-50);
   border-radius: 8px;
 }
 
 .info-icon {
   width: 1.125rem;
   height: 1.125rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   flex-shrink: 0;
 }
 
 .info-text {
   font-size: 0.9rem;
-  color: #4b5563;
+  color: var(--color-gray-600);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -517,7 +517,7 @@ watch([searchQuery, selectedRole], () => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: #ef4444;
+  background: var(--color-error);
   color: white;
   border: none;
   padding: 0.75rem 1rem;
@@ -530,7 +530,7 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .btn-delete:hover {
-  background: #dc2626;
+  background: var(--color-error-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
 }
@@ -553,7 +553,7 @@ watch([searchQuery, selectedRole], () => {
 .empty-icon-container {
   display: inline-flex;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   border-radius: 50%;
   margin-bottom: 1.5rem;
 }
@@ -567,13 +567,13 @@ watch([searchQuery, selectedRole], () => {
 .empty-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0 0 0.75rem 0;
 }
 
 .empty-description {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0 0 2rem 0;
   max-width: 400px;
   margin-left: auto;
@@ -584,7 +584,7 @@ watch([searchQuery, selectedRole], () => {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border: none;
   padding: 1rem 2rem;
@@ -622,7 +622,7 @@ watch([searchQuery, selectedRole], () => {
 
 .spinner {
   border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #1e3a8a;
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -641,7 +641,7 @@ watch([searchQuery, selectedRole], () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #ef4444;
+  background: var(--color-error);
   color: white;
   padding: 15px 25px;
   border-radius: 10px;
@@ -984,7 +984,7 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .pagination-text {
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -996,14 +996,14 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .items-per-page label {
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .items-select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   background: white;
@@ -1013,7 +1013,7 @@ watch([searchQuery, selectedRole], () => {
 
 .items-select:focus {
   outline: none;
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
@@ -1028,10 +1028,10 @@ watch([searchQuery, selectedRole], () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-slate-100);
+  border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
-  color: #475569;
+  color: var(--color-slate-600);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1039,8 +1039,8 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .pagination-btn:hover:not(.disabled) {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: var(--color-slate-200);
+  border-color: var(--color-slate-300);
 }
 
 .pagination-btn.disabled {
@@ -1065,10 +1065,10 @@ watch([searchQuery, selectedRole], () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-slate-100);
+  border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
-  color: #475569;
+  color: var(--color-slate-600);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1076,18 +1076,18 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .page-btn:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: var(--color-slate-200);
+  border-color: var(--color-slate-300);
 }
 
 .page-btn.active {
-  background: #1e3a8a;
-  border-color: #1e3a8a;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: white;
 }
 
 .page-ellipsis {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   font-size: 0.875rem;
   padding: 0 0.5rem;
 }

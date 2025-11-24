@@ -257,7 +257,7 @@ defineExpose({ handleError })
 
 /* Modal Header */
 .modal-header {
-  background: linear-gradient(to right, #1e3a8a, #1e40af);
+  background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
   padding: 0.875rem 1rem;
   border-radius: 0.75rem 0.75rem 0 0;
   display: flex;
@@ -306,7 +306,7 @@ defineExpose({ handleError })
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-gray-700);
   margin-bottom: 0.5rem;
 }
 
@@ -314,7 +314,7 @@ defineExpose({ handleError })
   display: block;
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-gray-200);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 0.2s ease;
@@ -322,13 +322,13 @@ defineExpose({ handleError })
 
 .form-group input:focus {
   outline: none;
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-group input:disabled {
-  background-color: #f9fafb;
-  color: #6b7280;
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-500);
   cursor: not-allowed;
 }
 
@@ -340,11 +340,11 @@ defineExpose({ handleError })
 }
 
 .helper-text.info {
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .helper-text.error {
-  color: #dc2626;
+  color: var(--color-error-dark);
 }
 
 /* Role Display Styles */
@@ -359,22 +359,22 @@ defineExpose({ handleError })
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 2px solid #e5e7eb;
-  color: #64748b;
+  background: var(--color-slate-100);
+  border: 2px solid var(--color-gray-200);
+  color: var(--color-slate-500);
   font-weight: 500;
 }
 
 .role-badge.instructor {
-  background: #eff6ff;
-  border-color: #1e3a8a;
-  color: #1e3a8a;
+  background: var(--color-info-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .role-badge.student {
-  background: #f0fdf4;
-  border-color: #16a34a;
-  color: #16a34a;
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
 }
 
 .role-icon {
@@ -393,12 +393,12 @@ defineExpose({ handleError })
   justify-content: flex-end;
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .btn-update {
   flex: 1;
-  background-color: #1e3a8a;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -410,7 +410,7 @@ defineExpose({ handleError })
 }
 
 .btn-update:hover:not(:disabled) {
-  background-color: #5568d3;
+  background-color: var(--color-secondary-light);
 }
 
 .btn-update:disabled {
@@ -419,8 +419,8 @@ defineExpose({ handleError })
 }
 
 .btn-cancel {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-700);
   border: none;
   border-radius: 0.5rem;
   padding: 0.75rem 1.25rem;
@@ -431,13 +431,13 @@ defineExpose({ handleError })
 }
 
 .btn-cancel:hover {
-  background-color: #d1d5db;
+  background-color: var(--color-gray-300);
 }
 
 /* Error Message */
 .error-message {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 0.5rem;
   padding: 1rem;
   margin: 1rem 1.25rem 0;
@@ -452,12 +452,12 @@ defineExpose({ handleError })
 .error-icon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #dc2626;
+  color: var(--color-error-dark);
   flex-shrink: 0;
 }
 
 .error-content p {
-  color: #dc2626;
+  color: var(--color-error-dark);
   font-weight: 500;
   margin: 0;
   font-size: 0.875rem;

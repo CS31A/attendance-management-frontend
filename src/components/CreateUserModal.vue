@@ -301,7 +301,7 @@ defineExpose({ handleError })
 }
 
 .modal-header {
-  background: linear-gradient(to right, #1e3a8a, #1e40af);
+  background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
   padding: 1rem 1.25rem;
   display: flex;
   justify-content: space-between;
@@ -351,7 +351,7 @@ defineExpose({ handleError })
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-gray-700);
   margin-bottom: 0.375rem;
 }
 
@@ -359,7 +359,7 @@ defineExpose({ handleError })
   display: block;
   width: 100%;
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   outline: none;
@@ -367,13 +367,13 @@ defineExpose({ handleError })
 }
 
 .form-group input:focus {
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-group input:disabled {
-  background-color: #f9fafb;
-  color: #6b7280;
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-500);
   cursor: not-allowed;
 }
 
@@ -381,7 +381,7 @@ defineExpose({ handleError })
   display: block;
   width: 100%;
   padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   outline: none;
@@ -391,7 +391,7 @@ defineExpose({ handleError })
 }
 
 .section-select:focus {
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -399,15 +399,15 @@ defineExpose({ handleError })
   display: block;
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .helper-text.info {
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .helper-text.error {
-  color: #ef4444;
+  color: var(--color-error);
   font-size: 0.75rem;
   margin-top: 0.25rem;
   font-weight: 500;
@@ -425,7 +425,7 @@ defineExpose({ handleError })
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 0.75rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--color-gray-200);
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -433,8 +433,8 @@ defineExpose({ handleError })
 }
 
 .role-option:hover {
-  border-color: #1e3a8a;
-  background: #f8f9ff;
+  border-color: var(--color-primary);
+  background: var(--color-bg-secondary);
   transform: translateY(-1px);
 }
 
@@ -449,13 +449,13 @@ defineExpose({ handleError })
 }
 
 .role-option.disabled:hover {
-  background: #f8fafc;
-  border-color: #e5e7eb;
+  background: var(--color-slate-100);
+  border-color: var(--color-gray-200);
   transform: none;
 }
 
 .role-selected {
-  border-color: #1e3a8a;
+  border-color: var(--color-primary);
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15); /* Reduced shadow */
 }
@@ -463,13 +463,13 @@ defineExpose({ handleError })
 .role-icon {
   width: 2rem;
   height: 2rem;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .role-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-700);
 }
 
 .actions {
@@ -480,7 +480,7 @@ defineExpose({ handleError })
 
 .btn-create {
   flex: 1;
-  background-color: #1e3a8a;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   padding: 0.625rem 1.25rem;
@@ -492,7 +492,7 @@ defineExpose({ handleError })
 }
 
 .btn-create:hover:not(:disabled) {
-  background-color: #5568d3;
+  background-color: var(--color-secondary-light);
 }
 
 .btn-create:disabled {
@@ -501,8 +501,8 @@ defineExpose({ handleError })
 }
 
 .btn-cancel {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-700);
   border: none;
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
@@ -513,12 +513,12 @@ defineExpose({ handleError })
 }
 
 .btn-cancel:hover {
-  background-color: #d1d5db;
+  background-color: var(--color-gray-300);
 }
 
 .error-message {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 0.5rem;
   padding: 0.75rem;
   margin: 1rem 1.25rem 0;
@@ -533,13 +533,13 @@ defineExpose({ handleError })
 .error-icon {
   width: 1rem;
   height: 1rem;
-  color: #ef4444;
+  color: var(--color-error);
   flex-shrink: 0;
 }
 
 .error-content p {
   margin: 0;
-  color: #dc2626;
+  color: var(--color-error-dark);
   font-size: 0.875rem;
   font-weight: 500;
 }

@@ -108,20 +108,20 @@ defineExpose({
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .modal-header h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--color-gray-400);
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.25rem;
@@ -132,8 +132,8 @@ defineExpose({
 }
 
 .close-btn:hover {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 .modal-body {
@@ -142,7 +142,7 @@ defineExpose({
 
 .modal-body p {
   margin: 0;
-  color: #4b5563;
+  color: var(--color-gray-600);
   line-height: 1.5;
 }
 
@@ -156,8 +156,8 @@ defineExpose({
 .btn-cancel {
   padding: 0.625rem 1.25rem;
   background-color: white;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
@@ -165,12 +165,12 @@ defineExpose({
 }
 
 .btn-cancel:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-gray-100);
 }
 
 .btn-confirm {
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border: none;
   border-radius: 0.5rem;

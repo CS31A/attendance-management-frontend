@@ -226,7 +226,7 @@ async function handleRestoreStudent(student) {
 /* Main Container */
 .student-management {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-slate-100);
   padding: 2rem;
   position: relative;
   overflow-x: hidden;
@@ -264,14 +264,14 @@ async function handleRestoreStudent(student) {
 
 .loading-spinner {
   text-align: center;
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #1e3a8a;
+  border: 4px solid var(--color-slate-200);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -288,10 +288,10 @@ async function handleRestoreStudent(student) {
   max-width: 600px;
   margin: 2rem auto;
   padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 12px;
-  color: #991b1b;
+  color: var(--color-error-darkest);
 }
 
 .error-content {
@@ -302,13 +302,13 @@ async function handleRestoreStudent(student) {
 }
 
 .error-icon {
-  color: #dc2626;
+  color: var(--color-error-dark);
 }
 
 .retry-btn {
   background: white;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  border: 1px solid var(--color-error-light);
+  color: var(--color-error-darkest);
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
   cursor: pointer;
@@ -318,7 +318,7 @@ async function handleRestoreStudent(student) {
 }
 
 .retry-btn:hover {
-  background: #fef2f2;
+  background: var(--color-error-bg);
 }
 
 /* Header */
@@ -343,14 +343,14 @@ async function handleRestoreStudent(student) {
 .page-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1e3a8a;
+  color: var(--color-primary);
   margin: 0 0 0.5rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
 }
@@ -360,7 +360,7 @@ async function handleRestoreStudent(student) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border-radius: 12px;
   font-weight: 600;
@@ -386,7 +386,7 @@ async function handleRestoreStudent(student) {
   padding: 1.5rem;
   margin-bottom: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-gray-200);
 }
 
 /* Tabs */
@@ -394,7 +394,7 @@ async function handleRestoreStudent(student) {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--color-gray-200);
   padding-bottom: 0.5rem;
 }
 
@@ -404,7 +404,7 @@ async function handleRestoreStudent(student) {
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   background: transparent;
-  color: #6b7280;
+  color: var(--color-gray-500);
   border-radius: 8px 8px 0 0;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -414,13 +414,13 @@ async function handleRestoreStudent(student) {
 }
 
 .tab:hover {
-  color: #1e3a8a;
-  background: #f1f5f9;
+  color: var(--color-primary);
+  background: var(--color-slate-100);
 }
 
 .tab.active {
-  color: #1e3a8a;
-  background: #eff6ff;
+  color: var(--color-primary);
+  background: var(--color-info-bg);
 }
 
 .tab.active::after {
@@ -430,7 +430,7 @@ async function handleRestoreStudent(student) {
   left: 0;
   right: 0;
   height: 2px;
-  background: #1e3a8a;
+  background: var(--color-primary);
 }
 
 .tab .badge {
@@ -440,15 +440,15 @@ async function handleRestoreStudent(student) {
   min-width: 1.5rem;
   height: 1.5rem;
   padding: 0 0.5rem;
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
 }
 
 .tab.active .badge {
-  background: #1e3a8a;
+  background: var(--color-primary);
   color: white;
 }
 
@@ -463,7 +463,7 @@ async function handleRestoreStudent(student) {
   padding: 4rem 2rem;
   text-align: center;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-gray-200);
 }
 
 .empty-icon-container {
@@ -472,24 +472,24 @@ async function handleRestoreStudent(student) {
   justify-content: center;
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  background: linear-gradient(135deg, var(--color-info-bg) 0%, var(--color-info-lighter) 100%);
   border-radius: 50%;
   margin-bottom: 1.5rem;
 }
 
 .empty-icon {
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-gray-800);
   margin-bottom: 0.5rem;
 }
 
 .empty-description {
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin-bottom: 2rem;
 }
 
@@ -498,7 +498,7 @@ async function handleRestoreStudent(student) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border-radius: 12px;
   font-weight: 500;
