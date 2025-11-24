@@ -1,11 +1,12 @@
 <script setup>
-import { AlertTriangle, Plus, Search, Users } from 'lucide-vue-next'
+import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
 const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
+const SearchBar = defineAsyncComponent(() => import('@/components/common/SearchBar.vue'))
 
 const userStore = useUserStore()
 
@@ -176,15 +177,10 @@ watch([searchQuery, selectedRole], () => {
 
       <!-- Filters Section -->
       <div class="filters-section">
-        <div class="search-box">
-          <Search class="search-icon" size="20" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search by name or email..."
-            class="search-input"
-          >
-        </div>
+        <SearchBar
+          v-model="searchQuery"
+          placeholder="Search by name or email..."
+        />
 
         <div class="role-filter">
           <select v-model="selectedRole" class="filter-select">
@@ -373,45 +369,6 @@ watch([searchQuery, selectedRole], () => {
   gap: 1rem;
   margin-bottom: 2rem;
   animation: slideInUp 0.8s ease-out;
-}
-
-.search-box {
-  flex: 1;
-  position: relative;
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.25rem;
-  height: 1.25rem;
-  color: #9ca3af;
-  pointer-events: none;
-  transition: color 0.2s ease;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 16px;
-  font-size: 1rem;
-  background: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
-  transform: translateY(-2px);
-}
-
-.search-input:focus + .search-icon {
-  color: #1e3a8a;
 }
 
 .role-filter {
