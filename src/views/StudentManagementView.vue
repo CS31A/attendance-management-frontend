@@ -549,5 +549,4 @@ async function handleRestoreStudent(student) {
     max-width: 100%;
   }
 }
-
 </style>

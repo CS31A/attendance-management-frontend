@@ -175,7 +175,6 @@ function getRoleIcon(role) {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  
   /* Pagination Styles */
   .pagination-section {
     background: var(--color-slate-100);

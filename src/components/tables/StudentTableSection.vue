@@ -254,7 +254,6 @@ function goToPage(page) {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-
 .table-wrapper {
   overflow-x: auto;
 }

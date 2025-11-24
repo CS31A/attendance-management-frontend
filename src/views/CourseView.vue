@@ -317,7 +317,6 @@ onMounted(async () => {
   font-size: 0.875rem;
 }
 
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

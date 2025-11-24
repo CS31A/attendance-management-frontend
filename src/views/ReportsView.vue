@@ -582,7 +582,6 @@ function setActiveTab(tab) {
   position: relative;
 }
 
-
 /* Responsive */
 @media (max-width: 1200px) {
   .stats-grid {
