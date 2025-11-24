@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, GraduationCap, User, X } from 'lucide-vue-next'
+import { AlertTriangle, GraduationCap, Shield, User, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -13,8 +13,8 @@ const authStore = useAuthStore()
 // Computed property to determine available roles based on current user's role
 const availableRoles = computed(() => {
   if (authStore.isAdmin) {
-    // Admins can create both instructors and students
-    return ['Instructor', 'Student']
+    // Admins can create admins, instructors and students
+    return ['Admin', 'Instructor', 'Student']
   }
   else if (authStore.isTeacher) {
     // Teachers can only create students
@@ -226,6 +226,15 @@ defineExpose({ handleError })
           <label>Role *</label>
           <div class="role-selector">
             <div
+              v-if="availableRoles.includes('Admin')"
+              class="role-option"
+              :class="{ 'role-selected': role === 'Admin' }"
+              @click="role = 'Admin'"
+            >
+              <Shield class="role-icon" size="32" />
+              <span class="role-name">Admin</span>
+            </div>
+            <div
               v-if="availableRoles.includes('Instructor')"
               class="role-option"
               :class="{ 'role-selected': role === 'Instructor' }"
@@ -415,7 +424,7 @@ defineExpose({ handleError })
 
 .role-selector {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
 
@@ -600,7 +609,7 @@ defineExpose({ handleError })
   }
 
   .role-selector {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
 
