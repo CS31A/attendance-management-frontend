@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, GraduationCap, Shield, User, X } from 'lucide-vue-next'
+import { AlertTriangle, Eye, EyeOff, GraduationCap, Shield, User, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -24,6 +24,7 @@ const availableRoles = computed(() => {
 })
 
 // Form data
+const username = ref('')
 const email = ref('')
 const firstName = ref('')
 const lastName = ref('')
@@ -33,13 +34,15 @@ const role = ref('')
 const sectionId = ref('')
 const errorMessage = ref('')
 const passwordMismatchError = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 // Computed properties
 const modalTitle = computed(() => 'Create User')
 const submitButtonText = computed(() => 'Create Account')
 
 const isFormValid = computed(() => {
-  if (!role.value || !availableRoles.value.includes(role.value))
+  if (!username.value?.trim() || !role.value || !availableRoles.value.includes(role.value))
     return false
   if (role.value === 'Student' && !sectionId.value?.trim())
     return false
@@ -90,6 +93,12 @@ function createUser() {
     return
   }
 
+  // Validate username
+  if (!username.value?.trim()) {
+    errorMessage.value = 'Please enter a username'
+    return
+  }
+
   // Password validation - required in create mode
   if (password.value !== confirmPassword.value) {
     errorMessage.value = 'Passwords do not match'
@@ -105,7 +114,7 @@ function createUser() {
 
   // Prepare data according to Scalar API documentation
   const userData = {
-    Username: email.value,
+    Username: username.value,
     Email: email.value,
     Password: password.value,
     RepeatedPassword: confirmPassword.value,
@@ -119,6 +128,7 @@ function createUser() {
   emit('create', userData)
 
   // Clear form after successful creation
+  username.value = ''
   email.value = ''
   firstName.value = ''
   lastName.value = ''
@@ -170,6 +180,18 @@ defineExpose({ handleError })
           <small class="helper-text info">Email address for login</small>
         </div>
 
+        <!-- Username Field -->
+        <div class="form-group">
+          <label>Username *</label>
+          <input
+            v-model="username"
+            type="text"
+            placeholder="Enter username"
+            required
+          >
+          <small class="helper-text info">Username for login</small>
+        </div>
+
         <!-- First Name Field -->
         <div class="form-group">
           <label>First Name *</label>
@@ -197,26 +219,48 @@ defineExpose({ handleError })
         <!-- Password Field -->
         <div class="form-group">
           <label>Password *</label>
-          <input
-            v-model="password"
-            type="password"
-            placeholder="Enter password"
-            required
-            minlength="6"
-          >
+          <div class="password-input-wrapper">
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Enter password"
+              required
+              minlength="6"
+            >
+            <button
+              type="button"
+              class="password-toggle"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              @click="showPassword = !showPassword"
+            >
+              <Eye v-if="!showPassword" size="18" />
+              <EyeOff v-else size="18" />
+            </button>
+          </div>
           <small class="helper-text info">Must be at least 6 characters</small>
         </div>
 
         <!-- Confirm Password Field -->
         <div class="form-group">
           <label>Confirm Password *</label>
-          <input
-            v-model="confirmPassword"
-            type="password"
-            placeholder="Confirm password"
-            required
-            minlength="6"
-          >
+          <div class="password-input-wrapper">
+            <input
+              v-model="confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirm password"
+              required
+              minlength="6"
+            >
+            <button
+              type="button"
+              class="password-toggle"
+              :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+              @click="showConfirmPassword = !showConfirmPassword"
+            >
+              <Eye v-if="!showConfirmPassword" size="18" />
+              <EyeOff v-else size="18" />
+            </button>
+          </div>
           <small class="helper-text info">Must match the password above</small>
           <small v-if="passwordMismatchError" class="helper-text error">{{ passwordMismatchError }}</small>
         </div>
@@ -384,6 +428,41 @@ defineExpose({ handleError })
   background-color: var(--color-gray-50);
   color: var(--color-gray-500);
   cursor: not-allowed;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.password-toggle:hover {
+  color: var(--color-primary);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.password-toggle:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .section-select {
