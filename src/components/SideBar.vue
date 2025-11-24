@@ -1,6 +1,7 @@
 <script setup>
-import { BarChart3, BookOpen, Calendar, CalendarClock, ClipboardCheck, GraduationCap, Grid3X3, Group, Library, UserCircle, Users } from 'lucide-vue-next'
+import { BarChart3, BookOpen, Calendar, CalendarClock, ClipboardCheck, GraduationCap, Grid3X3, Group, Library, LogOut, UserCircle, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
 // Props
@@ -11,9 +12,10 @@ const props = defineProps({
   },
 })
 
-const LogoutButton = defineAsyncComponent(() => import('@/components/LogoutButton.vue'))
+const ConfirmationModal = defineAsyncComponent(() => import('@/components/common/ConfirmationModal.vue'))
 
 const authStore = useAuthStore()
+const router = useRouter()
 const user = authStore.getUser
 
 // Computed property for user role with fallback
@@ -32,6 +34,8 @@ const isAdmin = computed(() => authStore.isAdmin)
 // Reactive data
 const isSidebarOpen = ref(false)
 const windowWidth = ref(window.innerWidth)
+const showLogoutConfirmation = ref(false)
+const isLoggingOut = ref(false)
 
 // Event listener functions
 let clickOutsideHandler
@@ -53,6 +57,26 @@ function toggleSidebar() {
 function closeSidebar() {
   isSidebarOpen.value = false
   dispatchSidebarToggle(false)
+}
+
+function initiateLogout() {
+  showLogoutConfirmation.value = true
+}
+
+async function handleLogout() {
+  showLogoutConfirmation.value = false
+  isLoggingOut.value = true
+  try {
+    await authStore.logout()
+    router.push('/login')
+  }
+  catch (error) {
+    console.error('Logout error:', error)
+    router.push('/login')
+  }
+  finally {
+    isLoggingOut.value = false
+  }
 }
 
 // Lifecycle hooks
@@ -186,9 +210,26 @@ onUnmounted(() => {
             <span class="user-role">{{ userRole }}</span>
           </div>
         </div>
-        <LogoutButton />
+        <button
+          class="logout-icon-btn"
+          :disabled="isLoggingOut"
+          title="Logout"
+          @click="initiateLogout"
+        >
+          <LogOut size="20" />
+        </button>
       </div>
     </aside>
+
+    <ConfirmationModal
+      :show="showLogoutConfirmation"
+      title="Confirm Logout"
+      message="Are you sure you want to logout?"
+      confirm-text="Logout"
+      cancel-text="Cancel"
+      @confirm="handleLogout"
+      @cancel="showLogoutConfirmation = false"
+    />
   </div>
 </template>
 
@@ -284,7 +325,7 @@ onUnmounted(() => {
 
 .nav-menu {
   flex: 1;
-  padding: var(--spacing-lg) 0;
+  padding: var(--spacing-md) 0;
   overflow-y: auto;
 }
 
@@ -299,13 +340,13 @@ onUnmounted(() => {
 }
 
 .nav-menu li {
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 4px 0;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 14px var(--spacing-md);
+  padding: 12px var(--spacing-md);
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   transition: all var(--transition-base);
@@ -350,25 +391,32 @@ onUnmounted(() => {
 }
 
 .sidebar-footer {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(0, 0, 0, 0.15);
   transition: padding var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .sidebar.collapsed .sidebar-footer {
-  padding: var(--spacing-md) var(--spacing-sm);
+  padding: var(--spacing-sm);
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 8px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all var(--transition-base);
+  flex: 1;
+  min-width: 0; /* Prevent overflow */
 }
 
 .sidebar.collapsed .user-info {
@@ -377,6 +425,7 @@ onUnmounted(() => {
   justify-content: center;
   background: transparent;
   border: none;
+  width: 100%;
 }
 
 .user-info:hover {
@@ -461,6 +510,43 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
+.logout-icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-white);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logout-icon-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--color-error-light);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.logout-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar.collapsed .logout-icon-btn {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: none;
+}
+
+.sidebar.collapsed .logout-icon-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .sidebar {
@@ -502,7 +588,7 @@ onUnmounted(() => {
   }
 
   .user-info {
-    padding: 11px;
+    padding: 8px;
   }
 
   .user-avatar {
@@ -558,11 +644,11 @@ onUnmounted(() => {
   }
 
   .sidebar-footer {
-    padding: 20px;
+    padding: 16px;
   }
 
   .user-info {
-    padding: 12px;
+    padding: 8px;
   }
 
   .user-avatar {
@@ -608,11 +694,11 @@ onUnmounted(() => {
   }
 
   .sidebar-footer {
-    padding: 18px;
+    padding: 14px;
   }
 
   .user-info {
-    padding: 10px;
+    padding: 6px;
   }
 
   .user-avatar {
@@ -658,11 +744,11 @@ onUnmounted(() => {
   }
 
   .sidebar-footer {
-    padding: 16px;
+    padding: 12px;
   }
 
   .user-info {
-    padding: 9px;
+    padding: 6px;
   }
 
   .user-avatar {
@@ -708,11 +794,11 @@ onUnmounted(() => {
   }
 
   .sidebar-footer {
-    padding: 14px;
+    padding: 10px;
   }
 
   .user-info {
-    padding: 8px;
+    padding: 4px;
   }
 
   .user-avatar {
@@ -758,44 +844,25 @@ onUnmounted(() => {
   }
 
   .nav-link {
-    padding: 16px 18px;
-    font-size: 15px;
+    padding: 14px 16px;
+    font-size: 14px;
   }
 
   .user-info {
-    padding: 14px;
+    padding: 8px;
   }
 
   .user-avatar {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
   }
 
   .user-name {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .user-role {
-    font-size: 13px;
+    font-size: 12px;
   }
-}
-
-/* Logout button styles */
-.sidebar-footer :deep(.logout-button) {
-  width: 100%;
-  margin-top: var(--spacing-md);
-  background: rgba(239, 68, 68, 0.2);
-  color: var(--color-error-light);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.sidebar-footer :deep(.logout-button:hover:not(:disabled)) {
-  background: rgba(239, 68, 68, 0.3);
-  color: var(--text-white);
-}
-
-.sidebar.collapsed .sidebar-footer :deep(.logout-button) {
-  padding: 8px;
-  font-size: 12px;
 }
 </style>
