@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
+import { AlertTriangle, Loader2, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 
@@ -136,16 +136,14 @@ watch([searchQuery, selectedRole], () => {
 
 <template>
   <div class="user-management">
-    <!-- Loading overlay -->
-    <div v-if="userStore.loading" class="loading-overlay">
-      <div class="loading-spinner">
-        <div class="spinner" />
-        <p>Loading...</p>
-      </div>
+    <!-- Loading State -->
+    <div v-if="userStore.loading && !userStore.users.length" class="loading-state">
+      <Loader2 class="spinner" size="40" />
+      <p>Loading users...</p>
     </div>
 
     <!-- Error message -->
-    <div v-if="userStore.error" class="error-message">
+    <div v-else-if="userStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ userStore.error }}</p>
@@ -155,8 +153,8 @@ watch([searchQuery, selectedRole], () => {
       </div>
     </div>
 
-    <!-- Main content - only show if we have users or no error -->
-    <div v-else-if="userStore.users.length > 0 || !userStore.error" class="container">
+    <!-- Main content -->
+    <div v-else class="container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -249,11 +247,6 @@ watch([searchQuery, selectedRole], () => {
           <span>Add Your First User</span>
         </button>
       </div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-else class="empty-state">
-      <p>No users found</p>
     </div>
 
     <!-- Create User Modal -->
@@ -596,38 +589,24 @@ watch([searchQuery, selectedRole], () => {
   box-shadow: 0 10px 15px rgba(30, 58, 138, 0.4);
 }
 
-/* Loading Overlay */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+/* Loading State */
+.loading-state {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  z-index: 1000;
-}
-
-.loading-spinner {
-  text-align: center;
-  color: white;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--color-gray-500);
 }
 
 .spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
   animation: spin 1s linear infinite;
-  margin: 0 auto 10px;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Error Message */
@@ -674,10 +653,6 @@ watch([searchQuery, selectedRole], () => {
 .retry-btn:hover {
   background: rgba(255, 255, 255, 0.3);
 }
-
-
-
-
 
 /* Responsive Design */
 @media (max-width: 1200px) {
