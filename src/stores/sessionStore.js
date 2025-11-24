@@ -118,6 +118,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
     loading.value = true
 
     try {
+      // Para sa skeleton loader simulation
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       const data = await apiFetchSessions()
       sessions.value = data
       return data

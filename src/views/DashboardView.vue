@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores/userStore'
 
 const SessionCard = defineAsyncComponent(() => import('@/components/sessions/SessionCard.vue'))
 const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
-const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
+const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -291,11 +291,37 @@ const _getUserInitials = computed(() => {
       </div>
 
       <!-- Loading State -->
-      <LoadingSpinner
-        v-if="isLoading"
-        type="inline"
-        message="Loading dashboard data..."
-      />
+      <div v-if="isLoading" class="loading-skeleton">
+        <!-- Header skeleton -->
+        <div class="dashboard-header">
+          <div>
+            <SkeletonLoader type="text" :height="40" :width="200" style="margin-bottom: 0.5rem;" />
+            <SkeletonLoader type="text" :height="20" :width="150" />
+          </div>
+        </div>
+
+        <!-- Stats Grid skeleton -->
+        <div class="stats-grid">
+          <div v-for="i in 4" :key="i" class="stat-card">
+            <div class="stat-content">
+              <SkeletonLoader type="text" :height="40" :width="80" style="margin-bottom: 0.5rem;" />
+              <SkeletonLoader type="text" :height="20" :width="120" style="margin-bottom: 1rem;" />
+              <SkeletonLoader type="rectangle" :height="10" style="width: 100%;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Chart skeleton -->
+        <div class="performance-card">
+          <div class="performance-header">
+            <SkeletonLoader type="text" :height="30" :width="150" />
+            <div class="time-filters">
+              <SkeletonLoader type="rectangle" :height="35" :width="200" />
+            </div>
+          </div>
+          <SkeletonLoader type="rectangle" :height="300" style="width: 100%;" />
+        </div>
+      </div>
 
       <!-- Stats Grid -->
       <div v-if="!isLoading" class="stats-grid">

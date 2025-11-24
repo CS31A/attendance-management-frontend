@@ -2,12 +2,12 @@
 import { AlertTriangle, GraduationCap, Plus, Trash2, UserPlus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { useStudentStore } from '@/stores/studentStore'
 
 const StudentModal = defineAsyncComponent(() => import('@/components/StudentModal.vue'))
 const StudentTableSection = defineAsyncComponent(() => import('@/components/tables/StudentTableSection.vue'))
 const SearchBar = defineAsyncComponent(() => import('@/components/common/SearchBar.vue'))
-const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const router = useRouter()
 const studentStore = useStudentStore()
@@ -106,15 +106,37 @@ async function handleRestoreStudent(student) {
 
 <template>
   <div class="student-management">
-    <!-- Loading overlay -->
-    <LoadingSpinner
-      v-if="studentStore.loading"
-      type="overlay"
-      full-screen
-    />
+    <!-- Loading State -->
+    <div v-if="studentStore.loading && !studentStore.students.length" class="loading-skeleton">
+      <!-- Header skeleton -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-text">
+            <SkeletonLoader type="text" :height="40" :width="300" style="margin-bottom: 0.5rem;" />
+            <SkeletonLoader type="text" :height="20" :width="200" />
+          </div>
+          <SkeletonLoader type="rectangle" :height="50" :width="250" />
+        </div>
+      </div>
+
+      <!-- Controls skeleton -->
+      <div class="controls-section">
+        <div class="tabs" style="border: none; margin-bottom: 0;">
+          <SkeletonLoader type="rectangle" :height="40" :width="150" style="margin-right: 1rem;" />
+          <SkeletonLoader type="rectangle" :height="40" :width="150" />
+        </div>
+        <SkeletonLoader type="rectangle" :height="50" style="width: 100%; max-width: 500px; margin-top: 1rem;" />
+      </div>
+
+      <!-- Table skeleton -->
+      <div class="skeleton-table">
+        <SkeletonLoader type="rectangle" :height="50" style="margin-bottom: 1rem; width: 100%;" />
+        <SkeletonLoader v-for="i in 5" :key="i" type="rectangle" :height="70" style="margin-bottom: 0.5rem; width: 100%;" />
+      </div>
+    </div>
 
     <!-- Error message -->
-    <div v-if="studentStore.error" class="error-message">
+    <div v-else-if="studentStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ studentStore.error }}</p>

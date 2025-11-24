@@ -20,6 +20,9 @@ export const useCourseStore = defineStore('course', () => {
     loading.value = true
     error.value = null
     try {
+      // Para sa skeleton loader simulation
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       const response = await courseApi.getAllCourses()
       courses.value = response.data
     }

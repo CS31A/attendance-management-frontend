@@ -2,11 +2,11 @@
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useSectionStore } from '@/stores/sectionStore.js'
+import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
-const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const sectionsStore = useSectionStore()
 const showModal = ref(false)
@@ -129,15 +129,30 @@ onMounted(async () => {
 
 <template>
   <div class="section-management">
-    <!-- Loading overlay -->
-    <LoadingSpinner
-      v-if="sectionsStore.loading"
-      type="overlay"
-      full-screen
-    />
+    <!-- Skeleton loader when loading -->
+    <template v-if="sectionsStore.loading">
+      <div class="container">
+        <!-- Header skeleton -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-text">
+              <SkeletonLoader type="text" :height="40" :width="300" style="margin-bottom: 0.5rem;" />
+              <SkeletonLoader type="text" :height="20" :width="200" />
+            </div>
+            <SkeletonLoader type="rectangle" :height="50" :width="150" />
+          </div>
+        </div>
+
+        <!-- Table skeleton -->
+        <div class="skeleton-table">
+          <SkeletonLoader type="rectangle" :height="50" style="margin-bottom: 1rem; width: 100%;" />
+          <SkeletonLoader v-for="i in 5" :key="i" type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+        </div>
+      </div>
+    </template>
 
     <!-- Error message -->
-    <div v-if="sectionsStore.error" class="error-message">
+    <div v-else-if="sectionsStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ sectionsStore.error }}</p>
@@ -310,5 +325,13 @@ onMounted(async () => {
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
+}
+
+/* Skeleton Loading */
+.skeleton-table {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 </style>

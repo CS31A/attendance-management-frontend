@@ -9,7 +9,7 @@ const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions
 const SessionTable = defineAsyncComponent(() => import('@/components/sessions/SessionTable.vue'))
 const StartSessionModal = defineAsyncComponent(() => import('@/components/sessions/StartSessionModal.vue'))
 const UpdateRoomModal = defineAsyncComponent(() => import('@/components/sessions/UpdateRoomModal.vue'))
-const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
+const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
 const sessionStore = useSessionStore()
 
@@ -237,11 +237,10 @@ onMounted(() => {
     </div>
 
     <!-- Loading State -->
-    <LoadingSpinner
-      v-if="sessionStore.loading && !sessions.length"
-      type="inline"
-      message="Loading sessions..."
-    />
+    <div v-if="sessionStore.loading && !sessions.length" class="loading-skeleton">
+      <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 1rem; width: 100%;" />
+      <SkeletonLoader v-for="i in 5" :key="i" type="rectangle" :height="80" style="margin-bottom: 1rem; width: 100%;" />
+    </div>
 
     <!-- Error State -->
     <div v-else-if="errorMessage" class="error-state">

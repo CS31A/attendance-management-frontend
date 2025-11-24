@@ -5,7 +5,7 @@ import { useSubjectStore } from '@/stores/subjectStore.js'
 
 const SubjectModal = defineAsyncComponent(() => import('@/components/SubjectModal.vue'))
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
-const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
+const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
 const subjectStore = useSubjectStore()
 const showModal = ref(false)
@@ -116,15 +116,30 @@ onMounted(async () => {
 
 <template>
   <div class="subject-management">
-    <!-- Loading overlay -->
-    <LoadingSpinner
-      v-if="subjectStore.loading"
-      type="overlay"
-      full-screen
-    />
+    <!-- Loading State -->
+    <template v-if="subjectStore.loading">
+      <div class="container">
+        <!-- Header skeleton -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-text">
+              <SkeletonLoader type="text" :height="40" :width="300" style="margin-bottom: 0.5rem;" />
+              <SkeletonLoader type="text" :height="20" :width="200" />
+            </div>
+            <SkeletonLoader type="rectangle" :height="50" :width="150" />
+          </div>
+        </div>
+
+        <!-- Table skeleton -->
+        <div class="skeleton-table">
+          <SkeletonLoader type="rectangle" :height="50" style="margin-bottom: 1rem; width: 100%;" />
+          <SkeletonLoader v-for="i in 5" :key="i" type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+        </div>
+      </div>
+    </template>
 
     <!-- Error message -->
-    <div v-if="subjectStore.error" class="error-message">
+    <div v-else-if="subjectStore.error" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ subjectStore.error }}</p>

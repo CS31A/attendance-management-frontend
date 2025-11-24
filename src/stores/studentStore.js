@@ -20,6 +20,9 @@ export const useStudentStore = defineStore('students', () => {
     loading.value = true
     error.value = null
     try {
+      // Para sa skeleton loader simulation
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       const response = await studentsApi.getAllStudents()
       students.value = response.data
       return response.data

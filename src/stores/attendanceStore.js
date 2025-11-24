@@ -126,6 +126,9 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     loading.value = true
 
     try {
+      // Para sa skeleton loader simulation
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       const data = await apiFetchAllAttendance(params)
       attendanceRecords.value = data
       return data
