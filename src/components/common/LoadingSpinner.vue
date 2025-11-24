@@ -1,6 +1,6 @@
 <script setup>
 import { Loader2 } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const props = defineProps({
   type: {
@@ -25,6 +25,26 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  delay: {
+    type: Number,
+    default: 200,
+  },
+})
+
+const show = ref(props.delay === 0)
+let timeoutId = null
+
+onMounted(() => {
+  if (props.delay > 0) {
+    timeoutId = setTimeout(() => {
+      show.value = true
+    }, props.delay)
+  }
+})
+
+onUnmounted(() => {
+  if (timeoutId)
+    clearTimeout(timeoutId)
 })
 
 const spinnerSize = computed(() => {
@@ -40,7 +60,7 @@ const spinnerSize = computed(() => {
 <template>
   <!-- Overlay type -->
   <div
-    v-if="type === 'overlay'"
+    v-if="show && type === 'overlay'"
     class="loading-overlay"
     :class="{ 'full-screen': fullScreen, 'with-blur': blur }"
     role="status"
@@ -56,7 +76,7 @@ const spinnerSize = computed(() => {
 
   <!-- Inline type -->
   <div
-    v-else-if="type === 'inline'"
+    v-else-if="show && type === 'inline'"
     class="loading-inline"
     role="status"
     aria-label="Loading"
@@ -69,7 +89,7 @@ const spinnerSize = computed(() => {
 
   <!-- Spinner-only type -->
   <Loader2
-    v-else
+    v-else-if="show"
     :size="spinnerSize"
     class="spinner"
     role="status"
@@ -92,6 +112,7 @@ const spinnerSize = computed(() => {
 
 .loading-overlay.full-screen {
   position: fixed;
+  z-index: 9999;
 }
 
 .loading-overlay.with-blur {
