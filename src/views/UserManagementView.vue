@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { useUserStore } from '@/stores/userStore'
 
@@ -181,9 +182,13 @@ watch([searchQuery, selectedRole], () => {
       <div class="error-content">
         <AlertTriangle class="error-icon" size="24" />
         <p>{{ userStore.error }}</p>
-        <button class="retry-btn" @click="userStore.fetchUsers">
+        <BaseButton
+          variant="ghost"
+          size="small"
+          @click="userStore.fetchUsers"
+        >
           Retry
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -200,10 +205,13 @@ watch([searchQuery, selectedRole], () => {
               Manage teachers and students
             </p>
           </div>
-          <button class="btn-add-user" @click="showAddUser = true">
-            <Plus class="icon" size="20" />
-            <span>Add User</span>
-          </button>
+          <BaseButton
+            variant="primary"
+            :icon="Plus"
+            @click="showAddUser = true"
+          >
+            Add User
+          </BaseButton>
         </div>
       </div>
 
@@ -276,10 +284,15 @@ watch([searchQuery, selectedRole], () => {
         <p class="empty-description">
           {{ searchQuery ? 'Try adjusting your search or filters' : 'Get started by adding your first user' }}
         </p>
-        <button v-if="!searchQuery" class="btn-empty-action" @click="showAddUser = true">
-          <Plus class="icon" size="20" />
-          <span>Add Your First User</span>
-        </button>
+        <BaseButton
+          v-if="!searchQuery"
+          variant="primary"
+          size="large"
+          :icon="Plus"
+          @click="showAddUser = true"
+        >
+          Add Your First User
+        </BaseButton>
       </div>
     </div>
 
@@ -375,33 +388,6 @@ watch([searchQuery, selectedRole], () => {
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
-}
-
-.btn-add-user {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-add-user:hover {
-  background: var(--color-primary-light);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(30, 58, 138, 0.4);
-}
-
-.icon {
-  width: 1.25rem;
-  height: 1.25rem;
 }
 
 /* Filters Section */
@@ -617,27 +603,6 @@ watch([searchQuery, selectedRole], () => {
   margin-right: auto;
 }
 
-.btn-empty-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(30, 58, 138, 0.3);
-}
-
-.btn-empty-action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px rgba(30, 58, 138, 0.4);
-}
-
 /* Error Message */
 .error-message {
   position: fixed;
@@ -665,22 +630,6 @@ watch([searchQuery, selectedRole], () => {
   width: 24px;
   height: 24px;
   color: white;
-}
-
-.retry-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid white;
-  padding: 8px 15px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.retry-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Responsive Design */
@@ -718,11 +667,6 @@ watch([searchQuery, selectedRole], () => {
     gap: 1rem;
   }
 
-  .btn-add-user {
-    justify-content: center;
-    width: 100%;
-  }
-
   .filters-section {
     flex-direction: column;
     gap: 1rem;
@@ -749,11 +693,6 @@ watch([searchQuery, selectedRole], () => {
 
   .page-subtitle {
     font-size: 0.95rem;
-  }
-
-  .btn-add-user {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
   }
 
   .search-input {
@@ -806,11 +745,6 @@ watch([searchQuery, selectedRole], () => {
     font-size: 0.9rem;
   }
 
-  .btn-add-user {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.85rem;
-  }
-
   .filters-section {
     margin-bottom: 1.5rem;
   }
@@ -852,11 +786,6 @@ watch([searchQuery, selectedRole], () => {
   .empty-description {
     font-size: 0.9rem;
   }
-
-  .btn-empty-action {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -880,11 +809,6 @@ watch([searchQuery, selectedRole], () => {
 
   .page-subtitle {
     font-size: 0.85rem;
-  }
-
-  .btn-add-user {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
   }
 
   .filters-section {
@@ -916,11 +840,6 @@ watch([searchQuery, selectedRole], () => {
   }
 
   .empty-description {
-    font-size: 0.85rem;
-  }
-
-  .btn-empty-action {
-    padding: 0.625rem 1.25rem;
     font-size: 0.85rem;
   }
 }
