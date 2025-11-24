@@ -1,8 +1,8 @@
 <script setup>
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import Toast from '@/components/common/Toast.vue'
 import { useSessionStore } from '@/stores/sessionStore'
-import { showError, showSuccess } from '@/utils/toast'
 
 const CreateSessionModal = defineAsyncComponent(() => import('@/components/sessions/CreateSessionModal.vue'))
 const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions/EndSessionModal.vue'))
@@ -62,6 +62,25 @@ const emptyStateMessage = computed(() => {
   return messages[currentFilter.value] || 'No sessions to display'
 })
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 // Methods
 async function loadSessions() {
   errorMessage.value = ''
@@ -71,7 +90,7 @@ async function loadSessions() {
   catch (error) {
     console.error('Failed to load sessions:', error)
     const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -81,12 +100,12 @@ async function handleCreateSession(payload) {
   try {
     await sessionStore.createSession(payload)
     showCreateModal.value = false
-    showSuccess('Session created successfully!')
+    showToast('Session created successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to create session:', error)
     const message = error.response?.data?.message || 'Failed to create session. Please try again.'
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -102,7 +121,7 @@ async function handleConfirmStart(payload) {
     await sessionStore.startSession(selectedSession.value.id, payload)
     showStartModal.value = false
     selectedSession.value = null
-    showSuccess('Session started successfully!')
+    showToast('Session started successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to start session:', error)
@@ -113,7 +132,7 @@ async function handleConfirmStart(payload) {
     else if (error.response?.status === 400) {
       message = error.response?.data?.message || 'Cannot start this session. Check the session status.'
     }
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -129,7 +148,7 @@ async function handleConfirmEnd(payload) {
     await sessionStore.endSession(selectedSession.value.id, payload)
     showEndModal.value = false
     selectedSession.value = null
-    showSuccess('Session ended successfully!')
+    showToast('Session ended successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to end session:', error)
@@ -140,7 +159,7 @@ async function handleConfirmEnd(payload) {
     else if (error.response?.status === 400) {
       message = error.response?.data?.message || 'Cannot end this session. Check the session status.'
     }
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -153,7 +172,7 @@ async function handleDeleteSession(sessionId) {
   errorMessage.value = ''
   try {
     await sessionStore.deleteSession(sessionId)
-    showSuccess('Session deleted successfully!')
+    showToast('Session deleted successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to delete session:', error)
@@ -164,7 +183,7 @@ async function handleDeleteSession(sessionId) {
     else if (error.response?.status === 400) {
       message = error.response?.data?.message || 'Cannot delete this session. Only sessions that have not started can be deleted.'
     }
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -180,7 +199,7 @@ async function handleConfirmUpdateRoom(payload) {
     await sessionStore.updateSessionRoom(selectedSession.value.id, payload)
     showUpdateRoomModal.value = false
     selectedSession.value = null
-    showSuccess('Session room updated successfully!')
+    showToast('Session room updated successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to update room:', error)
@@ -191,7 +210,7 @@ async function handleConfirmUpdateRoom(payload) {
     else if (error.response?.status === 400) {
       message = error.response?.data?.message || 'Cannot update room. Check the session status.'
     }
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -304,6 +323,15 @@ onMounted(() => {
       :session="selectedSession"
       @update="handleConfirmUpdateRoom"
       @cancel="showUpdateRoomModal = false"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

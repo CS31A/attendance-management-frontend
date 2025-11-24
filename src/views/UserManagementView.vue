@@ -1,8 +1,9 @@
 <script setup>
 import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
+import Toast from '@/components/common/Toast.vue'
 import { useUserStore } from '@/stores/userStore'
 
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
@@ -68,10 +69,30 @@ const totalUsers = computed(() =>
   filteredUsers.value.length,
 )
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 async function handleCreateUser(userData) {
   const result = await userStore.createUser(userData)
   if (result.success) {
     showAddUser.value = false
+    showToast('User created successfully', 'success')
   }
   else {
     createModal.value?.handleError(result.error)
@@ -83,6 +104,7 @@ async function handleUpdateUser(updatedUserData) {
   if (result.success) {
     showEditUser.value = false
     editingUser.value = null
+    showToast('User updated successfully', 'success')
   }
   else {
     editModal.value?.handleError(result.error)
@@ -103,8 +125,11 @@ async function deleteUser(id) {
   const userToDelete = userStore.users.find(u => u.id === id)
   const result = await userStore.deleteUser(id, userToDelete.role)
 
-  if (!result.success) {
-    console.error('Delete error:', result.error)
+  if (result.success) {
+    showToast('User deleted successfully', 'success')
+  }
+  else {
+    showToast(result.error || 'Failed to delete user', 'error')
   }
 }
 
@@ -311,6 +336,15 @@ watch([searchQuery, selectedRole], () => {
       :user="editingUser"
       @update="handleUpdateUser"
       @cancel="handleCancel"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

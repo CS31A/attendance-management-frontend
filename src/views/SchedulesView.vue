@@ -1,9 +1,10 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
+import Toast from '@/components/common/Toast.vue'
 import { useScheduleStore } from '@/stores/scheduleStore.js'
 
 const ScheduleModal = defineAsyncComponent(() => import('@/components/schedules/ScheduleModal.vue'))
@@ -87,15 +88,36 @@ function closeModal() {
   selectedSchedule.value = null
 }
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 async function handleSaveSchedule(scheduleData) {
   try {
     if (selectedSchedule.value) {
       // Edit mode
       await scheduleStore.updateSchedule(selectedSchedule.value.id, scheduleData)
+      showToast('Schedule updated successfully', 'success')
     }
     else {
       // Create mode
       await scheduleStore.createSchedule(scheduleData)
+      showToast('Schedule created successfully', 'success')
     }
     closeModal()
   }
@@ -125,6 +147,7 @@ async function handleConfirm() {
   if (scheduleToDelete.value) {
     try {
       await scheduleStore.deleteSchedule(scheduleToDelete.value)
+      showToast('Schedule deleted successfully', 'success')
       // Adjust pagination if needed
       if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
@@ -132,11 +155,7 @@ async function handleConfirm() {
       scheduleToDelete.value = null
     }
     catch (error) {
-      alertModalConfig.value = {
-        title: 'Error',
-        message: `Failed to delete schedule: ${error.response?.data?.message || error.message}`,
-      }
-      showAlertDialog.value = true
+      showToast(`Failed to delete schedule: ${error.response?.data?.message || error.message}`, 'error')
     }
     finally {
       showConfirmModal.value = false
@@ -259,6 +278,15 @@ onMounted(async () => {
       :title="alertModalConfig.title"
       :message="alertModalConfig.message"
       @confirm="showAlertDialog = false"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

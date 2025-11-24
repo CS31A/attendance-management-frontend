@@ -1,9 +1,10 @@
 <script setup>
 import { AlertTriangle, GraduationCap, Plus, Trash2, UserPlus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
+import Toast from '@/components/common/Toast.vue'
 import { useStudentStore } from '@/stores/studentStore'
 
 const StudentModal = defineAsyncComponent(() => import('@/components/StudentModal.vue'))
@@ -72,10 +73,30 @@ function navigateToUserManagement() {
   router.push('/users')
 }
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 async function handleUpdateStudent(studentData) {
   try {
     await studentStore.updateStudent(editingStudent.value.id, studentData)
     closeModal()
+    showToast('Student updated successfully', 'success')
   }
   catch (error) {
     modalError.value = error.response?.data?.message || 'Failed to update student'
@@ -86,9 +107,10 @@ async function handleDeleteStudent(student) {
   if (confirm(`Are you sure you want to delete ${student.firstName} ${student.lastName}? This action can be undone by restoring the student.`)) {
     try {
       await studentStore.deleteStudent(student.id)
+      showToast('Student deleted successfully', 'success')
     }
     catch (error) {
-      alert(`Failed to delete student: ${error.response?.data?.message || error.message}`)
+      showToast(`Failed to delete student: ${error.response?.data?.message || error.message}`, 'error')
     }
   }
 }
@@ -97,9 +119,10 @@ async function handleRestoreStudent(student) {
   if (confirm(`Are you sure you want to restore ${student.firstName} ${student.lastName}?`)) {
     try {
       await studentStore.restoreStudent(student.id)
+      showToast('Student restored successfully', 'success')
     }
     catch (error) {
-      alert(`Failed to restore student: ${error.response?.data?.message || error.message}`)
+      showToast(`Failed to restore student: ${error.response?.data?.message || error.message}`, 'error')
     }
   }
 }
@@ -237,6 +260,15 @@ async function handleRestoreStudent(student) {
       :error="modalError"
       @close="closeModal"
       @submit="handleUpdateStudent"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

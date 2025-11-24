@@ -1,10 +1,10 @@
 <script setup>
 import { AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import Toast from '@/components/common/Toast.vue'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { useSessionStore } from '@/stores/sessionStore'
-import { showError, showSuccess } from '@/utils/toast'
 
 const AttendanceList = defineAsyncComponent(() => import('@/components/attendance/AttendanceList.vue'))
 const AttendanceRecord = defineAsyncComponent(() => import('@/components/attendance/AttendanceRecord.vue'))
@@ -39,6 +39,25 @@ watch(sessionId, async (newSessionId) => {
   }
 }, { immediate: true })
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 // Methods
 async function loadSessions() {
   errorMessage.value = ''
@@ -48,7 +67,7 @@ async function loadSessions() {
   catch (error) {
     console.error('Failed to load sessions:', error)
     const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -65,7 +84,7 @@ async function loadSessionDetails(sessionId) {
   catch (error) {
     console.error('Failed to load session details:', error)
     const message = error.response?.data?.message || 'Failed to load session details. Please try again.'
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -85,7 +104,7 @@ async function handleSubmitAttendance(attendanceData) {
       sessionId: selectedSession.value.id,
       records: attendanceData,
     })
-    showSuccess('Attendance recorded successfully!')
+    showToast('Attendance recorded successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to submit attendance:', error)
@@ -96,7 +115,7 @@ async function handleSubmitAttendance(attendanceData) {
     else if (error.response?.status === 400) {
       message = error.response?.data?.message || 'Invalid attendance data.'
     }
-    showError(message)
+    showToast(message, 'error')
     errorMessage.value = message
   }
 }
@@ -165,6 +184,15 @@ onMounted(() => {
       :stats="attendanceStore.sessionStats"
       @submit="handleSubmitAttendance"
       @back="handleBackToList"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

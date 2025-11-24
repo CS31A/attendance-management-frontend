@@ -1,7 +1,8 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import Toast from '@/components/common/Toast.vue'
 import { useSubjectStore } from '@/stores/subjectStore.js'
 
 const SubjectModal = defineAsyncComponent(() => import('@/components/SubjectModal.vue'))
@@ -71,15 +72,36 @@ function closeModal() {
   selectedSubject.value = null
 }
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 async function handleSaveSubject(subjectData) {
   try {
     if (selectedSubject.value) {
       // Edit mode
       await subjectStore.updateSubject(selectedSubject.value.id, subjectData)
+      showToast('Subject updated successfully', 'success')
     }
     else {
       // Create mode
       await subjectStore.createSubject(subjectData)
+      showToast('Subject created successfully', 'success')
     }
     closeModal()
   }
@@ -94,13 +116,14 @@ async function handleDeleteSubject(subjectId) {
   if (confirm('Are you sure you want to delete this subject? This action cannot be undone.')) {
     try {
       await subjectStore.deleteSubject(subjectId)
+      showToast('Subject deleted successfully', 'success')
       // Adjust pagination if needed
       if (paginatedSubjects.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
     }
     catch (error) {
-      alert(`Failed to delete subject: ${error.response?.data?.message || error.message}`)
+      showToast(`Failed to delete subject: ${error.response?.data?.message || error.message}`, 'error')
     }
   }
 }
@@ -195,6 +218,15 @@ onMounted(async () => {
       :subject="selectedSubject"
       @save="handleSaveSubject"
       @cancel="closeModal"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

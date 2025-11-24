@@ -1,7 +1,8 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import Toast from '@/components/common/Toast.vue'
 import { useCourseStore } from '@/stores/courseStore.js'
 
 const CourseModal = defineAsyncComponent(() => import('@/components/CourseModal.vue'))
@@ -71,15 +72,36 @@ function closeModal() {
   selectedCourse.value = null
 }
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 async function handleSaveCourse(courseData) {
   try {
     if (selectedCourse.value) {
       // Edit mode
       await courseStore.updateCourse(selectedCourse.value.id, courseData)
+      showToast('Course updated successfully', 'success')
     }
     else {
       // Create mode
       await courseStore.createCourse(courseData)
+      showToast('Course created successfully', 'success')
     }
     closeModal()
   }
@@ -94,13 +116,14 @@ async function handleDeleteCourse(courseId) {
   if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
     try {
       await courseStore.deleteCourse(courseId)
+      showToast('Course deleted successfully', 'success')
       // Adjust pagination if needed
       if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
     }
     catch (error) {
-      alert(`Failed to delete course: ${error.response?.data?.message || error.message}`)
+      showToast(`Failed to delete course: ${error.response?.data?.message || error.message}`, 'error')
     }
   }
 }
@@ -195,6 +218,15 @@ onMounted(async () => {
       :course="selectedCourse"
       @save="handleSaveCourse"
       @cancel="closeModal"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>

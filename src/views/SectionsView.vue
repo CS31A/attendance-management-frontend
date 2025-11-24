@@ -1,8 +1,9 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
+import Toast from '@/components/common/Toast.vue'
 import { useSectionStore } from '@/stores/sectionStore.js'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
@@ -84,15 +85,36 @@ function closeEnrollmentModal() {
   selectedEnrollmentSection.value = null
 }
 
+// Toast state and helpers
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success',
+  duration: 3000,
+})
+
+function showToast(message, type = 'success', duration = 3000) {
+  toast.message = message
+  toast.type = type
+  toast.duration = duration
+  toast.show = true
+}
+
+function closeToast() {
+  toast.show = false
+}
+
 async function handleSaveSection(sectionData) {
   try {
     if (selectedSection.value) {
       // Edit mode
       await sectionsStore.updateSection(selectedSection.value.id, sectionData)
+      showToast('Section updated successfully', 'success')
     }
     else {
       // Create mode
       await sectionsStore.addSection(sectionData)
+      showToast('Section created successfully', 'success')
     }
     closeModal()
   }
@@ -107,13 +129,14 @@ async function handleDeleteSection(sectionId) {
   if (confirm('Are you sure you want to delete this section? This action cannot be undone.')) {
     try {
       await sectionsStore.deleteSection(sectionId)
+      showToast('Section deleted successfully', 'success')
       // Adjust pagination if needed
       if (paginatedSections.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
     }
     catch (error) {
-      alert(`Failed to delete section: ${error.response?.data?.message || error.message}`)
+      showToast(`Failed to delete section: ${error.response?.data?.message || error.message}`, 'error')
     }
   }
 }
@@ -216,6 +239,15 @@ onMounted(async () => {
       v-if="showEnrollmentModal"
       :section="selectedEnrollmentSection"
       @close="closeEnrollmentModal"
+    />
+
+    <!-- Toast Notification -->
+    <Toast
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+      :duration="toast.duration"
+      @close="closeToast"
     />
   </div>
 </template>
