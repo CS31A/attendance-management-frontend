@@ -118,7 +118,6 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 <style scoped>
 .table-section {
   margin-bottom: 2rem;
-  animation: fadeIn 0.8s ease-out;
 }
 
 .table-header {
@@ -153,10 +152,6 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
 /* Pagination Styles */
 .pagination-section {

@@ -305,7 +305,6 @@ watch([searchQuery, selectedRole], () => {
 /* Header */
 .page-header {
   margin-bottom: 2rem;
-  animation: slideInDown 0.6s ease-out;
 }
 
 .header-content {
@@ -368,7 +367,6 @@ watch([searchQuery, selectedRole], () => {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-  animation: slideInUp 0.8s ease-out;
 }
 
 .role-filter {
@@ -400,7 +398,6 @@ watch([searchQuery, selectedRole], () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
-  animation: fadeInUp 0.8s ease-out;
 }
 
 /* User Card */
@@ -410,7 +407,6 @@ watch([searchQuery, selectedRole], () => {
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: slideInUp 0.5s ease-out backwards;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
@@ -547,7 +543,6 @@ watch([searchQuery, selectedRole], () => {
   background: white;
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  animation: fadeIn 0.8s ease-out;
 }
 
 .empty-icon-container {
@@ -650,7 +645,6 @@ watch([searchQuery, selectedRole], () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: fadeIn 0.5s ease-out;
 }
 
 .error-content {
@@ -681,44 +675,9 @@ watch([searchQuery, selectedRole], () => {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* Responsive Design */
 @media (max-width: 1200px) {

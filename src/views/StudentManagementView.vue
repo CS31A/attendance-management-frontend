@@ -324,7 +324,6 @@ async function handleRestoreStudent(student) {
 /* Header */
 .page-header {
   margin-bottom: 2rem;
-  animation: slideInDown 0.6s ease-out;
 }
 
 .header-content {
@@ -551,8 +550,4 @@ async function handleRestoreStudent(student) {
   }
 }
 
-@keyframes slideInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 </style>
