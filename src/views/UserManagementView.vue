@@ -1,13 +1,13 @@
 <script setup>
 import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { useUserStore } from '@/stores/userStore'
 
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
 const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
 const SearchBar = defineAsyncComponent(() => import('@/components/common/SearchBar.vue'))
-const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const userStore = useUserStore()
 
@@ -137,12 +137,44 @@ watch([searchQuery, selectedRole], () => {
 
 <template>
   <div class="user-management">
-    <!-- Loading State -->
-    <LoadingSpinner
+    <!-- Loading State - Always show skeleton if loading, regardless of user count -->
+    <div
       v-if="userStore.loading && !userStore.users.length"
-      type="inline"
-      message="Loading users..."
-    />
+      class="loading-skeleton"
+    >
+      <!-- Header skeleton -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-text">
+            <SkeletonLoader type="text" :height="40" :width="300" style="margin-bottom: 0.5rem;" />
+            <SkeletonLoader type="text" :height="20" :width="200" />
+          </div>
+          <SkeletonLoader type="rectangle" :height="50" :width="150" />
+        </div>
+      </div>
+
+      <!-- Filters skeleton -->
+      <div class="filters-section">
+        <SkeletonLoader type="rectangle" :height="55" :width="400" style="flex: 1;" />
+        <SkeletonLoader type="rectangle" :height="55" :width="180" />
+      </div>
+
+      <!-- Table skeleton -->
+      <div class="skeleton-table">
+        <SkeletonLoader type="rectangle" :height="50" style="margin-bottom: 1rem; width: 100%;" />
+        <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+        <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+        <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+        <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+        <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 0.5rem; width: 100%;" />
+      </div>
+
+      <!-- Pagination skeleton -->
+      <div class="pagination-section">
+        <SkeletonLoader type="rectangle" :height="50" :width="300" style="margin-bottom: 1rem;" />
+        <SkeletonLoader type="rectangle" :height="50" style="width: 100%;" />
+      </div>
+    </div>
 
     <!-- Error message -->
     <div v-else-if="userStore.error" class="error-message">
@@ -278,6 +310,21 @@ watch([searchQuery, selectedRole], () => {
   padding: 2rem;
   position: relative;
   overflow-x: hidden;
+}
+
+.loading-skeleton {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.skeleton-table {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  margin-bottom: 2rem;
 }
 
 .user-management::before {

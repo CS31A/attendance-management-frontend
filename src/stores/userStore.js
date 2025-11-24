@@ -71,6 +71,9 @@ export const useUserStore = defineStore('user', {
       this.error = null
 
       try {
+        // Para sa skeleton loader simulation
+        await new Promise(resolve => setTimeout(resolve, 500))
+
         const resp = await api.get('/users')
         this.users = resp.data
       }
