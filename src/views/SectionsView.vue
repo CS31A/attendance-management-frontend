@@ -1,8 +1,8 @@
 <script setup>
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { useSectionStore } from '@/stores/sectionStore.js'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
+import { useSectionStore } from '@/stores/sectionStore.js'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
@@ -225,7 +225,7 @@ onMounted(async () => {
 .section-management {
   min-height: 100vh;
   background: var(--color-slate-100);
-  padding: 2rem;
+  padding: 1.5rem;
   position: relative;
   overflow-x: hidden;
 }
@@ -248,7 +248,7 @@ onMounted(async () => {
 }
 /* Header */
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .header-content {
@@ -256,7 +256,7 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .header-text {
@@ -265,15 +265,15 @@ onMounted(async () => {
 }
 
 .page-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--color-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.375rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
@@ -286,7 +286,7 @@ onMounted(async () => {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;

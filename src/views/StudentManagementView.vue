@@ -249,7 +249,7 @@ async function handleRestoreStudent(student) {
 .student-management {
   min-height: 100vh;
   background: var(--color-slate-100);
-  padding: 2rem;
+  padding: 1.5rem;
   position: relative;
   overflow-x: hidden;
 }
@@ -339,7 +339,7 @@ async function handleRestoreStudent(student) {
 
 /* Header */
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .header-content {
@@ -347,7 +347,7 @@ async function handleRestoreStudent(student) {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .header-text {
@@ -356,15 +356,15 @@ async function handleRestoreStudent(student) {
 }
 
 .page-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--color-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.375rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
@@ -374,7 +374,7 @@ async function handleRestoreStudent(student) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border-radius: 12px;
@@ -398,8 +398,8 @@ async function handleRestoreStudent(student) {
 .controls-section {
   background: white;
   border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--color-gray-200);
 }
@@ -407,17 +407,17 @@ async function handleRestoreStudent(student) {
 /* Tabs */
 .tabs {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
   border-bottom: 2px solid var(--color-gray-200);
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
 }
 
 .tab {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.625rem 1rem;
   background: transparent;
   color: var(--color-gray-500);
   border-radius: 8px 8px 0 0;

@@ -307,7 +307,7 @@ watch([searchQuery, selectedRole], () => {
 .user-management {
   min-height: 100vh;
   background: var(--color-slate-100);
-  padding: 2rem;
+  padding: 1.5rem;
   position: relative;
   overflow-x: hidden;
 }
@@ -346,7 +346,7 @@ watch([searchQuery, selectedRole], () => {
 }
 /* Header */
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .header-content {
@@ -354,7 +354,7 @@ watch([searchQuery, selectedRole], () => {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .header-text {
@@ -363,15 +363,15 @@ watch([searchQuery, selectedRole], () => {
 }
 
 .page-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--color-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.375rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
@@ -384,7 +384,7 @@ watch([searchQuery, selectedRole], () => {
   background: var(--color-primary);
   color: white;
   border: none;
-  padding: 0.875rem 1.75rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 16px;
   font-size: 1rem;
   font-weight: 600;
@@ -407,8 +407,8 @@ watch([searchQuery, selectedRole], () => {
 /* Filters Section */
 .filters-section {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .role-filter {
