@@ -41,71 +41,73 @@ function formatTime(time) {
 
     <div class="table-container">
       <!-- Table -->
-      <table class="schedule-table">
-        <thead>
-          <tr>
-            <th>Subject</th>
-            <th>Section</th>
-            <th>Day</th>
-            <th>Time</th>
-            <th>Classroom</th>
-            <th>Instructor</th>
-            <th class="actions-col">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="schedules.length === 0">
-            <td colspan="7" class="empty-state">
-              <Calendar class="empty-icon" size="48" />
-              <p>No schedules found</p>
-            </td>
-          </tr>
-          <tr v-for="schedule in schedules" :key="schedule.id">
-            <td>
-              <div class="subject-info">
-                <span class="subject-name">{{ schedule.subject?.name || schedule.subjectName || '-' }}</span>
-                <span class="subject-code">{{ schedule.subject?.code || schedule.subjectCode || '' }}</span>
-              </div>
-            </td>
-            <td>{{ schedule.section?.name || schedule.sectionName || '-' }}</td>
-            <td>
-              <span class="day-badge">{{ schedule.dayOfWeek }}</span>
-            </td>
-            <td>
-              <span class="time-slot">
-                {{ formatTime(schedule.timeIn) }} - {{ formatTime(schedule.timeOut) }}
-              </span>
-            </td>
-            <td>{{ schedule.classroom?.name || schedule.classroomName || '-' }}</td>
-            <td>
-              <span class="instructor-name">
-                {{ schedule.instructor?.firstname || schedule.instructorFirstName || '' }}
-                {{ schedule.instructor?.lastname || schedule.instructorLastName || '' }}
-              </span>
-            </td>
-            <td class="actions-col">
-              <div class="action-buttons">
-                <button
-                  class="btn-action btn-edit"
-                  title="Edit schedule"
-                  @click="$emit('edit', schedule)"
-                >
-                  <Edit size="16" />
-                </button>
-                <button
-                  class="btn-action btn-delete"
-                  title="Delete schedule"
-                  @click="$emit('delete', schedule.id)"
-                >
-                  <Trash2 size="16" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Section</th>
+              <th>Day</th>
+              <th>Time</th>
+              <th>Classroom</th>
+              <th>Instructor</th>
+              <th class="actions-col">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="schedules.length === 0">
+              <td colspan="7" class="empty-state">
+                <Calendar class="empty-icon" size="48" />
+                <p>No schedules found</p>
+              </td>
+            </tr>
+            <tr v-for="schedule in schedules" :key="schedule.id">
+              <td>
+                <div class="subject-info">
+                  <span class="subject-name">{{ schedule.subject?.name || schedule.subjectName || '-' }}</span>
+                  <span class="subject-code">{{ schedule.subject?.code || schedule.subjectCode || '' }}</span>
+                </div>
+              </td>
+              <td>{{ schedule.section?.name || schedule.sectionName || '-' }}</td>
+              <td>
+                <span class="day-badge">{{ schedule.dayOfWeek }}</span>
+              </td>
+              <td>
+                <span class="time-slot">
+                  {{ formatTime(schedule.timeIn) }} - {{ formatTime(schedule.timeOut) }}
+                </span>
+              </td>
+              <td>{{ schedule.classroom?.name || schedule.classroomName || '-' }}</td>
+              <td>
+                <span class="instructor-name">
+                  {{ schedule.instructor?.firstname || schedule.instructorFirstName || '' }}
+                  {{ schedule.instructor?.lastname || schedule.instructorLastName || '' }}
+                </span>
+              </td>
+              <td class="actions-col">
+                <div class="action-buttons">
+                  <button
+                    class="btn-action btn-edit"
+                    title="Edit schedule"
+                    @click="$emit('edit', schedule)"
+                  >
+                    <Edit size="16" />
+                  </button>
+                  <button
+                    class="btn-action btn-delete"
+                    title="Delete schedule"
+                    @click="$emit('delete', schedule.id)"
+                  >
+                    <Trash2 size="16" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination Controls -->
       <div v-if="pagination" class="pagination-section">
@@ -202,6 +204,11 @@ function formatTime(time) {
   overflow: hidden;
 }
 
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .table-title {
   display: flex;
   align-items: center;
@@ -234,18 +241,18 @@ function formatTime(time) {
 }
 
 .schedule-table th {
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   text-align: left;
   font-weight: 600;
   color: white;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .schedule-table td {
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   border-bottom: 1px solid var(--color-gray-200);
   vertical-align: middle;
 }
@@ -267,37 +274,38 @@ function formatTime(time) {
 .subject-info {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
 }
 
 .subject-name {
   font-weight: 600;
   color: var(--color-gray-800);
+  font-size: 0.8125rem;
 }
 
 .subject-code {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--color-gray-500);
 }
 
 /* Day Badge */
 .day-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.1875rem 0.625rem;
   background: linear-gradient(135deg, rgb(224, 231, 255) 0%, rgb(199, 210, 254) 100%);
   color: rgb(55, 48, 163);
   border-radius: 9999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
 /* Time Slot */
 .time-slot {
   font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--color-gray-700);
   background: var(--color-gray-100);
-  padding: 0.25rem 0.5rem;
+  padding: 0.1875rem 0.4375rem;
   border-radius: 0.375rem;
 }
 
@@ -305,12 +313,13 @@ function formatTime(time) {
 .instructor-name {
   color: var(--color-gray-700);
   font-weight: 500;
+  font-size: 0.8125rem;
 }
 
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.375rem;
   justify-content: center;
 }
 
@@ -318,8 +327,8 @@ function formatTime(time) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -369,12 +378,12 @@ function formatTime(time) {
 .pagination-section {
   background: var(--color-slate-100);
   border-top: 1px solid var(--color-gray-200);
-  padding: 1rem;
+  padding: 0.875rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.875rem;
 }
 
 .pagination-info {
@@ -386,7 +395,7 @@ function formatTime(time) {
 
 .pagination-text {
   color: var(--color-gray-500);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -398,15 +407,15 @@ function formatTime(time) {
 
 .items-per-page label {
   color: var(--color-gray-500);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 .items-select {
-  padding: 0.375rem 0.5rem;
+  padding: 0.3125rem 0.4375rem;
   border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   background: white;
   cursor: pointer;
   transition: all 0.2s;
@@ -427,13 +436,13 @@ function formatTime(time) {
 .pagination-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.625rem;
   background: var(--color-slate-100);
   border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
   color: var(--color-slate-600);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -461,8 +470,8 @@ function formatTime(time) {
 }
 
 .page-btn {
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -470,7 +479,7 @@ function formatTime(time) {
   border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
   color: var(--color-slate-600);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -489,8 +498,8 @@ function formatTime(time) {
 
 .page-ellipsis {
   color: var(--color-gray-400);
-  font-size: 0.8125rem;
-  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  padding: 0 0.375rem;
 }
 
 /* Responsive */
@@ -516,21 +525,48 @@ function formatTime(time) {
 
   .schedule-table th,
   .schedule-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.8rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .schedule-table {
+    min-width: 700px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sticky first column for better mobile experience */
+  .schedule-table th:first-child,
+  .schedule-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    z-index: 10;
+  }
+
+  .schedule-table td:first-child {
+    background: white;
+    border-right: 2px solid var(--color-gray-200);
+  }
+
+  .schedule-table th:first-child {
+    color: white;
   }
 
   .pagination-section {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .pagination-info {
     justify-content: center;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .pagination-controls {
@@ -540,6 +576,17 @@ function formatTime(time) {
   .page-numbers {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .pagination-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .page-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.6875rem;
   }
 }
 
@@ -552,22 +599,157 @@ function formatTime(time) {
     font-size: 1.125rem;
   }
 
+  .schedule-table {
+    min-width: 600px;
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.4375rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  /* Sticky actions column for mobile */
+  .actions-col,
+  .schedule-table td:last-child {
+    position: sticky;
+    right: 0;
+    background: white;
+    border-left: 2px solid var(--color-gray-200);
+    z-index: 5;
+    min-width: 80px;
+  }
+
+  .schedule-table th:last-child {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: white;
+  }
+
+  .btn-action {
+    width: 24px;
+    height: 24px;
+  }
+
+  .action-buttons {
+    gap: 0.25rem;
+  }
+
+  .subject-name {
+    font-size: 0.75rem;
+  }
+
+  .subject-code {
+    font-size: 0.625rem;
+  }
+
+  .day-badge {
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .time-slot {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .instructor-name {
+    font-size: 0.75rem;
+  }
+
   .pagination-section {
-    padding: 0.75rem;
+    padding: 0.625rem;
   }
 
   .pagination-text {
-    font-size: 0.8rem;
+    font-size: 0.6875rem;
   }
 
   .pagination-btn {
-    padding: 0.5rem;
-    font-size: 0.8rem;
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.625rem;
   }
 
   .pagination-icon {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .page-btn {
+    width: 1.375rem;
+    height: 1.375rem;
+    font-size: 0.625rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .table-title h2 {
+    font-size: 1rem;
+  }
+
+  .schedule-table {
+    min-width: 500px;
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.375rem 0.4375rem;
+    font-size: 0.625rem;
+  }
+
+  .btn-action {
+    width: 20px;
+    height: 20px;
+  }
+
+  .action-buttons {
+    gap: 0.1875rem;
+  }
+
+  .pagination-section {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .pagination-info {
+    gap: 0.5rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .table-title h2 {
+    font-size: 0.875rem;
+  }
+
+  .schedule-table {
+    min-width: 450px;
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.3125rem 0.375rem;
+    font-size: 0.5625rem;
+  }
+
+  .pagination-section {
+    padding: 0.4375rem;
+  }
+
+  .pagination-text,
+  .items-per-page label {
+    font-size: 0.625rem;
+  }
+
+  .pagination-btn {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.5625rem;
+  }
+
+  .page-btn {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.5625rem;
   }
 }
 </style>

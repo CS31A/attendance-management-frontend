@@ -292,6 +292,18 @@ function formatDate(value) {
 }
 
 /* Responsive Table */
+@media (max-width: 1024px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+
+  .sections-table {
+    min-width: 600px;
+  }
+}
+
 @media (max-width: 768px) {
   .table-wrapper {
     overflow-x: auto;
@@ -373,6 +385,75 @@ function formatDate(value) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .sections-table {
+    min-width: 450px;
+  }
+
+  .sections-table th,
+  .sections-table td {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .th-name,
+  .td-name {
+    min-width: 100px;
+  }
+
+  .th-actions,
+  .td-actions {
+    min-width: 90px;
+  }
+
+  .btn-enroll,
+  .btn-edit,
+  .btn-delete {
+    padding: 0.25rem;
+  }
+
+  .btn-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .action-buttons {
+    gap: 0.25rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .sections-table {
+    min-width: 400px;
+  }
+
+  .sections-table th,
+  .sections-table td {
+    padding: 0.3125rem 0.375rem;
+    font-size: 0.6875rem;
+  }
+
+  .section-name,
+  .date-text {
+    font-size: 0.6875rem;
+  }
+
+  .th-name,
+  .td-name {
+    min-width: 80px;
+  }
+
+  .th-actions,
+  .td-actions {
+    min-width: 80px;
+  }
+
+  .action-buttons {
+    gap: 0.1875rem;
   }
 }
 </style>

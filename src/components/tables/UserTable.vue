@@ -376,6 +376,18 @@ function formatDate(value) {
 }
 
 /* Responsive Table with Sticky Columns */
+@media (max-width: 1024px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+
+  .users-table {
+    min-width: 800px;
+  }
+}
+
 @media (max-width: 768px) {
   .table-wrapper {
     overflow-x: auto;
@@ -540,6 +552,67 @@ function formatDate(value) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .users-table {
+    min-width: 550px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 0.375rem 0.25rem;
+  }
+
+  .th-name,
+  .td-name {
+    min-width: 100px;
+  }
+
+  .th-actions,
+  .td-actions {
+    min-width: 100px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 0.1875rem;
+  }
+
+  .btn-icon {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .users-table {
+    min-width: 480px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 0.3125rem 0.1875rem;
+    font-size: 0.6875rem;
+  }
+
+  .user-name,
+  .email-text,
+  .date-text {
+    font-size: 0.6875rem;
+  }
+
+  .th-name,
+  .td-name {
+    min-width: 80px;
+  }
+
+  .th-actions,
+  .td-actions {
+    min-width: 80px;
   }
 }
 </style>
