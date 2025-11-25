@@ -1,7 +1,7 @@
 <script setup>
-import { BarChart3, BookOpen, Calendar, CalendarClock, ClipboardCheck, DoorOpen, GraduationCap, Grid3X3, Group, Library, LogOut, UserCircle, Users, UsersRound } from 'lucide-vue-next'
+import { BarChart3, BookOpen, Calendar, CalendarClock, ChevronDown, ClipboardCheck, DoorOpen, GraduationCap, Grid3X3, Group, Library, LogOut, UserCircle, Users, UsersRound } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
 // Props
@@ -16,6 +16,7 @@ const ConfirmationModal = defineAsyncComponent(() => import('@/components/common
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const user = authStore.getUser
 
 // Computed property for user role with fallback
@@ -36,6 +37,22 @@ const isSidebarOpen = ref(false)
 const windowWidth = ref(window.innerWidth)
 const showLogoutConfirmation = ref(false)
 const isLoggingOut = ref(false)
+
+// Submenu expansion state
+const expandedMenus = ref({
+  academic: false,
+  curriculum: false,
+})
+
+// Toggle submenu
+function toggleSubmenu(menu) {
+  expandedMenus.value[menu] = !expandedMenus.value[menu]
+}
+
+// Check if submenu item is active
+function isSubmenuActive(paths) {
+  return paths.some(path => route.path === path)
+}
 
 // Event listener functions
 let clickOutsideHandler
@@ -81,6 +98,15 @@ async function handleLogout() {
 
 // Lifecycle hooks
 onMounted(() => {
+  // Initialize expanded state based on current route
+  const path = route.path
+  if (['/students', '/instructors', '/sections'].includes(path)) {
+    expandedMenus.value.academic = true
+  }
+  if (['/courses', '/subjects'].includes(path)) {
+    expandedMenus.value.curriculum = true
+  }
+
   clickOutsideHandler = (e) => {
     if (window.innerWidth <= 768) {
       const sidebar = document.querySelector('.sidebar')
@@ -161,36 +187,72 @@ onUnmounted(() => {
               <span v-show="!isCollapsed" class="nav-text">Users</span>
             </router-link>
           </li>
-          <li v-if="isAdmin">
-            <router-link to="/students" class="nav-link" @click="closeSidebar">
+
+          <!-- Academic Submenu -->
+          <li v-if="isAdmin" class="has-submenu">
+            <div 
+              class="nav-link submenu-toggle" 
+              :class="{ 'active': isSubmenuActive(['/students', '/instructors', '/sections']) }"
+              @click="isCollapsed ? null : toggleSubmenu('academic')"
+            >
               <GraduationCap class="nav-icon" size="20" />
-              <span v-show="!isCollapsed" class="nav-text">Students</span>
-            </router-link>
+              <span v-show="!isCollapsed" class="nav-text">Academic</span>
+              <ChevronDown 
+                v-show="!isCollapsed" 
+                class="submenu-arrow" 
+                :class="{ 'expanded': expandedMenus.academic }"
+                size="16" 
+              />
+            </div>
+            <ul v-show="!isCollapsed && expandedMenus.academic" class="submenu">
+              <li>
+                <router-link to="/students" class="nav-link submenu-link" @click="closeSidebar">
+                  <span class="nav-text">Students</span>
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/instructors" class="nav-link submenu-link" @click="closeSidebar">
+                  <span class="nav-text">Instructors</span>
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/sections" class="nav-link submenu-link" @click="closeSidebar">
+                  <span class="nav-text">Sections</span>
+                </router-link>
+              </li>
+            </ul>
           </li>
-          <li v-if="isAdmin">
-            <router-link to="/instructors" class="nav-link" @click="closeSidebar">
-              <UsersRound class="nav-icon" size="20" />
-              <span v-show="!isCollapsed" class="nav-text">Instructors</span>
-            </router-link>
-          </li>
-          <li v-if="isAdmin">
-            <router-link to="/sections" class="nav-link" @click="closeSidebar">
-              <Group class="nav-icon" size="20" />
-              <span v-show="!isCollapsed" class="nav-text">Sections</span>
-            </router-link>
-          </li>
-          <li v-if="isAdmin">
-            <router-link to="/courses" class="nav-link" @click="closeSidebar">
+
+          <!-- Curriculum Submenu -->
+          <li v-if="isAdmin" class="has-submenu">
+            <div 
+              class="nav-link submenu-toggle" 
+              :class="{ 'active': isSubmenuActive(['/courses', '/subjects']) }"
+              @click="isCollapsed ? null : toggleSubmenu('curriculum')"
+            >
               <BookOpen class="nav-icon" size="20" />
-              <span v-show="!isCollapsed" class="nav-text">Courses</span>
-            </router-link>
+              <span v-show="!isCollapsed" class="nav-text">Curriculum</span>
+              <ChevronDown 
+                v-show="!isCollapsed" 
+                class="submenu-arrow" 
+                :class="{ 'expanded': expandedMenus.curriculum }"
+                size="16" 
+              />
+            </div>
+            <ul v-show="!isCollapsed && expandedMenus.curriculum" class="submenu">
+              <li>
+                <router-link to="/courses" class="nav-link submenu-link" @click="closeSidebar">
+                  <span class="nav-text">Courses</span>
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/subjects" class="nav-link submenu-link" @click="closeSidebar">
+                  <span class="nav-text">Subjects</span>
+                </router-link>
+              </li>
+            </ul>
           </li>
-          <li v-if="isAdmin">
-            <router-link to="/subjects" class="nav-link" @click="closeSidebar">
-              <Library class="nav-icon" size="20" />
-              <span v-show="!isCollapsed" class="nav-text">Subjects</span>
-            </router-link>
-          </li>
+
           <li v-if="isAdmin">
             <router-link to="/schedules" class="nav-link" @click="closeSidebar">
               <CalendarClock class="nav-icon" size="20" />
@@ -400,6 +462,72 @@ onUnmounted(() => {
 .nav-text {
   font-weight: 500;
   letter-spacing: 0.025em;
+}
+
+/* Submenu Styles */
+.has-submenu {
+  position: relative;
+}
+
+.submenu-toggle {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  transition: transform var(--transition-base);
+}
+
+.submenu-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.submenu li {
+  margin: 0;
+}
+
+.submenu-link {
+  padding-left: calc(var(--spacing-sm) + 30px) !important;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.sidebar.collapsed .submenu-link {
+  padding-left: var(--spacing-sm) !important;
+}
+
+.submenu-link:hover {
+  transform: translateX(8px);
+}
+
+.submenu-link.router-link-active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Collapsed state for submenu items */
+.sidebar.collapsed .has-submenu .submenu-toggle {
+  pointer-events: none;
 }
 
 .sidebar-footer {
