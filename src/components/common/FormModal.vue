@@ -1,28 +1,96 @@
 <script setup>
-import { AlertTriangle, X } from 'lucide-vue-next'
+/**
+ * FormModal - A generic, reusable modal component for creating and editing entities
+ *
+ * @component
+ * @example
+ * // Basic usage
+ * <FormModal
+ *   :show="showModal"
+ *   :entity="selectedEntity"
+ *   title="Classroom"
+ *   :fields="classroomFields"
+ *   @save="handleSave"
+ *   @cancel="closeModal"
+ * />
+ *
+ * @example
+ * // Field configuration example
+ * const classroomFields = [
+ *   {
+ *     name: 'name',              // Property name in form data
+ *     label: 'Classroom Name',   // Display label
+ *     type: 'text',              // Input type: text, email, number, password, time, select, textarea, custom
+ *     icon: DoorOpen,            // Lucide icon component (optional)
+ *     placeholder: 'Enter name', // Placeholder text
+ *     required: true,            // Required field validation
+ *     minlength: 2,              // Min length for text inputs
+ *     maxlength: 100,            // Max length for text inputs
+ *     helperText: 'Helper text', // Informational text below field
+ *     default: '',               // Default value for new entities
+ *
+ *     // For select fields
+ *     options: [                 // Static options array
+ *       { value: '1', label: 'Option 1' },
+ *       { value: '2', label: 'Option 2' }
+ *     ],
+ *     // OR async options function
+ *     options: async () => {
+ *       const data = await api.getData()
+ *       return data.map(item => ({ value: item.id, label: item.name }))
+ *     },
+ *
+ *     // Conditional visibility
+ *     show: (formData) => formData.someField === 'value',
+ *
+ *     // Conditional disabled state
+ *     disabled: (formData) => formData.someField === 'value',
+ *
+ *     // Custom validation
+ *     validation: (value, formData) => {
+ *       if (value < formData.minValue) return 'Error message'
+ *       return null // No error
+ *     },
+ *
+ *     // For custom components
+ *     component: MyCustomComponent,
+ *     props: { customProp: 'value' },
+ *
+ *     // Grid layout class (optional)
+ *     grid: 'col-span-2'
+ *   }
+ * ]
+ */
+import { AlertTriangle, Loader2, X } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
+  /** Controls modal visibility */
   show: {
     type: Boolean,
     required: true,
   },
+  /** Entity to edit (null for create mode) */
   entity: {
     type: Object,
     default: null,
   },
+  /** Entity name for modal title (e.g., "Classroom", "Subject") */
   title: {
     type: String,
     required: true,
   },
+  /** Array of field configuration objects (see JSDoc example above) */
   fields: {
     type: Array,
     required: true,
   },
+  /** Custom submit button text (overrides default) */
   submitText: {
     type: String,
     default: null,
   },
+  /** Modal size: 'small' (380px), 'medium' (420px), 'large' (520px) */
   size: {
     type: String,
     default: 'medium',
@@ -38,6 +106,8 @@ const emit = defineEmits(['save', 'cancel'])
 const formData = reactive({})
 const errorMessage = ref('')
 const loadingOptions = ref({})
+const loadingFields = ref(new Set())
+const optionsLoadError = ref({})
 
 // Computed properties
 const isEditMode = computed(() => !!props.entity)
@@ -114,7 +184,11 @@ watch(() => props.entity, (newEntity) => {
   errorMessage.value = ''
 }, { immediate: true })
 
-// Get options for select fields (handles both static and async)
+/**
+ * Get options for select fields (handles both static and async)
+ * @param {object} field - Field configuration object
+ * @returns {Array} Array of option objects with value and label
+ */
 function getFieldOptions(field) {
   if (!field.options)
     return []
@@ -132,27 +206,60 @@ function getFieldOptions(field) {
   return []
 }
 
-// Load async options on mount
+/**
+ * Check if a field is currently loading options
+ * @param {string} fieldName - Name of the field
+ * @returns {boolean} True if field is loading async options
+ */
+function isFieldLoading(fieldName) {
+  return loadingFields.value.has(fieldName)
+}
+
+/**
+ * Check if a field has a load error
+ * @param {string} fieldName - Name of the field
+ * @returns {boolean} True if field failed to load options
+ */
+function hasLoadError(fieldName) {
+  return !!optionsLoadError.value[fieldName]
+}
+
+/**
+ * Load async options on mount
+ * Loads all fields with async options in parallel and tracks loading state
+ */
 onMounted(async () => {
   const asyncFields = props.fields.filter(f => typeof f.options === 'function')
 
   if (asyncFields.length > 0) {
-    try {
-      // Load all async options in parallel
-      await Promise.all(
-        asyncFields.map(async (field) => {
+    // Mark all async fields as loading
+    asyncFields.forEach(field => loadingFields.value.add(field.name))
+
+    // Load all async options in parallel
+    await Promise.all(
+      asyncFields.map(async (field) => {
+        try {
           const options = await field.options()
           loadingOptions.value[field.name] = options
-        }),
-      )
-    }
-    catch (error) {
-      console.error('Error loading field options:', error)
-    }
+          optionsLoadError.value[field.name] = null
+        }
+        catch (error) {
+          console.error(`Error loading options for field "${field.name}":`, error)
+          optionsLoadError.value[field.name] = error.message || 'Failed to load options'
+          loadingOptions.value[field.name] = []
+        }
+        finally {
+          loadingFields.value.delete(field.name)
+        }
+      }),
+    )
   }
 })
 
-// Handle form submission
+/**
+ * Handle form submission
+ * Validates form and emits save event with form data
+ */
 function handleSubmit() {
   errorMessage.value = ''
 
@@ -170,12 +277,15 @@ function handleSubmit() {
   emit('save', submitData)
 }
 
-// Handle error from parent (called via ref)
+/**
+ * Handle error from parent (called via ref)
+ * @param {string} error - Error message to display
+ */
 function handleError(error) {
   errorMessage.value = error
 }
 
-// Expose methods to parent
+// Expose methods to parent component
 defineExpose({ handleError })
 </script>
 
@@ -233,14 +343,23 @@ defineExpose({ handleError })
 
           <!-- Select dropdown -->
           <div v-else-if="field.type === 'select'" class="input-wrapper">
-            <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
+            <component :is="field.icon" v-if="field.icon && !isFieldLoading(field.name)" class="input-icon" size="18" />
+            <Loader2 v-if="isFieldLoading(field.name)" class="input-icon loading-spinner" size="18" />
             <select
               v-model="formData[field.name]"
               :required="field.required"
-              :disabled="field.disabled ? field.disabled(formData) : false"
+              :disabled="field.disabled ? field.disabled(formData) : isFieldLoading(field.name)"
             >
               <option value="" disabled>
-                {{ field.placeholder || 'Select an option' }}
+                <template v-if="isFieldLoading(field.name)">
+                  Loading options...
+                </template>
+                <template v-else-if="hasLoadError(field.name)">
+                  Failed to load options
+                </template>
+                <template v-else>
+                  {{ field.placeholder || 'Select an option' }}
+                </template>
               </option>
               <option
                 v-for="opt in getFieldOptions(field)"
@@ -251,6 +370,11 @@ defineExpose({ handleError })
               </option>
             </select>
           </div>
+
+          <!-- Load error message for select fields -->
+          <small v-if="hasLoadError(field.name)" class="helper-text error">
+            {{ optionsLoadError[field.name] }}
+          </small>
 
           <!-- Textarea -->
           <div v-else-if="field.type === 'textarea'" class="input-wrapper">
@@ -526,9 +650,19 @@ defineExpose({ handleError })
   font-weight: 500;
 }
 
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  color: var(--color-primary);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
 }
 
 @keyframes slideUp {
