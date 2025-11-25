@@ -38,7 +38,6 @@ export default defineConfig({
           'modals': [
             './src/components/CreateUserModal.vue',
             './src/components/EditUserModal.vue',
-            './src/components/CourseModal.vue',
             './src/components/SectionModal.vue',
           ],
 

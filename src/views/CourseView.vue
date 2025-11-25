@@ -1,14 +1,28 @@
 <script setup>
-import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCourseStore } from '@/stores/courseStore.js'
 
-const CourseModal = defineAsyncComponent(() => import('@/components/CourseModal.vue'))
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+// Field configuration for FormModal
+const courseFields = [
+  {
+    name: 'name',
+    label: 'Course Name',
+    type: 'text',
+    icon: BookOpen,
+    placeholder: 'Enter course name',
+    required: true,
+    minlength: 20,
+    helperText: 'Must be at least 20 characters',
+  },
+]
 
 const courseStore = useCourseStore()
 const showModal = ref(false)
@@ -238,10 +252,12 @@ onMounted(async () => {
     </div>
 
     <!-- Modal -->
-    <CourseModal
-      v-if="showModal"
+    <FormModal
       ref="modalRef"
-      :course="selectedCourse"
+      :show="showModal"
+      :entity="selectedCourse"
+      title="Course"
+      :fields="courseFields"
       @save="handleSaveCourse"
       @cancel="closeModal"
     />

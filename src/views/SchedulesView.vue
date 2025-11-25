@@ -1,15 +1,123 @@
 <script setup>
-import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import classroomApi from '@/api/classrooms'
+import { getAllInstructors } from '@/api/instructors'
+import sectionsApi from '@/api/sections'
+import subjectApi from '@/api/subjects'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useScheduleStore } from '@/stores/scheduleStore.js'
 
-const ScheduleModal = defineAsyncComponent(() => import('@/components/schedules/ScheduleModal.vue'))
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+// Field configuration for FormModal with async options
+const scheduleFields = [
+  {
+    name: 'timeIn',
+    label: 'Time In',
+    type: 'time',
+    icon: Clock,
+    required: true,
+  },
+  {
+    name: 'timeOut',
+    label: 'Time Out',
+    type: 'time',
+    icon: Clock,
+    required: true,
+    validation: (value, formData) => {
+      if (value && formData.timeIn && value <= formData.timeIn) {
+        return 'Time Out must be after Time In'
+      }
+      return null
+    },
+  },
+  {
+    name: 'dayOfWeek',
+    label: 'Day of Week',
+    type: 'select',
+    icon: Calendar,
+    required: true,
+    placeholder: 'Select a day',
+    options: [
+      { value: 'Monday', label: 'Monday' },
+      { value: 'Tuesday', label: 'Tuesday' },
+      { value: 'Wednesday', label: 'Wednesday' },
+      { value: 'Thursday', label: 'Thursday' },
+      { value: 'Friday', label: 'Friday' },
+      { value: 'Saturday', label: 'Saturday' },
+      { value: 'Sunday', label: 'Sunday' },
+    ],
+  },
+  {
+    name: 'subjectId',
+    label: 'Subject',
+    type: 'select',
+    icon: BookOpen,
+    required: true,
+    placeholder: 'Select a subject',
+    options: async () => {
+      const response = await subjectApi.getAllSubjects()
+      const subjects = response.data || response
+      return subjects.map(s => ({
+        value: s.id,
+        label: `${s.name} (${s.code})`,
+      }))
+    },
+  },
+  {
+    name: 'classroomId',
+    label: 'Classroom',
+    type: 'select',
+    icon: DoorOpen,
+    required: true,
+    placeholder: 'Select a classroom',
+    options: async () => {
+      const response = await classroomApi.getAllClassrooms()
+      const classrooms = response.data || response
+      return classrooms.map(c => ({
+        value: c.id,
+        label: c.name,
+      }))
+    },
+  },
+  {
+    name: 'sectionId',
+    label: 'Section',
+    type: 'select',
+    icon: GraduationCap,
+    required: true,
+    placeholder: 'Select a section',
+    options: async () => {
+      const response = await sectionsApi.getAllSections()
+      const sections = response.data || response
+      return sections.map(s => ({
+        value: s.id,
+        label: s.name,
+      }))
+    },
+  },
+  {
+    name: 'instructorId',
+    label: 'Instructor',
+    type: 'select',
+    icon: User,
+    required: true,
+    placeholder: 'Select an instructor',
+    options: async () => {
+      const instructors = await getAllInstructors()
+      return instructors.map(i => ({
+        value: i.id,
+        label: `${i.firstName} ${i.lastName}`,
+      }))
+    },
+  },
+]
 
 const scheduleStore = useScheduleStore()
 const showModal = ref(false)
@@ -246,10 +354,13 @@ onMounted(async () => {
     </div>
 
     <!-- Modal -->
-    <ScheduleModal
-      v-if="showModal"
+    <FormModal
       ref="modalRef"
-      :schedule="selectedSchedule"
+      :show="showModal"
+      :entity="selectedSchedule"
+      title="Schedule"
+      :fields="scheduleFields"
+      size="large"
       @save="handleSaveSchedule"
       @cancel="closeModal"
     />

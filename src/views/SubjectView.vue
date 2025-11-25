@@ -1,14 +1,38 @@
 <script setup>
-import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSubjectStore } from '@/stores/subjectStore.js'
 
-const SubjectModal = defineAsyncComponent(() => import('@/components/SubjectModal.vue'))
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+// Field configuration for FormModal
+const subjectFields = [
+  {
+    name: 'name',
+    label: 'Subject Name',
+    type: 'text',
+    icon: BookOpen,
+    placeholder: 'Enter subject name',
+    required: true,
+    minlength: 2,
+    helperText: 'Must be at least 2 characters',
+  },
+  {
+    name: 'code',
+    label: 'Subject Code',
+    type: 'text',
+    icon: Hash,
+    placeholder: 'Enter subject code',
+    required: true,
+    minlength: 5,
+    helperText: 'Must be at least 5 characters',
+  },
+]
 
 const subjectStore = useSubjectStore()
 const showModal = ref(false)
@@ -238,10 +262,12 @@ onMounted(async () => {
     </div>
 
     <!-- Modal -->
-    <SubjectModal
-      v-if="showModal"
+    <FormModal
       ref="modalRef"
-      :subject="selectedSubject"
+      :show="showModal"
+      :entity="selectedSubject"
+      title="Subject"
+      :fields="subjectFields"
       @save="handleSaveSubject"
       @cancel="closeModal"
     />

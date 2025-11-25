@@ -1,14 +1,29 @@
 <script setup>
-import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useClassroomStore } from '@/stores/classroomStore.js'
 
-const ClassroomModal = defineAsyncComponent(() => import('@/components/ClassroomModal.vue'))
 const ClassroomTableSection = defineAsyncComponent(() => import('@/components/tables/ClassroomTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+// Field configuration for FormModal
+const classroomFields = [
+  {
+    name: 'name',
+    label: 'Classroom Name',
+    type: 'text',
+    icon: DoorOpen,
+    placeholder: 'Enter classroom name',
+    required: true,
+    minlength: 2,
+    maxlength: 100,
+    helperText: 'Must be 2-100 characters',
+  },
+]
 
 const classroomStore = useClassroomStore()
 const showModal = ref(false)
@@ -238,10 +253,12 @@ onMounted(async () => {
     </div>
 
     <!-- Modal -->
-    <ClassroomModal
-      v-if="showModal"
+    <FormModal
       ref="modalRef"
-      :classroom="selectedClassroom"
+      :show="showModal"
+      :entity="selectedClassroom"
+      title="Classroom"
+      :fields="classroomFields"
       @save="handleSaveClassroom"
       @cancel="closeModal"
     />

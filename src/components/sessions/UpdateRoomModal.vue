@@ -1,7 +1,7 @@
 <script setup>
 import { AlertTriangle, MapPin, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { getClassrooms } from '@/api/classrooms'
+import classroomApi from '@/api/classrooms'
 
 defineProps({
   session: {
@@ -31,7 +31,8 @@ async function loadClassrooms() {
   errorMessage.value = ''
 
   try {
-    classrooms.value = await getClassrooms()
+    const response = await classroomApi.getAllClassrooms()
+    classrooms.value = response.data || response
 
     if (classrooms.value.length === 0) {
       errorMessage.value = 'No classrooms available. Please contact your administrator.'

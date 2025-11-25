@@ -1,7 +1,7 @@
 <script setup>
 import { AlertTriangle, Play, X } from 'lucide-vue-next'
 import { defineAsyncComponent, onMounted, ref } from 'vue'
-import { getClassrooms } from '@/api/classrooms'
+import classroomApi from '@/api/classrooms'
 
 defineProps({
   session: {
@@ -27,7 +27,8 @@ async function loadClassrooms() {
   errorMessage.value = ''
 
   try {
-    classrooms.value = await getClassrooms()
+    const response = await classroomApi.getAllClassrooms()
+    classrooms.value = response.data || response
   }
   catch (error) {
     console.error('Failed to load classrooms:', error)
