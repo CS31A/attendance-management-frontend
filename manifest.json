@@ -1,0 +1,22 @@
+{
+  "name": "ACLC Attendance Monitoring System",
+  "short_name": "ACLC Attendance",
+  "description": "A reliable and efficient way to monitor student attendance with precision and care",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
