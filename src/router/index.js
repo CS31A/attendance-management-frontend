@@ -62,6 +62,11 @@ const routes = [
     beforeEnter: [authGuard, adminGuard],
   },
   {
+    path: '/classrooms',
+    component: () => import('../views/ClassroomView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
+  {
     path: '/students',
     component: () => import('../views/StudentManagementView.vue'),
     beforeEnter: [authGuard, adminGuard],
