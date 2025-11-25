@@ -243,6 +243,7 @@ function formatDate(value) {
   justify-content: center;
 }
 
+.btn-enroll,
 .btn-edit,
 .btn-delete {
   padding: 0.375rem;
