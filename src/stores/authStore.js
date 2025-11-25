@@ -191,6 +191,44 @@ export const useAuthStore = defineStore('authStore', () => {
       if (response.data.success) {
         isAuthenticated.value = true
         await checkAuth(true)
+
+        // Check if user role is allowed to log in (only Teacher and Admin)
+        if (userProfile.value?.role === 'Student') {
+          // Students are not allowed to log in to the web application
+          // Clear auth state
+          try {
+            await api.post('/account/web/logout')
+          }
+          catch (error) {
+            console.error('Logout error:', error)
+          }
+          user.value = null
+          userProfile.value = null
+          isAuthenticated.value = false
+          return {
+            success: false,
+            message: 'Access denied. Students cannot log in to the web application.',
+          }
+        }
+
+        // Only allow Teacher and Admin roles
+        if (userProfile.value?.role !== 'Teacher' && userProfile.value?.role !== 'Admin') {
+          // Clear auth state
+          try {
+            await api.post('/account/web/logout')
+          }
+          catch (error) {
+            console.error('Logout error:', error)
+          }
+          user.value = null
+          userProfile.value = null
+          isAuthenticated.value = false
+          return {
+            success: false,
+            message: 'Access denied. Only instructors and administrators can log in.',
+          }
+        }
+
         return { success: true }
       }
       else {
