@@ -1,5 +1,5 @@
 <script setup>
-import { BarChart3, BookOpen, Calendar, CalendarClock, ChevronDown, ClipboardCheck, DoorOpen, GraduationCap, Grid3X3, Group, Library, LogOut, UserCircle, Users, UsersRound } from 'lucide-vue-next'
+import { BarChart3, BookOpen, Calendar, CalendarClock, ChevronDown, ClipboardCheck, DoorOpen, GraduationCap, Grid3X3, LogOut, UserCircle, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
@@ -51,7 +51,7 @@ function toggleSubmenu(menu) {
 
 // Check if submenu item is active
 function isSubmenuActive(paths) {
-  return paths.some(path => route.path === path)
+  return paths.includes(route.path)
 }
 
 // Event listener functions
@@ -190,18 +190,18 @@ onUnmounted(() => {
 
           <!-- Academic Submenu -->
           <li v-if="isAdmin" class="has-submenu">
-            <div 
-              class="nav-link submenu-toggle" 
-              :class="{ 'active': isSubmenuActive(['/students', '/instructors', '/sections']) }"
+            <div
+              class="nav-link submenu-toggle"
+              :class="{ active: isSubmenuActive(['/students', '/instructors', '/sections']) }"
               @click="isCollapsed ? null : toggleSubmenu('academic')"
             >
               <GraduationCap class="nav-icon" size="20" />
               <span v-show="!isCollapsed" class="nav-text">Academic</span>
-              <ChevronDown 
-                v-show="!isCollapsed" 
-                class="submenu-arrow" 
-                :class="{ 'expanded': expandedMenus.academic }"
-                size="16" 
+              <ChevronDown
+                v-show="!isCollapsed"
+                class="submenu-arrow"
+                :class="{ expanded: expandedMenus.academic }"
+                size="16"
               />
             </div>
             <ul v-show="!isCollapsed && expandedMenus.academic" class="submenu">
@@ -225,18 +225,18 @@ onUnmounted(() => {
 
           <!-- Curriculum Submenu -->
           <li v-if="isAdmin" class="has-submenu">
-            <div 
-              class="nav-link submenu-toggle" 
-              :class="{ 'active': isSubmenuActive(['/courses', '/subjects']) }"
+            <div
+              class="nav-link submenu-toggle"
+              :class="{ active: isSubmenuActive(['/courses', '/subjects']) }"
               @click="isCollapsed ? null : toggleSubmenu('curriculum')"
             >
               <BookOpen class="nav-icon" size="20" />
               <span v-show="!isCollapsed" class="nav-text">Curriculum</span>
-              <ChevronDown 
-                v-show="!isCollapsed" 
-                class="submenu-arrow" 
-                :class="{ 'expanded': expandedMenus.curriculum }"
-                size="16" 
+              <ChevronDown
+                v-show="!isCollapsed"
+                class="submenu-arrow"
+                :class="{ expanded: expandedMenus.curriculum }"
+                size="16"
               />
             </div>
             <ul v-show="!isCollapsed && expandedMenus.curriculum" class="submenu">
@@ -275,7 +275,7 @@ onUnmounted(() => {
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-info">
+        <div class="user-info" style="cursor: pointer;" @click="router.push('/profile')">
           <div class="user-avatar">
             <UserCircle size="20" />
           </div>

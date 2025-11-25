@@ -38,6 +38,11 @@ const routes = [
     beforeEnter: authGuard,
   },
   {
+    path: '/profile',
+    component: () => import('../views/ProfileView.vue'),
+    beforeEnter: authGuard,
+  },
+  {
     path: '/',
     redirect: '/login', // change this from '/dashboard' to '/login'
   },

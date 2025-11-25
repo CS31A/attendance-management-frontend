@@ -1,6 +1,7 @@
 <script setup>
 import { Bell, ChevronLeft, ChevronRight, User } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 // Props
 const props = defineProps({
@@ -25,6 +26,8 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['notificationClick', 'profileClick', 'toggleCollapse', 'sidebarToggle'])
 
+const router = useRouter()
+
 // Reactive state
 const isCollapsed = ref(false)
 
@@ -35,7 +38,7 @@ function handleNotificationClick() {
 
 // Handle profile click
 function handleProfileClick() {
-  emit('profileClick')
+  router.push('/profile')
 }
 
 // Methods
