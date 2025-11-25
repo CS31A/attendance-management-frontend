@@ -107,21 +107,21 @@ function handleClick(event) {
 
 /* Size Variants */
 .base-button--small {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  border-radius: 8px;
+}
+
+.base-button--medium {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   border-radius: 10px;
 }
 
-.base-button--medium {
-  padding: 0.75rem 1.5rem;
+.base-button--large {
+  padding: 0.625rem 1.25rem;
   font-size: 1rem;
   border-radius: 12px;
-}
-
-.base-button--large {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  border-radius: 16px;
 }
 
 /* Primary Variant */

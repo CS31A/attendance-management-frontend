@@ -248,7 +248,7 @@ function goToPage(page) {
 }
 
 .table-title h2 {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -271,11 +271,11 @@ function goToPage(page) {
 }
 
 .students-table th {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -299,8 +299,9 @@ function goToPage(page) {
 }
 
 .students-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   vertical-align: middle;
+  font-size: 0.8125rem;
 }
 
 .td-loading, .td-empty {
@@ -328,7 +329,7 @@ function goToPage(page) {
   color: var(--color-gray-700);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   font-family: monospace;
 }
@@ -350,14 +351,14 @@ function goToPage(page) {
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.375rem;
   justify-content: center;
 }
 
 .btn-edit,
 .btn-delete,
 .btn-restore {
-  padding: 0.5rem;
+  padding: 0.375rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -406,7 +407,7 @@ function goToPage(page) {
 .pagination-section {
   background: var(--color-slate-100);
   border-top: 1px solid var(--color-gray-200);
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -423,7 +424,7 @@ function goToPage(page) {
 
 .pagination-text {
   color: var(--color-gray-500);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -437,12 +438,12 @@ function goToPage(page) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.375rem 0.75rem;
   background: var(--color-slate-100);
   border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
   color: var(--color-slate-600);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -470,8 +471,8 @@ function goToPage(page) {
 }
 
 .page-btn {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -479,7 +480,7 @@ function goToPage(page) {
   border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
   color: var(--color-slate-600);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

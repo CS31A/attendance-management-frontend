@@ -312,7 +312,7 @@ async function handleRestoreStudent(student) {
 .student-management {
   min-height: 100vh;
   background: var(--color-slate-100);
-  padding: 1.5rem;
+  padding: 1rem;
   position: relative;
   overflow-x: hidden;
 }
@@ -386,7 +386,7 @@ async function handleRestoreStudent(student) {
 
 /* Header */
 .page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .header-content {
@@ -403,15 +403,15 @@ async function handleRestoreStudent(student) {
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--color-primary);
-  margin: 0 0 0.375rem 0;
+  margin: 0 0 0.25rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
@@ -421,8 +421,8 @@ async function handleRestoreStudent(student) {
 .controls-section {
   background: white;
   border-radius: 16px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--color-gray-200);
 }
@@ -431,7 +431,7 @@ async function handleRestoreStudent(student) {
 .tabs {
   display: flex;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .student-search-bar {

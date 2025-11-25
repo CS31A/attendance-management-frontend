@@ -114,11 +114,11 @@ function formatDate(value) {
 }
 
 .subjects-table th {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -159,7 +159,7 @@ function formatDate(value) {
 }
 
 .subjects-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   vertical-align: middle;
 }
 
@@ -180,7 +180,7 @@ function formatDate(value) {
 .code-cell {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .code-icon {
@@ -197,7 +197,7 @@ function formatDate(value) {
 .name-cell {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .subject-icon {
@@ -206,7 +206,7 @@ function formatDate(value) {
 }
 
 .subject-name {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 /* Date Columns */
@@ -219,7 +219,7 @@ function formatDate(value) {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .date-icon {
@@ -228,7 +228,8 @@ function formatDate(value) {
 }
 
 .date-text {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
 }
 
 /* Actions Column */
@@ -238,13 +239,13 @@ function formatDate(value) {
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.375rem;
   justify-content: center;
 }
 
 .btn-edit,
 .btn-delete {
-  padding: 0.5rem;
+  padding: 0.375rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;

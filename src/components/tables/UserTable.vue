@@ -160,11 +160,11 @@ function formatDate(value) {
 }
 
 .users-table th {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -183,13 +183,17 @@ function formatDate(value) {
   min-width: 200px;
 }
 
+.th-role {
+  width: 120px;
+}
+
 .th-section {
   width: 100px;
   text-align: center;
 }
 
 .th-joined {
-  width: 120px;
+  width: 150px;
   text-align: center;
 }
 
@@ -209,7 +213,7 @@ function formatDate(value) {
 }
 
 .users-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   vertical-align: middle;
 }
 
@@ -254,7 +258,7 @@ function formatDate(value) {
 }
 
 .user-name {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 /* Email Column */
@@ -265,7 +269,7 @@ function formatDate(value) {
 .email-cell {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .email-icon {
@@ -276,7 +280,7 @@ function formatDate(value) {
 }
 
 .email-text {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 /* Section Column */
@@ -293,6 +297,11 @@ function formatDate(value) {
   font-weight: 500;
 }
 
+/* Role Column */
+.role-text {
+  font-size: 0.8125rem;
+}
+
 /* Joined Column */
 .td-joined {
   text-align: center;
@@ -303,7 +312,7 @@ function formatDate(value) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .date-icon {
@@ -314,7 +323,8 @@ function formatDate(value) {
 }
 
 .date-text {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
 }
 
 /* Actions Column */
@@ -324,13 +334,13 @@ function formatDate(value) {
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.375rem;
   justify-content: center;
 }
 
 .btn-edit,
 .btn-delete {
-  padding: 0.5rem;
+  padding: 0.375rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;

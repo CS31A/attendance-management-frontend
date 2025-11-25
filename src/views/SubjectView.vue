@@ -273,7 +273,7 @@ onMounted(async () => {
 .subject-management {
   min-height: 100vh;
   background: var(--color-slate-100);
-  padding: 1.5rem;
+  padding: 1rem;
   position: relative;
   overflow-x: hidden;
 }
@@ -296,7 +296,7 @@ onMounted(async () => {
 }
 /* Header */
 .page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .header-content {
@@ -313,15 +313,15 @@ onMounted(async () => {
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--color-primary);
-  margin: 0 0 0.375rem 0;
+  margin: 0 0 0.25rem 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;

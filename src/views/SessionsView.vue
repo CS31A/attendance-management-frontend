@@ -373,7 +373,7 @@ onMounted(() => {
 
 <style scoped>
 .sessions-view {
-  padding: 2rem;
+  padding: 1rem;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -383,7 +383,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .header-content {
@@ -391,14 +391,14 @@ onMounted(() => {
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-gray-900);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .page-subtitle {
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--color-gray-500);
   margin: 0;
 }
@@ -407,12 +407,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   background: var(--color-secondary);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
@@ -426,7 +426,7 @@ onMounted(() => {
 .filter-tabs {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   border-bottom: 2px solid var(--color-gray-200);
   padding-bottom: 0;
   overflow-x: auto;
@@ -436,11 +436,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.625rem 1rem;
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-gray-500);
   cursor: pointer;

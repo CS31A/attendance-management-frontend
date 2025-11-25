@@ -145,7 +145,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 }
 
 .table-title h2 {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -155,7 +155,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 .pagination-section {
   background: var(--color-slate-100);
   border-top: 1px solid var(--color-gray-200);
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -172,7 +172,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 
 .pagination-text {
   color: var(--color-gray-500);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -184,15 +184,15 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 
 .items-per-page label {
   color: var(--color-gray-500);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
 .items-select {
-  padding: 0.5rem 0.75rem;
+  padding: 0.375rem 0.5rem;
   border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   background: white;
   cursor: pointer;
   transition: all 0.2s;
@@ -214,12 +214,12 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.375rem 0.75rem;
   background: var(--color-slate-100);
   border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
   color: var(--color-slate-600);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -247,8 +247,8 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 }
 
 .page-btn {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,7 +256,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
   border: 1px solid var(--color-slate-200);
   border-radius: 0.5rem;
   color: var(--color-slate-600);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -275,7 +275,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
 
 .page-ellipsis {
   color: var(--color-gray-400);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   padding: 0 0.5rem;
 }
 

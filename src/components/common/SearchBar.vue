@@ -17,7 +17,7 @@ defineEmits(['update:modelValue'])
 
 <template>
   <div class="search-box">
-    <Search class="search-icon" size="20" />
+    <Search class="search-icon" size="18" />
     <input
       :value="modelValue"
       type="text"
@@ -36,11 +36,11 @@ defineEmits(['update:modelValue'])
 
 .search-icon {
   position: absolute;
-  left: 1rem;
+  left: 0.875rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.125rem;
+  height: 1.125rem;
   color: var(--color-gray-400);
   pointer-events: none;
   transition: color 0.2s ease;
@@ -48,10 +48,10 @@ defineEmits(['update:modelValue'])
 
 .search-input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
+  padding: 0.625rem 0.875rem 0.625rem 2.75rem;
   border: 2px solid var(--color-gray-200);
-  border-radius: 16px;
-  font-size: 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
   background: white;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
