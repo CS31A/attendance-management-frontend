@@ -188,7 +188,6 @@ function formatTime(time) {
 <style scoped>
 .table-section {
   margin-bottom: 2rem;
-  animation: fadeIn 0.8s ease-out;
 }
 
 .table-header {
@@ -488,11 +487,6 @@ function formatTime(time) {
   color: var(--color-gray-400);
   font-size: 0.875rem;
   padding: 0 0.5rem;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 /* Responsive */

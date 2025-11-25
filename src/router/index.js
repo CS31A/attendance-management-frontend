@@ -66,6 +66,11 @@ const routes = [
     component: () => import('../views/StudentManagementView.vue'),
     beforeEnter: [authGuard, adminGuard],
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFoundView.vue'),
+  },
 ]
 
 const router = createRouter({

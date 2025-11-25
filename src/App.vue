@@ -16,8 +16,8 @@ const isSidebarCollapsed = ref(false)
 const isAuthInitializing = computed(() => authStore.getIsLoading)
 const isAuthenticated = computed(() => authStore.getIsAuthenticated)
 const showSidebar = computed(() => {
-  // Show sidebar if authenticated and not on login page
-  return isAuthenticated.value && route.path !== '/login'
+  // Show sidebar if authenticated and not on login or 404 page
+  return isAuthenticated.value && route.path !== '/login' && route.name !== 'NotFound'
 })
 
 function checkIsMobile() {

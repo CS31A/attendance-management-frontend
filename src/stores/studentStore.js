@@ -38,7 +38,7 @@ export const useStudentStore = defineStore('students', () => {
         deletedAt: student.isDeleted ? student.updatedAt : null, // Use isDeleted to determine deleted status
         isDeleted: student.isDeleted,
         userId: student.userId, // Keep original field for other uses
-        sectionId: student.sectionId // Keep original field for other uses
+        sectionId: student.sectionId, // Keep original field for other uses
       }))
       return students.value
     }
@@ -71,7 +71,7 @@ export const useStudentStore = defineStore('students', () => {
         deletedAt: response.data.isDeleted ? response.data.updatedAt : null, // Use isDeleted to determine deleted status
         isDeleted: response.data.isDeleted,
         userId: response.data.userId, // Keep original field for other uses
-        sectionId: response.data.sectionId // Keep original field for other uses
+        sectionId: response.data.sectionId, // Keep original field for other uses
       }
       return currentStudent.value
     }
@@ -104,7 +104,7 @@ export const useStudentStore = defineStore('students', () => {
         deletedAt: response.data.isDeleted ? response.data.updatedAt : null, // Use isDeleted to determine deleted status
         isDeleted: response.data.isDeleted,
         userId: response.data.userId, // Keep original field for other uses
-        sectionId: response.data.sectionId // Keep original field for other uses
+        sectionId: response.data.sectionId, // Keep original field for other uses
       }
       // Update in local list if exists
       const index = students.value.findIndex(s => s.id === id)
@@ -143,7 +143,7 @@ export const useStudentStore = defineStore('students', () => {
         currentStudent.value = {
           ...currentStudent.value,
           deletedAt: new Date().toISOString(),
-          isDeleted: true
+          isDeleted: true,
         }
       }
     }
@@ -176,7 +176,7 @@ export const useStudentStore = defineStore('students', () => {
         deletedAt: null, // Restored student should not have deletedAt
         isDeleted: false, // Restored student should not be marked as deleted
         userId: response.data.userId, // Keep original field for other uses
-        sectionId: response.data.sectionId // Keep original field for other uses
+        sectionId: response.data.sectionId, // Keep original field for other uses
       }
       // Add back to local list
       students.value.push(mappedStudent)
