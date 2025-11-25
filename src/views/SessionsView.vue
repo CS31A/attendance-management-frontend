@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSessionStore } from '@/stores/sessionStore'
 
@@ -21,6 +22,11 @@ const showEndModal = ref(false)
 const showUpdateRoomModal = ref(false)
 const selectedSession = ref(null)
 const errorMessage = ref('')
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const sessionToDelete = ref(null)
+const isDeleting = ref(false)
 
 // Computed properties
 const sessions = computed(() => sessionStore.sessions)
@@ -164,15 +170,25 @@ async function handleConfirmEnd(payload) {
   }
 }
 
-async function handleDeleteSession(sessionId) {
-  if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-    return
+function handleDeleteSession(id) {
+  const session = sessionStore.sessions.find(s => s.id === id)
+  if (session) {
+    sessionToDelete.value = session
+    showDeleteModal.value = true
   }
+}
 
+async function confirmDelete() {
+  if (!sessionToDelete.value)
+    return
+
+  isDeleting.value = true
   errorMessage.value = ''
   try {
-    await sessionStore.deleteSession(sessionId)
+    await sessionStore.deleteSession(sessionToDelete.value.id)
     showToast('Session deleted successfully!', 'success')
+    showDeleteModal.value = false
+    sessionToDelete.value = null
   }
   catch (error) {
     console.error('Failed to delete session:', error)
@@ -186,6 +202,14 @@ async function handleDeleteSession(sessionId) {
     showToast(message, 'error')
     errorMessage.value = message
   }
+  finally {
+    isDeleting.value = false
+  }
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+  sessionToDelete.value = null
 }
 
 function handleUpdateRoom(session) {
@@ -323,6 +347,17 @@ onMounted(() => {
       :session="selectedSession"
       @update="handleConfirmUpdateRoom"
       @cancel="showUpdateRoomModal = false"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete Session"
+      message="Are you sure you want to delete this session? This action cannot be undone."
+      :item-name="sessionToDelete ? `${sessionToDelete.courseName || sessionToDelete.courseCode || 'Session'} - ${sessionToDelete.section || ''}` : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Toast Notification -->

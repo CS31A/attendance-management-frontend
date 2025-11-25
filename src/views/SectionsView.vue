@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSectionStore } from '@/stores/sectionStore.js'
@@ -16,6 +17,11 @@ const showEnrollmentModal = ref(false)
 const selectedSection = ref(null)
 const selectedEnrollmentSection = ref(null)
 const modalRef = ref(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const sectionToDelete = ref(null)
+const isDeleting = ref(false)
 
 // Pagination state
 const currentPage = ref(1)
@@ -125,20 +131,40 @@ async function handleSaveSection(sectionData) {
   }
 }
 
-async function handleDeleteSection(sectionId) {
-  if (confirm('Are you sure you want to delete this section? This action cannot be undone.')) {
-    try {
-      await sectionsStore.deleteSection(sectionId)
-      showToast('Section deleted successfully', 'success')
-      // Adjust pagination if needed
-      if (paginatedSections.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
-    }
-    catch (error) {
-      showToast(`Failed to delete section: ${error.response?.data?.message || error.message}`, 'error')
-    }
+function handleDeleteSection(id) {
+  const section = sectionsStore.sections.find(s => s.id === id)
+  if (section) {
+    sectionToDelete.value = section
+    showDeleteModal.value = true
   }
+}
+
+async function confirmDelete() {
+  if (!sectionToDelete.value)
+    return
+
+  isDeleting.value = true
+  try {
+    await sectionsStore.deleteSection(sectionToDelete.value.id)
+    showToast('Section deleted successfully', 'success')
+    // Adjust pagination if needed
+    if (paginatedSections.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
+    showDeleteModal.value = false
+    sectionToDelete.value = null
+  }
+  catch (error) {
+    showToast(`Failed to delete section: ${error.response?.data?.message || error.message}`, 'error')
+  }
+  finally {
+    isDeleting.value = false
+  }
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+  sectionToDelete.value = null
 }
 
 onMounted(async () => {
@@ -239,6 +265,17 @@ onMounted(async () => {
       v-if="showEnrollmentModal"
       :section="selectedEnrollmentSection"
       @close="closeEnrollmentModal"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete Section"
+      message="Are you sure you want to delete this section? This action cannot be undone."
+      :item-name="sectionToDelete ? (sectionToDelete.name || sectionToDelete.sectionName || sectionToDelete.code) : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Toast Notification -->

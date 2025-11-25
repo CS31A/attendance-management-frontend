@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useUserStore } from '@/stores/userStore'
@@ -20,6 +21,11 @@ const searchQuery = ref('')
 const selectedRole = ref('All Roles')
 const createModal = ref(null)
 const editModal = ref(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const userToDelete = ref(null)
+const isDeleting = ref(false)
 
 const roleFilters = ['All Roles', 'Instructor', 'Student']
 
@@ -117,20 +123,41 @@ function handleCancel() {
   editingUser.value = null
 }
 
-async function deleteUser(id) {
-  if (!confirm('Are you sure you want to delete this user?')) {
+function deleteUser(id) {
+  const user = userStore.users.find(u => u.id === id)
+  if (user) {
+    userToDelete.value = user
+    showDeleteModal.value = true
+  }
+}
+
+async function confirmDelete() {
+  if (!userToDelete.value)
     return
-  }
 
-  const userToDelete = userStore.users.find(u => u.id === id)
-  const result = await userStore.deleteUser(id, userToDelete.role)
+  isDeleting.value = true
+  try {
+    const result = await userStore.deleteUser(userToDelete.value.id, userToDelete.value.role)
+    if (result.success) {
+      showToast('User deleted successfully', 'success')
+      showDeleteModal.value = false
+      userToDelete.value = null
+    }
+    else {
+      showToast(result.error || 'Failed to delete user', 'error')
+    }
+  }
+  catch {
+    showToast('An unexpected error occurred', 'error')
+  }
+  finally {
+    isDeleting.value = false
+  }
+}
 
-  if (result.success) {
-    showToast('User deleted successfully', 'success')
-  }
-  else {
-    showToast(result.error || 'Failed to delete user', 'error')
-  }
+function cancelDelete() {
+  showDeleteModal.value = false
+  userToDelete.value = null
 }
 
 function handleEditUser(user) {
@@ -336,6 +363,17 @@ watch([searchQuery, selectedRole], () => {
       :user="editingUser"
       @update="handleUpdateUser"
       @cancel="handleCancel"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete User"
+      message="Are you sure you want to delete this user? This action cannot be undone."
+      :item-name="userToDelete ? `${userToDelete.firstName || userToDelete.firstname} ${userToDelete.lastName || userToDelete.lastname} (${userToDelete.username})` : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Toast Notification -->

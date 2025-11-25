@@ -3,7 +3,7 @@ import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
-import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useScheduleStore } from '@/stores/scheduleStore.js'
 
@@ -17,19 +17,16 @@ const selectedSchedule = ref(null)
 const modalRef = ref(null)
 
 // Modal state for confirmation and alerts
-const showConfirmModal = ref(false)
+const showDeleteModal = ref(false)
 const showAlertDialog = ref(false)
-const confirmModalConfig = ref({
+const scheduleToDelete = ref(null)
+const isDeleting = ref(false)
+const alertModalConfig = ref({
   title: '',
   message: '',
   confirmText: '',
   cancelText: '',
 })
-const alertModalConfig = ref({
-  title: '',
-  message: '',
-})
-
 // Pagination state
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
@@ -128,45 +125,41 @@ async function handleSaveSchedule(scheduleData) {
   }
 }
 
-// Store the schedule ID to delete when confirmation is received
-const scheduleToDelete = ref(null)
-
-async function handleDeleteSchedule(id) {
-  scheduleToDelete.value = id
-  confirmModalConfig.value = {
-    title: 'Delete Schedule',
-    message: 'Are you sure you want to delete this schedule? This action cannot be undone.',
-    confirmText: 'Delete',
-    cancelText: 'Cancel',
+function handleDeleteSchedule(id) {
+  const schedule = scheduleStore.schedules.find(s => s.id === id)
+  if (schedule) {
+    scheduleToDelete.value = schedule
+    showDeleteModal.value = true
   }
-  showConfirmModal.value = true
 }
 
 // Function to handle confirmation
-async function handleConfirm() {
+async function confirmDelete() {
   if (scheduleToDelete.value) {
+    isDeleting.value = true
     try {
-      await scheduleStore.deleteSchedule(scheduleToDelete.value)
+      await scheduleStore.deleteSchedule(scheduleToDelete.value.id)
       showToast('Schedule deleted successfully', 'success')
       // Adjust pagination if needed
       if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
+      showDeleteModal.value = false
       scheduleToDelete.value = null
     }
     catch (error) {
       showToast(`Failed to delete schedule: ${error.response?.data?.message || error.message}`, 'error')
     }
     finally {
-      showConfirmModal.value = false
+      isDeleting.value = false
     }
   }
 }
 
 // Function to handle cancellation
-function handleCancel() {
+function cancelDelete() {
   scheduleToDelete.value = null
-  showConfirmModal.value = false
+  showDeleteModal.value = false
 }
 
 onMounted(async () => {
@@ -261,15 +254,15 @@ onMounted(async () => {
       @cancel="closeModal"
     />
 
-    <!-- Confirmation Modal -->
-    <ConfirmationModal
-      :show="showConfirmModal"
-      :title="confirmModalConfig.title"
-      :message="confirmModalConfig.message"
-      :confirm-text="confirmModalConfig.confirmText"
-      :cancel-text="confirmModalConfig.cancelText"
-      @confirm="handleConfirm"
-      @cancel="handleCancel"
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete Schedule"
+      message="Are you sure you want to delete this schedule? This action cannot be undone."
+      :item-name="scheduleToDelete ? `${scheduleToDelete.subject?.name || scheduleToDelete.subjectName || 'Schedule'} - ${scheduleToDelete.section?.name || scheduleToDelete.sectionName || ''}` : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Alert Modal -->

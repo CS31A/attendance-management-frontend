@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCourseStore } from '@/stores/courseStore.js'
 
@@ -13,6 +14,11 @@ const courseStore = useCourseStore()
 const showModal = ref(false)
 const selectedCourse = ref(null)
 const modalRef = ref(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const courseToDelete = ref(null)
+const isDeleting = ref(false)
 
 // Pagination state
 const currentPage = ref(1)
@@ -112,20 +118,40 @@ async function handleSaveCourse(courseData) {
   }
 }
 
-async function handleDeleteCourse(courseId) {
-  if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
-    try {
-      await courseStore.deleteCourse(courseId)
-      showToast('Course deleted successfully', 'success')
-      // Adjust pagination if needed
-      if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
-    }
-    catch (error) {
-      showToast(`Failed to delete course: ${error.response?.data?.message || error.message}`, 'error')
-    }
+function handleDeleteCourse(id) {
+  const course = courseStore.courses.find(c => c.id === id)
+  if (course) {
+    courseToDelete.value = course
+    showDeleteModal.value = true
   }
+}
+
+async function confirmDelete() {
+  if (!courseToDelete.value)
+    return
+
+  isDeleting.value = true
+  try {
+    await courseStore.deleteCourse(courseToDelete.value.id)
+    showToast('Course deleted successfully', 'success')
+    // Adjust pagination if needed
+    if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
+    showDeleteModal.value = false
+    courseToDelete.value = null
+  }
+  catch (error) {
+    showToast(`Failed to delete course: ${error.response?.data?.message || error.message}`, 'error')
+  }
+  finally {
+    isDeleting.value = false
+  }
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+  courseToDelete.value = null
 }
 
 onMounted(async () => {
@@ -218,6 +244,17 @@ onMounted(async () => {
       :course="selectedCourse"
       @save="handleSaveCourse"
       @cancel="closeModal"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete Course"
+      message="Are you sure you want to delete this course? This action cannot be undone."
+      :item-name="courseToDelete ? (courseToDelete.code ? `${courseToDelete.code} - ${courseToDelete.name}` : courseToDelete.name) : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Toast Notification -->

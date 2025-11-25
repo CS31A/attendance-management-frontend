@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSubjectStore } from '@/stores/subjectStore.js'
 
@@ -13,6 +14,11 @@ const subjectStore = useSubjectStore()
 const showModal = ref(false)
 const selectedSubject = ref(null)
 const modalRef = ref(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const subjectToDelete = ref(null)
+const isDeleting = ref(false)
 
 // Pagination state
 const currentPage = ref(1)
@@ -112,20 +118,40 @@ async function handleSaveSubject(subjectData) {
   }
 }
 
-async function handleDeleteSubject(subjectId) {
-  if (confirm('Are you sure you want to delete this subject? This action cannot be undone.')) {
-    try {
-      await subjectStore.deleteSubject(subjectId)
-      showToast('Subject deleted successfully', 'success')
-      // Adjust pagination if needed
-      if (paginatedSubjects.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
-    }
-    catch (error) {
-      showToast(`Failed to delete subject: ${error.response?.data?.message || error.message}`, 'error')
-    }
+function handleDeleteSubject(id) {
+  const subject = subjectStore.subjects.find(s => s.id === id)
+  if (subject) {
+    subjectToDelete.value = subject
+    showDeleteModal.value = true
   }
+}
+
+async function confirmDelete() {
+  if (!subjectToDelete.value)
+    return
+
+  isDeleting.value = true
+  try {
+    await subjectStore.deleteSubject(subjectToDelete.value.id)
+    showToast('Subject deleted successfully', 'success')
+    // Adjust pagination if needed
+    if (paginatedSubjects.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
+    showDeleteModal.value = false
+    subjectToDelete.value = null
+  }
+  catch (error) {
+    showToast(`Failed to delete subject: ${error.response?.data?.message || error.message}`, 'error')
+  }
+  finally {
+    isDeleting.value = false
+  }
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+  subjectToDelete.value = null
 }
 
 onMounted(async () => {
@@ -218,6 +244,17 @@ onMounted(async () => {
       :subject="selectedSubject"
       @save="handleSaveSubject"
       @cancel="closeModal"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete Subject"
+      message="Are you sure you want to delete this subject? This action cannot be undone."
+      :item-name="subjectToDelete ? `${subjectToDelete.code} - ${subjectToDelete.name}` : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Toast Notification -->

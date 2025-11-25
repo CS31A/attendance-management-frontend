@@ -3,6 +3,7 @@ import { AlertTriangle, GraduationCap, Plus, Trash2, UserPlus } from 'lucide-vue
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useStudentStore } from '@/stores/studentStore'
@@ -19,6 +20,11 @@ const editingStudent = ref(null)
 const searchQuery = ref('')
 const activeTab = ref('active') // 'active' or 'deleted'
 const modalError = ref(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const studentToDelete = ref(null)
+const isDeleting = ref(false)
 
 onMounted(async () => {
   try {
@@ -103,16 +109,33 @@ async function handleUpdateStudent(studentData) {
   }
 }
 
-async function handleDeleteStudent(student) {
-  if (confirm(`Are you sure you want to delete ${student.firstName} ${student.lastName}? This action can be undone by restoring the student.`)) {
-    try {
-      await studentStore.deleteStudent(student.id)
-      showToast('Student deleted successfully', 'success')
-    }
-    catch (error) {
-      showToast(`Failed to delete student: ${error.response?.data?.message || error.message}`, 'error')
-    }
+function handleDeleteStudent(student) {
+  studentToDelete.value = student
+  showDeleteModal.value = true
+}
+
+async function confirmDelete() {
+  if (!studentToDelete.value)
+    return
+
+  isDeleting.value = true
+  try {
+    await studentStore.deleteStudent(studentToDelete.value.id)
+    showToast('Student deleted successfully', 'success')
+    showDeleteModal.value = false
+    studentToDelete.value = null
   }
+  catch (error) {
+    showToast(`Failed to delete student: ${error.response?.data?.message || error.message}`, 'error')
+  }
+  finally {
+    isDeleting.value = false
+  }
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+  studentToDelete.value = null
 }
 
 async function handleRestoreStudent(student) {
@@ -260,6 +283,17 @@ async function handleRestoreStudent(student) {
       :error="modalError"
       @close="closeModal"
       @submit="handleUpdateStudent"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="showDeleteModal"
+      title="Delete Student"
+      message="Are you sure you want to delete this student? This action can be undone by restoring the student."
+      :item-name="studentToDelete ? `${studentToDelete.firstName || studentToDelete.firstname} ${studentToDelete.lastName || studentToDelete.lastname}` : ''"
+      :is-deleting="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
 
     <!-- Toast Notification -->
