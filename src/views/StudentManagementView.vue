@@ -1,9 +1,10 @@
 <script setup>
-import { AlertTriangle, GraduationCap, Plus, Trash2, UserPlus } from 'lucide-vue-next'
+import { AlertTriangle, Calendar, GraduationCap, Mail, Plus, Trash2, User, UserPlus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import DetailsModal from '@/components/common/DetailsModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useStudentStore } from '@/stores/studentStore'
@@ -25,6 +26,11 @@ const modalError = ref(null)
 const showDeleteModal = ref(false)
 const studentToDelete = ref(null)
 const isDeleting = ref(false)
+
+// Details modal state
+const showDetailsModal = ref(false)
+const selectedStudent = ref(null)
+const studentDetails = ref([])
 
 onMounted(async () => {
   try {
@@ -149,6 +155,83 @@ async function handleRestoreStudent(student) {
     }
   }
 }
+
+// View student details handler
+function handleViewStudent(student) {
+  selectedStudent.value = student
+
+  // Format student data into display items
+  studentDetails.value = [
+    {
+      label: 'ID',
+      value: student.id,
+      icon: null,
+    },
+    {
+      label: 'First Name',
+      value: student.firstName,
+      icon: User,
+    },
+    {
+      label: 'Last Name',
+      value: student.lastName,
+      icon: User,
+    },
+    {
+      label: 'Student ID',
+      value: student.studentId,
+      fullWidth: true,
+    },
+    {
+      label: 'Email',
+      value: student.email,
+      icon: Mail,
+      fullWidth: true,
+    },
+    {
+      label: 'Section',
+      value: student.section || 'Not Assigned',
+    },
+    {
+      label: 'Student Type',
+      value: student.isRegular ? 'Regular' : 'Irregular',
+      badge: true,
+      badgeClass: student.isRegular ? 'success' : 'warning',
+    },
+    {
+      label: 'Created At',
+      value: student.createdAt ? new Date(student.createdAt).toLocaleString() : '-',
+      icon: Calendar,
+      fullWidth: true,
+    },
+    {
+      label: 'Updated At',
+      value: student.updatedAt ? new Date(student.updatedAt).toLocaleString() : '-',
+      icon: Calendar,
+      fullWidth: true,
+    },
+  ]
+
+  // Add deleted status if applicable
+  if (student.deletedAt) {
+    studentDetails.value.push({
+      label: 'Deleted At',
+      value: new Date(student.deletedAt).toLocaleString(),
+      icon: Calendar,
+      badge: true,
+      badgeClass: 'error',
+      fullWidth: true,
+    })
+  }
+
+  showDetailsModal.value = true
+}
+
+function closeDetailsModal() {
+  showDetailsModal.value = false
+  selectedStudent.value = null
+  studentDetails.value = []
+}
 </script>
 
 <template>
@@ -247,6 +330,7 @@ async function handleRestoreStudent(student) {
         :students="displayedStudents"
         :loading="studentStore.loading"
         :show-deleted="activeTab === 'deleted'"
+        @view="handleViewStudent"
         @edit="openEditModal"
         @delete="handleDeleteStudent"
         @restore="handleRestoreStudent"
@@ -294,6 +378,16 @@ async function handleRestoreStudent(student) {
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
+    />
+
+    <!-- Details Modal -->
+    <DetailsModal
+      :show="showDetailsModal"
+      :title="selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : 'Student Details'"
+      :items="studentDetails"
+      :icon="GraduationCap"
+      icon-color="var(--color-primary)"
+      @close="closeDetailsModal"
     />
 
     <!-- Toast Notification -->

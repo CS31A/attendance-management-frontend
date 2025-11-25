@@ -1,5 +1,5 @@
 <script setup>
-import { ChevronLeft, ChevronRight, Edit, GraduationCap, RotateCcw, Trash2 } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Edit, Eye, GraduationCap, RotateCcw, Trash2 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 
 const props = defineProps({
@@ -21,7 +21,7 @@ const props = defineProps({
   },
 })
 
-defineEmits(['edit', 'delete', 'restore'])
+defineEmits(['edit', 'delete', 'restore', 'view'])
 
 const currentPage = ref(1)
 
@@ -138,6 +138,14 @@ function goToPage(page) {
               </td>
               <td class="td-actions">
                 <div class="action-buttons">
+                  <button
+                    v-if="!showDeleted"
+                    class="btn-view"
+                    title="View Student Details"
+                    @click="$emit('view', student)"
+                  >
+                    <Eye class="btn-icon" size="16" />
+                  </button>
                   <button
                     v-if="!showDeleted"
                     class="btn-edit"
@@ -315,6 +323,10 @@ function goToPage(page) {
   color: var(--color-gray-500);
   font-family: monospace;
   font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Name Column */
@@ -332,6 +344,11 @@ function goToPage(page) {
   font-size: 0.75rem;
   font-weight: 500;
   font-family: monospace;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 /* Email Column */
@@ -355,6 +372,7 @@ function goToPage(page) {
   justify-content: center;
 }
 
+.btn-view,
 .btn-edit,
 .btn-delete,
 .btn-restore {
@@ -366,6 +384,16 @@ function goToPage(page) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn-view {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+  color: #2563eb;
+}
+
+.btn-view:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
+  color: #1d4ed8;
 }
 
 .btn-edit {
