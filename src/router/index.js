@@ -72,6 +72,11 @@ const routes = [
     beforeEnter: [authGuard, adminGuard],
   },
   {
+    path: '/instructors',
+    component: () => import('../views/InstructorManagementView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFoundView.vue'),

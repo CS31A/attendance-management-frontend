@@ -15,6 +15,25 @@
  * />
  *
  * @example
+ * // With read-only info section
+ * <FormModal
+ *   :show="showModal"
+ *   :entity="selectedEntity"
+ *   title="Instructor"
+ *   :fields="instructorFields"
+ *   :info-section="{
+ *     title: 'User Information',
+ *     note: 'To update email, please use User Management.',
+ *     fields: [
+ *       { label: 'Email', value: instructor.email },
+ *       { label: 'User ID', value: instructor.id }
+ *     ]
+ *   }"
+ *   @save="handleSave"
+ *   @cancel="closeModal"
+ * />
+ *
+ * @example
  * // Field configuration example
  * const classroomFields = [
  *   {
@@ -97,6 +116,22 @@ const props = defineProps({
     validator: (value) => {
       return ['small', 'medium', 'large'].includes(value)
     },
+  },
+  /**
+   * Read-only information section displayed before form fields
+   * @example
+   * {
+   *   title: 'User Information',
+   *   note: 'To update email or username, please use User Management.',
+   *   fields: [
+   *     { label: 'Email', value: 'user@example.com' },
+   *     { label: 'User ID', value: '12345' }
+   *   ]
+   * }
+   */
+  infoSection: {
+    type: Object,
+    default: null,
   },
 })
 
@@ -310,6 +345,26 @@ defineExpose({ handleError })
 
       <!-- Modal Body -->
       <form class="modal-body" @submit.prevent="handleSubmit">
+        <!-- Read-only Info Section -->
+        <div v-if="infoSection" class="info-section">
+          <h3 v-if="infoSection.title" class="info-title">
+            {{ infoSection.title }}
+          </h3>
+          <div class="info-fields">
+            <div
+              v-for="(field, index) in infoSection.fields"
+              :key="index"
+              class="info-row"
+            >
+              <span class="info-label">{{ field.label }}:</span>
+              <span class="info-value">{{ field.value }}</span>
+            </div>
+          </div>
+          <p v-if="infoSection.note" class="info-note">
+            {{ infoSection.note }}
+          </p>
+        </div>
+
         <!-- Dynamic field rendering -->
         <div
           v-for="field in visibleFields"
@@ -653,6 +708,59 @@ defineExpose({ handleError })
 .loading-spinner {
   animation: spin 1s linear infinite;
   color: var(--color-primary);
+}
+
+/* Info Section Styles */
+.info-section {
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--color-gray-600);
+  min-width: 100px;
+  font-size: 0.875rem;
+}
+
+.info-value {
+  color: var(--color-gray-800);
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.info-note {
+  margin: 0.75rem 0 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-gray-200);
+  font-size: 0.8125rem;
+  color: var(--color-gray-500);
+  font-style: italic;
+  line-height: 1.4;
 }
 
 @keyframes fadeIn {

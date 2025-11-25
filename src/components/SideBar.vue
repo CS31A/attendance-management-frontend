@@ -1,5 +1,5 @@
 <script setup>
-import { BarChart3, BookOpen, Calendar, CalendarClock, ClipboardCheck, DoorOpen, GraduationCap, Grid3X3, Group, Library, LogOut, UserCircle, Users } from 'lucide-vue-next'
+import { BarChart3, BookOpen, Calendar, CalendarClock, ClipboardCheck, DoorOpen, GraduationCap, Grid3X3, Group, Library, LogOut, UserCircle, Users, UsersRound } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
@@ -165,6 +165,12 @@ onUnmounted(() => {
             <router-link to="/students" class="nav-link" @click="closeSidebar">
               <GraduationCap class="nav-icon" size="20" />
               <span v-show="!isCollapsed" class="nav-text">Students</span>
+            </router-link>
+          </li>
+          <li v-if="isAdmin">
+            <router-link to="/instructors" class="nav-link" @click="closeSidebar">
+              <UsersRound class="nav-icon" size="20" />
+              <span v-show="!isCollapsed" class="nav-text">Instructors</span>
             </router-link>
           </li>
           <li v-if="isAdmin">
