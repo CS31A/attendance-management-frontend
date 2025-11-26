@@ -261,7 +261,7 @@ async function handleQrGenerated(qrData) {
   showToast('QR Code generated successfully!', 'success')
 }
 
-function handleQrRevoke(qrCode) {
+function handleQrRevoke(_qrCode) {
   if (confirm('Are you sure you want to revoke this QR code? It will no longer be valid for attendance.')) {
     // Since we're dealing with a simple image response, we'll just close the modal
     // In a real implementation, you'd call an API to revoke the QR code

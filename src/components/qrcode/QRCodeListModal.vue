@@ -98,7 +98,7 @@ function formatExpiration(expiresAt) {
   const diffMs = date - now
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMins / 60)
-  
+
   if (diffHours > 24) {
     return `Expires in ${Math.floor(diffHours / 24)} days`
   }
@@ -132,7 +132,9 @@ watch(() => props.show, (newVal) => {
             <div class="header-content">
               <QrCode size="24" class="header-icon" />
               <div>
-                <h2 class="modal-title">QR Codes for Session</h2>
+                <h2 class="modal-title">
+                  QR Codes for Session
+                </h2>
                 <p class="modal-subtitle">
                   {{ session.subjectName }} - {{ session.sectionName }}
                 </p>
@@ -185,7 +187,9 @@ watch(() => props.show, (newVal) => {
                   :class="{ 'is-inactive': !qrCode.isActive || qrCode.isExpired }"
                 >
                   <div class="card-header">
-                    <div class="qr-id">QR #{{ qrCode.id }}</div>
+                    <div class="qr-id">
+                      QR #{{ qrCode.id }}
+                    </div>
                     <span class="status-badge" :class="getStatusBadgeClass(qrCode)">
                       {{ getStatusLabel(qrCode) }}
                     </span>

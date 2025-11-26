@@ -22,14 +22,14 @@ import api from '@/api'
  */
 export async function generateQrCode(payload) {
   const response = await api.post('/QrCode/generate', payload)
-  
+
   const data = response.data
-  
+
   // Convert base64 image to data URL if present
   if (data.qrCodeImage) {
     data.qrCodeImageUrl = `data:image/png;base64,${data.qrCodeImage}`
   }
-  
+
   return data
 }
 
@@ -79,9 +79,9 @@ export async function getQrCodeById(id) {
  */
 export async function getQrCodeImage(id) {
   const response = await api.get(`/QrCode/${id}/image`, {
-    responseType: 'blob'
+    responseType: 'blob',
   })
-  
+
   // Convert blob to data URL for display
   const blob = response.data
   const dataUrl = await new Promise((resolve) => {
@@ -89,7 +89,7 @@ export async function getQrCodeImage(id) {
     reader.onload = () => resolve(reader.result)
     reader.readAsDataURL(blob)
   })
-  
+
   return dataUrl
 }
 

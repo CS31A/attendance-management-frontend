@@ -42,7 +42,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     clearError()
     try {
       const response = await qrCodeApi.generateQrCode(payload)
-      
+
       // Create a QR code object with the response data
       const qrCodeObject = {
         id: response.qrCodeId,
@@ -54,9 +54,9 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
         generatedAt: response.generatedAt,
         expiresAt: response.expiresAt,
         isActive: true,
-        usageCount: 0
+        usageCount: 0,
       }
-      
+
       activeQrCode.value = qrCodeObject
       return qrCodeObject
     }
@@ -79,7 +79,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     try {
       // Fetch QR code metadata
       const data = await qrCodeApi.getQrCodeById(id)
-      
+
       // Fetch QR code image separately
       try {
         const imageData = await qrCodeApi.getQrCodeImage(id)
@@ -89,7 +89,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
         console.error('Failed to fetch QR code image:', imageErr)
         // Continue without image - the UI will handle the missing image gracefully
       }
-      
+
       activeQrCode.value = data
       return data
     }

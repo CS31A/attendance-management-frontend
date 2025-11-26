@@ -180,8 +180,8 @@ async function handleSubmit() {
               type="button"
               class="btn-regenerate"
               :disabled="loading"
-              @click="generateHash"
               aria-label="Regenerate hash"
+              @click="generateHash"
             >
               <RefreshCw size="18" />
             </button>

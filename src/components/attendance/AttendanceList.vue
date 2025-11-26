@@ -1,5 +1,5 @@
 <script setup>
-import { Calendar, ChevronRight, Clock, Filter, MapPin, Search, Users } from 'lucide-vue-next'
+import { Calendar, ChevronRight, Clock, Filter, MapPin, Search } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref } from 'vue'
 
 const props = defineProps({
