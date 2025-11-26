@@ -82,6 +82,11 @@ const routes = [
     beforeEnter: [authGuard, adminGuard],
   },
   {
+    path: '/qr-code/projection/:qrCodeId',
+    component: () => import('../views/QRProjectionView.vue'),
+    beforeEnter: [authGuard, instructorGuard],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFoundView.vue'),

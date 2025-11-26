@@ -84,7 +84,9 @@ export async function fetchStudentAttendance(studentId) {
  */
 export async function fetchSessionAttendance(sessionId) {
   const response = await api.get(`/attendance/session/${sessionId}`)
-  return response.data
+  // Backend returns a wrapper object with attendanceRecords array
+  // Extract just the attendanceRecords array for frontend consumption
+  return response.data.attendanceRecords || []
 }
 
 /**
