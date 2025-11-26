@@ -159,6 +159,7 @@ function handleBack() {
 function formatDate(dateString) {
   if (!dateString)
     return 'N/A'
+  // sessionDate is date-only (no time component), parse as local date
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     weekday: 'long',

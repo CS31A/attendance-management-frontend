@@ -1,6 +1,7 @@
 <script setup>
 import { Calendar, ChevronLeft, ChevronRight, Edit, Eye, RotateCcw, Trash2, Users } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
+import { parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({
   instructors: {
@@ -128,7 +129,7 @@ function goToPage(page) {
                 {{ instructor.email }}
               </td>
               <td class="td-created">
-                {{ new Date(instructor.createdAt).toLocaleDateString() }}
+                {{ parseUtcDate(instructor.createdAt).toLocaleDateString() }}
               </td>
               <td class="td-actions">
                 <div class="action-buttons">

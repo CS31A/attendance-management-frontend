@@ -8,6 +8,29 @@
  */
 
 /**
+ * Parse a date string as UTC if it doesn't have timezone information
+ *
+ * @param {string|Date} dateString - Date string from backend
+ * @returns {Date} Date object
+ */
+export function parseUtcDate(dateString) {
+  if (!dateString)
+    return null
+
+  // If already a Date object, return it
+  if (dateString instanceof Date)
+    return dateString
+
+  // If the date string doesn't end with 'Z' or have timezone offset (+/-)
+  // treat it as UTC by appending 'Z'
+  if (!/Z|[+-]\d{2}:\d{2}$/.test(dateString)) {
+    return new Date(dateString + 'Z')
+  }
+
+  return new Date(dateString)
+}
+
+/**
  * Calculate remaining seconds until expiration
  *
  * @param {string|Date} expiresAt - Expiration timestamp
@@ -18,7 +41,7 @@ export function calculateRemainingTime(expiresAt) {
     return 0
 
   const now = new Date()
-  const expiration = new Date(expiresAt)
+  const expiration = parseUtcDate(expiresAt)
   const diff = expiration.getTime() - now.getTime()
 
   return Math.max(0, Math.floor(diff / 1000))
@@ -67,7 +90,7 @@ export function formatScanTime(timestamp) {
   if (!timestamp)
     return '-'
 
-  return new Date(timestamp).toLocaleTimeString([], {
+  return parseUtcDate(timestamp).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   })
@@ -83,7 +106,7 @@ export function formatDate(date) {
   if (!date)
     return '-'
 
-  return new Date(date).toLocaleDateString([], {
+  return parseUtcDate(date).toLocaleDateString([], {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -91,6 +114,7 @@ export function formatDate(date) {
 }
 
 export default {
+  parseUtcDate,
   calculateRemainingTime,
   formatCountdown,
   isQrExpired,

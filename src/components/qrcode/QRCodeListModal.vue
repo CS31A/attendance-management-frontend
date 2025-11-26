@@ -2,6 +2,7 @@
 import { Check, Clock, Eye, QrCode, RefreshCw, X, XCircle } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
+import { parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({
   show: {
@@ -57,7 +58,7 @@ async function handleRefresh() {
 
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
-  const date = new Date(dateString)
+  const date = parseUtcDate(dateString)
   return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -81,7 +82,7 @@ function getStatusLabel(qrCode) {
 
 function formatExpiration(expiresAt) {
   if (!expiresAt) return 'No expiration'
-  const date = new Date(expiresAt)
+  const date = parseUtcDate(expiresAt)
   const now = new Date()
   
   if (date < now) return 'Expired'

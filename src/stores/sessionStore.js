@@ -86,7 +86,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const upcomingSessions = computed(() => {
     return sessions.value
       .filter(session => session.status === 'not_started')
-      .sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate))
+      .sort((a, b) => new Date(a.sessionDate + 'Z') - new Date(b.sessionDate + 'Z'))
   })
 
   /**
@@ -96,7 +96,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const completedSessions = computed(() => {
     return sessions.value
       .filter(session => session.status === 'ended' || session.status === 'cancelled')
-      .sort((a, b) => new Date(b.sessionDate) - new Date(a.sessionDate))
+      .sort((a, b) => new Date(b.sessionDate + 'Z') - new Date(a.sessionDate + 'Z'))
   })
 
   /**

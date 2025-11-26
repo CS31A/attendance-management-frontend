@@ -3,6 +3,7 @@ import { AlertTriangle, Check, RefreshCw, Search, Trash2, UserPlus, X } from 'lu
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useStudentStore } from '@/stores/studentStore'
+import { parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({
   section: {
@@ -272,7 +273,7 @@ watch(() => props.section, () => {
                     {{ student.status || 'Active' }}
                   </span>
                 </td>
-                <td>{{ new Date(student.enrollmentDate).toLocaleDateString() }}</td>
+                <td>{{ parseUtcDate(student.enrollmentDate).toLocaleDateString() }}</td>
                 <td>
                   <div class="row-actions">
                     <button

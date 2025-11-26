@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import qrCodeApi from '@/api/qrCode'
+import { parseUtcDate } from '@/utils/qrcode'
 
 export const useQrCodeStore = defineStore('qrCodeStore', () => {
   // State
@@ -185,7 +186,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       return 5000
 
     const now = new Date()
-    const expiration = new Date(expiresAt)
+    const expiration = parseUtcDate(expiresAt)
     const secondsRemaining = Math.floor((expiration.getTime() - now.getTime()) / 1000)
 
     // Expired: stop polling
