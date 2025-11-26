@@ -174,12 +174,18 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     currentSessionId.value = sessionId
 
     try {
+      // API returns attendanceRecords array directly (extracted in api layer)
       const data = await apiFetchSessionAttendance(sessionId)
       sessionAttendance.value = data
       return data
     }
     catch (err) {
       console.error('Failed to fetch session attendance:', err)
+      // If attendance doesn't exist yet (404), return empty array
+      if (err.response?.status === 404) {
+        sessionAttendance.value = []
+        return []
+      }
       throw err
     }
     finally {

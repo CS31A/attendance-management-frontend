@@ -113,7 +113,7 @@ const scheduleFields = [
       const instructors = await getAllInstructors()
       return instructors.map(i => ({
         value: i.id,
-        label: `${i.firstName} ${i.lastName}`,
+        label: `${i.firstname} ${i.lastname}`,
       }))
     },
   },

@@ -39,7 +39,7 @@ const filteredSessions = computed(() => {
         session.subjectName?.toLowerCase().includes(query)
         || session.subjectCode?.toLowerCase().includes(query)
         || session.sectionName?.toLowerCase().includes(query)
-        || session.instructorName?.toLowerCase().includes(query)
+        || session.startedByName?.toLowerCase().includes(query)
       )
     })
   }
@@ -57,10 +57,10 @@ const filteredSessions = computed(() => {
     result = result.filter(session => session.status === statusFilter.value)
   }
 
-  // Sort by scheduled time
+  // Sort by actual start time or session date
   return result.sort((a, b) => {
-    const timeA = a.scheduledStartTime || ''
-    const timeB = b.scheduledStartTime || ''
+    const timeA = a.actualStartTime || a.sessionDate || ''
+    const timeB = b.actualStartTime || b.sessionDate || ''
     return timeA.localeCompare(timeB)
   })
 })
@@ -92,6 +92,11 @@ function formatDate(dateString) {
 function formatTime(timeString) {
   if (!timeString)
     return 'N/A'
+  // Handle both time-only format (HH:MM:SS) and full datetime format
+  if (timeString.includes('T')) {
+    const time = timeString.split('T')[1]
+    return time.substring(0, 5) // HH:MM format
+  }
   return timeString.substring(0, 5) // HH:MM format
 }
 
@@ -228,22 +233,22 @@ function clearFilters() {
             <Calendar size="16" />
             <span>{{ formatDate(session.sessionDate) }}</span>
           </div>
-          <div class="detail-item">
+          <div v-if="session.actualStartTime" class="detail-item">
             <Clock size="16" />
-            <span>{{ formatTime(session.scheduledStartTime) }} - {{ formatTime(session.scheduledEndTime) }}</span>
+            <span>Started: {{ formatTime(session.actualStartTime) }}</span>
           </div>
-          <div v-if="session.roomName" class="detail-item">
+          <div v-if="session.attendanceCutOff" class="detail-item">
+            <Clock size="16" />
+            <span>Cut-off: {{ formatTime(session.attendanceCutOff) }}</span>
+          </div>
+          <div v-if="session.actualRoomName || session.scheduledRoomName" class="detail-item">
             <MapPin size="16" />
-            <span>{{ session.roomName }}</span>
-          </div>
-          <div v-if="session.enrolledCount" class="detail-item">
-            <Users size="16" />
-            <span>{{ session.enrolledCount }} Students</span>
+            <span>{{ session.actualRoomName || session.scheduledRoomName }}</span>
           </div>
         </div>
 
         <div class="card-footer">
-          <span class="instructor-name">{{ session.instructorName }}</span>
+          <span class="instructor-name">{{ session.startedByName || 'N/A' }}</span>
           <ChevronRight size="20" class="arrow-icon" />
         </div>
       </div>

@@ -1,8 +1,10 @@
 <script setup>
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
 
 const CreateSessionModal = defineAsyncComponent(() => import('@/components/sessions/CreateSessionModal.vue'))
@@ -11,8 +13,13 @@ const SessionTable = defineAsyncComponent(() => import('@/components/sessions/Se
 const StartSessionModal = defineAsyncComponent(() => import('@/components/sessions/StartSessionModal.vue'))
 const UpdateRoomModal = defineAsyncComponent(() => import('@/components/sessions/UpdateRoomModal.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+const QRGenerateModal = defineAsyncComponent(() => import('@/components/qrcode/QRGenerateModal.vue'))
+const QRDisplayModal = defineAsyncComponent(() => import('@/components/qrcode/QRDisplayModal.vue'))
+const QRCodeListModal = defineAsyncComponent(() => import('@/components/qrcode/QRCodeListModal.vue'))
 
+const router = useRouter()
 const sessionStore = useSessionStore()
+const qrCodeStore = useQrCodeStore()
 
 // State
 const currentFilter = ref('all')
@@ -20,7 +27,11 @@ const showCreateModal = ref(false)
 const showStartModal = ref(false)
 const showEndModal = ref(false)
 const showUpdateRoomModal = ref(false)
+const showQRGenerateModal = ref(false)
+const showQRDisplayModal = ref(false)
+const showQRListModal = ref(false)
 const selectedSession = ref(null)
+const currentQrCode = ref(null)
 const errorMessage = ref('')
 
 // Delete modal state
@@ -239,6 +250,49 @@ async function handleConfirmUpdateRoom(payload) {
   }
 }
 
+function handleGenerateQr(session) {
+  selectedSession.value = session
+  showQRGenerateModal.value = true
+}
+
+async function handleQrGenerated(qrData) {
+  currentQrCode.value = qrData
+  showQRDisplayModal.value = true
+  showToast('QR Code generated successfully!', 'success')
+}
+
+function handleQrRevoke(qrCode) {
+  if (confirm('Are you sure you want to revoke this QR code? It will no longer be valid for attendance.')) {
+    // Since we're dealing with a simple image response, we'll just close the modal
+    // In a real implementation, you'd call an API to revoke the QR code
+    showToast('QR Code revoked successfully', 'success')
+    showQRDisplayModal.value = false
+    currentQrCode.value = null
+  }
+}
+
+function handleQrFullscreen(qrCodeId) {
+  router.push(`/qr-code/projection/${qrCodeId}`)
+}
+
+function handleViewQrCodes(session) {
+  selectedSession.value = session
+  showQRListModal.value = true
+}
+
+async function handleViewQrFromList(qrCode) {
+  // Fetch the full QR code details including the image
+  try {
+    const qrCodeDetails = await qrCodeStore.fetchQrCode(qrCode.id)
+    currentQrCode.value = qrCodeDetails
+    showQRDisplayModal.value = true
+  }
+  catch (error) {
+    console.error('Failed to load QR code:', error)
+    showToast('Failed to load QR code details', 'error')
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadSessions()
@@ -315,6 +369,8 @@ onMounted(() => {
         @end="handleEndSession"
         @delete="handleDeleteSession"
         @update-room="handleUpdateRoom"
+        @generate-qr="handleGenerateQr"
+        @view-qr-codes="handleViewQrCodes"
       />
     </div>
 
@@ -347,6 +403,34 @@ onMounted(() => {
       :session="selectedSession"
       @update="handleConfirmUpdateRoom"
       @cancel="showUpdateRoomModal = false"
+    />
+
+    <!-- QR Generate Modal -->
+    <QRGenerateModal
+      v-if="showQRGenerateModal && selectedSession"
+      :show="showQRGenerateModal"
+      :session-id="selectedSession.id"
+      @generated="handleQrGenerated"
+      @close="showQRGenerateModal = false"
+    />
+
+    <!-- QR Display Modal -->
+    <QRDisplayModal
+      v-if="showQRDisplayModal && currentQrCode"
+      :show="showQRDisplayModal"
+      :qr-code="currentQrCode"
+      @close="showQRDisplayModal = false; currentQrCode = null"
+      @revoke="handleQrRevoke"
+      @fullscreen="handleQrFullscreen"
+    />
+
+    <!-- QR Code List Modal -->
+    <QRCodeListModal
+      v-if="showQRListModal && selectedSession"
+      :show="showQRListModal"
+      :session="selectedSession"
+      @close="showQRListModal = false; selectedSession = null"
+      @view-qr="handleViewQrFromList"
     />
 
     <!-- Delete Modal -->

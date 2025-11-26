@@ -1,5 +1,5 @@
 <script setup>
-import { Calendar, Clock, MapPin, Play, StopCircle, Trash2 } from 'lucide-vue-next'
+import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 defineProps({
@@ -9,7 +9,7 @@ defineProps({
   },
 })
 
-defineEmits(['start', 'end', 'delete', 'updateRoom'])
+defineEmits(['start', 'end', 'delete', 'updateRoom', 'generateQr', 'viewQrCodes'])
 
 // Helper functions
 function formatDate(dateString) {
@@ -25,7 +25,25 @@ function formatDate(dateString) {
 }
 
 function getCourseName(session) {
-  return session.courseName || session.courseCode || 'Unknown Course'
+  if (!session)
+    return 'Unknown Course'
+  
+  // Try subject fields first (most common in session data)
+  if (session.subjectCode && session.subjectName) {
+    return `${session.subjectCode} - ${session.subjectName}`
+  }
+  
+  // Try course fields as fallback
+  if (session.courseCode && session.courseName) {
+    return `${session.courseCode} - ${session.courseName}`
+  }
+  
+  // Individual field fallbacks
+  return session.subjectName 
+      || session.subjectCode 
+      || session.courseName 
+      || session.courseCode 
+      || 'Unknown Course'
 }
 
 function getScheduleInfo(session) {
@@ -149,6 +167,22 @@ function formatTime(timeString) {
 
               <!-- Active Actions -->
               <template v-else-if="session.status === 'active'">
+                <button
+                  class="btn-action btn-qr"
+                  title="Generate QR Code"
+                  @click="$emit('generateQr', session)"
+                >
+                  <QrCode class="btn-icon" size="16" />
+                  <span>QR</span>
+                </button>
+                <button
+                  class="btn-action btn-view-qr"
+                  title="View QR Codes"
+                  @click="$emit('viewQrCodes', session)"
+                >
+                  <Eye class="btn-icon" size="16" />
+                  <span>View</span>
+                </button>
                 <button
                   class="btn-action btn-end"
                   title="End Session"
@@ -340,6 +374,26 @@ td {
 
 .btn-end:hover {
   background: var(--color-error-lighter);
+}
+
+/* QR Button */
+.btn-qr {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-qr:hover {
+  background: var(--color-primary-bg, #eff6ff);
+}
+
+/* View QR Button */
+.btn-view-qr {
+  color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+.btn-view-qr:hover {
+  background: var(--color-secondary-lighter, #f5f3ff);
 }
 
 /* Room Button */

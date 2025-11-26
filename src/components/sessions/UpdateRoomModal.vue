@@ -51,7 +51,23 @@ async function loadClassrooms() {
 function getCourseName(session) {
   if (!session)
     return 'N/A'
-  return session.courseName || session.courseCode || 'Unknown Course'
+  
+  // Try subject fields first (most common in session data)
+  if (session.subjectCode && session.subjectName) {
+    return `${session.subjectCode} - ${session.subjectName}`
+  }
+  
+  // Try course fields as fallback
+  if (session.courseCode && session.courseName) {
+    return `${session.courseCode} - ${session.courseName}`
+  }
+  
+  // Individual field fallbacks
+  return session.subjectName 
+      || session.subjectCode 
+      || session.courseName 
+      || session.courseCode 
+      || 'Unknown Course'
 }
 
 function formatDate(dateString) {

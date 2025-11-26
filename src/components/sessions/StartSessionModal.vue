@@ -1,9 +1,10 @@
 <script setup>
 import { AlertTriangle, Play, X } from 'lucide-vue-next'
-import { defineAsyncComponent, onMounted, ref } from 'vue'
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import classroomApi from '@/api/classrooms'
+import { getScheduleById } from '@/api/schedules'
 
-defineProps({
+const props = defineProps({
   session: {
     type: Object,
     required: true,
@@ -20,6 +21,8 @@ const attendanceCutoffMinutes = ref(15)
 const errorMessage = ref('')
 const classrooms = ref([])
 const loadingClassrooms = ref(false)
+const scheduleDetails = ref(null)
+const loadingSchedule = ref(false)
 
 // Methods
 async function loadClassrooms() {
@@ -43,7 +46,14 @@ async function loadClassrooms() {
 function getCourseName(session) {
   if (!session)
     return 'N/A'
-  return session.courseName || session.courseCode || 'Unknown Course'
+  // Try different field combinations based on API response structure
+  if (session.subjectCode && session.subjectName) {
+    return `${session.subjectCode} - ${session.subjectName}`
+  }
+  if (session.courseCode && session.courseName) {
+    return `${session.courseCode} - ${session.courseName}`
+  }
+  return session.subjectName || session.courseName || session.subjectCode || session.courseCode || 'Unknown Course'
 }
 
 function formatDate(dateString) {
@@ -61,9 +71,29 @@ function formatDate(dateString) {
 function getScheduledTime(session) {
   if (!session)
     return 'N/A'
-  if (session.scheduledStartTime && session.scheduledEndTime) {
-    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
+
+  // Check session fields first
+  let startTime = session.scheduledStartTime || session.startTime || session.timeIn
+  let endTime = session.scheduledEndTime || session.endTime || session.timeOut
+
+  // Fall back to fetched schedule details if session doesn't have time
+  if (!startTime && scheduleDetails.value) {
+    startTime = scheduleDetails.value.timeIn || scheduleDetails.value.startTime
+    endTime = scheduleDetails.value.timeOut || scheduleDetails.value.endTime
   }
+
+  if (startTime && endTime) {
+    return `${formatTime(startTime)} - ${formatTime(endTime)}`
+  }
+  if (startTime) {
+    return formatTime(startTime)
+  }
+
+  // Show loading state if still fetching schedule
+  if (loadingSchedule.value) {
+    return 'Loading...'
+  }
+
   return 'Time not specified'
 }
 
@@ -99,9 +129,36 @@ function startSession() {
   emit('start', payload)
 }
 
+async function loadScheduleDetails() {
+  if (!props.session?.scheduleId) {
+    return
+  }
+
+  loadingSchedule.value = true
+  try {
+    const response = await getScheduleById(props.session.scheduleId)
+    scheduleDetails.value = response.data || response
+  }
+  catch (error) {
+    console.error('Failed to load schedule details:', error)
+    // Don't show error - time display will just show fallback
+  }
+  finally {
+    loadingSchedule.value = false
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadClassrooms()
+  loadScheduleDetails()
+})
+
+// Watch for session changes
+watch(() => props.session?.scheduleId, (newScheduleId) => {
+  if (newScheduleId) {
+    loadScheduleDetails()
+  }
 })
 </script>
 
@@ -158,7 +215,7 @@ onMounted(() => {
             :disabled="loadingClassrooms"
           >
             <option :value="null">
-              Use scheduled room ({{ session?.scheduledRoom || 'TBD' }})
+              Use scheduled room ({{ session?.scheduledRoomName || session?.actualRoomName || 'TBD' }})
             </option>
             <option
               v-for="classroom in classrooms"

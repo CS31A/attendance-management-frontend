@@ -52,14 +52,61 @@ function getScheduleLabel(schedule) {
   // Build a descriptive label from schedule data
   const parts = []
 
-  if (schedule.courseCode)
-    parts.push(schedule.courseCode)
-  if (schedule.courseName)
-    parts.push(schedule.courseName)
-  if (schedule.section)
-    parts.push(`Section ${schedule.section}`)
-  if (schedule.dayOfWeek && schedule.startTime) {
-    parts.push(`${schedule.dayOfWeek} ${schedule.startTime}`)
+  if (schedule.course) {
+    // Handle both object and string formats for course
+    const courseName = typeof schedule.course === 'object'
+      ? (schedule.course.name || schedule.course.title || schedule.course.courseName)
+      : schedule.course
+    const courseCode = typeof schedule.course === 'object'
+      ? (schedule.course.code || schedule.course.courseCode)
+      : null
+    if (courseCode && courseName) {
+      parts.push(`${courseCode} - ${courseName}`)
+    }
+    else if (courseName) {
+      parts.push(courseName.toString())
+    }
+    else if (schedule.courseCode) {
+      parts.push(schedule.courseCode.toString())
+    }
+    else if (schedule.courseName) {
+      parts.push(schedule.courseName.toString())
+    }
+  }
+  else {
+    if (schedule.courseCode && schedule.courseCode !== null && schedule.courseCode !== undefined)
+      parts.push(schedule.courseCode.toString())
+    if (schedule.courseName && schedule.courseName !== null && schedule.courseName !== undefined)
+      parts.push(schedule.courseName.toString())
+  }
+
+  if (schedule.section) {
+    // Handle both object and string formats for section
+    const sectionName = typeof schedule.section === 'object'
+      ? (schedule.section.name || schedule.section.title || schedule.section.sectionName)
+      : schedule.section
+    if (sectionName && sectionName !== null && sectionName !== undefined)
+      parts.push(`Section ${sectionName}`)
+  }
+
+  if (schedule.classroom) {
+    // Handle both object and string formats for classroom
+    const classroomName = typeof schedule.classroom === 'object'
+      ? (schedule.classroom.name || schedule.classroom.room || schedule.classroom.classroomName)
+      : schedule.classroom
+    if (classroomName && classroomName !== null && classroomName !== undefined)
+      parts.push(classroomName.toString())
+  }
+
+  if (schedule.dayOfWeek && (schedule.startTime || schedule.timeIn)) {
+    const startTime = schedule.startTime || schedule.timeIn
+    const endTime = schedule.endTime || schedule.timeOut
+    if (endTime) {
+      parts.push(`${schedule.dayOfWeek} ${startTime} - ${endTime}`)
+    }
+    else {
+      parts.push(`${schedule.dayOfWeek} ${startTime}`)
+    }
   }
 
   return parts.length > 0 ? parts.join(' - ') : `Schedule ${schedule.id}`

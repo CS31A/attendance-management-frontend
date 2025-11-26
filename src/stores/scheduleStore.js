@@ -23,8 +23,10 @@ export const useScheduleStore = defineStore('schedule', () => {
   )
 
   // Actions
-  async function fetchSchedules() {
-    loading.value = true
+  async function fetchSchedules(skipLoadingState = false) {
+    if (!skipLoadingState) {
+      loading.value = true
+    }
     error.value = null
     try {
       const data = await scheduleApi.getAllSchedules()
@@ -35,7 +37,9 @@ export const useScheduleStore = defineStore('schedule', () => {
       console.error('Error fetching schedules:', err)
     }
     finally {
-      loading.value = false
+      if (!skipLoadingState) {
+        loading.value = false
+      }
     }
   }
 
@@ -60,7 +64,8 @@ export const useScheduleStore = defineStore('schedule', () => {
     error.value = null
     try {
       const newSchedule = await scheduleApi.createSchedule(data)
-      schedules.value.push(newSchedule)
+      // Refetch all schedules to ensure we have fully populated data
+      await fetchSchedules(true)
       return newSchedule
     }
     catch (err) {
@@ -85,10 +90,8 @@ export const useScheduleStore = defineStore('schedule', () => {
     error.value = null
     try {
       const updatedSchedule = await scheduleApi.updateSchedule(id, data)
-      const index = schedules.value.findIndex(s => s.id === id)
-      if (index !== -1) {
-        schedules.value[index] = updatedSchedule
-      }
+      // Refetch all schedules to ensure we have fully populated data
+      await fetchSchedules(true)
       return updatedSchedule
     }
     catch (err) {
