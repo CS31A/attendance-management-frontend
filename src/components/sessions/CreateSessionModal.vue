@@ -271,6 +271,31 @@ onMounted(() => {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+@media (max-width: 1200px) {
+  .modal {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal {
+    max-width: 95%;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .btn-create,
+  .btn-cancel {
+    width: 100%;
+  }
+}
+
 /* Modal Header */
 .modal-header {
   display: flex;

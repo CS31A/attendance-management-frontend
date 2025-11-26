@@ -491,10 +491,54 @@ onUnmounted(() => {
   50% { opacity: 0.7; }
 }
 
+@media (max-width: 1200px) {
+  .modal {
+    max-width: 90%;
+  }
+
+  .qr-container {
+    width: 220px;
+    height: 220px;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal {
+    max-width: 95%;
+    margin: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1rem;
+  }
+
+  .qr-container {
+    width: 200px;
+    height: 200px;
+  }
+
+  .timer-display {
+    font-size: 1.75rem;
+  }
+
+  .modal-footer {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .modal {
     max-width: 100%;
-    margin: 1rem;
+    margin: 0.75rem;
+  }
+
+  .qr-container {
+    width: 180px;
+    height: 180px;
+  }
+
+  .timer-display {
+    font-size: 1.5rem;
   }
 
   .modal-footer {

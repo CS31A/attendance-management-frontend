@@ -404,4 +404,66 @@ function endSession() {
 .btn-cancel:hover {
   background: var(--color-gray-50);
 }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .modal {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal {
+    max-width: 95%;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .session-info,
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .btn-end,
+  .btn-cancel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal {
+    max-width: 100%;
+    margin: 0.75rem;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.125rem;
+  }
+
+  .session-info,
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .info-row {
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .info-label,
+  .info-value {
+    font-size: 0.813rem;
+  }
+}
 </style>

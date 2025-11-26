@@ -27,23 +27,23 @@ function formatDate(dateString) {
 function getCourseName(session) {
   if (!session)
     return 'Unknown Course'
-  
+
   // Try subject fields first (most common in session data)
   if (session.subjectCode && session.subjectName) {
     return `${session.subjectCode} - ${session.subjectName}`
   }
-  
+
   // Try course fields as fallback
   if (session.courseCode && session.courseName) {
     return `${session.courseCode} - ${session.courseName}`
   }
-  
+
   // Individual field fallbacks
-  return session.subjectName 
-      || session.subjectCode 
-      || session.courseName 
-      || session.courseCode 
-      || 'Unknown Course'
+  return session.subjectName
+    || session.subjectCode
+    || session.courseName
+    || session.courseCode
+    || 'Unknown Course'
 }
 
 function getScheduleInfo(session) {
@@ -215,10 +215,14 @@ function formatTime(timeString) {
 <style scoped>
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Ensure minimum width for proper table layout */
+  min-width: 0;
 }
 
 .sessions-table {
   width: 100%;
+  min-width: 800px; /* Prevents crushing */
   border-collapse: collapse;
   background: white;
 }
@@ -239,12 +243,12 @@ th {
   letter-spacing: 0.05em;
 }
 
-.th-date { width: 15%; }
-.th-course { width: 25%; }
-.th-status { width: 12%; }
-.th-room { width: 12%; }
-.th-time { width: 16%; }
-.th-actions { width: 20%; }
+.th-date { width: 13%; }
+.th-course { width: 24%; }
+.th-status { width: 10%; }
+.th-room { width: 11%; }
+.th-time { width: 15%; }
+.th-actions { width: 27%; }
 
 /* Table Body */
 tbody tr {
@@ -330,22 +334,24 @@ td {
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.375rem;
   align-items: center;
 }
 
 .btn-action {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.875rem;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--color-gray-300);
   border-radius: 6px;
   background: white;
-  font-size: 0.875rem;
+  font-size: 0.813rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-action:hover {
@@ -400,7 +406,8 @@ td {
 .btn-room {
   color: var(--color-primary-lighter);
   border-color: var(--color-primary-lighter);
-  padding: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  min-width: auto;
 }
 
 .btn-room:hover {
@@ -411,7 +418,8 @@ td {
 .btn-delete {
   color: var(--color-error-dark);
   border-color: var(--color-error-dark);
-  padding: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  min-width: auto;
 }
 
 .btn-delete:hover {
@@ -426,10 +434,53 @@ td {
 }
 
 /* Responsive */
+
+/* Handle narrower viewports - DevTools open scenarios */
+@media (max-width: 1400px) {
+  .sessions-table {
+    min-width: 700px;
+  }
+
+  .btn-action span {
+    font-size: 0.813rem;
+  }
+
+  th, td {
+    padding: 0.875rem 0.75rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .sessions-table {
+    min-width: 650px;
+  }
+
+  .action-buttons {
+    gap: 0.375rem;
+  }
+
+  .btn-action {
+    padding: 0.5rem 0.75rem;
+  }
+
+  th, td {
+    padding: 0.75rem 0.625rem;
+    font-size: 0.813rem;
+  }
+}
+
 @media (max-width: 1024px) {
+  .sessions-table {
+    min-width: 600px;
+  }
+
   .th-time,
   .td-time {
     display: none;
+  }
+
+  th, td {
+    padding: 0.75rem 0.5rem;
   }
 }
 
@@ -443,6 +494,130 @@ td {
 
   .btn-action span {
     display: none;
+  }
+
+  th, td {
+    padding: 0.75rem;
+    font-size: 0.813rem;
+  }
+
+  th {
+    font-size: 0.75rem;
+  }
+
+  .date-text {
+    font-size: 0.813rem;
+  }
+
+  .course-name {
+    font-size: 0.875rem;
+  }
+
+  .schedule-info {
+    font-size: 0.75rem;
+  }
+
+  .action-buttons {
+    gap: 0.375rem;
+  }
+
+  .btn-action {
+    padding: 0.5rem;
+    min-width: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th, td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  th {
+    font-size: 0.688rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .th-date { width: auto; min-width: 100px; }
+  .th-course { width: auto; min-width: 150px; }
+  .th-status { width: auto; min-width: 90px; }
+  .th-actions { width: auto; min-width: 120px; }
+
+  .date-icon,
+  .room-icon,
+  .time-icon,
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .date-cell,
+  .room-cell,
+  .time-cell {
+    gap: 0.375rem;
+  }
+
+  .course-cell {
+    gap: 0.125rem;
+  }
+
+  .date-text,
+  .room-text,
+  .time-text {
+    font-size: 0.75rem;
+  }
+
+  .course-name {
+    font-size: 0.813rem;
+  }
+
+  .schedule-info {
+    font-size: 0.688rem;
+  }
+
+  .action-buttons {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-action {
+    padding: 0.375rem;
+    min-width: 28px;
+    border-radius: 4px;
+  }
+
+  .status-readonly {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  th, td {
+    padding: 0.375rem;
+    font-size: 0.688rem;
+  }
+
+  th {
+    font-size: 0.625rem;
+    padding: 0.625rem 0.375rem;
+  }
+
+  .btn-action {
+    padding: 0.25rem;
+    min-width: 24px;
+  }
+
+  .date-text,
+  .room-text,
+  .time-text,
+  .course-name,
+  .schedule-info {
+    font-size: 0.688rem;
   }
 }
 </style>

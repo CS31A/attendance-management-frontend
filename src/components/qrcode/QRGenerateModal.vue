@@ -496,11 +496,36 @@ async function handleSubmit() {
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .modal {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal {
+    max-width: 95%;
+    margin: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .actions {
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 640px) {
   .modal {
     max-width: 100%;
-    margin: 1rem;
+    margin: 0.75rem;
     max-height: 85vh;
+  }
+
+  .modal-header h2 {
+    font-size: 1.125rem;
   }
 
   .actions {

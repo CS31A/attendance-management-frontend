@@ -284,14 +284,44 @@ defineExpose({
 }
 
 /* Responsive styles */
+@media (max-width: 1200px) {
+  .modal-content {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal-content {
+    max-width: 95%;
+    margin: 1rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.125rem;
+  }
+}
+
 @media (max-width: 640px) {
   .modal-content {
     margin: 1rem;
     max-width: calc(100% - 2rem);
   }
 
+  .modal-header {
+    padding: 1rem 1.25rem 0.5rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1rem;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
   .modal-footer {
     flex-direction: column;
+    padding: 1rem 1.25rem 1.25rem;
   }
 
   .btn-cancel,

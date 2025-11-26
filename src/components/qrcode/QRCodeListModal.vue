@@ -26,11 +26,12 @@ const qrCodes = computed(() => qrCodeStore.sessionQrCodes)
 
 // Methods
 async function loadQrCodes() {
-  if (!props.session?.id) return
-  
+  if (!props.session?.id)
+    return
+
   loading.value = true
   error.value = null
-  
+
   try {
     await qrCodeStore.fetchSessionQrCodes(props.session.id)
   }
@@ -57,7 +58,8 @@ async function handleRefresh() {
 }
 
 function formatDate(dateString) {
-  if (!dateString) return 'N/A'
+  if (!dateString)
+    return 'N/A'
   const date = parseUtcDate(dateString)
   return date.toLocaleString('en-US', {
     month: 'short',
@@ -69,24 +71,30 @@ function formatDate(dateString) {
 }
 
 function getStatusBadgeClass(qrCode) {
-  if (!qrCode.isActive) return 'status-revoked'
-  if (qrCode.isExpired) return 'status-expired'
+  if (!qrCode.isActive)
+    return 'status-revoked'
+  if (qrCode.isExpired)
+    return 'status-expired'
   return 'status-active'
 }
 
 function getStatusLabel(qrCode) {
-  if (!qrCode.isActive) return 'Revoked'
-  if (qrCode.isExpired) return 'Expired'
+  if (!qrCode.isActive)
+    return 'Revoked'
+  if (qrCode.isExpired)
+    return 'Expired'
   return 'Active'
 }
 
 function formatExpiration(expiresAt) {
-  if (!expiresAt) return 'No expiration'
+  if (!expiresAt)
+    return 'No expiration'
   const date = parseUtcDate(expiresAt)
   const now = new Date()
-  
-  if (date < now) return 'Expired'
-  
+
+  if (date < now)
+    return 'Expired'
+
   const diffMs = date - now
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMins / 60)
@@ -248,7 +256,7 @@ watch(() => props.show, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
   padding: 1rem;
 }
 
@@ -597,9 +605,54 @@ watch(() => props.show, (newVal) => {
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .modal-container {
+    max-width: 90%;
+  }
+
+  .qr-cards {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .modal-container {
+    max-width: 95%;
+  }
+
+  .modal-header {
+    padding: 1.25rem;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .qr-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .modal-container {
     max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
+  .modal-subtitle {
+    font-size: 0.813rem;
+  }
+
+  .modal-body,
+  .modal-footer {
+    padding: 1rem;
   }
 
   .qr-cards {
