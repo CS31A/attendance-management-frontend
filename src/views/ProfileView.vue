@@ -1,5 +1,5 @@
 <script setup>
-import { Calendar, Clock, Hash, Mail, Pencil, Save, Shield, X } from 'lucide-vue-next'
+import { Calendar, Clock, Eye, EyeOff, Hash, Lock, Mail, Pencil, Save, Shield, X } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/api'
@@ -15,6 +15,12 @@ const showSuccessMessage = ref(false)
 const showErrorMessage = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const activeTab = ref('profile') // 'profile' or 'security'
+
+// Password visibility toggles
+const showCurrentPassword = ref(false)
+const showNewPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 // Edit form data
 const editForm = reactive({
@@ -22,6 +28,21 @@ const editForm = reactive({
   username: '',
   firstname: '',
   lastname: '',
+  sectionId: null,
+})
+
+// Password form data
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmNewPassword: '',
+})
+
+// Password validation
+const passwordErrors = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmNewPassword: '',
 })
 
 onMounted(async () => {
@@ -39,12 +60,22 @@ function initEditForm() {
     if (userProfile.value.studentProfile) {
       editForm.firstname = userProfile.value.studentProfile.firstname || ''
       editForm.lastname = userProfile.value.studentProfile.lastname || ''
+      editForm.sectionId = userProfile.value.studentProfile.sectionId || null
     }
     else if (userProfile.value.instructorProfile) {
       editForm.firstname = userProfile.value.instructorProfile.firstname || ''
       editForm.lastname = userProfile.value.instructorProfile.lastname || ''
     }
   }
+}
+
+function resetPasswordForm() {
+  passwordForm.currentPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmNewPassword = ''
+  passwordErrors.currentPassword = ''
+  passwordErrors.newPassword = ''
+  passwordErrors.confirmNewPassword = ''
 }
 
 function formatDate(dateString) {
@@ -97,6 +128,8 @@ const profileId = computed(() => {
 // Start editing profile
 function startEditing() {
   initEditForm()
+  resetPasswordForm()
+  activeTab.value = 'profile'
   isEditing.value = true
 }
 
@@ -104,29 +137,98 @@ function startEditing() {
 function cancelEditing() {
   isEditing.value = false
   showErrorMessage.value = false
+  activeTab.value = 'profile'
   initEditForm()
+  resetPasswordForm()
 }
+
+// Validate password fields
+function validatePasswordFields() {
+  let isValid = true
+  passwordErrors.currentPassword = ''
+  passwordErrors.newPassword = ''
+  passwordErrors.confirmNewPassword = ''
+
+  // Only validate if user is trying to change password
+  if (passwordForm.newPassword || passwordForm.confirmNewPassword || passwordForm.currentPassword) {
+    if (!passwordForm.currentPassword) {
+      passwordErrors.currentPassword = 'Current password is required to change password'
+      isValid = false
+    }
+
+    if (!passwordForm.newPassword) {
+      passwordErrors.newPassword = 'New password is required'
+      isValid = false
+    }
+    else if (passwordForm.newPassword.length < 8) {
+      passwordErrors.newPassword = 'Password must be at least 8 characters'
+      isValid = false
+    }
+
+    if (!passwordForm.confirmNewPassword) {
+      passwordErrors.confirmNewPassword = 'Please confirm your new password'
+      isValid = false
+    }
+    else if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
+      passwordErrors.confirmNewPassword = 'Passwords do not match'
+      isValid = false
+    }
+  }
+
+  return isValid
+}
+
+// Check if password is being changed
+const isChangingPassword = computed(() => {
+  return passwordForm.currentPassword || passwordForm.newPassword || passwordForm.confirmNewPassword
+})
 
 // Save profile changes
 async function saveProfile() {
+  // Validate password if changing
+  if (!validatePasswordFields()) {
+    return
+  }
+
   isSaving.value = true
   showErrorMessage.value = false
   showSuccessMessage.value = false
 
   try {
-    const response = await api.put('/account/profile', {
-      email: editForm.email,
-      username: editForm.username,
-    })
+    // Build the update payload based on UpdateProfile DTO
+    const payload = {
+      firstname: editForm.firstname || undefined,
+      lastname: editForm.lastname || undefined,
+      email: editForm.email || undefined,
+    }
 
-    if (response.data) {
+    // Add password fields if changing password
+    if (isChangingPassword.value) {
+      payload.currentPassword = passwordForm.currentPassword
+      payload.newPassword = passwordForm.newPassword
+      payload.confirmNewPassword = passwordForm.confirmNewPassword
+    }
+
+    // Add sectionId for students
+    if (isStudent.value && editForm.sectionId) {
+      payload.sectionId = editForm.sectionId
+    }
+
+    const response = await api.patch('/account/profile', payload)
+
+    if (response.data?.success) {
       await authStore.fetchUserProfile()
       isEditing.value = false
-      successMessage.value = 'Profile updated successfully!'
+      successMessage.value = response.data.message || 'Profile updated successfully!'
       showSuccessMessage.value = true
+      resetPasswordForm()
       setTimeout(() => {
         showSuccessMessage.value = false
       }, 3000)
+    }
+    else {
+      errorMessage.value = response.data?.message || 'Failed to update profile. Please try again.'
+      showErrorMessage.value = true
     }
   }
   catch (error) {
@@ -318,7 +420,7 @@ const roleDisplayText = computed(() => {
               <svg xmlns="http://www.w3.org/2000/svg" class="inline-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              You are currently editing your profile information. Fields marked in gray are read-only.
+              Update your profile information and change your password.
             </p>
           </div>
           <button class="modal-close" @click="cancelEditing">
@@ -326,8 +428,30 @@ const roleDisplayText = computed(() => {
           </button>
         </div>
 
+        <!-- Tab Navigation -->
+        <div class="modal-tabs">
+          <button
+            type="button"
+            class="tab-btn"
+            :class="{ active: activeTab === 'profile' }"
+            @click="activeTab = 'profile'"
+          >
+            <Pencil :size="16" />
+            Profile Information
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            :class="{ active: activeTab === 'security' }"
+            @click="activeTab = 'security'"
+          >
+            <Lock :size="16" />
+            Change Password
+          </button>
+        </div>
+
         <!-- Error Message -->
-        <div v-if="showErrorMessage" class="alert alert-error">
+        <div v-if="showErrorMessage" class="alert alert-error modal-alert">
           <svg xmlns="http://www.w3.org/2000/svg" class="alert-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -338,88 +462,185 @@ const roleDisplayText = computed(() => {
         </div>
 
         <form class="edit-form" @submit.prevent="saveProfile">
-          <!-- Basic Information -->
-          <div class="form-section">
-            <h3 class="form-section-title">
-              Basic Information
-            </h3>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="username" class="form-label">
-                  Username <span class="required">*</span>
-                </label>
-                <input
-                  id="username"
-                  v-model="editForm.username"
-                  type="text"
-                  class="form-input"
-                  required
-                >
+          <!-- Profile Information Tab -->
+          <div v-show="activeTab === 'profile'">
+            <!-- Personal Information -->
+            <div class="form-section">
+              <h3 class="form-section-title">
+                Personal Information
+              </h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="firstname" class="form-label">
+                    First Name
+                  </label>
+                  <input
+                    id="firstname"
+                    v-model="editForm.firstname"
+                    type="text"
+                    class="form-input"
+                    placeholder="Enter your first name"
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="lastname" class="form-label">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastname"
+                    v-model="editForm.lastname"
+                    type="text"
+                    class="form-input"
+                    placeholder="Enter your last name"
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="email" class="form-label">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    v-model="editForm.email"
+                    type="email"
+                    class="form-input"
+                    placeholder="Enter your email"
+                  >
+                </div>
               </div>
-              <div class="form-group">
-                <label for="email" class="form-label">
-                  Email Address <span class="required">*</span>
-                </label>
-                <input
-                  id="email"
-                  v-model="editForm.email"
-                  type="email"
-                  class="form-input"
-                  required
-                >
-              </div>
-              <div class="form-group">
-                <label for="role" class="form-label">Role</label>
-                <input
-                  id="role"
-                  type="text"
-                  class="form-input form-input-readonly"
-                  :value="roleDisplayText"
-                  readonly
-                >
-              </div>
-              <div class="form-group">
-                <label for="userId" class="form-label">User ID</label>
-                <input
-                  id="userId"
-                  type="text"
-                  class="form-input form-input-readonly"
-                  :value="userProfile.userId"
-                  readonly
-                >
+            </div>
+
+            <!-- Account Information (Read-only) -->
+            <div class="form-section">
+              <h3 class="form-section-title">
+                Account Information
+                <span class="form-section-hint">(Read-only)</span>
+              </h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="username" class="form-label">Username</label>
+                  <input
+                    id="username"
+                    type="text"
+                    class="form-input form-input-readonly"
+                    :value="editForm.username"
+                    readonly
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="role" class="form-label">Role</label>
+                  <input
+                    id="role"
+                    type="text"
+                    class="form-input form-input-readonly"
+                    :value="roleDisplayText"
+                    readonly
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="userId" class="form-label">User ID</label>
+                  <input
+                    id="userId"
+                    type="text"
+                    class="form-input form-input-readonly"
+                    :value="userProfile.userId"
+                    readonly
+                  >
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Professional Details -->
-          <div class="form-section">
-            <h3 class="form-section-title">
-              Professional Details
-            </h3>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="firstname" class="form-label">
-                  First Name <span class="required">*</span>
-                </label>
-                <input
-                  id="firstname"
-                  v-model="editForm.firstname"
-                  type="text"
-                  class="form-input form-input-readonly"
-                  readonly
-                >
-              </div>
-              <div class="form-group">
-                <label for="lastname" class="form-label">
-                  Last Name <span class="required">*</span>
-                </label>
-                <input
-                  id="lastname"
-                  v-model="editForm.lastname"
-                  type="text"
-                  class="form-input form-input-readonly"
-                  readonly
-                >
+          <!-- Security Tab -->
+          <div v-show="activeTab === 'security'">
+            <div class="form-section">
+              <h3 class="form-section-title">
+                Change Password
+              </h3>
+              <p class="form-section-description">
+                To change your password, enter your current password and then your new password below.
+              </p>
+              <div class="form-grid form-grid-single">
+                <div class="form-group">
+                  <label for="currentPassword" class="form-label">
+                    Current Password <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <input
+                      id="currentPassword"
+                      v-model="passwordForm.currentPassword"
+                      :type="showCurrentPassword ? 'text' : 'password'"
+                      class="form-input"
+                      :class="{ 'form-input-error': passwordErrors.currentPassword }"
+                      placeholder="Enter your current password"
+                    >
+                    <button
+                      type="button"
+                      class="input-icon-btn"
+                      @click="showCurrentPassword = !showCurrentPassword"
+                    >
+                      <Eye v-if="!showCurrentPassword" :size="18" />
+                      <EyeOff v-else :size="18" />
+                    </button>
+                  </div>
+                  <span v-if="passwordErrors.currentPassword" class="form-error">
+                    {{ passwordErrors.currentPassword }}
+                  </span>
+                </div>
+
+                <div class="form-group">
+                  <label for="newPassword" class="form-label">
+                    New Password <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <input
+                      id="newPassword"
+                      v-model="passwordForm.newPassword"
+                      :type="showNewPassword ? 'text' : 'password'"
+                      class="form-input"
+                      :class="{ 'form-input-error': passwordErrors.newPassword }"
+                      placeholder="Enter your new password"
+                    >
+                    <button
+                      type="button"
+                      class="input-icon-btn"
+                      @click="showNewPassword = !showNewPassword"
+                    >
+                      <Eye v-if="!showNewPassword" :size="18" />
+                      <EyeOff v-else :size="18" />
+                    </button>
+                  </div>
+                  <span v-if="passwordErrors.newPassword" class="form-error">
+                    {{ passwordErrors.newPassword }}
+                  </span>
+                  <span class="form-hint">Password must be at least 8 characters long.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="confirmNewPassword" class="form-label">
+                    Confirm New Password <span class="required">*</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <input
+                      id="confirmNewPassword"
+                      v-model="passwordForm.confirmNewPassword"
+                      :type="showConfirmPassword ? 'text' : 'password'"
+                      class="form-input"
+                      :class="{ 'form-input-error': passwordErrors.confirmNewPassword }"
+                      placeholder="Confirm your new password"
+                    >
+                    <button
+                      type="button"
+                      class="input-icon-btn"
+                      @click="showConfirmPassword = !showConfirmPassword"
+                    >
+                      <Eye v-if="!showConfirmPassword" :size="18" />
+                      <EyeOff v-else :size="18" />
+                    </button>
+                  </div>
+                  <span v-if="passwordErrors.confirmNewPassword" class="form-error">
+                    {{ passwordErrors.confirmNewPassword }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -868,6 +1089,53 @@ const roleDisplayText = computed(() => {
   color: var(--text-primary);
 }
 
+/* Modal Tabs */
+.modal-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-xl);
+  border-bottom: 1px solid var(--border-light);
+  background-color: var(--bg-secondary);
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  color: var(--color-primary);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  border-radius: 2px 2px 0 0;
+}
+
+.modal-alert {
+  margin: var(--spacing-md) var(--spacing-xl) 0;
+}
+
 /* Form */
 .edit-form {
   padding: var(--spacing-xl);
@@ -886,12 +1154,32 @@ const roleDisplayText = computed(() => {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.form-section-hint {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+.form-section-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--spacing-md);
+}
+
+.form-grid-single {
+  grid-template-columns: 1fr !important;
+  max-width: 400px;
 }
 
 @media (min-width: 640px) {
@@ -936,6 +1224,56 @@ const roleDisplayText = computed(() => {
   background-color: var(--bg-tertiary);
   color: var(--text-tertiary);
   cursor: not-allowed;
+}
+
+.form-input-error {
+  border-color: var(--color-error);
+}
+
+.form-input-error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Input with Icon (for password fields) */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon .form-input {
+  padding-right: 2.75rem;
+  width: 100%;
+}
+
+.input-icon-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.input-icon-btn:hover {
+  color: var(--text-secondary);
+}
+
+/* Form Error and Hint */
+.form-error {
+  font-size: 0.75rem;
+  color: var(--color-error);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
 }
 
 .form-actions {
