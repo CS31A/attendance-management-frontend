@@ -219,11 +219,6 @@ onUnmounted(() => {
           <p class="footer-text">
             © 2025 VSG • Built with ❤️
           </p>
-          <div class="footer-dots">
-            <span class="dot-indicator active" />
-            <span class="dot-indicator" />
-            <span class="dot-indicator" />
-          </div>
         </div>
       </div>
     </div>
@@ -382,7 +377,7 @@ onUnmounted(() => {
   background: linear-gradient(135deg, var(--color-primary-dark) 0%, rgb(15, 23, 42) 50%, var(--color-primary-dark) 100%);
   display: flex;
   flex-direction: column;
-  padding: 64px 48px;
+  padding: 48px 32px;
   color: white;
   position: relative;
   overflow: hidden;
@@ -422,7 +417,7 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  margin-top: 24px;
+  margin-top: 16px;
   position: relative;
   z-index: 3;
   flex: 1;
@@ -441,7 +436,7 @@ onUnmounted(() => {
   padding: 8px 16px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -463,7 +458,7 @@ onUnmounted(() => {
 .logo-title {
   font-size: 42px;
   font-weight: 800;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
@@ -475,13 +470,14 @@ onUnmounted(() => {
 
 .title-secondary {
   color: var(--text-white);
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .title-accent {
-  color: var(--color-error-dark);
+  color: var(--color-info-light);
   font-weight: 700;
-  text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
 }
 
 .logo-subtitle {
@@ -489,7 +485,7 @@ onUnmounted(() => {
   font-weight: 400;
   opacity: 0.9;
   line-height: 1.6;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   color: var(--color-slate-200);
 }
 
@@ -497,7 +493,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 .feature-card {
@@ -551,23 +547,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.footer-dots {
-  display: flex;
-  gap: 8px;
-}
-
-.dot-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.dot-indicator.active {
-  background: rgb(34, 197, 94);
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
-}
-
 /* Right Panel Styles */
 .right-panel {
   flex: 1;
@@ -575,7 +554,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 16px;
   position: relative;
 }
 
@@ -587,7 +566,7 @@ onUnmounted(() => {
 .login-form {
   background: var(--text-white);
   border-radius: 24px;
-  padding: 32px;
+  padding: 24px;
   box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(255, 255, 255, 0.8),
@@ -598,7 +577,7 @@ onUnmounted(() => {
 
 .form-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .welcome-badge {
@@ -623,7 +602,7 @@ onUnmounted(() => {
   font-size: 28px;
   font-weight: 700;
   color: var(--color-primary-dark);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -643,11 +622,11 @@ onUnmounted(() => {
 }
 
 .form-content {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .form-label {
@@ -657,7 +636,7 @@ onUnmounted(() => {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-primary-dark);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .label-icon {
@@ -808,8 +787,8 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 12px 0;
+  margin-bottom: 16px;
+  padding: 8px 0;
 }
 
 .custom-checkbox {
