@@ -153,7 +153,7 @@ async function handleLogin() {
 }
 
 function handleForgotPassword() {
-  // router.push('/forgot-password')
+  // TODO: Implement forgot password functionality
 }
 
 // Cleanup timeout on component unmount

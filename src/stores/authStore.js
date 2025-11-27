@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
+import { ROLES } from '@/utils/constants'
 
 /**
  * Authentication Store
@@ -75,19 +76,19 @@ export const useAuthStore = defineStore('authStore', () => {
    * Check if the current user is a teacher (instructor)
    * @returns {boolean} True if user has the Teacher role, false otherwise
    */
-  const isTeacher = computed(() => userProfile.value?.role === 'Teacher')
+  const isTeacher = computed(() => userProfile.value?.role === ROLES.TEACHER)
 
   /**
    * Check if the current user is a student
    * @returns {boolean} True if user has the Student role, false otherwise
    */
-  const isStudent = computed(() => userProfile.value?.role === 'Student')
+  const isStudent = computed(() => userProfile.value?.role === ROLES.STUDENT)
 
   /**
    * Check if the current user is an admin
    * @returns {boolean} True if user has the Admin role, false otherwise
    */
-  const isAdmin = computed(() => userProfile.value?.role === 'Admin')
+  const isAdmin = computed(() => userProfile.value?.role === ROLES.ADMIN)
 
   // Actions
   /**
@@ -193,7 +194,7 @@ export const useAuthStore = defineStore('authStore', () => {
         await checkAuth(true)
 
         // Check if user role is allowed to log in (only Teacher and Admin)
-        if (userProfile.value?.role === 'Student') {
+        if (userProfile.value?.role === ROLES.STUDENT) {
           // Students are not allowed to log in to the web application
           // Clear auth state
           try {
@@ -212,7 +213,7 @@ export const useAuthStore = defineStore('authStore', () => {
         }
 
         // Only allow Teacher and Admin roles
-        if (userProfile.value?.role !== 'Teacher' && userProfile.value?.role !== 'Admin') {
+        if (userProfile.value?.role !== ROLES.TEACHER && userProfile.value?.role !== ROLES.ADMIN) {
           // Clear auth state
           try {
             await api.post('/account/web/logout')
