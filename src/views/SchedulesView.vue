@@ -1,6 +1,7 @@
 <script setup>
-import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
 import { getAllInstructors } from '@/api/instructors'
 import sectionsApi from '@/api/sections'
@@ -14,6 +15,9 @@ import { useScheduleStore } from '@/stores/scheduleStore.js'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+const route = useRoute()
+const router = useRouter()
 
 // Field configuration for FormModal with async options
 const scheduleFields = [
@@ -139,8 +143,25 @@ const alertModalConfig = ref({
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
+// Instructor filter state
+const filteredInstructorId = ref(null)
+const filteredInstructorName = ref('')
+const isLoadingInstructorFilter = ref(false)
+
 // Computed values
-const schedules = computed(() => scheduleStore.sortedSchedules)
+const schedules = computed(() => {
+  const allSchedules = scheduleStore.sortedSchedules
+
+  // Apply instructor filter if active
+  if (filteredInstructorId.value) {
+    return allSchedules.filter(schedule =>
+      schedule.instructorId === filteredInstructorId.value,
+    )
+  }
+
+  return allSchedules
+})
+
 const totalSchedules = computed(() => schedules.value.length)
 const totalPages = computed(() => Math.ceil(totalSchedules.value / itemsPerPage.value))
 const hasNextPage = computed(() => currentPage.value < totalPages.value)
@@ -270,9 +291,50 @@ function cancelDelete() {
   showDeleteModal.value = false
 }
 
+// Function to apply instructor filter
+async function filterByInstructor(instructorId) {
+  if (!instructorId)
+    return
+
+  isLoadingInstructorFilter.value = true
+  try {
+    // Fetch instructor details to show the name
+    const instructors = await getAllInstructors()
+    const instructor = instructors.find(i => i.id === Number.parseInt(instructorId))
+
+    if (instructor) {
+      filteredInstructorId.value = Number.parseInt(instructorId)
+      filteredInstructorName.value = `${instructor.firstname} ${instructor.lastname}`
+      currentPage.value = 1 // Reset to first page when filtering
+    }
+  }
+  catch (error) {
+    console.error('Failed to load instructor details:', error)
+    showToast('Failed to load instructor filter', 'error')
+  }
+  finally {
+    isLoadingInstructorFilter.value = false
+  }
+}
+
+// Function to clear instructor filter
+function clearInstructorFilter() {
+  filteredInstructorId.value = null
+  filteredInstructorName.value = ''
+  currentPage.value = 1
+
+  // Remove query parameter from URL
+  router.push({ path: '/schedules' })
+}
+
 onMounted(async () => {
   try {
     await scheduleStore.fetchSchedules()
+
+    // Check for instructorId query parameter
+    if (route.query.instructorId) {
+      await filterByInstructor(route.query.instructorId)
+    }
   }
   catch {
     // Error handled silently
@@ -330,6 +392,25 @@ onMounted(async () => {
           <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
             Add Schedule
           </BaseButton>
+        </div>
+      </div>
+
+      <!-- Instructor Filter Badge -->
+      <div v-if="filteredInstructorId" class="filter-badge-container">
+        <div class="filter-badge">
+          <div class="filter-badge-content">
+            <User :size="16" />
+            <span class="filter-label">Filtered by Instructor:</span>
+            <span class="filter-value">{{ filteredInstructorName }}</span>
+            <BaseButton
+              variant="ghost"
+              size="small"
+              :icon="X"
+              @click="clearInstructorFilter"
+            >
+              Clear Filter
+            </BaseButton>
+          </div>
         </div>
       </div>
 
@@ -472,5 +553,54 @@ onMounted(async () => {
   align-items: center;
   gap: 1rem;
   justify-content: center;
+}
+
+/* Filter Badge */
+.filter-badge-container {
+  margin-bottom: 1rem;
+}
+
+.filter-badge {
+  background: linear-gradient(135deg, var(--color-info-bg) 0%, var(--color-info-lighter) 100%);
+  border: 1px solid var(--color-info-light);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.filter-badge-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  color: var(--color-info-darkest);
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-info-dark);
+}
+
+.filter-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  padding: 0.25rem 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--color-info-light);
+}
+
+/* Responsive Filter Badge */
+@media (max-width: 768px) {
+  .filter-badge-content {
+    gap: 0.5rem;
+  }
+
+  .filter-label,
+  .filter-value {
+    font-size: 0.8125rem;
+  }
 }
 </style>
