@@ -217,7 +217,7 @@ onUnmounted(() => {
       <div class="footer">
         <div class="footer-content">
           <p class="footer-text">
-            © 2025 Toma Sigma • Built with ❤️
+            © 2025 VSG • Built with ❤️
           </p>
           <div class="footer-dots">
             <span class="dot-indicator active" />
