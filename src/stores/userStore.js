@@ -222,7 +222,33 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async deleteUser(userId, role) {
+    async softDeleteUser(userId) {
+      this.loading = true
+      this.error = null
+
+      try {
+        await api.delete(`/account/admin/users/${userId}`)
+
+        // Mark user as deleted in local state
+        const index = this.users.findIndex(u => u.id === userId)
+        if (index !== -1) {
+          this.users[index].deletedAt = new Date().toISOString()
+          this.users[index].isDeleted = true
+        }
+
+        return { success: true }
+      }
+      catch (error) {
+        console.error('Error soft deleting user:', error)
+        this.error = error.response?.data?.message || 'Failed to soft delete user'
+        return { success: false, error: this.error }
+      }
+      finally {
+        this.loading = false
+      }
+    },
+
+    async hardDeleteUser(userId, role) {
       this.loading = true
       this.error = null
 
@@ -236,8 +262,8 @@ export const useUserStore = defineStore('user', {
         return { success: true }
       }
       catch (error) {
-        console.error('Error deleting user:', error)
-        this.error = error.response?.data?.message || 'Failed to delete user'
+        console.error('Error hard deleting user:', error)
+        this.error = error.response?.data?.message || 'Failed to permanently delete user'
         return { success: false, error: this.error }
       }
       finally {

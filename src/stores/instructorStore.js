@@ -118,7 +118,7 @@ export const useInstructorStore = defineStore('instructors', () => {
     }
   }
 
-  async function deleteInstructor(id) {
+  async function softDeleteInstructor(id) {
     loading.value = true
     error.value = null
     try {
@@ -139,8 +139,33 @@ export const useInstructorStore = defineStore('instructors', () => {
       }
     }
     catch (err) {
-      console.error('Error deleting instructor:', err)
-      error.value = err.response?.data?.message || 'Failed to delete instructor'
+      console.error('Error soft deleting instructor:', err)
+      error.value = err.response?.data?.message || 'Failed to soft delete instructor'
+      throw err
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  async function hardDeleteInstructor(id) {
+    loading.value = true
+    error.value = null
+    try {
+      await instructorsApi.hardDeleteInstructor(id)
+      // Remove the instructor from the local list
+      const index = instructors.value.findIndex(i => i.id === id)
+      if (index !== -1) {
+        instructors.value.splice(index, 1)
+      }
+      // Clear current instructor if it's the same
+      if (currentInstructor.value?.id === id) {
+        currentInstructor.value = null
+      }
+    }
+    catch (err) {
+      console.error('Error hard deleting instructor:', err)
+      error.value = err.response?.data?.message || 'Failed to permanently delete instructor'
       throw err
     }
     finally {
@@ -206,7 +231,8 @@ export const useInstructorStore = defineStore('instructors', () => {
     fetchInstructors,
     fetchInstructorById,
     updateInstructor,
-    deleteInstructor,
+    softDeleteInstructor,
+    hardDeleteInstructor,
     restoreInstructor,
     clearError,
   }

@@ -1,5 +1,5 @@
 <script setup>
-import { Calendar, Edit, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
+import { ArchiveX, Calendar, Edit, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
 
 defineProps({
   users: {
@@ -8,7 +8,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'delete'])
+defineEmits(['edit', 'softDelete', 'delete'])
 
 // Get role icon component
 function _getRoleIcon(role) {
@@ -131,7 +131,10 @@ function formatDate(value) {
               <button class="btn-edit" title="Edit User" @click="$emit('edit', user)">
                 <Edit class="btn-icon" size="16" />
               </button>
-              <button class="btn-delete" title="Delete User" @click="$emit('delete', user.id)">
+              <button class="btn-soft-delete" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user.id)">
+                <ArchiveX class="btn-icon" size="16" />
+              </button>
+              <button class="btn-delete" title="Permanently Delete" @click="$emit('delete', user.id)">
                 <Trash2 class="btn-icon" size="16" />
               </button>
             </div>
@@ -339,6 +342,7 @@ function formatDate(value) {
 }
 
 .btn-edit,
+.btn-soft-delete,
 .btn-delete {
   padding: 0.375rem;
   border: none;
@@ -358,6 +362,16 @@ function formatDate(value) {
 .btn-edit:hover {
   background: var(--color-info-lighter);
   color: var(--color-primary-light);
+}
+
+.btn-soft-delete {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+  color: #f97316;
+}
+
+.btn-soft-delete:hover {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
+  color: #ea580c;
 }
 
 .btn-delete {

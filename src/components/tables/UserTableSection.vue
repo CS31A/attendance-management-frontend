@@ -21,7 +21,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+defineEmits(['edit', 'softDelete', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
 
 function getRoleIcon(role) {
   const icons = {
@@ -46,6 +46,7 @@ function getRoleIcon(role) {
       <UserTable
         :users="users"
         @edit="$emit('edit', $event)"
+        @soft-delete="$emit('softDelete', $event)"
         @delete="$emit('delete', $event)"
       />
 

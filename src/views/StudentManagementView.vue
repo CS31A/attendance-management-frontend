@@ -26,6 +26,7 @@ const modalError = ref(null)
 const showDeleteModal = ref(false)
 const studentToDelete = ref(null)
 const isDeleting = ref(false)
+const deleteType = ref('soft') // 'soft' or 'hard'
 
 // Details modal state
 const showDetailsModal = ref(false)
@@ -115,8 +116,15 @@ async function handleUpdateStudent(studentData) {
   }
 }
 
-function handleDeleteStudent(student) {
+function handleSoftDeleteStudent(student) {
   studentToDelete.value = student
+  deleteType.value = 'soft'
+  showDeleteModal.value = true
+}
+
+function handleHardDeleteStudent(student) {
+  studentToDelete.value = student
+  deleteType.value = 'hard'
   showDeleteModal.value = true
 }
 
@@ -126,13 +134,20 @@ async function confirmDelete() {
 
   isDeleting.value = true
   try {
-    await studentStore.deleteStudent(studentToDelete.value.id)
-    showToast('Student deleted successfully', 'success')
+    if (deleteType.value === 'soft') {
+      await studentStore.softDeleteStudent(studentToDelete.value.id)
+      showToast('Student soft deleted successfully', 'success')
+    }
+    else {
+      await studentStore.hardDeleteStudent(studentToDelete.value.id)
+      showToast('Student permanently deleted', 'success')
+    }
     showDeleteModal.value = false
     studentToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete student: ${error.response?.data?.message || error.message}`, 'error')
+    const action = deleteType.value === 'soft' ? 'soft delete' : 'permanently delete'
+    showToast(`Failed to ${action} student: ${error.response?.data?.message || error.message}`, 'error')
   }
   finally {
     isDeleting.value = false
@@ -332,7 +347,8 @@ function closeDetailsModal() {
         :show-deleted="activeTab === 'deleted'"
         @view="handleViewStudent"
         @edit="openEditModal"
-        @delete="handleDeleteStudent"
+        @soft-delete="handleSoftDeleteStudent"
+        @delete="handleHardDeleteStudent"
         @restore="handleRestoreStudent"
       />
 
@@ -372,8 +388,10 @@ function closeDetailsModal() {
     <!-- Delete Modal -->
     <DeleteModal
       :show="showDeleteModal"
-      title="Delete Student"
-      message="Are you sure you want to delete this student? This action can be undone by restoring the student."
+      :title="deleteType === 'soft' ? 'Soft Delete Student' : 'Permanently Delete Student'"
+      :message="deleteType === 'soft'
+        ? 'Mark this student as deleted? This action can be undone by restoring the student.'
+        : 'Permanently delete this student? This action cannot be undone and will remove all related data.'"
       :item-name="studentToDelete ? `${studentToDelete.firstName || studentToDelete.firstname} ${studentToDelete.lastName || studentToDelete.lastname}` : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"

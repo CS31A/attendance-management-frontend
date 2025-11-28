@@ -1,5 +1,5 @@
 <script setup>
-import { Calendar, ChevronLeft, ChevronRight, Edit, Eye, RotateCcw, Trash2, Users } from 'lucide-vue-next'
+import { ArchiveX, Calendar, ChevronLeft, ChevronRight, Edit, Eye, RotateCcw, Trash2, Users } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { parseUtcDate } from '@/utils/qrcode'
 
@@ -22,7 +22,7 @@ const props = defineProps({
   },
 })
 
-defineEmits(['edit', 'delete', 'restore', 'view', 'viewSchedule'])
+defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view', 'viewSchedule'])
 
 const currentPage = ref(1)
 
@@ -159,8 +159,16 @@ function goToPage(page) {
                   </button>
                   <button
                     v-if="!showDeleted"
+                    class="btn-soft-delete"
+                    title="Soft Delete (Can be restored)"
+                    @click="$emit('softDelete', instructor)"
+                  >
+                    <ArchiveX class="btn-icon" size="16" />
+                  </button>
+                  <button
+                    v-if="!showDeleted"
                     class="btn-delete"
-                    title="Delete Instructor"
+                    title="Permanently Delete"
                     @click="$emit('delete', instructor)"
                   >
                     <Trash2 class="btn-icon" size="16" />
@@ -371,6 +379,7 @@ function goToPage(page) {
 .btn-view,
 .btn-schedule,
 .btn-edit,
+.btn-soft-delete,
 .btn-delete,
 .btn-restore {
   padding: 0.375rem;
@@ -411,6 +420,16 @@ function goToPage(page) {
 .btn-edit:hover {
   background: var(--color-info-lighter);
   color: var(--color-primary-light);
+}
+
+.btn-soft-delete {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+  color: #f97316;
+}
+
+.btn-soft-delete:hover {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
+  color: #ea580c;
 }
 
 .btn-delete {

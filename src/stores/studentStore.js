@@ -127,7 +127,7 @@ export const useStudentStore = defineStore('students', () => {
     }
   }
 
-  async function deleteStudent(id) {
+  async function softDeleteStudent(id) {
     loading.value = true
     error.value = null
     try {
@@ -148,8 +148,33 @@ export const useStudentStore = defineStore('students', () => {
       }
     }
     catch (err) {
-      console.error('Error deleting student:', err)
-      error.value = err.response?.data?.message || 'Failed to delete student'
+      console.error('Error soft deleting student:', err)
+      error.value = err.response?.data?.message || 'Failed to soft delete student'
+      throw err
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  async function hardDeleteStudent(id) {
+    loading.value = true
+    error.value = null
+    try {
+      await studentsApi.hardDeleteStudent(id)
+      // Remove the student from the local list
+      const index = students.value.findIndex(s => s.id === id)
+      if (index !== -1) {
+        students.value.splice(index, 1)
+      }
+      // Clear current student if it's the same
+      if (currentStudent.value?.id === id) {
+        currentStudent.value = null
+      }
+    }
+    catch (err) {
+      console.error('Error hard deleting student:', err)
+      error.value = err.response?.data?.message || 'Failed to permanently delete student'
       throw err
     }
     finally {
@@ -211,7 +236,8 @@ export const useStudentStore = defineStore('students', () => {
     fetchStudents,
     fetchStudentById,
     updateStudent,
-    deleteStudent,
+    softDeleteStudent,
+    hardDeleteStudent,
     restoreStudent,
     clearError,
   }

@@ -64,6 +64,7 @@ const instructorInfoSection = computed(() => {
 const showDeleteModal = ref(false)
 const instructorToDelete = ref(null)
 const isDeleting = ref(false)
+const deleteType = ref('soft') // 'soft' or 'hard'
 
 // Details modal state
 const showDetailsModal = ref(false)
@@ -159,8 +160,15 @@ async function handleUpdateInstructor(instructorData) {
   }
 }
 
-function handleDeleteInstructor(instructor) {
+function handleSoftDeleteInstructor(instructor) {
   instructorToDelete.value = instructor
+  deleteType.value = 'soft'
+  showDeleteModal.value = true
+}
+
+function handleHardDeleteInstructor(instructor) {
+  instructorToDelete.value = instructor
+  deleteType.value = 'hard'
   showDeleteModal.value = true
 }
 
@@ -170,13 +178,20 @@ async function confirmDelete() {
 
   isDeleting.value = true
   try {
-    await instructorStore.deleteInstructor(instructorToDelete.value.id)
-    showToast('Instructor deleted successfully', 'success')
+    if (deleteType.value === 'soft') {
+      await instructorStore.softDeleteInstructor(instructorToDelete.value.id)
+      showToast('Instructor soft deleted successfully', 'success')
+    }
+    else {
+      await instructorStore.hardDeleteInstructor(instructorToDelete.value.id)
+      showToast('Instructor permanently deleted', 'success')
+    }
     showDeleteModal.value = false
     instructorToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete instructor: ${error.response?.data?.message || error.message}`, 'error')
+    const action = deleteType.value === 'soft' ? 'soft delete' : 'permanently delete'
+    showToast(`Failed to ${action} instructor: ${error.response?.data?.message || error.message}`, 'error')
   }
   finally {
     isDeleting.value = false
@@ -367,7 +382,8 @@ function closeDetailsModal() {
         @view="handleViewInstructor"
         @view-schedule="handleViewSchedule"
         @edit="openEditModal"
-        @delete="handleDeleteInstructor"
+        @soft-delete="handleSoftDeleteInstructor"
+        @delete="handleHardDeleteInstructor"
         @restore="handleRestoreInstructor"
       />
 
@@ -410,8 +426,10 @@ function closeDetailsModal() {
     <!-- Delete Modal -->
     <DeleteModal
       :show="showDeleteModal"
-      title="Delete Instructor"
-      message="Are you sure you want to delete this instructor? This action can be undone by restoring the instructor."
+      :title="deleteType === 'soft' ? 'Soft Delete Instructor' : 'Permanently Delete Instructor'"
+      :message="deleteType === 'soft'
+        ? 'Mark this instructor as deleted? This action can be undone by restoring the instructor.'
+        : 'Permanently delete this instructor? This action cannot be undone and will remove all related data.'"
       :item-name="instructorToDelete ? `${instructorToDelete.firstName || instructorToDelete.firstname} ${instructorToDelete.lastName || instructorToDelete.lastname}` : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"

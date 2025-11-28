@@ -26,6 +26,7 @@ const editModal = ref(null)
 const showDeleteModal = ref(false)
 const userToDelete = ref(null)
 const isDeleting = ref(false)
+const deleteType = ref('soft') // 'soft' or 'hard'
 
 const roleFilters = ['All Roles', 'Instructor', 'Student']
 
@@ -123,10 +124,20 @@ function handleCancel() {
   editingUser.value = null
 }
 
-function deleteUser(id) {
+function handleSoftDeleteUser(id) {
   const user = userStore.users.find(u => u.id === id)
   if (user) {
     userToDelete.value = user
+    deleteType.value = 'soft'
+    showDeleteModal.value = true
+  }
+}
+
+function handleHardDeleteUser(id) {
+  const user = userStore.users.find(u => u.id === id)
+  if (user) {
+    userToDelete.value = user
+    deleteType.value = 'hard'
     showDeleteModal.value = true
   }
 }
@@ -137,14 +148,22 @@ async function confirmDelete() {
 
   isDeleting.value = true
   try {
-    const result = await userStore.deleteUser(userToDelete.value.id, userToDelete.value.role)
+    let result
+    if (deleteType.value === 'soft') {
+      result = await userStore.softDeleteUser(userToDelete.value.id)
+    }
+    else {
+      result = await userStore.hardDeleteUser(userToDelete.value.id, userToDelete.value.role)
+    }
+
     if (result.success) {
-      showToast('User deleted successfully', 'success')
+      const action = deleteType.value === 'soft' ? 'soft deleted' : 'permanently deleted'
+      showToast(`User ${action} successfully`, 'success')
       showDeleteModal.value = false
       userToDelete.value = null
     }
     else {
-      showToast(result.error || 'Failed to delete user', 'error')
+      showToast(result.error || `Failed to ${deleteType.value === 'soft' ? 'soft delete' : 'permanently delete'} user`, 'error')
     }
   }
   catch {
@@ -298,7 +317,8 @@ watch([searchQuery, selectedRole], () => {
           itemsPerPage: userStore.itemsPerPage,
         }"
         @edit="handleEditUser"
-        @delete="deleteUser"
+        @soft-delete="handleSoftDeleteUser"
+        @delete="handleHardDeleteUser"
         @next-page="nextPage"
         @previous-page="previousPage"
         @go-to-page="goToPage"
@@ -312,7 +332,8 @@ watch([searchQuery, selectedRole], () => {
         title="Instructors"
         role="Instructor"
         @edit="handleEditUser"
-        @delete="deleteUser"
+        @soft-delete="handleSoftDeleteUser"
+        @delete="handleHardDeleteUser"
       />
 
       <!-- Students Table -->
@@ -322,7 +343,8 @@ watch([searchQuery, selectedRole], () => {
         title="Students"
         role="Student"
         @edit="handleEditUser"
-        @delete="deleteUser"
+        @soft-delete="handleSoftDeleteUser"
+        @delete="handleHardDeleteUser"
       />
 
       <!-- Empty State -->
@@ -370,8 +392,10 @@ watch([searchQuery, selectedRole], () => {
     <!-- Delete Modal -->
     <DeleteModal
       :show="showDeleteModal"
-      title="Delete User"
-      message="Are you sure you want to delete this user? This action cannot be undone."
+      :title="deleteType === 'soft' ? 'Soft Delete User' : 'Permanently Delete User'"
+      :message="deleteType === 'soft'
+        ? 'Mark this user as deleted? This action can be undone.'
+        : 'Permanently delete this user? This action cannot be undone and will remove all related data.'"
       :item-name="userToDelete ? `${userToDelete.firstName || userToDelete.firstname} ${userToDelete.lastName || userToDelete.lastname} (${userToDelete.username})` : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
