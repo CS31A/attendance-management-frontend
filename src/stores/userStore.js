@@ -30,12 +30,20 @@ export const useUserStore = defineStore('user', {
       }
 
       if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        filtered = filtered.filter(user =>
-          user.firstName.toLowerCase().includes(query)
-          || user.lastName.toLowerCase().includes(query)
-          || user.email.toLowerCase().includes(query),
-        )
+        const query = searchQuery.toLowerCase().trim()
+        filtered = filtered.filter((user) => {
+          // Handle both camelCase and lowercase property names from API
+          const firstName = (user.firstName || user.firstname || '').toLowerCase()
+          const lastName = (user.lastName || user.lastname || '').toLowerCase()
+          const email = (user.email || '').toLowerCase()
+          const username = (user.username || '').toLowerCase()
+
+          return firstName.includes(query)
+            || lastName.includes(query)
+            || email.includes(query)
+            || username.includes(query)
+            || `${firstName} ${lastName}`.includes(query)
+        })
       }
 
       return filtered
@@ -193,19 +201,20 @@ export const useUserStore = defineStore('user', {
 
       try {
         // Find the original user to get their current role/endpoint
-        const originalUser = this.users.find(user => user.id === userId)
+        const originalUser = this.users.find(user => (user.userId || user.id) === userId)
         if (!originalUser) {
           throw new Error('User not found')
         }
 
         // Use the original user's role to determine the correct endpoint
-        // This prevents 404 errors when trying to update across different endpoints
-        const endpoint = originalUser.role === 'Instructor' ? '/instructors' : '/students'
+        // API returns 'Teacher' but we also handle 'Instructor' for compatibility
+        const isTeacher = originalUser.role === 'Teacher' || originalUser.role === 'Instructor'
+        const endpoint = isTeacher ? '/instructors' : '/students'
 
         const response = await api.patch(`${endpoint}/${userId}`, userData)
 
         // Update the user in the store with the original role (role cannot be changed)
-        const index = this.users.findIndex(user => user.id === userId)
+        const index = this.users.findIndex(user => (user.userId || user.id) === userId)
         if (index !== -1) {
           this.users[index] = { ...response.data, role: originalUser.role }
         }
@@ -230,7 +239,7 @@ export const useUserStore = defineStore('user', {
         await api.delete(`/account/admin/users/${userId}`)
 
         // Mark user as deleted in local state
-        const index = this.users.findIndex(u => u.id === userId)
+        const index = this.users.findIndex(u => (u.userId || u.id) === userId)
         if (index !== -1) {
           this.users[index].deletedAt = new Date().toISOString()
           this.users[index].isDeleted = true
@@ -253,11 +262,13 @@ export const useUserStore = defineStore('user', {
       this.error = null
 
       try {
-        const endpoint = role === 'Instructor' ? '/instructors' : '/students'
+        // API returns 'Teacher' but we also handle 'Instructor' for compatibility
+        const isTeacher = role === 'Teacher' || role === 'Instructor'
+        const endpoint = isTeacher ? '/instructors' : '/students'
         await api.delete(`${endpoint}/${userId}`)
 
         // Remove the user from the store
-        this.users = this.users.filter(user => user.id !== userId)
+        this.users = this.users.filter(user => (user.userId || user.id) !== userId)
 
         return { success: true }
       }

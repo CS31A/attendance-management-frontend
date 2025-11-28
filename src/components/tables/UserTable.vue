@@ -8,7 +8,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'softDelete', 'delete'])
+defineEmits(['edit', 'soft-delete', 'delete'])
 
 // Get role icon component
 function _getRoleIcon(role) {
@@ -93,7 +93,7 @@ function formatDate(value) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id" class="user-row">
+        <tr v-for="user in users" :key="user.userId || user.id" class="user-row">
           <!-- <td class="td-avatar">
             <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
               <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
@@ -131,10 +131,10 @@ function formatDate(value) {
               <button class="btn-edit" title="Edit User" @click="$emit('edit', user)">
                 <Edit class="btn-icon" size="16" />
               </button>
-              <button class="btn-soft-delete" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user.id)">
+              <button class="btn-soft-delete" title="Soft Delete (Can be restored)" @click="$emit('soft-delete', user)">
                 <ArchiveX class="btn-icon" size="16" />
               </button>
-              <button class="btn-delete" title="Permanently Delete" @click="$emit('delete', user.id)">
+              <button class="btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
                 <Trash2 class="btn-icon" size="16" />
               </button>
             </div>

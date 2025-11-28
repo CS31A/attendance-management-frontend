@@ -1,6 +1,6 @@
 <script setup>
-import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
+import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
@@ -10,7 +10,6 @@ import { useUserStore } from '@/stores/userStore'
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
 const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
-const SearchBar = defineAsyncComponent(() => import('@/components/common/SearchBar.vue'))
 
 const userStore = useUserStore()
 
@@ -18,9 +17,49 @@ const showAddUser = ref(false)
 const showEditUser = ref(false)
 const editingUser = ref(null)
 const searchQuery = ref('')
+const debouncedSearchQuery = ref('')
+const isSearching = ref(false)
 const selectedRole = ref('All Roles')
 const createModal = ref(null)
 const editModal = ref(null)
+
+// Debounce timer reference
+let debounceTimer = null
+const DEBOUNCE_DELAY = 300 // milliseconds
+
+// Debounced search handler
+function handleSearchInput(value) {
+  searchQuery.value = value
+  isSearching.value = true
+
+  // Clear previous timer
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+
+  // Set new timer
+  debounceTimer = setTimeout(() => {
+    debouncedSearchQuery.value = value
+    isSearching.value = false
+  }, DEBOUNCE_DELAY)
+}
+
+// Clear search
+function clearSearch() {
+  searchQuery.value = ''
+  debouncedSearchQuery.value = ''
+  isSearching.value = false
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+}
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+})
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -40,11 +79,11 @@ onMounted(async () => {
 })
 
 const filteredUsers = computed(() =>
-  userStore.filteredUsers(searchQuery.value, selectedRole.value),
+  userStore.filteredUsers(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const paginatedUsers = computed(() =>
-  userStore.paginatedUsers(searchQuery.value, selectedRole.value),
+  userStore.paginatedUsers(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const filteredInstructors = computed(() =>
@@ -57,11 +96,11 @@ const filteredStudents = computed(() =>
 
 // Pagination computed properties
 const totalPages = computed(() =>
-  userStore.totalPages(searchQuery.value, selectedRole.value),
+  userStore.totalPages(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const hasNextPage = computed(() =>
-  userStore.hasNextPage(searchQuery.value, selectedRole.value),
+  userStore.hasNextPage(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const hasPreviousPage = computed(() =>
@@ -74,6 +113,11 @@ const currentPage = computed(() =>
 
 const totalUsers = computed(() =>
   filteredUsers.value.length,
+)
+
+// Check if there's an active search
+const hasActiveSearch = computed(() =>
+  searchQuery.value.length > 0,
 )
 
 // Toast state and helpers
@@ -107,7 +151,8 @@ async function handleCreateUser(userData) {
 }
 
 async function handleUpdateUser(updatedUserData) {
-  const result = await userStore.updateUser(editingUser.value.id, updatedUserData)
+  const id = editingUser.value.userId || editingUser.value.id
+  const result = await userStore.updateUser(id, updatedUserData)
   if (result.success) {
     showEditUser.value = false
     editingUser.value = null
@@ -124,21 +169,27 @@ function handleCancel() {
   editingUser.value = null
 }
 
-function handleSoftDeleteUser(id) {
-  const user = userStore.users.find(u => u.id === id)
+function handleSoftDeleteUser(user) {
   if (user) {
     userToDelete.value = user
     deleteType.value = 'soft'
     showDeleteModal.value = true
   }
+  else {
+    console.error('User not found for soft delete')
+    showToast('User not found', 'error')
+  }
 }
 
-function handleHardDeleteUser(id) {
-  const user = userStore.users.find(u => u.id === id)
+function handleHardDeleteUser(user) {
   if (user) {
     userToDelete.value = user
     deleteType.value = 'hard'
     showDeleteModal.value = true
+  }
+  else {
+    console.error('User not found for hard delete')
+    showToast('User not found', 'error')
   }
 }
 
@@ -148,12 +199,21 @@ async function confirmDelete() {
 
   isDeleting.value = true
   try {
+    // API returns userId, not id
+    const id = userToDelete.value.userId || userToDelete.value.id
+    
+    if (!id) {
+      console.error('User ID not found. User object:', userToDelete.value)
+      showToast('Unable to delete: User ID not found', 'error')
+      return
+    }
+
     let result
     if (deleteType.value === 'soft') {
-      result = await userStore.softDeleteUser(userToDelete.value.id)
+      result = await userStore.softDeleteUser(id)
     }
     else {
-      result = await userStore.hardDeleteUser(userToDelete.value.id, userToDelete.value.role)
+      result = await userStore.hardDeleteUser(id, userToDelete.value.role)
     }
 
     if (result.success) {
@@ -186,7 +246,7 @@ function handleEditUser(user) {
 
 // Pagination methods
 function nextPage() {
-  userStore.nextPage(searchQuery.value, selectedRole.value)
+  userStore.nextPage(debouncedSearchQuery.value, selectedRole.value)
 }
 
 function previousPage() {
@@ -194,15 +254,15 @@ function previousPage() {
 }
 
 function goToPage(page) {
-  userStore.goToPage(page, searchQuery.value, selectedRole.value)
+  userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value)
 }
 
 function setItemsPerPage(itemsPerPage) {
   userStore.setItemsPerPage(itemsPerPage)
 }
 
-// Reset pagination when search or filter changes
-watch([searchQuery, selectedRole], () => {
+// Reset pagination when debounced search or filter changes
+watch([debouncedSearchQuery, selectedRole], () => {
   userStore.setCurrentPage(1)
 })
 </script>
@@ -288,10 +348,36 @@ watch([searchQuery, selectedRole], () => {
 
       <!-- Filters Section -->
       <div class="filters-section">
-        <SearchBar
-          v-model="searchQuery"
-          placeholder="Search by name or email..."
-        />
+        <div class="live-search-container">
+          <div class="search-input-wrapper" :class="{ 'is-searching': isSearching, 'has-value': hasActiveSearch }">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              :value="searchQuery"
+              type="text"
+              placeholder="Search by name or email..."
+              class="live-search-input"
+              @input="handleSearchInput($event.target.value)"
+            >
+            <div v-if="isSearching" class="search-spinner">
+              <div class="spinner" />
+            </div>
+            <button
+              v-else-if="hasActiveSearch"
+              type="button"
+              class="clear-search-btn"
+              title="Clear search"
+              @click="clearSearch"
+            >
+              <X size="16" />
+            </button>
+          </div>
+          <div v-if="hasActiveSearch && !isSearching" class="search-results-info">
+            <span class="results-count">{{ totalUsers }} result{{ totalUsers !== 1 ? 's' : '' }} found</span>
+          </div>
+        </div>
 
         <div class="role-filter">
           <select v-model="selectedRole" class="filter-select">
@@ -356,10 +442,18 @@ watch([searchQuery, selectedRole], () => {
           No Users Found
         </h3>
         <p class="empty-description">
-          {{ searchQuery ? 'Try adjusting your search or filters' : 'Get started by adding your first user' }}
+          {{ hasActiveSearch ? 'Try adjusting your search or filters' : 'Get started by adding your first user' }}
         </p>
         <BaseButton
-          v-if="!searchQuery"
+          v-if="hasActiveSearch"
+          variant="secondary"
+          size="medium"
+          @click="clearSearch"
+        >
+          Clear Search
+        </BaseButton>
+        <BaseButton
+          v-else
           variant="primary"
           size="large"
           :icon="Plus"
@@ -493,6 +587,115 @@ watch([searchQuery, selectedRole], () => {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1rem;
+}
+
+/* Live Search Styles */
+.live-search-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--color-gray-400);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.search-input-wrapper.is-searching .search-icon,
+.search-input-wrapper.has-value .search-icon {
+  color: var(--color-primary);
+}
+
+.live-search-input {
+  width: 100%;
+  padding: 0.625rem 2.5rem 0.625rem 2.75rem;
+  border: 2px solid var(--color-gray-200);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.live-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
+  transform: translateY(-2px);
+}
+
+.search-input-wrapper.is-searching .live-search-input {
+  border-color: var(--color-primary-light);
+}
+
+.search-spinner {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0.625rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--color-gray-100);
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-gray-500);
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.search-results-info {
+  padding-left: 0.25rem;
+}
+
+.results-count {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  font-weight: 500;
 }
 
 .role-filter {
@@ -770,7 +973,7 @@ watch([searchQuery, selectedRole], () => {
     gap: 1rem;
   }
 
-  .search-box {
+  .live-search-container {
     order: 1;
   }
 
