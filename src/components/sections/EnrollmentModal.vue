@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, Check, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
+import { AlertTriangle, Check, Loader2, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useStudentStore } from '@/stores/studentStore'
@@ -228,7 +228,8 @@ watch(() => props.section, () => {
           </div>
           <div class="form-actions">
             <button class="btn-submit" :disabled="isLoading" @click="handleEnroll">
-              Enroll Student
+              <Loader2 v-if="isLoading" class="loading-spinner-btn" size="18" />
+              <span v-else>Enroll Student</span>
             </button>
           </div>
         </div>

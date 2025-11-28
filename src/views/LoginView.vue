@@ -152,10 +152,6 @@ async function handleLogin() {
   }
 }
 
-function handleForgotPassword() {
-  // TODO: Implement forgot password functionality
-}
-
 // Cleanup timeout on component unmount
 onUnmounted(() => {
   if (navigationTimeout) {

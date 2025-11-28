@@ -258,6 +258,7 @@ onMounted(async () => {
       :entity="selectedCourse"
       title="Course"
       :fields="courseFields"
+      :loading="courseStore.loading"
       @save="handleSaveCourse"
       @cancel="closeModal"
     />

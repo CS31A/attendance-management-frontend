@@ -1,9 +1,14 @@
 <script setup>
-import { AlertTriangle, Eye, EyeOff, GraduationCap, Shield, User, X } from 'lucide-vue-next'
+import { AlertTriangle, Eye, EyeOff, GraduationCap, Loader2, Shield, User, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
-// No props needed for create mode
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+})
 
 const emit = defineEmits(['create', 'cancel'])
 
@@ -315,10 +320,11 @@ defineExpose({ handleError })
 
         <!-- Actions -->
         <div class="actions">
-          <button type="submit" class="btn-create" :disabled="!isFormValid">
-            {{ submitButtonText }}
+          <button type="submit" class="btn-create" :disabled="!isFormValid || loading">
+            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <span v-else>{{ submitButtonText }}</span>
           </button>
-          <button type="button" class="btn-cancel" @click="$emit('cancel')">
+          <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
             Cancel
           </button>
         </div>
@@ -577,6 +583,9 @@ defineExpose({ handleError })
   font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-create:hover:not(:disabled) {

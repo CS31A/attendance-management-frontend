@@ -1,9 +1,10 @@
 <script setup>
-import { AlertTriangle, GraduationCap, User, X } from 'lucide-vue-next'
+import { AlertTriangle, GraduationCap, Loader2, User, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   user: { type: Object, required: true },
+  loading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update', 'cancel'])
@@ -216,10 +217,11 @@ defineExpose({ handleError })
 
         <!-- Actions -->
         <div class="actions">
-          <button type="submit" class="btn-update" :disabled="!isFormValid">
-            Update User
+          <button type="submit" class="btn-update" :disabled="!isFormValid || loading">
+            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <span v-else>Update User</span>
           </button>
-          <button type="button" class="btn-cancel" @click="$emit('cancel')">
+          <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
             Cancel
           </button>
         </div>
@@ -407,6 +409,9 @@ defineExpose({ handleError })
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-update:hover:not(:disabled) {

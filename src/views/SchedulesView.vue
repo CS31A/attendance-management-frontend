@@ -442,6 +442,7 @@ onMounted(async () => {
       title="Schedule"
       :fields="scheduleFields"
       size="large"
+      :loading="scheduleStore.loading"
       @save="handleSaveSchedule"
       @cancel="closeModal"
     />

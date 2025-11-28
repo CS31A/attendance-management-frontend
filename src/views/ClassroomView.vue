@@ -259,6 +259,7 @@ onMounted(async () => {
       :entity="selectedClassroom"
       title="Classroom"
       :fields="classroomFields"
+      :loading="classroomStore.loading"
       @save="handleSaveClassroom"
       @cancel="closeModal"
     />

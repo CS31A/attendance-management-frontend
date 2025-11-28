@@ -352,6 +352,7 @@ watch([searchQuery, selectedRole], () => {
     <CreateUserModal
       v-if="showAddUser"
       ref="createModal"
+      :loading="userStore.loading"
       @create="handleCreateUser"
       @cancel="handleCancel"
     />
@@ -361,6 +362,7 @@ watch([searchQuery, selectedRole], () => {
       v-if="showEditUser"
       ref="editModal"
       :user="editingUser"
+      :loading="userStore.loading"
       @update="handleUpdateUser"
       @cancel="handleCancel"
     />

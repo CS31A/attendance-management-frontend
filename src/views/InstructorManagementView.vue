@@ -402,6 +402,7 @@ function closeDetailsModal() {
       :fields="instructorFields"
       :info-section="instructorInfoSection"
       size="medium"
+      :loading="instructorStore.loading"
       @save="handleUpdateInstructor"
       @cancel="closeModal"
     />

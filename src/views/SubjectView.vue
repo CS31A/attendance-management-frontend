@@ -268,6 +268,7 @@ onMounted(async () => {
       :entity="selectedSubject"
       title="Subject"
       :fields="subjectFields"
+      :loading="subjectStore.loading"
       @save="handleSaveSubject"
       @cancel="closeModal"
     />

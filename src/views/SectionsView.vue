@@ -256,6 +256,7 @@ onMounted(async () => {
       v-if="showModal"
       ref="modalRef"
       :section="selectedSection"
+      :loading="sectionsStore.loading"
       @save="handleSaveSection"
       @cancel="closeModal"
     />

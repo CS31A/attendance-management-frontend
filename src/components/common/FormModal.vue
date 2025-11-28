@@ -133,6 +133,11 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  /** Loading state for form submission */
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['save', 'cancel'])
@@ -330,7 +335,7 @@ defineExpose({ handleError })
       <!-- Modal Header -->
       <div class="modal-header">
         <h2>{{ modalTitle }}</h2>
-        <button type="button" class="btn-close" @click="$emit('cancel')">
+        <button type="button" class="btn-close" :disabled="loading" @click="$emit('cancel')">
           <X size="24" />
         </button>
       </div>
@@ -466,10 +471,11 @@ defineExpose({ handleError })
 
         <!-- Actions -->
         <div class="actions">
-          <button type="submit" class="btn-submit" :disabled="!isFormValid">
-            {{ submitButtonText }}
+          <button type="submit" class="btn-submit" :disabled="!isFormValid || loading">
+            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <span v-else>{{ submitButtonText }}</span>
           </button>
-          <button type="button" class="btn-cancel" @click="$emit('cancel')">
+          <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
             Cancel
           </button>
         </div>
@@ -706,7 +712,7 @@ defineExpose({ handleError })
 }
 
 .loading-spinner {
-  animation: spin 1s linear infinite;
+  animation: spin-centered 1s linear infinite;
   color: var(--color-primary);
 }
 
@@ -768,7 +774,7 @@ defineExpose({ handleError })
   to { opacity: 1; }
 }
 
-@keyframes spin {
+@keyframes spin-centered {
   from { transform: translateY(-50%) rotate(0deg); }
   to { transform: translateY(-50%) rotate(360deg); }
 }

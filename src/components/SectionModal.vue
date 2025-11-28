@@ -1,11 +1,15 @@
 <script setup>
-import { AlertTriangle, BookOpen, X } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Loader2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   section: {
     type: Object,
     default: null,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -75,7 +79,7 @@ defineExpose({ handleError })
       <!-- Modal Header -->
       <div class="modal-header">
         <h2>{{ modalTitle }}</h2>
-        <button type="button" class="btn-close" @click="$emit('cancel')">
+        <button type="button" class="btn-close" :disabled="loading" @click="$emit('cancel')">
           <X size="24" />
         </button>
       </div>
@@ -121,10 +125,11 @@ defineExpose({ handleError })
 
         <!-- Actions -->
         <div class="actions">
-          <button type="submit" class="btn-submit" :disabled="!isFormValid">
-            {{ submitButtonText }}
+          <button type="submit" class="btn-submit" :disabled="!isFormValid || loading">
+            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <span v-else>{{ submitButtonText }}</span>
           </button>
-          <button type="button" class="btn-cancel" @click="$emit('cancel')">
+          <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
             Cancel
           </button>
         </div>
