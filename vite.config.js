@@ -31,7 +31,7 @@ export default defineConfig({
             './src/stores/courseStore.js',
             './src/stores/sectionStore.js',
             './src/stores/sessionStore.js',
-            './src/stores/studentStore.js',
+
           ],
 
           // Component chunks - modals
