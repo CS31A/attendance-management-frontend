@@ -1,249 +1,330 @@
 <script setup>
-import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { ArcElement, CategoryScale, Chart as ChartJS, DoughnutController, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance.js'
+import { getInstructorSubjects, getMySchedules } from '@/api/instructors.js'
+import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
-import { useUserStore } from '@/stores/userStore'
 
-const SessionCard = defineAsyncComponent(() => import('@/components/sessions/SessionCard.vue'))
-const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
-const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+const Doughnut = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Doughnut })))
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, DoughnutController, ArcElement)
 
 const authStore = useAuthStore()
-const userStore = useUserStore()
 const sessionStore = useSessionStore()
+const router = useRouter()
 
-// Computed properties for auth state
-const isAuthenticated = authStore.getIsAuthenticated
-const user = authStore.user
+// State
+const isLoading = ref(true)
+const instructorProfile = ref(null)
+const schedules = ref([])
+const activeSessions = ref([])
+const upcomingSessions = ref([])
+const attendanceSummary = ref(null)
+const subjects = ref([])
+const todaySessions = ref([])
+const showModal = ref(false)
+const modalSessionData = ref(null)
+const modalLoading = ref(false)
+const currentDateTime = ref(new Date())
+const refreshIntervals = ref({})
 
-// Check if user is a student
-const isStudent = computed(() => user?.role === 'Student')
+// Computed
+const isAuthenticated = computed(() => authStore.getIsAuthenticated)
+const user = computed(() => authStore.userProfile) // Changed from authStore.user to authStore.userProfile for role info
+const isStudent = computed(() => user.value?.role === 'Student')
+const isInstructor = computed(() => user.value?.role === 'Teacher')
+const isAdmin = computed(() => user.value?.role === 'Admin')
 
-// Get upcoming and active sessions for students
-const upcomingSessions = computed(() => {
-  if (!isStudent.value)
-    return []
-  return sessionStore.upcomingSessions.slice(0, 3) // Show max 3 upcoming sessions
+// User initials for avatar
+const userInitials = computed(() => {
+  if (!instructorProfile.value)
+    return 'IN'
+  const first = instructorProfile.value.firstname?.[0] || ''
+  const last = instructorProfile.value.lastname?.[0] || ''
+  return (first + last).toUpperCase() || 'IN'
 })
 
-const activeSessions = computed(() => {
-  if (!isStudent.value)
-    return []
-  return sessionStore.activeSessions
+// Full name
+const fullName = computed(() => {
+  if (!instructorProfile.value)
+    return 'Instructor'
+  return `${instructorProfile.value.firstname} ${instructorProfile.value.lastname}`
 })
 
-const hasAnySessions = computed(() => {
-  return upcomingSessions.value.length > 0 || activeSessions.value.length > 0
+// Formatted date and time
+const formattedDate = computed(() => {
+  return currentDateTime.value.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  })
 })
 
-// Get real data from userStore
-const totalStudents = computed(() => userStore.students.length)
-const totalTeachers = computed(() => userStore.instructors.length)
-const totalUsers = computed(() => userStore.users.length)
-const userManagement = computed(() => userStore.users.length)
-
-// Calculate percentages based on real data
-const registeredPercentage = computed(() => {
-  const target = 100 // Target number of users
-  return Math.min((totalUsers.value / target) * 100, 100)
+const formattedTime = computed(() => {
+  return currentDateTime.value.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })
 })
 
-const studentsPercentage = computed(() => {
-  const target = 50 // Target number of students
-  return Math.min((totalStudents.value / target) * 100, 100)
-})
-
-const teachersPercentage = computed(() => {
-  const target = 20 // Target number of teachers
-  return Math.min((totalTeachers.value / target) * 100, 100)
-})
-
-const managementPercentage = computed(() => {
-  const target = 100 // Target for user management
-  return Math.min((totalUsers.value / target) * 100, 100)
-})
-
-// Loading state
-const isLoading = computed(() => userStore.loading)
-
-// Profile picture upload functionality
-const userProfilePicture = ref(localStorage.getItem('userProfilePicture') || null)
-const fileInput = ref(null)
-const isUploading = ref(false)
-
-// Profile picture methods
-function _triggerFileUpload() {
-  fileInput.value?.click()
-}
-
-async function _handleFileUpload(event) {
-  const file = event.target.files[0]
-  if (!file)
-    return
-
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    alert('Please select an image file')
-    return
-  }
-
-  // Validate file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    alert('File size must be less than 5MB')
-    return
-  }
-
-  isUploading.value = true
-
-  try {
-    // Convert to base64 for preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      userProfilePicture.value = e.target.result
-      // Save to localStorage to persist across refreshes
-      localStorage.setItem('userProfilePicture', e.target.result)
-    }
-    reader.readAsDataURL(file)
-
-    // Here you would upload to your backend
-    // await uploadProfilePicture(file)
-  }
-  catch (error) {
-    console.error('Error uploading profile picture:', error)
-    alert('Failed to upload profile picture')
-  }
-  finally {
-    isUploading.value = false
-  }
-}
-
-// Method to clear profile picture
-function _clearProfilePicture() {
-  userProfilePicture.value = null
-  localStorage.removeItem('userProfilePicture')
-}
-
-// Load data when component mounts
-onMounted(async () => {
-  if (userStore.users.length === 0) {
-    await userStore.fetchUsers()
-  }
-
-  // Fetch sessions for students
-  if (isStudent.value && sessionStore.sessions.length === 0) {
-    try {
-      await sessionStore.fetchSessions()
-    }
-    catch (error) {
-      console.error('Failed to load sessions:', error)
+// Attendance chart data
+const attendanceChartData = computed(() => {
+  if (!attendanceSummary.value) {
+    return {
+      labels: ['Present', 'Late', 'Absent', 'Excused'],
+      datasets: [{
+        data: [0, 0, 0, 0],
+        backgroundColor: [
+          'var(--color-success)',
+          'var(--color-warning)',
+          'var(--color-error)',
+          'var(--color-info)',
+        ],
+        borderWidth: 0,
+      }],
     }
   }
+
+  return {
+    labels: ['Present', 'Late', 'Absent', 'Excused'],
+    datasets: [{
+      data: [
+        attendanceSummary.value.totalPresent || 0,
+        attendanceSummary.value.totalLate || 0,
+        attendanceSummary.value.totalAbsent || 0,
+        attendanceSummary.value.totalExcused || 0,
+      ],
+      backgroundColor: [
+        'var(--color-success)',
+        'var(--color-warning)',
+        'var(--color-error)',
+        'var(--color-info)',
+      ],
+      borderWidth: 0,
+    }],
+  }
 })
 
-// Chart.js data
-const chartData = computed(() => ({
-  labels: ['S', 'S', 'M', 'M', 'T', 'T', 'W', 'W', 'T', 'T', 'F', 'F', 'S'],
-  datasets: [
-    {
-      label: 'This Week',
-      data: [30, 45, 35, 50, 45, 55, 50, 60, 55, 65, 60, 50, 55],
-      borderColor: 'rgb(236, 72, 153)',
-      backgroundColor: 'rgba(236, 72, 153, 0.1)',
-      tension: 0.4,
-      borderWidth: 3,
-      pointRadius: 0,
-      pointHoverRadius: 6,
-      pointHoverBackgroundColor: 'rgb(236, 72, 153)',
-      pointHoverBorderColor: 'var(--text-white)',
-      pointHoverBorderWidth: 2,
-    },
-    {
-      label: 'Last Week',
-      data: [25, 35, 40, 35, 45, 40, 50, 45, 55, 50, 45, 35, 40],
-      borderColor: 'var(--color-gray-900)',
-      backgroundColor: 'rgba(0, 0, 0, 0.05)',
-      tension: 0.4,
-      borderWidth: 3,
-      pointRadius: 0,
-      pointHoverRadius: 6,
-      pointHoverBackgroundColor: 'var(--color-gray-900)',
-      pointHoverBorderColor: 'var(--text-white)',
-      pointHoverBorderWidth: 2,
-    },
-  ],
-}))
-
-const chartOptions = {
+const attendanceChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  interaction: {
-    mode: 'index',
-    intersect: false,
-  },
   plugins: {
     legend: {
       display: false,
     },
-    tooltip: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      padding: 12,
-      borderRadius: 8,
-      titleFont: {
-        size: 14,
-        weight: 'bold',
-      },
-      bodyFont: {
-        size: 13,
-      },
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      max: 60,
-      ticks: {
-        stepSize: 10,
-        font: {
-          size: 12,
-        },
-        color: 'var(--color-gray-400)',
-      },
-      grid: {
-        color: 'var(--color-gray-100)',
-        drawBorder: false,
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-        drawBorder: false,
-      },
-      ticks: {
-        font: {
-          size: 12,
-          weight: '500',
-        },
-        color: 'var(--color-gray-400)',
-      },
-    },
   },
 }
 
-// Get user initials
-const _getUserInitials = computed(() => {
-  if (!user?.name)
-    return 'U'
-  return user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+// Weekly schedule grouped by day
+const weeklySchedule = computed(() => {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  const grouped = {}
+
+  days.forEach((day) => {
+    grouped[day] = schedules.value.filter(s => s.dayOfWeek === day)
+  })
+
+  return grouped
+})
+
+const currentDay = computed(() => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  return days[new Date().getDay()]
+})
+
+// API Functions
+async function loadInstructorData() {
+  try {
+    // Fetch the user profile from the store
+    await authStore.fetchUserProfile()
+    // Get the instructor profile from the store's userProfile
+    const profile = authStore.userProfile
+    instructorProfile.value = profile?.instructorProfile || null
+
+    if (instructorProfile.value?.id) {
+      const subjectsData = await getInstructorSubjects(instructorProfile.value.id)
+      subjects.value = subjectsData
+    }
+  }
+  catch (error) {
+    console.error('Failed to load instructor data:', error)
+  }
+}
+
+async function loadSchedules() {
+  try {
+    const data = await getMySchedules()
+    schedules.value = data
+  }
+  catch (error) {
+    console.error('Failed to load schedules:', error)
+  }
+}
+
+async function loadActiveSessions() {
+  try {
+    await sessionStore.fetchSessions()
+    activeSessions.value = sessionStore.activeSessions
+  }
+  catch (error) {
+    console.error('Failed to load active sessions:', error)
+  }
+}
+
+async function loadUpcomingSessions() {
+  try {
+    await sessionStore.fetchSessions()
+    upcomingSessions.value = sessionStore.upcomingSessions.slice(0, 5)
+  }
+  catch (error) {
+    console.error('Failed to load upcoming sessions:', error)
+  }
+}
+
+async function loadAttendanceSummary() {
+  try {
+    const data = await fetchAttendanceSummary()
+    attendanceSummary.value = data
+  }
+  catch (error) {
+    console.error('Failed to load attendance summary:', error)
+  }
+}
+
+async function loadTodaySessions() {
+  try {
+    await sessionStore.fetchSessions()
+    const today = new Date().toDateString()
+    todaySessions.value = sessionStore.sessions.filter((session) => {
+      const sessionDate = new Date(session.sessionDate)
+      return sessionDate.toDateString() === today
+    })
+  }
+  catch (error) {
+    console.error('Failed to load today\'s sessions:', error)
+  }
+}
+
+// Modal functions
+async function openSessionModal(sessionId) {
+  showModal.value = true
+  modalLoading.value = true
+  modalSessionData.value = null
+
+  try {
+    const data = await fetchSessionAttendance(sessionId)
+    modalSessionData.value = data
+  }
+  catch (error) {
+    console.error('Failed to load session attendance:', error)
+  }
+  finally {
+    modalLoading.value = false
+  }
+}
+
+function closeModal() {
+  showModal.value = false
+  modalSessionData.value = null
+}
+
+// Utility functions
+function formatTime(isoString) {
+  if (!isoString)
+    return '-'
+  const date = new Date(isoString)
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function formatDate(isoString) {
+  if (!isoString)
+    return '-'
+  const date = new Date(isoString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function updateDateTime() {
+  currentDateTime.value = new Date()
+}
+
+// Lifecycle
+onMounted(async () => {
+  if (!isAuthenticated.value) {
+    router.push('/login')
+    return
+  }
+
+  if (isAdmin.value) {
+    // Admin users have their own dashboard component which handles data loading
+    isLoading.value = false
+    return
+  }
+
+  if (isStudent.value) {
+    // Student users see a different dashboard - existing implementation
+    isLoading.value = false
+    return
+  }
+
+  // Only show instructor dashboard for teachers
+  if (!isInstructor.value) {
+    isLoading.value = false
+    return
+  }
+
+  // Update time every second
+  updateDateTime()
+  const timeInterval = setInterval(updateDateTime, 1000)
+
+  // Load initial data
+  isLoading.value = true
+  try {
+    await Promise.all([
+      loadInstructorData(),
+      loadSchedules(),
+      loadActiveSessions(),
+      loadUpcomingSessions(),
+      loadAttendanceSummary(),
+      loadTodaySessions(),
+    ])
+  }
+  catch (error) {
+    console.error('Failed to load dashboard data:', error)
+  }
+  finally {
+    isLoading.value = false
+  }
+
+  // Setup refresh intervals
+  refreshIntervals.value.activeSessions = setInterval(loadActiveSessions, 30000) // 30 seconds
+  refreshIntervals.value.upcomingSessions = setInterval(loadUpcomingSessions, 120000) // 2 minutes
+  refreshIntervals.value.attendanceStats = setInterval(loadAttendanceSummary, 300000) // 5 minutes
+
+  // Cleanup timer
+  refreshIntervals.value.timeUpdate = timeInterval
+})
+
+onBeforeUnmount(() => {
+  Object.values(refreshIntervals.value).forEach(interval => clearInterval(interval))
 })
 </script>
 
 <template>
-  <div class="dashboard">
-    <!-- Unauthenticated state -->
+  <div class="instructor-dashboard">
+    <!-- Unauthenticated State -->
     <div v-if="!isAuthenticated" class="unauthenticated">
       <h2>Access Denied</h2>
       <p>You need to be logged in to view this page.</p>
@@ -252,226 +333,442 @@ const _getUserInitials = computed(() => {
       </router-link>
     </div>
 
-    <!-- Authenticated content -->
-    <template v-else>
-      <!-- Header -->
-      <div class="dashboard-header">
-        <div>
-          <h1 class="title">
-            Dashboard
-          </h1>
-          <p class="subtitle">
-            Welcome back, {{ user }}
-          </p>
-        </div>
-        <!-- <div class="user-avatar" @click="triggerFileUpload" :class="{ 'uploading': isUploading }">
-          <img v-if="userProfilePicture" :src="userProfilePicture" alt="Profile" class="avatar-image" />
-          <span v-else>{{ getUserInitials }}</span>
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            @change="handleFileUpload"
-            style="display: none"
-          />
-          <div v-if="isUploading" class="upload-overlay">
-            <div class="upload-spinner"></div>
-          </div>
+    <!-- Student View - Redirect or Show Different Content -->
+    <div v-else-if="isStudent" class="redirect-message">
+      <h2>Student Dashboard</h2>
+      <p>This is the instructor dashboard. Redirecting to student view...</p>
+    </div>
 
-          <button
-            v-if="userProfilePicture && !isUploading"
-            @click.stop="clearProfilePicture"
-            class="remove-profile-btn"
-            title="Remove profile picture"
-            style="display: block !important; visibility: visible !important; opacity: 1 !important;"
-          >
-            ×
-          </button>
-        </div> -->
-      </div>
+    <!-- Admin Dashboard -->
+    <AdminDashboard v-else-if="isAdmin" />
+
+    <!-- Instructor Dashboard (Teachers Only) -->
+    <template v-else-if="isInstructor">
+      <!-- Header -->
+      <header class="dashboard-header">
+        <div class="profile-section">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <span>{{ userInitials }}</span>
+            </div>
+            <div class="status-indicator" />
+          </div>
+          <div class="profile-info">
+            <h1 class="welcome-text">
+              Welcome back, <span class="name">{{ fullName }}</span>
+            </h1>
+            <p class="role-badge">
+              Instructor
+            </p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="date-time-display">
+            <div class="current-date">
+              {{ formattedDate }}
+            </div>
+            <div class="current-time">
+              {{ formattedTime }}
+            </div>
+          </div>
+        </div>
+      </header>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="loading-skeleton">
-        <!-- Header skeleton -->
-        <div class="dashboard-header">
-          <div>
-            <SkeletonLoader type="text" :height="40" :width="200" style="margin-bottom: 0.5rem;" />
-            <SkeletonLoader type="text" :height="20" :width="150" />
-          </div>
-        </div>
-
-        <!-- Stats Grid skeleton -->
-        <div class="stats-grid">
-          <div v-for="i in 4" :key="i" class="stat-card">
-            <div class="stat-content">
-              <SkeletonLoader type="text" :height="40" :width="80" style="margin-bottom: 0.5rem;" />
-              <SkeletonLoader type="text" :height="20" :width="120" style="margin-bottom: 1rem;" />
-              <SkeletonLoader type="rectangle" :height="10" style="width: 100%;" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Performance Chart skeleton -->
-        <div class="performance-card">
-          <div class="performance-header">
-            <SkeletonLoader type="text" :height="30" :width="150" />
-            <div class="time-filters">
-              <SkeletonLoader type="rectangle" :height="35" :width="200" />
-            </div>
-          </div>
-          <SkeletonLoader type="rectangle" :height="300" style="width: 100%;" />
-        </div>
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner" />
+        <p>Loading dashboard...</p>
       </div>
 
-      <!-- Stats Grid -->
-      <div v-if="!isLoading" class="stats-grid">
-        <!-- Total Registered -->
-        <div class="stat-card primary-card">
-          <div class="stat-content">
-            <h2 class="stat-value">
-              {{ totalUsers.toLocaleString() }}
-            </h2>
-            <p class="stat-label">
-              Total Registered
-            </p>
-            <div class="stat-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: `${registeredPercentage}%` }" />
+      <!-- Main Content -->
+      <template v-else>
+        <!-- Statistics Cards -->
+        <section class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon purple">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
               </div>
-              <span class="progress-label">{{ registeredPercentage.toFixed(0) }}%</span>
+              <div class="stat-content">
+                <h3 class="stat-label">
+                  Total Sessions
+                </h3>
+                <p class="stat-value">
+                  {{ attendanceSummary?.totalSessions || 0 }}
+                </p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </div>
+              <div class="stat-content">
+                <h3 class="stat-label">
+                  Attendance Rate
+                </h3>
+                <p class="stat-value">
+                  {{ attendanceSummary?.attendanceRate?.toFixed(1) || 0 }}%
+                </p>
+                <div class="trend-indicator" :class="{ positive: (attendanceSummary?.attendanceRate || 0) >= 75 }">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+                  <span>{{ (attendanceSummary?.attendanceRate || 0) >= 90 ? 'Excellent' : (attendanceSummary?.attendanceRate || 0) >= 75 ? 'Good' : 'Needs Improvement' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon amber">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              </div>
+              <div class="stat-content">
+                <h3 class="stat-label">
+                  Active Classes
+                </h3>
+                <p class="stat-value">
+                  {{ activeSessions.length }}
+                </p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
+              </div>
+              <div class="stat-content">
+                <h3 class="stat-label">
+                  Subjects Taught
+                </h3>
+                <p class="stat-value">
+                  {{ subjects.length }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+          <!-- Left Column -->
+          <div class="left-column">
+            <!-- Active Sessions -->
+            <div class="widget">
+              <div class="widget-header">
+                <h2 class="widget-title">
+                  <span class="pulse-dot" />
+                  Active Sessions
+                </h2>
+              </div>
+              <div class="widget-content">
+                <div v-if="activeSessions.length === 0" class="empty-state">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>
+                  <p>No active sessions</p>
+                </div>
+                <div v-else>
+                  <div
+                    v-for="session in activeSessions"
+                    :key="session.id"
+                    class="session-card active"
+                    @click="openSessionModal(session.id)"
+                  >
+                    <div class="session-header">
+                      <div>
+                        <div class="session-title">
+                          {{ session.subjectName }}
+                        </div>
+                        <div class="session-code">
+                          {{ session.subjectCode }} - {{ session.sectionName }}
+                        </div>
+                      </div>
+                      <span class="session-status-badge active">Active</span>
+                    </div>
+                    <div class="session-details">
+                      <div class="session-detail-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+                        <span>{{ session.actualRoomName || session.scheduledRoomName }}</span>
+                      </div>
+                      <div class="session-detail-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        <span>Started {{ formatTime(session.actualStartTime) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upcoming Sessions -->
+            <div class="widget">
+              <div class="widget-header">
+                <h2 class="widget-title">
+                  Upcoming Today
+                </h2>
+              </div>
+              <div class="widget-content">
+                <div v-if="upcomingSessions.length === 0" class="empty-state">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                  <p>No upcoming sessions today</p>
+                </div>
+                <div v-else>
+                  <div
+                    v-for="session in upcomingSessions"
+                    :key="session.id"
+                    class="session-card"
+                    @click="openSessionModal(session.id)"
+                  >
+                    <div class="session-header">
+                      <div>
+                        <div class="session-title">
+                          {{ session.subjectName }}
+                        </div>
+                        <div class="session-code">
+                          {{ session.subjectCode }} - {{ session.sectionName }}
+                        </div>
+                      </div>
+                      <span class="session-status-badge not-started">Upcoming</span>
+                    </div>
+                    <div class="session-details">
+                      <div class="session-detail-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+                        <span>{{ session.scheduledRoomName }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attendance Statistics -->
+            <div class="widget">
+              <div class="widget-header">
+                <h2 class="widget-title">
+                  Attendance Overview
+                </h2>
+              </div>
+              <div class="widget-content">
+                <div class="attendance-stats-grid">
+                  <div class="attendance-stat present">
+                    <div class="attendance-stat-value">
+                      {{ attendanceSummary?.totalPresent || 0 }}
+                    </div>
+                    <div class="attendance-stat-label">
+                      Present
+                    </div>
+                  </div>
+                  <div class="attendance-stat late">
+                    <div class="attendance-stat-value">
+                      {{ attendanceSummary?.totalLate || 0 }}
+                    </div>
+                    <div class="attendance-stat-label">
+                      Late
+                    </div>
+                  </div>
+                  <div class="attendance-stat absent">
+                    <div class="attendance-stat-value">
+                      {{ attendanceSummary?.totalAbsent || 0 }}
+                    </div>
+                    <div class="attendance-stat-label">
+                      Absent
+                    </div>
+                  </div>
+                  <div class="attendance-stat excused">
+                    <div class="attendance-stat-value">
+                      {{ attendanceSummary?.totalExcused || 0 }}
+                    </div>
+                    <div class="attendance-stat-label">
+                      Excused
+                    </div>
+                  </div>
+                </div>
+                <div class="chart-container">
+                  <Doughnut :data="attendanceChartData" :options="attendanceChartOptions" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="right-column">
+            <!-- Weekly Schedule -->
+            <div class="widget schedule-widget">
+              <div class="widget-header">
+                <h2 class="widget-title">
+                  Weekly Schedule
+                </h2>
+              </div>
+              <div class="widget-content">
+                <div v-if="schedules.length === 0" class="empty-state">
+                  <p>No schedules found</p>
+                </div>
+                <div v-else>
+                  <div
+                    v-for="(daySessions, day) in weeklySchedule"
+                    :key="day"
+                    class="schedule-day"
+                    :class="{ today: day === currentDay }"
+                  >
+                    <div v-if="daySessions.length > 0">
+                      <div class="schedule-day-header">
+                        {{ day }}{{ day === currentDay ? ' (Today)' : '' }}
+                      </div>
+                      <div class="schedule-items">
+                        <div
+                          v-for="schedule in daySessions"
+                          :key="schedule.id"
+                          class="schedule-item"
+                        >
+                          <div class="schedule-time">
+                            {{ schedule.timeIn }} - {{ schedule.timeOut }}
+                          </div>
+                          <div class="schedule-subject">
+                            {{ schedule.subject.code }} - {{ schedule.subject.name }}
+                          </div>
+                          <div class="schedule-location">
+                            {{ schedule.classroom.name }} • {{ schedule.section.name }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Today's Timeline -->
+            <div class="widget">
+              <div class="widget-header">
+                <h2 class="widget-title">
+                  Today's Timeline
+                </h2>
+              </div>
+              <div class="widget-content">
+                <div v-if="todaySessions.length === 0" class="empty-state">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
+                  <p>No sessions scheduled for today</p>
+                </div>
+                <div v-else class="timeline">
+                  <div
+                    v-for="session in todaySessions"
+                    :key="session.id"
+                    class="timeline-item"
+                    :class="{ active: session.status === 'active' }"
+                  >
+                    <div class="timeline-time">
+                      {{ session.actualStartTime ? formatTime(session.actualStartTime) : 'Scheduled' }}
+                    </div>
+                    <div class="timeline-content">
+                      <div class="session-title">
+                        {{ session.subjectName }}
+                      </div>
+                      <div class="session-code">
+                        {{ session.subjectCode }} - {{ session.sectionName }}
+                      </div>
+                      <div class="session-detail-row" style="margin-top: 0.5rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+                        <span>{{ session.actualRoomName || session.scheduledRoomName }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- Total Students -->
-        <div class="stat-card">
-          <div class="stat-content">
-            <h2 class="stat-value">
-              {{ totalStudents }}
-            </h2>
-            <p class="stat-label">
-              Total Students
-            </p>
-            <div class="stat-progress">
-              <div class="progress-bar">
-                <div class="progress-fill green" :style="{ width: `${studentsPercentage}%` }" />
-              </div>
-              <span class="progress-label">{{ studentsPercentage.toFixed(0) }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Teachers -->
-        <div class="stat-card">
-          <div class="stat-content">
-            <h2 class="stat-value">
-              {{ totalTeachers }}
-            </h2>
-            <p class="stat-label">
-              Total Teachers
-            </p>
-            <div class="stat-progress">
-              <div class="progress-bar">
-                <div class="progress-fill orange" :style="{ width: `${teachersPercentage}%` }" />
-              </div>
-              <span class="progress-label">{{ teachersPercentage.toFixed(0) }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- User Management -->
-        <div class="stat-card">
-          <div class="stat-content">
-            <h2 class="stat-value">
-              {{ userManagement.toLocaleString() }}
-            </h2>
-            <p class="stat-label">
-              User Management
-            </p>
-            <div class="stat-progress">
-              <div class="progress-bar">
-                <div class="progress-fill navy" :style="{ width: `${managementPercentage}%` }" />
-              </div>
-              <span class="progress-label">{{ managementPercentage.toFixed(0) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Student Sessions Section -->
-      <div v-if="!isLoading && isStudent && hasAnySessions" class="sessions-section">
-        <h2 class="section-title">
-          My Sessions
-        </h2>
-
-        <!-- Active Sessions -->
-        <div v-if="activeSessions.length > 0" class="sessions-group">
-          <h3 class="sessions-group-title">
-            Active Sessions
-          </h3>
-          <div class="sessions-grid">
-            <SessionCard
-              v-for="session in activeSessions"
-              :key="session.id"
-              :session="session"
-            />
-          </div>
-        </div>
-
-        <!-- Upcoming Sessions -->
-        <div v-if="upcomingSessions.length > 0" class="sessions-group">
-          <h3 class="sessions-group-title">
-            Upcoming Sessions
-          </h3>
-          <div class="sessions-grid">
-            <SessionCard
-              v-for="session in upcomingSessions"
-              :key="session.id"
-              :session="session"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Performance Chart -->
-      <div v-if="!isLoading" class="performance-card">
-        <div class="performance-header">
-          <h2>Performance</h2>
-          <div class="time-filters">
-            <button class="time-btn active">
-              Today
-            </button>
-            <button class="time-btn">
-              Weeks
-            </button>
-            <button class="time-btn">
-              Months
-            </button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <Line :data="chartData" :options="chartOptions" />
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item">
-            <span class="legend-dot pink" />
-            <span>This Week</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot black" />
-            <span>Last Week</span>
-          </div>
-        </div>
-      </div>
+      </template>
     </template>
+
+    <!-- Session Detail Modal -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            Session Attendance
+          </h2>
+          <button class="modal-close" @click="closeModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18" /><line x1="6" x2="18" y1="6" y2="18" /></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div v-if="modalLoading" class="modal-loading">
+            <div class="spinner" />
+            <p>Loading attendance data...</p>
+          </div>
+          <div v-else-if="modalSessionData" class="modal-content">
+            <div class="session-info">
+              <h3>{{ modalSessionData.subjectName }} - {{ modalSessionData.sectionName }}</h3>
+              <p>{{ formatDate(modalSessionData.sessionDate) }} • {{ modalSessionData.totalEnrolled }} students enrolled</p>
+            </div>
+
+            <div class="attendance-stats-grid" style="margin: 1.5rem 0;">
+              <div class="attendance-stat present">
+                <div class="attendance-stat-value">
+                  {{ modalSessionData.presentCount }}
+                </div>
+                <div class="attendance-stat-label">
+                  Present
+                </div>
+              </div>
+              <div class="attendance-stat late">
+                <div class="attendance-stat-value">
+                  {{ modalSessionData.lateCount }}
+                </div>
+                <div class="attendance-stat-label">
+                  Late
+                </div>
+              </div>
+              <div class="attendance-stat absent">
+                <div class="attendance-stat-value">
+                  {{ modalSessionData.absentCount }}
+                </div>
+                <div class="attendance-stat-label">
+                  Absent
+                </div>
+              </div>
+              <div class="attendance-stat rate">
+                <div class="attendance-stat-value" style="color: var(--color-primary);">
+                  {{ modalSessionData.attendanceRate?.toFixed(1) }}%
+                </div>
+                <div class="attendance-stat-label">
+                  Rate
+                </div>
+              </div>
+            </div>
+
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th>Student Number</th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Check-in Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="record in modalSessionData.attendanceRecords" :key="record.studentId">
+                  <td>{{ record.studentNumber }}</td>
+                  <td>{{ record.studentName }}</td>
+                  <td>
+                    <span class="attendance-badge" :class="record.status.toLowerCase()">
+                      {{ record.status }}
+                    </span>
+                  </td>
+                  <td>{{ record.checkInTime ? formatTime(record.checkInTime) : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.dashboard {
+/* Dashboard Container */
+.instructor-dashboard {
   min-height: 100vh;
-  background: var(--color-slate-100);
-  padding: 2rem;
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
 }
 
 /* Header */
@@ -479,412 +776,783 @@ const _getUserInitials = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
 }
 
-.title {
-  font-size: 2rem;
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary-diagonal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-gray-900);
-  margin: 0 0 0.25rem 0;
+  color: white;
+  box-shadow: var(--shadow-primary);
+  transition: transform var(--transition-base);
 }
 
-.subtitle {
-  font-size: 0.95rem;
-  color: var(--color-gray-500);
+.avatar:hover {
+  transform: scale(1.05);
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-success);
+  border: 3px solid var(--bg-secondary);
+  border-radius: var(--radius-full);
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.welcome-text {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
   margin: 0;
 }
 
-.user-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.welcome-text .name {
+  color: var(--color-primary);
+}
+
+.role-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  background: var(--gradient-primary-diagonal);
   color: white;
-  font-weight: 700;
-  font-size: 1.4rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  margin: 0;
 }
 
-.user-avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+.header-actions {
+  text-align: right;
 }
 
-.user-avatar.uploading {
-  opacity: 0.7;
-  cursor: not-allowed;
+.current-date {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
+.current-time {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
-.user-avatar::after {
-  content: '📷';
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  background: var(--color-primary);
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 2;
+/* Statistics */
+.stats-section {
+  margin-bottom: var(--spacing-xl);
 }
 
-.user-avatar:hover::after {
-  opacity: 1;
-}
-
-.upload-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  z-index: 3;
-}
-
-.upload-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.remove-profile-btn {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--color-error);
-  color: white;
-  border: none;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.remove-profile-btn:hover {
-  background: var(--color-error-dark);
-  transform: scale(1.1);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-}
-
-.remove-profile-btn:active {
-  transform: scale(0.95);
-}
-
-/* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
 }
 
 .stat-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s, box-shadow 0.3s;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  transition: all var(--transition-base);
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
 }
 
-.primary-card {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-lightest) 100%);
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   color: white;
+}
+
+.stat-icon.purple {
+  background: var(--gradient-primary-diagonal);
+}
+
+.stat-icon.green {
+  background: linear-gradient(135deg, var(--color-success), var(--color-success-light));
+}
+
+.stat-icon.amber {
+  background: linear-gradient(135deg, var(--color-warning), var(--color-warning-light));
+}
+
+.stat-icon.blue {
+  background: linear-gradient(135deg, var(--color-info), var(--color-info-light));
 }
 
 .stat-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1;
+  flex: 1;
 }
 
 .stat-label {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
   font-weight: 500;
+  margin: 0 0 0.25rem 0;
 }
 
-.primary-card .stat-label {
-  opacity: 0.95;
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin: 0;
 }
 
-.stat-progress {
+.trend-indicator {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.25rem;
   margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-error);
 }
 
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
+.trend-indicator.positive {
+  color: var(--color-success);
 }
 
-.primary-card .progress-bar {
-  background: rgba(255, 255, 255, 0.3);
+/* Main Grid */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
 }
 
-.progress-fill {
-  height: 100%;
-  background: var(--color-primary);
-  border-radius: 10px;
-  transition: width 0.6s ease;
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
 }
 
-.primary-card .progress-fill {
-  background: white;
+/* Widget */
+.widget {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
 }
 
-.progress-fill.green {
-  background: var(--color-success);
+.widget:hover {
+  box-shadow: var(--shadow-md);
 }
 
-.progress-fill.orange {
-  background: var(--color-warning);
-}
-
-.progress-fill.navy {
-  background: var(--color-primary);
-}
-
-.progress-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  min-width: 35px;
-}
-
-/* Performance Card */
-.performance-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.performance-header {
+.widget-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-primary);
 }
 
-.performance-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
+.widget-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  color: var(--color-gray-900);
-}
-
-.time-filters {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
-.time-btn {
-  padding: 0.5rem 1.25rem;
-  border: none;
-  background: transparent;
-  color: var(--color-gray-500);
-  font-weight: 500;
-  font-size: 0.9rem;
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--color-success);
+  border-radius: var(--radius-full);
+  animation: pulseDot 2s ease infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.empty-state svg {
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Session Card */
+.session-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
   cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
+  position: relative;
 }
 
-.time-btn.active {
-  background: var(--color-primary);
-  color: white;
+.session-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  opacity: 0;
+  transition: opacity var(--transition-base);
 }
 
-.time-btn:hover:not(.active) {
-  background: var(--color-gray-100);
+.session-card:hover::before {
+  opacity: 1;
+}
+
+.session-card:hover {
+  background: var(--bg-hover);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.session-card.active::before {
+  opacity: 1;
+  background: linear-gradient(180deg, var(--color-success), var(--color-success-light));
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--spacing-sm);
+}
+
+.session-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.session-code {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.session-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.session-status-badge.active {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.session-status-badge.not-started {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.session-detail-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.session-detail-row svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Attendance Stats */
+.attendance-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.attendance-stat {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: all var(--transition-base);
+}
+
+.attendance-stat.present { border-color: var(--color-success); }
+.attendance-stat.late { border-color: var(--color-warning); }
+.attendance-stat.absent { border-color: var(--color-error); }
+.attendance-stat.excused { border-color: var(--color-info); }
+
+.attendance-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.attendance-stat.present .attendance-stat-value { color: var(--color-success); }
+.attendance-stat.late .attendance-stat-value { color: var(--color-warning); }
+.attendance-stat.absent .attendance-stat-value { color: var(--color-error); }
+.attendance-stat.excused .attendance-stat-value { color: var(--color-info); }
+
+.attendance-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 500;
+  margin: 0;
 }
 
 .chart-container {
-  height: 300px;
-  margin-bottom: 1.5rem;
+  height: 200px;
+  margin-top: var(--spacing-lg);
 }
 
-.chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-gray-100);
+/* Schedule */
+.schedule-widget {
+  min-height: 600px;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--color-gray-500);
+.schedule-day {
+  margin-bottom: var(--spacing-md);
 }
 
-.legend-dot {
+.schedule-day-header {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.schedule-day.today .schedule-day-header {
+  color: var(--color-primary);
+}
+
+.schedule-item {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--color-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: var(--spacing-sm);
+  transition: all var(--transition-base);
+}
+
+.schedule-item:hover {
+  background: var(--bg-hover);
+  transform: translateX(4px);
+}
+
+.schedule-time {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.schedule-subject {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0.25rem 0;
+}
+
+.schedule-location {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: var(--spacing-lg);
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-primary);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--spacing-lg);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 4px;
   width: 12px;
   height: 12px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  border: 3px solid var(--bg-secondary);
 }
 
-.legend-dot.pink {
-  background: rgb(236, 72, 153);
+.timeline-item.active::before {
+  background: var(--color-success);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+  animation: pulseDot 2s ease infinite;
 }
 
-.legend-dot.black {
-  background: var(--color-gray-900);
+.timeline-time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.timeline-content {
+  background: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn var(--transition-base);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp var(--transition-base);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+}
+
+.modal-close:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  gap: var(--spacing-md);
+  color: var(--text-secondary);
+}
+
+.session-info h3 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.session-info p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th {
+  text-align: left;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.attendance-table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.attendance-table tr:hover {
+  background: var(--bg-hover);
+}
+
+.attendance-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.attendance-badge.present {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.attendance-badge.late {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.attendance-badge.absent {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.attendance-badge.excused {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  gap: var(--spacing-md);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-primary);
+  border-top-color: var(--color-primary);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Unauthenticated */
-.unauthenticated {
+.unauthenticated,
+.redirect-message {
   text-align: center;
   padding: 4rem 2rem;
-  background: white;
-  border-radius: 20px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   max-width: 500px;
   margin: 4rem auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
-.unauthenticated h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: var(--color-gray-900);
+.unauthenticated h2,
+.redirect-message h2 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
 }
 
-.unauthenticated p {
-  color: var(--color-gray-500);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
+.unauthenticated p,
+.redirect-message p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
 }
 
 .login-link {
   display: inline-block;
-  padding: 1rem 2rem;
-  background: var(--color-primary);
+  padding: 0.75rem 2rem;
+  background: var(--gradient-primary-diagonal);
   color: white;
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 600;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
 }
 
 .login-link:hover {
-  background: var(--color-primary-lightest);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-primary-lg);
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
-  .dashboard {
-    padding: 1rem;
+  .instructor-dashboard {
+    padding: var(--spacing-md);
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  .attendance-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .performance-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  .welcome-text {
+    font-size: 1.5rem;
   }
 
-  .sessions-grid {
+  .modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .attendance-stats-grid {
     grid-template-columns: 1fr;
   }
-}
 
-/* Sessions Section */
-.sessions-section {
-  margin-bottom: 2rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
-  margin: 0 0 1.5rem 0;
-}
-
-.sessions-group {
-  margin-bottom: 2rem;
-}
-
-.sessions-group:last-child {
-  margin-bottom: 0;
-}
-
-.sessions-group-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-gray-700);
-  margin: 0 0 1rem 0;
-}
-
-.sessions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  .schedule-widget {
+    min-height: auto;
+  }
 }
 </style>

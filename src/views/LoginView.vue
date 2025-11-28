@@ -311,7 +311,7 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div class="form-options">
+            <!-- <div class="form-options">
               <div class="checkbox-group">
                 <div class="custom-checkbox">
                   <input
@@ -332,7 +332,7 @@ onUnmounted(() => {
                 <span class="forgot-icon">🔑</span>
                 <span>Forgot Password?</span>
               </a>
-            </div>
+            </div> -->
 
             <button type="submit" class="login-button" :disabled="isLoading">
               <span class="button-content">
