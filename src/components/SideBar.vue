@@ -100,7 +100,7 @@ async function handleLogout() {
 onMounted(() => {
   // Initialize expanded state based on current route
   const path = route.path
-  if (['/students', '/instructors', '/sections'].includes(path)) {
+  if (['/sections'].includes(path)) {
     expandedMenus.value.academic = true
   }
   if (['/courses', '/subjects'].includes(path)) {
@@ -192,7 +192,7 @@ onUnmounted(() => {
           <li v-if="isAdmin" class="has-submenu">
             <div
               class="nav-link submenu-toggle"
-              :class="{ active: isSubmenuActive(['/students', '/instructors', '/sections']) }"
+              :class="{ active: isSubmenuActive(['/sections']) }"
               @click="isCollapsed ? null : toggleSubmenu('academic')"
             >
               <GraduationCap class="nav-icon" size="20" />
@@ -205,16 +205,6 @@ onUnmounted(() => {
               />
             </div>
             <ul v-show="!isCollapsed && expandedMenus.academic" class="submenu">
-              <li>
-                <router-link to="/students" class="nav-link submenu-link" @click="closeSidebar">
-                  <span class="nav-text">Students</span>
-                </router-link>
-              </li>
-              <li>
-                <router-link to="/instructors" class="nav-link submenu-link" @click="closeSidebar">
-                  <span class="nav-text">Instructors</span>
-                </router-link>
-              </li>
               <li>
                 <router-link to="/sections" class="nav-link submenu-link" @click="closeSidebar">
                   <span class="nav-text">Sections</span>

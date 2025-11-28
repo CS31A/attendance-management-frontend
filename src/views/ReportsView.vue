@@ -2,7 +2,7 @@
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { BarChart3, CheckCircle, GraduationCap, MoreVertical, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref } from 'vue'
-import { useStudentStore } from '@/stores/studentStore'
+import { useUserStore } from '@/stores/userStore'
 
 const Bar = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Bar })))
 const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
@@ -10,14 +10,14 @@ const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
 
-const studentStore = useStudentStore()
+const userStore = useUserStore()
 
 // Active tab
 const activeTab = ref('Today')
 const tabs = ['Today', 'Week', 'Month', 'Year']
 
 // Stats data
-const totalStudents = computed(() => studentStore.students.length || 1247)
+const totalStudents = computed(() => userStore.students.length || 1247)
 const presentToday = ref(1156)
 const absentToday = computed(() => totalStudents.value - presentToday.value)
 const attendanceRate = computed(() => ((presentToday.value / totalStudents.value) * 100).toFixed(1))

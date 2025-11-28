@@ -71,16 +71,7 @@ const routes = [
     component: () => import('../views/ClassroomView.vue'),
     beforeEnter: [authGuard, adminGuard],
   },
-  {
-    path: '/students',
-    component: () => import('../views/StudentManagementView.vue'),
-    beforeEnter: [authGuard, adminGuard],
-  },
-  {
-    path: '/instructors',
-    component: () => import('../views/InstructorManagementView.vue'),
-    beforeEnter: [authGuard, adminGuard],
-  },
+
   {
     path: '/qr-code/projection/:qrCodeId',
     component: () => import('../views/QRProjectionView.vue'),

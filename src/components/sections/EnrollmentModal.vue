@@ -2,7 +2,7 @@
 import { AlertTriangle, Check, Loader2, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
-import { useStudentStore } from '@/stores/studentStore'
+import { useUserStore } from '@/stores/userStore'
 import { parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({
@@ -17,7 +17,7 @@ defineEmits(['close'])
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 const enrollmentStore = useEnrollmentStore()
-const studentStore = useStudentStore()
+const userStore = useUserStore()
 
 // State
 const showAddForm = ref(false)
@@ -34,8 +34,8 @@ const successMessage = ref('')
 
 // Computed
 const enrolledStudents = computed(() => enrollmentStore.getSectionStudents)
-const availableStudents = computed(() => studentStore.getStudents)
-const isLoading = computed(() => enrollmentStore.isLoading || studentStore.isLoading)
+const availableStudents = computed(() => userStore.students)
+const isLoading = computed(() => enrollmentStore.isLoading || userStore.loading)
 
 const filteredEnrolledStudents = computed(() => {
   if (!searchQuery.value)
@@ -44,7 +44,7 @@ const filteredEnrolledStudents = computed(() => {
   return enrolledStudents.value.filter(s =>
     s.firstName.toLowerCase().includes(query)
     || s.lastName.toLowerCase().includes(query)
-    || s.studentId.toLowerCase().includes(query),
+    || (s.studentId && s.studentId.toLowerCase().includes(query)),
   )
 })
 
@@ -53,7 +53,7 @@ async function loadData() {
   try {
     await Promise.all([
       enrollmentStore.fetchSectionStudents(props.section.id),
-      studentStore.fetchStudents(),
+      userStore.fetchUsers(),
     ])
   }
   catch {

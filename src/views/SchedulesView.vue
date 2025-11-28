@@ -3,7 +3,6 @@ import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
-import { getAllInstructors } from '@/api/instructors'
 import sectionsApi from '@/api/sections'
 import subjectApi from '@/api/subjects'
 import AlertModal from '@/components/common/AlertModal.vue'
@@ -12,12 +11,14 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useScheduleStore } from '@/stores/scheduleStore.js'
+import { useUserStore } from '@/stores/userStore'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 // Field configuration for FormModal with async options
 const scheduleFields = [
@@ -114,10 +115,14 @@ const scheduleFields = [
     required: true,
     placeholder: 'Select an instructor',
     options: async () => {
-      const instructors = await getAllInstructors()
+      // Ensure users are loaded
+      if (userStore.users.length === 0) {
+        await userStore.fetchUsers()
+      }
+      const instructors = userStore.instructors
       return instructors.map(i => ({
         value: i.id,
-        label: `${i.firstname} ${i.lastname}`,
+        label: `${i.firstName} ${i.lastName}`,
       }))
     },
   },
@@ -299,12 +304,14 @@ async function filterByInstructor(instructorId) {
   isLoadingInstructorFilter.value = true
   try {
     // Fetch instructor details to show the name
-    const instructors = await getAllInstructors()
-    const instructor = instructors.find(i => i.id === Number.parseInt(instructorId))
+    if (userStore.users.length === 0) {
+      await userStore.fetchUsers()
+    }
+    const instructor = userStore.users.find(i => i.id === Number.parseInt(instructorId))
 
     if (instructor) {
       filteredInstructorId.value = Number.parseInt(instructorId)
-      filteredInstructorName.value = `${instructor.firstname} ${instructor.lastname}`
+      filteredInstructorName.value = `${instructor.firstName} ${instructor.lastName}`
       currentPage.value = 1 // Reset to first page when filtering
     }
   }

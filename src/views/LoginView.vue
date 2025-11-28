@@ -1,5 +1,19 @@
 <script setup>
-import { Eye, EyeOff } from 'lucide-vue-next'
+import {
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Hand,
+  Heart,
+  KeyRound,
+  Loader2,
+  Lock,
+  LogIn,
+  ShieldCheck,
+  User,
+  XCircle,
+  Zap,
+} from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
@@ -190,7 +204,7 @@ onUnmounted(() => {
           <div class="feature-grid">
             <div class="feature-card">
               <div class="feature-icon">
-                ⚡
+                <Zap :size="20" />
               </div>
               <div class="feature-text">
                 <span class="feature-title">Lightning Fast</span>
@@ -199,7 +213,7 @@ onUnmounted(() => {
             </div>
             <div class="feature-card">
               <div class="feature-icon">
-                🔒
+                <Lock :size="20" />
               </div>
               <div class="feature-text">
                 <span class="feature-title">Secure</span>
@@ -213,7 +227,7 @@ onUnmounted(() => {
       <div class="footer">
         <div class="footer-content">
           <p class="footer-text">
-            © 2025 VSG • Built with ❤️
+            © 2025 VSG • Built with <Heart :size="14" class="heart-icon" />
           </p>
         </div>
       </div>
@@ -226,7 +240,7 @@ onUnmounted(() => {
           <!-- Form Header -->
           <div class="form-header">
             <div class="welcome-badge">
-              <span class="badge-emoji">👋</span>
+              <Hand :size="16" class="badge-icon" />
               <span class="badge-label">Welcome Back</span>
             </div>
             <h2 class="form-title">
@@ -240,13 +254,13 @@ onUnmounted(() => {
           <form class="form-content" @submit.prevent="handleLogin">
             <!-- General Error Message -->
             <div v-if="errors.general" class="error-message general-error">
-              <span class="error-emoji">⚠️</span>
+              <AlertTriangle :size="16" class="error-icon" />
               <span>{{ errors.general }}</span>
             </div>
 
             <div class="form-group">
               <label for="username" class="form-label">
-                <span class="label-icon">👤</span>
+                <User :size="16" class="label-icon" />
                 <span class="label-text">Username or Email</span>
               </label>
               <div class="input-container">
@@ -266,14 +280,14 @@ onUnmounted(() => {
                 <div class="input-border" />
               </div>
               <div v-if="errors.username" class="error-message">
-                <span class="error-emoji">❌</span>
+                <XCircle :size="14" class="error-icon" />
                 <span>{{ errors.username }}</span>
               </div>
             </div>
 
             <div class="form-group">
               <label for="password" class="form-label">
-                <span class="label-icon">🔐</span>
+                <KeyRound :size="16" class="label-icon" />
                 <span class="label-text">Password</span>
               </label>
               <div class="input-container">
@@ -302,7 +316,7 @@ onUnmounted(() => {
                 <div class="input-border" />
               </div>
               <div v-if="errors.password" class="error-message">
-                <span class="error-emoji">❌</span>
+                <XCircle :size="14" class="error-icon" />
                 <span>{{ errors.password }}</span>
               </div>
             </div>
@@ -332,7 +346,8 @@ onUnmounted(() => {
 
             <button type="submit" class="login-button" :disabled="isLoading">
               <span class="button-content">
-                <span class="button-icon">{{ isLoading ? '⏳' : '🚀' }}</span>
+                <Loader2 v-if="isLoading" :size="18" class="button-icon spinning" />
+                <LogIn v-else :size="18" class="button-icon" />
                 <span class="button-text">{{ isLoading ? 'Logging in...' : 'Login to Dashboard' }}</span>
               </span>
               <div class="button-glow" />
@@ -341,7 +356,7 @@ onUnmounted(() => {
             <!-- Additional Options -->
             <div class="form-footer">
               <p class="security-note">
-                <span class="security-icon">🛡️</span>
+                <ShieldCheck :size="16" class="security-icon" />
                 Your data is protected with enterprise-grade security
               </p>
             </div>
@@ -504,7 +519,10 @@ onUnmounted(() => {
 }
 
 .feature-icon {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-info-light);
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
 }
 
@@ -541,6 +559,15 @@ onUnmounted(() => {
   font-size: 14px;
   opacity: 0.8;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.heart-icon {
+  color: rgb(239, 68, 68);
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* Right Panel Styles */
@@ -590,8 +617,8 @@ onUnmounted(() => {
   margin-bottom: 12px;
 }
 
-.badge-emoji {
-  font-size: 16px;
+.badge-icon {
+  color: rgb(124, 58, 237);
 }
 
 .form-title {
@@ -636,8 +663,8 @@ onUnmounted(() => {
 }
 
 .label-icon {
-  font-size: 16px;
-  opacity: 0.8;
+  color: var(--color-slate-500);
+  flex-shrink: 0;
 }
 
 .label-text {
@@ -763,8 +790,9 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.error-emoji {
-  font-size: 14px;
+.error-icon {
+  color: var(--color-error);
+  flex-shrink: 0;
 }
 
 .general-error {
@@ -893,8 +921,21 @@ onUnmounted(() => {
 }
 
 .button-icon {
-  font-size: 18px;
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+  flex-shrink: 0;
+}
+
+.button-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .button-text {
@@ -981,7 +1022,8 @@ onUnmounted(() => {
 }
 
 .security-icon {
-  font-size: 16px;
+  color: var(--color-slate-500);
+  flex-shrink: 0;
 }
 
 /* Responsive Design */
