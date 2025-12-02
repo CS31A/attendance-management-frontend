@@ -347,7 +347,6 @@ onUnmounted(() => {
             <button type="submit" class="login-button" :disabled="isLoading">
               <span class="button-content">
                 <Loader2 v-if="isLoading" :size="18" class="button-icon spinning" />
-                <LogIn v-else :size="18" class="button-icon" />
                 <span class="button-text">{{ isLoading ? 'Logging in...' : 'Login to Dashboard' }}</span>
               </span>
               <div class="button-glow" />
