@@ -8,7 +8,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'soft-delete', 'delete'])
+defineEmits(['edit', 'softDelete', 'delete'])
 
 // Get role icon component
 function _getRoleIcon(role) {
@@ -131,7 +131,7 @@ function formatDate(value) {
               <button class="btn-edit" title="Edit User" @click="$emit('edit', user)">
                 <Edit class="btn-icon" size="16" />
               </button>
-              <button class="btn-soft-delete" title="Soft Delete (Can be restored)" @click="$emit('soft-delete', user)">
+              <button class="btn-soft-delete" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
                 <ArchiveX class="btn-icon" size="16" />
               </button>
               <button class="btn-delete" title="Permanently Delete" @click="$emit('delete', user)">

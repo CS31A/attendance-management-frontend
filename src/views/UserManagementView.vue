@@ -201,7 +201,7 @@ async function confirmDelete() {
   try {
     // API returns userId, not id
     const id = userToDelete.value.userId || userToDelete.value.id
-    
+
     if (!id) {
       console.error('User ID not found. User object:', userToDelete.value)
       showToast('Unable to delete: User ID not found', 'error')
