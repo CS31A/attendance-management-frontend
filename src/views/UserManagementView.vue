@@ -213,7 +213,7 @@ async function confirmDelete() {
       result = await userStore.softDeleteUser(id)
     }
     else {
-      result = await userStore.hardDeleteUser(id, userToDelete.value.role)
+      result = await userStore.hardDeleteUser(id)
     }
 
     if (result.success) {

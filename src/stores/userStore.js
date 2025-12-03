@@ -257,15 +257,12 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async hardDeleteUser(userId, role) {
+    async hardDeleteUser(userId) {
       this.loading = true
       this.error = null
 
       try {
-        // API returns 'Teacher' but we also handle 'Instructor' for compatibility
-        const isTeacher = role === 'Teacher' || role === 'Instructor'
-        const endpoint = isTeacher ? '/instructors' : '/students'
-        await api.delete(`${endpoint}/${userId}`)
+        await api.delete(`/users/${userId}`)
 
         // Remove the user from the store
         this.users = this.users.filter(user => (user.userId || user.id) !== userId)
