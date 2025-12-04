@@ -231,12 +231,19 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    /**
+     * Soft delete a user (reversible)
+     * Endpoint: PATCH /api/users/{userId}/soft-delete
+     * Authorization: AdminPolicy
+     * @param {number} userId - The ID of the user to soft delete
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
     async softDeleteUser(userId) {
       this.loading = true
       this.error = null
 
       try {
-        await api.delete(`/account/admin/users/${userId}`)
+        await api.patch(`/users/${userId}/soft-delete`)
 
         // Mark user as deleted in local state
         const index = this.users.findIndex(u => (u.userId || u.id) === userId)
@@ -257,6 +264,13 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    /**
+     * Hard delete a user (permanent)
+     * Endpoint: DELETE /api/users/{userId}
+     * Authorization: AdminPolicy
+     * @param {number} userId - The ID of the user to permanently delete
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
     async hardDeleteUser(userId) {
       this.loading = true
       this.error = null
