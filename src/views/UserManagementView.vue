@@ -10,6 +10,7 @@ import { useUserStore } from '@/stores/userStore'
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
 const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
+const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))
 
 const userStore = useUserStore()
 
@@ -380,11 +381,10 @@ watch([debouncedSearchQuery, selectedRole], () => {
         </div>
 
         <div class="role-filter">
-          <select v-model="selectedRole" class="filter-select">
-            <option v-for="filter in roleFilters" :key="filter" :value="filter">
-              {{ filter }}
-            </option>
-          </select>
+          <CustomDropdown
+            v-model="selectedRole"
+            :options="roleFilters"
+          />
         </div>
       </div>
 
@@ -701,27 +701,6 @@ watch([debouncedSearchQuery, selectedRole], () => {
 .role-filter {
   min-width: 180px;
 }
-
-.filter-select {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: 2px solid var(--color-gray-200);
-  border-radius: 16px;
-  font-size: 0.875rem;
-  background: white;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  font-weight: 500;
-  color: var(--color-gray-700);
-  transition: all 0.3s ease;
-}
-.filter-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
-  transform: translateY(-2px);
-}
-
 /* Users Grid */
 .users-grid {
   display: grid;
