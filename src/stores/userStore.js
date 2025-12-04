@@ -22,8 +22,16 @@ export const useUserStore = defineStore('user', {
     getUsers: state => state.users,
     instructors: state => state.users.filter(user => user.role === 'Instructor'),
     students: state => state.users.filter(user => user.role === 'Student'),
-    filteredUsers: state => (searchQuery, selectedRole) => {
+    filteredUsers: state => (searchQuery, selectedRole, showArchived = false) => {
       let filtered = state.users
+
+      // Filter by archived status (soft-deleted)
+      if (showArchived) {
+        filtered = filtered.filter(user => user.isDeleted || user.deletedAt)
+      }
+      else {
+        filtered = filtered.filter(user => !user.isDeleted && !user.deletedAt)
+      }
 
       if (selectedRole !== 'All Roles') {
         filtered = filtered.filter(user => user.role === selectedRole)
@@ -50,20 +58,20 @@ export const useUserStore = defineStore('user', {
     },
 
     // Pagination getters
-    paginatedUsers: state => (searchQuery, selectedRole) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole)
+    paginatedUsers: state => (searchQuery, selectedRole, showArchived = false) => {
+      const filtered = state.filteredUsers(searchQuery, selectedRole, showArchived)
       const start = (state.currentPage - 1) * state.itemsPerPage
       const end = start + state.itemsPerPage
       return filtered.slice(start, end)
     },
 
-    totalPages: state => (searchQuery, selectedRole) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole)
+    totalPages: state => (searchQuery, selectedRole, showArchived = false) => {
+      const filtered = state.filteredUsers(searchQuery, selectedRole, showArchived)
       return Math.ceil(filtered.length / state.itemsPerPage)
     },
 
-    hasNextPage: state => (searchQuery, selectedRole) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole)
+    hasNextPage: state => (searchQuery, selectedRole, showArchived = false) => {
+      const filtered = state.filteredUsers(searchQuery, selectedRole, showArchived)
       const totalPages = Math.ceil(filtered.length / state.itemsPerPage)
       return state.currentPage < totalPages
     },
@@ -303,8 +311,8 @@ export const useUserStore = defineStore('user', {
       this.currentPage = 1 // Reset to first page when changing items per page
     },
 
-    nextPage(searchQuery, selectedRole) {
-      const totalPages = this.totalPages(searchQuery, selectedRole)
+    nextPage(searchQuery, selectedRole, showArchived = false) {
+      const totalPages = this.totalPages(searchQuery, selectedRole, showArchived)
       if (this.currentPage < totalPages) {
         this.currentPage++
       }
@@ -316,8 +324,8 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    goToPage(page, searchQuery, selectedRole) {
-      const totalPages = this.totalPages(searchQuery, selectedRole)
+    goToPage(page, searchQuery, selectedRole, showArchived = false) {
+      const totalPages = this.totalPages(searchQuery, selectedRole, showArchived)
       if (page >= 1 && page <= totalPages) {
         this.currentPage = page
       }

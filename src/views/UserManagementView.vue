@@ -21,6 +21,7 @@ const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const isSearching = ref(false)
 const selectedRole = ref('All Roles')
+const viewMode = ref('active') // 'active' or 'archived'
 const createModal = ref(null)
 const editModal = ref(null)
 
@@ -80,11 +81,11 @@ onMounted(async () => {
 })
 
 const filteredUsers = computed(() =>
-  userStore.filteredUsers(debouncedSearchQuery.value, selectedRole.value),
+  userStore.filteredUsers(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
 )
 
 const paginatedUsers = computed(() =>
-  userStore.paginatedUsers(debouncedSearchQuery.value, selectedRole.value),
+  userStore.paginatedUsers(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
 )
 
 const filteredInstructors = computed(() =>
@@ -97,11 +98,11 @@ const filteredStudents = computed(() =>
 
 // Pagination computed properties
 const totalPages = computed(() =>
-  userStore.totalPages(debouncedSearchQuery.value, selectedRole.value),
+  userStore.totalPages(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
 )
 
 const hasNextPage = computed(() =>
-  userStore.hasNextPage(debouncedSearchQuery.value, selectedRole.value),
+  userStore.hasNextPage(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
 )
 
 const hasPreviousPage = computed(() =>
@@ -247,7 +248,7 @@ function handleEditUser(user) {
 
 // Pagination methods
 function nextPage() {
-  userStore.nextPage(debouncedSearchQuery.value, selectedRole.value)
+  userStore.nextPage(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived')
 }
 
 function previousPage() {
@@ -255,7 +256,7 @@ function previousPage() {
 }
 
 function goToPage(page) {
-  userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value)
+  userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived')
 }
 
 function setItemsPerPage(itemsPerPage) {
@@ -263,7 +264,7 @@ function setItemsPerPage(itemsPerPage) {
 }
 
 // Reset pagination when debounced search or filter changes
-watch([debouncedSearchQuery, selectedRole], () => {
+watch([debouncedSearchQuery, selectedRole, viewMode], () => {
   userStore.setCurrentPage(1)
 })
 </script>
@@ -386,13 +387,31 @@ watch([debouncedSearchQuery, selectedRole], () => {
             :options="roleFilters"
           />
         </div>
+
+        <!-- View Mode Toggle -->
+        <div class="view-toggle">
+          <button
+            class="toggle-btn"
+            :class="{ active: viewMode === 'active' }"
+            @click="viewMode = 'active'"
+          >
+            Active
+          </button>
+          <button
+            class="toggle-btn"
+            :class="{ active: viewMode === 'archived' }"
+            @click="viewMode = 'archived'"
+          >
+            Archived
+          </button>
+        </div>
       </div>
 
       <!-- All Roles Table -->
       <UserTableSection
         v-if="selectedRole === 'All Roles' && filteredUsers.length > 0"
         :users="paginatedUsers"
-        title="All Users"
+        :title="viewMode === 'active' ? 'All Users' : 'Archived Users'"
         role="All"
         :pagination="{
           currentPage,
@@ -508,6 +527,40 @@ watch([debouncedSearchQuery, selectedRole], () => {
 </template>
 
 <style scoped>
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  background: var(--bg-primary);
+  padding: 0.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+  gap: 0.25rem;
+}
+
+.toggle-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggle-btn:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.toggle-btn.active {
+  background: var(--color-primary-light);
+  color: var(--text-white);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
 /* Main Container */
 .user-management {
   min-height: 100vh;
