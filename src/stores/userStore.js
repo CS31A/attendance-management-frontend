@@ -22,16 +22,8 @@ export const useUserStore = defineStore('user', {
     getUsers: state => state.users,
     instructors: state => state.users.filter(user => user.role === 'Instructor'),
     students: state => state.users.filter(user => user.role === 'Student'),
-    filteredUsers: state => (searchQuery, selectedRole, showArchived = false) => {
+    filteredUsers: state => (searchQuery, selectedRole) => {
       let filtered = state.users
-
-      // Filter by archived status (soft-deleted)
-      if (showArchived) {
-        filtered = filtered.filter(user => user.isDeleted || user.deletedAt)
-      }
-      else {
-        filtered = filtered.filter(user => !user.isDeleted && !user.deletedAt)
-      }
 
       if (selectedRole !== 'All Roles') {
         filtered = filtered.filter(user => user.role === selectedRole)
@@ -58,20 +50,20 @@ export const useUserStore = defineStore('user', {
     },
 
     // Pagination getters
-    paginatedUsers: state => (searchQuery, selectedRole, showArchived = false) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole, showArchived)
+    paginatedUsers: state => (searchQuery, selectedRole) => {
+      const filtered = state.filteredUsers(searchQuery, selectedRole)
       const start = (state.currentPage - 1) * state.itemsPerPage
       const end = start + state.itemsPerPage
       return filtered.slice(start, end)
     },
 
-    totalPages: state => (searchQuery, selectedRole, showArchived = false) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole, showArchived)
+    totalPages: state => (searchQuery, selectedRole) => {
+      const filtered = state.filteredUsers(searchQuery, selectedRole)
       return Math.ceil(filtered.length / state.itemsPerPage)
     },
 
-    hasNextPage: state => (searchQuery, selectedRole, showArchived = false) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole, showArchived)
+    hasNextPage: state => (searchQuery, selectedRole) => {
+      const filtered = state.filteredUsers(searchQuery, selectedRole)
       const totalPages = Math.ceil(filtered.length / state.itemsPerPage)
       return state.currentPage < totalPages
     },
@@ -82,7 +74,7 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    async fetchUsers() {
+    async fetchUsers(status = 'Active') {
       this.loading = true
       this.error = null
 
@@ -90,15 +82,15 @@ export const useUserStore = defineStore('user', {
         // Para sa skeleton loader simulation
         await new Promise(resolve => setTimeout(resolve, 500))
 
-        const resp = await api.get('/users')
+        const resp = await api.get('/users', { params: { status } })
         this.users = resp.data
       }
-      catch {
-        // Error fetching users
+      catch (err) {
+        console.error('Error fetching users:', err)
+        this.error = 'Failed to fetch users'
       }
       finally {
         this.loading = false
-        this.error = null
       }
     },
     async createUser(userData) {
@@ -244,7 +236,7 @@ export const useUserStore = defineStore('user', {
      * Endpoint: PATCH /api/users/{userId}/soft-delete
      * Authorization: AdminPolicy
      * @param {number} userId - The ID of the user to soft delete
-     * @returns {Promise<{success: boolean, error?: string}>}
+     * @returns {Promise<{success: boolean, error?: string}>} The result of the soft delete operation
      */
     async softDeleteUser(userId) {
       this.loading = true
@@ -277,7 +269,7 @@ export const useUserStore = defineStore('user', {
      * Endpoint: DELETE /api/users/{userId}
      * Authorization: AdminPolicy
      * @param {number} userId - The ID of the user to permanently delete
-     * @returns {Promise<{success: boolean, error?: string}>}
+     * @returns {Promise<{success: boolean, error?: string}>} The result of the hard delete operation
      */
     async hardDeleteUser(userId) {
       this.loading = true
@@ -311,8 +303,8 @@ export const useUserStore = defineStore('user', {
       this.currentPage = 1 // Reset to first page when changing items per page
     },
 
-    nextPage(searchQuery, selectedRole, showArchived = false) {
-      const totalPages = this.totalPages(searchQuery, selectedRole, showArchived)
+    nextPage(searchQuery, selectedRole) {
+      const totalPages = this.totalPages(searchQuery, selectedRole)
       if (this.currentPage < totalPages) {
         this.currentPage++
       }
@@ -324,8 +316,8 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    goToPage(page, searchQuery, selectedRole, showArchived = false) {
-      const totalPages = this.totalPages(searchQuery, selectedRole, showArchived)
+    goToPage(page, searchQuery, selectedRole) {
+      const totalPages = this.totalPages(searchQuery, selectedRole)
       if (page >= 1 && page <= totalPages) {
         this.currentPage = page
       }

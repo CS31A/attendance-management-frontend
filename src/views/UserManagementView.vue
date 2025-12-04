@@ -21,7 +21,7 @@ const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const isSearching = ref(false)
 const selectedRole = ref('All Roles')
-const viewMode = ref('active') // 'active' or 'archived'
+const viewMode = ref('Active') // 'Active', 'Archived', 'All'
 const createModal = ref(null)
 const editModal = ref(null)
 
@@ -73,19 +73,30 @@ const roleFilters = ['All Roles', 'Instructor', 'Student']
 
 onMounted(async () => {
   try {
-    await userStore.fetchUsers()
+    await userStore.fetchUsers(viewMode.value)
   }
   catch (error) {
     console.error('Failed to load users:', error)
   }
 })
 
+// Watch viewMode changes to fetch users
+watch(viewMode, async (newMode) => {
+  try {
+    await userStore.fetchUsers(newMode)
+    userStore.setCurrentPage(1)
+  }
+  catch (error) {
+    console.error('Failed to fetch users for mode:', newMode, error)
+  }
+})
+
 const filteredUsers = computed(() =>
-  userStore.filteredUsers(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
+  userStore.filteredUsers(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const paginatedUsers = computed(() =>
-  userStore.paginatedUsers(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
+  userStore.paginatedUsers(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const filteredInstructors = computed(() =>
@@ -98,11 +109,11 @@ const filteredStudents = computed(() =>
 
 // Pagination computed properties
 const totalPages = computed(() =>
-  userStore.totalPages(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
+  userStore.totalPages(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const hasNextPage = computed(() =>
-  userStore.hasNextPage(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived'),
+  userStore.hasNextPage(debouncedSearchQuery.value, selectedRole.value),
 )
 
 const hasPreviousPage = computed(() =>
@@ -223,6 +234,8 @@ async function confirmDelete() {
       showToast(`User ${action} successfully`, 'success')
       showDeleteModal.value = false
       userToDelete.value = null
+      // Refresh list to ensure consistency
+      await userStore.fetchUsers(viewMode.value)
     }
     else {
       showToast(result.error || `Failed to ${deleteType.value === 'soft' ? 'soft delete' : 'permanently delete'} user`, 'error')
@@ -248,7 +261,7 @@ function handleEditUser(user) {
 
 // Pagination methods
 function nextPage() {
-  userStore.nextPage(debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived')
+  userStore.nextPage(debouncedSearchQuery.value, selectedRole.value)
 }
 
 function previousPage() {
@@ -256,7 +269,7 @@ function previousPage() {
 }
 
 function goToPage(page) {
-  userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value, viewMode.value === 'archived')
+  userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value)
 }
 
 function setItemsPerPage(itemsPerPage) {
@@ -264,7 +277,7 @@ function setItemsPerPage(itemsPerPage) {
 }
 
 // Reset pagination when debounced search or filter changes
-watch([debouncedSearchQuery, selectedRole, viewMode], () => {
+watch([debouncedSearchQuery, selectedRole], () => {
   userStore.setCurrentPage(1)
 })
 </script>
@@ -318,7 +331,7 @@ watch([debouncedSearchQuery, selectedRole, viewMode], () => {
         <BaseButton
           variant="ghost"
           size="small"
-          @click="userStore.fetchUsers"
+          @click="userStore.fetchUsers(viewMode)"
         >
           Retry
         </BaseButton>
@@ -392,26 +405,32 @@ watch([debouncedSearchQuery, selectedRole, viewMode], () => {
         <div class="view-toggle">
           <button
             class="toggle-btn"
-            :class="{ active: viewMode === 'active' }"
-            @click="viewMode = 'active'"
+            :class="{ active: viewMode === 'Active' }"
+            @click="viewMode = 'Active'"
           >
             Active
           </button>
           <button
             class="toggle-btn"
-            :class="{ active: viewMode === 'archived' }"
-            @click="viewMode = 'archived'"
+            :class="{ active: viewMode === 'Archived' }"
+            @click="viewMode = 'Archived'"
           >
             Archived
+          </button>
+          <button
+            class="toggle-btn"
+            :class="{ active: viewMode === 'All' }"
+            @click="viewMode = 'All'"
+          >
+            All
           </button>
         </div>
       </div>
 
-      <!-- All Roles Table -->
       <UserTableSection
         v-if="selectedRole === 'All Roles' && filteredUsers.length > 0"
         :users="paginatedUsers"
-        :title="viewMode === 'active' ? 'All Users' : 'Archived Users'"
+        :title="viewMode === 'Active' ? 'Active Users' : viewMode === 'Archived' ? 'Archived Users' : 'All Users'"
         role="All"
         :pagination="{
           currentPage,
