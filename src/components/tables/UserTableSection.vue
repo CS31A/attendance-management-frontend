@@ -19,9 +19,13 @@ defineProps({
     type: Object,
     default: null,
   },
+  showRestore: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-defineEmits(['edit', 'softDelete', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+defineEmits(['edit', 'softDelete', 'delete', 'restore', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
 
 function getRoleIcon(role) {
   const icons = {
@@ -45,9 +49,11 @@ function getRoleIcon(role) {
     <div class="table-container">
       <UserTable
         :users="users"
+        :show-restore="showRestore"
         @edit="$emit('edit', $event)"
         @soft-delete="$emit('softDelete', $event)"
         @delete="$emit('delete', $event)"
+        @restore="$emit('restore', $event)"
       />
 
       <!-- Pagination Controls -->

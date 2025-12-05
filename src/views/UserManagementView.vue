@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
@@ -68,6 +69,11 @@ const showDeleteModal = ref(false)
 const userToDelete = ref(null)
 const isDeleting = ref(false)
 const deleteType = ref('soft') // 'soft' or 'hard'
+
+// Restore modal state
+const showRestoreModal = ref(false)
+const userToRestore = ref(null)
+const isRestoring = ref(false)
 
 const roleFilters = ['All Roles', 'Instructor', 'Student']
 
@@ -204,6 +210,57 @@ function handleHardDeleteUser(user) {
     console.error('User not found for hard delete')
     showToast('User not found', 'error')
   }
+}
+
+function handleRestoreUser(user) {
+  if (user) {
+    userToRestore.value = user
+    showRestoreModal.value = true
+  }
+  else {
+    console.error('User not found for restore')
+    showToast('User not found', 'error')
+  }
+}
+
+async function confirmRestore() {
+  if (!userToRestore.value)
+    return
+
+  isRestoring.value = true
+  try {
+    const id = userToRestore.value.userId || userToRestore.value.id
+
+    if (!id) {
+      console.error('User ID not found. User object:', userToRestore.value)
+      showToast('Unable to restore: User ID not found', 'error')
+      return
+    }
+
+    const result = await userStore.restoreUser(id)
+    if (result.success) {
+      showToast('User restored successfully', 'success')
+      showRestoreModal.value = false
+      userToRestore.value = null
+      // Refresh list to ensure consistency
+      await userStore.fetchUsers(viewMode.value)
+    }
+    else {
+      showToast(result.error || 'Failed to restore user', 'error')
+    }
+  }
+  catch (error) {
+    console.error('Error restoring user:', error)
+    showToast('An unexpected error occurred while restoring user', 'error')
+  }
+  finally {
+    isRestoring.value = false
+  }
+}
+
+function cancelRestore() {
+  showRestoreModal.value = false
+  userToRestore.value = null
 }
 
 async function confirmDelete() {
@@ -432,6 +489,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         :users="paginatedUsers"
         :title="viewMode === 'Active' ? 'Active Users' : viewMode === 'Archived' ? 'Archived Users' : 'All Users'"
         role="All"
+        :show-restore="viewMode === 'Archived'"
         :pagination="{
           currentPage,
           totalPages,
@@ -443,6 +501,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @edit="handleEditUser"
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
+        @restore="handleRestoreUser"
         @next-page="nextPage"
         @previous-page="previousPage"
         @go-to-page="goToPage"
@@ -455,9 +514,11 @@ watch([debouncedSearchQuery, selectedRole], () => {
         :users="filteredInstructors"
         title="Instructors"
         role="Instructor"
+        :show-restore="viewMode === 'Archived'"
         @edit="handleEditUser"
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
+        @restore="handleRestoreUser"
       />
 
       <!-- Students Table -->
@@ -466,9 +527,11 @@ watch([debouncedSearchQuery, selectedRole], () => {
         :users="filteredStudents"
         title="Students"
         role="Student"
+        :show-restore="viewMode === 'Archived'"
         @edit="handleEditUser"
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
+        @restore="handleRestoreUser"
       />
 
       <!-- Empty State -->
@@ -532,6 +595,17 @@ watch([debouncedSearchQuery, selectedRole], () => {
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
+    />
+
+    <!-- Restore Confirmation Modal -->
+    <ConfirmationModal
+      :show="showRestoreModal"
+      title="Restore User"
+      message="Are you sure you want to restore this user? The user will be reactivated and moved to the Active users list."
+      confirm-text="Restore"
+      cancel-text="Cancel"
+      @confirm="confirmRestore"
+      @cancel="cancelRestore"
     />
 
     <!-- Toast Notification -->

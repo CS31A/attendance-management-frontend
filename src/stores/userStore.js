@@ -293,6 +293,39 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    /**
+     * Restore a soft-deleted user
+     * Endpoint: PATCH /api/users/{userId}/restore
+     * Authorization: AdminPolicy
+     * @param {number} userId - The ID of the user to restore
+     * @returns {Promise<{success: boolean, error?: string}>} The result of the restore operation
+     */
+    async restoreUser(userId) {
+      this.loading = true
+      this.error = null
+
+      try {
+        await api.patch(`/users/${userId}/restore`)
+
+        // Mark user as not deleted in local state
+        const index = this.users.findIndex(u => (u.userId || u.id) === userId)
+        if (index !== -1) {
+          this.users[index].deletedAt = null
+          this.users[index].isDeleted = false
+        }
+
+        return { success: true }
+      }
+      catch (error) {
+        console.error('Error restoring user:', error)
+        this.error = error.response?.data?.message || 'Failed to restore user'
+        return { success: false, error: this.error }
+      }
+      finally {
+        this.loading = false
+      }
+    },
+
     // Pagination actions
     setCurrentPage(page) {
       this.currentPage = page
