@@ -135,7 +135,6 @@ async function handleSubmit() {
       notes: record.notes || '',
     }))
     emit('submit', attendanceData)
-
     // Update original status after successful submit
     localAttendance.value.forEach((record) => {
       record.originalStatus = record.status

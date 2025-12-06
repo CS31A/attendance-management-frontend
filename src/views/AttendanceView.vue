@@ -117,6 +117,8 @@ async function handleSubmitAttendance(attendanceData) {
     }
     showToast(message, 'error')
     errorMessage.value = message
+    // Re-throw error so child component doesn't reset its state
+    throw error
   }
 }
 
