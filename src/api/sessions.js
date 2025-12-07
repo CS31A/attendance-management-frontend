@@ -32,6 +32,24 @@ export async function fetchSessions() {
 }
 
 /**
+ * Fetch sessions for the current instructor
+ *
+ * Returns sessions assigned to the authenticated instructor.
+ * Use this for instructor-facing views instead of fetchSessions().
+ *
+ * @returns {Promise<Array<SessionResponseDto>>} Array of session objects
+ * @throws {Error} Network or authentication errors
+ *
+ * @example
+ * const mySessions = await fetchMySessions()
+ * console.log(`Found ${mySessions.length} sessions for current instructor`)
+ */
+export async function fetchMySessions() {
+  const response = await api.get('/sessions/my-sessions')
+  return response.data
+}
+
+/**
  * Fetch a single session by ID
  *
  * @param {number} sessionId - Session ID

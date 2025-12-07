@@ -23,6 +23,21 @@ export async function getAllSchedules() {
 }
 
 /**
+ * Get schedules for the current instructor
+ * @returns {Promise<Array>} List of schedule objects for the current instructor
+ */
+export async function getMySchedules() {
+  try {
+    const response = await api.get(`${SCHEDULE_ENDPOINT}/my-schedules`)
+    return response.data
+  }
+  catch (error) {
+    console.error('Failed to fetch my schedules:', error)
+    return Promise.reject(error)
+  }
+}
+
+/**
  * Get a specific schedule by ID
  * @param {number} id - Schedule ID
  * @returns {Promise<object>} Schedule object
@@ -104,6 +119,7 @@ export async function getSchedulesByInstructor(instructorId) {
 
 export default {
   getAllSchedules,
+  getMySchedules,
   getScheduleById,
   createSchedule,
   updateSchedule,

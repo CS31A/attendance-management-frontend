@@ -115,14 +115,13 @@ const scheduleFields = [
     required: true,
     placeholder: 'Select an instructor',
     options: async () => {
-      // Ensure users are loaded
-      if (userStore.users.length === 0) {
-        await userStore.fetchUsers()
-      }
+      // Always fetch active users to ensure the list is fresh and filtered correctly
+      // This handles cases where user might have navigated from 'Archived' view
+      await userStore.fetchUsers('Active')
       const instructors = userStore.instructors
       return instructors.map(i => ({
-        value: i.id,
-        label: `${i.firstName} ${i.lastName}`,
+        value: i.profileId, // Use profileId (instructor profile integer ID) instead of userId (GUID)
+        label: `${i.firstName || i.firstname} ${i.lastName || i.lastname}`,
       }))
     },
   },

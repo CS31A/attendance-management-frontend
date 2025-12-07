@@ -1,10 +1,46 @@
 import { defineStore } from 'pinia'
 import api from '@/api/index.js'
+import { ROLES } from '@/utils/constants'
 
 // Helper function to validate section
 function isValidSection(sectionId) {
   const validSections = ['1', '2', '3', '4', '5', 'CS101', 'MATH201', 'ENG301']
   return validSections.includes(sectionId)
+}
+
+// Helper function to map user profile data from API response to flat structure
+function mapUserProfile(user) {
+  // Extract base fields
+  const mappedUser = {
+    userId: user.userId,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    isDeleted: user.isDeleted,
+  }
+
+  // Map profile data based on role
+  if (user.role === 'Admin' && user.adminProfile) {
+    mappedUser.firstName = user.adminProfile.firstname
+    mappedUser.lastName = user.adminProfile.lastname
+    mappedUser.profileId = user.adminProfile.id
+  }
+  else if (user.role === 'Teacher' && user.instructorProfile) {
+    mappedUser.firstName = user.instructorProfile.firstname
+    mappedUser.lastName = user.instructorProfile.lastname
+    mappedUser.profileId = user.instructorProfile.id
+  }
+  else if (user.role === 'Student' && user.studentProfile) {
+    mappedUser.firstName = user.studentProfile.firstname
+    mappedUser.lastName = user.studentProfile.lastname
+    mappedUser.sectionId = user.studentProfile.sectionId
+    mappedUser.isRegular = user.studentProfile.isRegular
+    mappedUser.profileId = user.studentProfile.id
+  }
+
+  return mappedUser
 }
 
 export const useUserStore = defineStore('user', {
@@ -20,8 +56,8 @@ export const useUserStore = defineStore('user', {
 
   getters: {
     getUsers: state => state.users,
-    instructors: state => state.users.filter(user => user.role === 'Instructor'),
-    students: state => state.users.filter(user => user.role === 'Student'),
+    instructors: state => state.users.filter(user => user.role === ROLES.TEACHER),
+    students: state => state.users.filter(user => user.role === ROLES.STUDENT),
     filteredUsers: state => (searchQuery, selectedRole) => {
       let filtered = state.users
 
@@ -83,7 +119,8 @@ export const useUserStore = defineStore('user', {
         await new Promise(resolve => setTimeout(resolve, 500))
 
         const resp = await api.get('/users', { params: { status } })
-        this.users = resp.data
+        // Map user profile data to flat structure
+        this.users = resp.data.map(user => mapUserProfile(user))
       }
       catch (err) {
         console.error('Error fetching users:', err)
@@ -139,15 +176,18 @@ export const useUserStore = defineStore('user', {
         }
 
         // Add the new user to the store
-        const newUser = {
-          id: response.data.id || Date.now(),
-          firstName: response.data.firstName || response.data.firstname || userData.FirstName,
-          lastName: response.data.lastName || response.data.lastname || userData.LastName,
-          email: response.data.email || userData.Email,
-          role: userData.Role,
-          sectionId: response.data.sectionId || userData.SectionId,
-          createdAt: response.data.createdAt || new Date().toISOString(),
-        }
+        // Map profile data if present in response
+        const newUser = response.data.userId
+          ? mapUserProfile(response.data)
+          : {
+              id: response.data.id || Date.now(),
+              firstName: response.data.firstName || response.data.firstname || userData.FirstName,
+              lastName: response.data.lastName || response.data.lastname || userData.LastName,
+              email: response.data.email || userData.Email,
+              role: userData.Role,
+              sectionId: response.data.sectionId || userData.SectionId,
+              createdAt: response.data.createdAt || new Date().toISOString(),
+            }
 
         this.users.push(newUser)
 
@@ -216,7 +256,11 @@ export const useUserStore = defineStore('user', {
         // Update the user in the store with the original role (role cannot be changed)
         const index = this.users.findIndex(user => (user.userId || user.id) === userId)
         if (index !== -1) {
-          this.users[index] = { ...response.data, role: originalUser.role }
+          // Map profile data if present in response
+          const updatedUser = response.data.userId
+            ? mapUserProfile({ ...response.data, role: originalUser.role })
+            : { ...response.data, role: originalUser.role }
+          this.users[index] = updatedUser
         }
 
         return { success: true, data: response.data }

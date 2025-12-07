@@ -4,8 +4,8 @@ import {
   createSession as apiCreateSession,
   deleteSession as apiDeleteSession,
   endSession as apiEndSession,
+  fetchMySessions as apiFetchMySessions,
   fetchSessionById as apiFetchSessionById,
-  fetchSessions as apiFetchSessions,
   fetchSessionsByDate as apiFetchSessionsByDate,
   fetchSessionsBySchedule as apiFetchSessionsBySchedule,
   fetchSessionsByStatus as apiFetchSessionsByStatus,
@@ -111,7 +111,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
   // ==================== ACTIONS ====================
 
   /**
-   * Fetch all sessions
+   * Fetch sessions for the current instructor
+   * Uses instructor-scoped endpoint for instructor views
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessions = async () => {
@@ -121,7 +122,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       // Para sa skeleton loader simulation
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      const data = await apiFetchSessions()
+      const data = await apiFetchMySessions()
       sessions.value = data
       return data
     }
