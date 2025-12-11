@@ -73,8 +73,8 @@ function formatDate(value) {
 </script>
 
 <template>
-  <div class="table-wrapper">
-    <table class="users-table">
+  <div class="app-table-wrapper">
+    <table class="app-table users-table">
       <thead>
         <tr>
           <!-- <th class="th-avatar">Avatar</th> -->
@@ -104,7 +104,7 @@ function formatDate(value) {
             </div>
           </td> -->
           <td class="td-name">
-            <div class="name-cell">
+            <div class="app-cell-name">
               <span class="user-name">{{ getUserName(user) }}</span>
             </div>
           </td>
@@ -125,24 +125,24 @@ function formatDate(value) {
             </div>
           </td> -->
           <td class="td-joined">
-            <div class="joined-cell">
+            <div class="app-cell-date">
               <Calendar class="date-icon" size="16" />
               <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
-            <div class="action-buttons">
-              <button class="btn-edit" title="Edit User" @click="$emit('edit', user)">
-                <Edit class="btn-icon" size="16" />
+            <div class="app-cell-actions">
+              <button class="app-btn-icon app-btn-edit" title="Edit User" @click="$emit('edit', user)">
+                <Edit size="16" />
               </button>
-              <button v-if="showRestore" class="btn-restore" title="Restore User" @click="$emit('restore', user)">
-                <ArchiveRestore class="btn-icon" size="16" />
+              <button v-if="showRestore" class="app-btn-icon app-btn-restore" title="Restore User" @click="$emit('restore', user)">
+                <ArchiveRestore size="16" />
               </button>
-              <button v-else class="btn-soft-delete" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
-                <ArchiveX class="btn-icon" size="16" />
+              <button v-else class="app-btn-icon app-btn-restore" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
+                <ArchiveX size="16" />
               </button>
-              <button class="btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
-                <Trash2 class="btn-icon" size="16" />
+              <button class="app-btn-icon app-btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
+                <Trash2 size="16" />
               </button>
             </div>
           </td>
@@ -153,149 +153,25 @@ function formatDate(value) {
 </template>
 
 <style scoped>
-.table-wrapper {
-  overflow-x: auto;
-}
+/* Specific column widths */
+.th-name { min-width: 150px; }
+.th-email { min-width: 200px; }
+.th-role { width: 120px; }
+.th-section { width: 100px; text-align: center; }
+.th-joined { width: 150px; text-align: center; }
+.th-actions { width: 120px; text-align: center; }
 
-/* Users Table */
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-/* Table Header */
-.users-table thead {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-}
-
-.users-table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: white;
-  font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.th-avatar {
-  width: 80px;
-  text-align: center;
-}
-
-.th-name {
-  min-width: 150px;
-}
-
-.th-email {
-  min-width: 200px;
-}
-
-.th-role {
-  width: 120px;
-}
-
-.th-section {
-  width: 100px;
-  text-align: center;
-}
-
-.th-joined {
-  width: 150px;
-  text-align: center;
-}
-
-.th-actions {
-  width: 120px;
-  text-align: center;
-}
-
-/* Table Body */
-.users-table tbody tr {
-  border-bottom: 1px solid var(--color-gray-200);
-  transition: background-color 0.2s ease;
-}
-
-.users-table tbody tr:hover {
-  background-color: var(--color-slate-100);
-}
-
-.users-table td {
-  padding: 0.75rem 1rem;
-  vertical-align: middle;
-}
-
-/* Avatar Column */
-/* .td-avatar {
-  text-align: center;
-}
-
-.avatar-circle {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  color: white;
-  font-weight: 600;
-}
-
-.avatar-circle.instructor {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-}
-
-.avatar-circle.student {
-  background: linear-gradient(135deg, var(--color-success) 0%, rgb(21, 128, 61) 100%);
-}
-
-.avatar-circle.default {
-  background: linear-gradient(135deg, var(--color-gray-500) 0%, var(--color-gray-600) 100%);
-}
-
-.avatar-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-} */
-
-/* Name Column */
-.td-name {
-  font-weight: 600;
-  color: var(--color-gray-800);
-}
-
-.user-name {
-  font-size: 0.8125rem;
-}
-
-/* Email Column */
-.td-email {
-  color: var(--color-gray-500);
-}
-
+/* Custom Cell Styles */
 .email-cell {
   display: flex;
   align-items: center;
   gap: 0.375rem;
+  color: var(--color-gray-500);
 }
 
 .email-icon {
-  width: 1rem;
-  height: 1rem;
   color: var(--color-gray-400);
   flex-shrink: 0;
-}
-
-.email-text {
-  font-size: 0.8125rem;
-}
-
-/* Section Column */
-.td-section {
-  text-align: center;
 }
 
 .section-text {
@@ -307,231 +183,58 @@ function formatDate(value) {
   font-weight: 500;
 }
 
-/* Role Column */
-.role-text {
-  font-size: 0.8125rem;
-}
-
-/* Joined Column */
-.td-joined {
-  text-align: center;
-  color: var(--color-gray-500);
-}
-
-.joined-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-}
-
-.date-icon {
-  width: 1rem;
-  height: 1rem;
-  color: var(--color-gray-400);
-  flex-shrink: 0;
-}
-
-.date-text {
-  font-size: 0.8125rem;
-  white-space: nowrap;
-}
-
-/* Actions Column */
-.td-actions {
-  text-align: center;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.375rem;
-  justify-content: center;
-}
-
-.btn-edit,
-.btn-soft-delete,
-.btn-restore,
-.btn-delete {
-  padding: 0.375rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-edit {
-  background: var(--color-info-bg);
-  color: var(--color-primary);
-}
-
-.btn-edit:hover {
-  background: var(--color-info-lighter);
-  color: var(--color-primary-light);
-}
-
-.btn-soft-delete {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
-  color: #f97316;
-}
-
-.btn-soft-delete:hover {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
-  color: #ea580c;
-}
-
-.btn-restore {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
-  color: #f97316;
-}
-
-.btn-restore:hover {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
-  color: #ea580c;
-}
-
-.btn-delete {
-  background: var(--color-error-bg);
-  color: var(--color-error-dark);
-}
-
-.btn-delete:hover {
-  background: var(--color-error-light);
-  color: var(--color-error-darker);
-}
-
-.btn-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-/* Responsive Table with Sticky Columns */
-@media (max-width: 1024px) {
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
-  }
-
-  .users-table {
-    min-width: 800px;
-  }
-}
-
+/* Responsive Sticky Columns */
 @media (max-width: 768px) {
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
-  }
-
   .users-table {
-    min-width: 700px; /* Increased to ensure Actions column is visible */
+    min-width: 700px;
   }
 
-  /* Sticky first column (Avatar + Name) */
-  /* .th-avatar,
-  .td-avatar {
+  .th-name,
+  .td-name {
     position: sticky;
     left: 0;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
     z-index: 10;
   }
 
-  .td-avatar {
-    background: white;
-    border-right: 2px solid var(--color-gray-200);
-  } */
-
-  .th-name,
-  .td-name {
-    position: sticky;
-    left: 0; /* Reset to 0 since avatar column is removed */
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    z-index: 10;
-  }
-
   .td-name {
     background: white;
     border-right: 2px solid var(--color-gray-200);
   }
 
-  /* Adjust header colors for sticky columns */
   .th-name {
     color: white;
   }
 }
 
 @media (max-width: 640px) {
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
   .users-table {
-    min-width: 600px; /* Increased to ensure Actions column is visible */
+    min-width: 600px;
   }
 
-  /* Make avatar and name columns stickier on smaller screens */
-  /* .th-avatar,
-  .td-avatar {
+  .th-name,
+  .td-name {
+    position: sticky;
     left: 0;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  }
-
-  .td-avatar {
-    background: white;
-  } */
-
-  .th-name,
-  .td-name {
-    left: 0; /* Reset to 0 since avatar column is removed */
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    z-index: 10;
   }
 
   .td-name {
     background: white;
   }
 
-  /* Adjust column widths for mobile - ensure Actions column is accessible */
-  /* .th-avatar,
-  .td-avatar {
-    width: 60px;
-    min-width: 60px;
-  } */
-
-  .th-name,
-  .td-name {
-    width: 120px; /* Increased since avatar column is removed */
-    min-width: 120px;
-  }
-
-  .th-email,
-  .td-email {
-    width: 120px; /* Reduced to make room for Actions */
-    min-width: 120px;
-  }
-
-  .th-section,
-  .td-section {
-    width: 70px; /* Reduced to make room for Actions */
-    min-width: 70px;
-  }
-
-  .th-joined,
-  .td-joined {
-    width: 90px; /* Reduced to make room for Actions */
-    min-width: 90px;
-  }
+  .th-name, .td-name { width: 120px; min-width: 120px; }
+  .th-email, .td-email { width: 120px; min-width: 120px; }
+  .th-section, .td-section { width: 70px; min-width: 70px; }
+  .th-joined, .td-joined { width: 90px; min-width: 90px; }
 
   .th-actions,
   .td-actions {
-    width: 120px; /* Increased to ensure buttons are accessible */
+    width: 120px;
     min-width: 120px;
     position: sticky;
-    right: 0; /* Stick to the right side */
+    right: 0;
     background: white;
     border-left: 2px solid var(--color-gray-200);
     z-index: 5;
@@ -542,40 +245,7 @@ function formatDate(value) {
     color: white;
   }
 
-  /* Adjust padding for mobile */
-  .users-table th,
-  .users-table td {
-    padding: 0.5rem 0.375rem; /* Reduced padding to fit more content */
-  }
-
-  /* .avatar-circle {
-    width: 1.75rem; / Slightly smaller
-    height: 1.75rem;
-  }
-
-  .avatar-icon {
-    width: 0.875rem;
-    height: 0.875rem;
-  } */
-
-  .btn-edit,
-  .btn-delete {
-    padding: 0.25rem; /* Smaller buttons */
-    margin: 0 0.125rem; /* Small margin between buttons */
-  }
-
-  .btn-icon {
-    width: 0.75rem; /* Smaller icons */
-    height: 0.75rem;
-  }
-
-  /* Make action buttons more compact */
-  .action-buttons {
-    gap: 0.25rem;
-    justify-content: center;
-  }
-
-  /* Ensure text doesn't wrap in action column */
+  /* Truncate text */
   .user-name,
   .email-text,
   .section-text,
@@ -584,67 +254,25 @@ function formatDate(value) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
   }
 }
 
-/* Extra small screens */
 @media (max-width: 480px) {
   .users-table {
     min-width: 550px;
   }
-
-  .users-table th,
-  .users-table td {
-    padding: 0.375rem 0.25rem;
-  }
-
-  .th-name,
-  .td-name {
-    min-width: 100px;
-  }
-
-  .th-actions,
-  .td-actions {
-    min-width: 100px;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    padding: 0.1875rem;
-  }
-
-  .btn-icon {
-    width: 0.625rem;
-    height: 0.625rem;
-  }
+  .th-name, .td-name { min-width: 100px; }
+  .th-actions, .td-actions { min-width: 100px; }
 }
 
-/* Very small screens */
 @media (max-width: 320px) {
   .users-table {
     min-width: 480px;
   }
-
-  .users-table th,
-  .users-table td {
-    padding: 0.3125rem 0.1875rem;
-    font-size: 0.6875rem;
-  }
-
-  .user-name,
-  .email-text,
-  .date-text {
-    font-size: 0.6875rem;
-  }
-
-  .th-name,
-  .td-name {
-    min-width: 80px;
-  }
-
-  .th-actions,
-  .td-actions {
-    min-width: 80px;
-  }
+  .th-name, .td-name { min-width: 80px; }
+  .th-actions, .td-actions { min-width: 80px; }
+  .user-name, .email-text, .date-text { font-size: 0.6875rem; }
 }
 </style>

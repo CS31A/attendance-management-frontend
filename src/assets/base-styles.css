@@ -1,0 +1,236 @@
+/* =========================================
+   Base Modal Styles
+   ========================================= */
+.app-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* Matches --z-modal */
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out backwards;
+}
+
+.app-modal-content {
+  background: white;
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s ease-out backwards;
+  margin: 1rem;
+}
+
+/* Modal Sizes */
+.app-modal-sm { max-width: 380px; }
+.app-modal-md { max-width: 420px; }
+.app-modal-lg { max-width: 520px; }
+.app-modal-xl { max-width: 800px; }
+
+/* Modal Header */
+.app-modal-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: white;
+  border-radius: 0.75rem 0.75rem 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-modal-header h2,
+.app-modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-btn-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-btn-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+/* Modal Body */
+.app-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Modal Footer */
+.app-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: white;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* =========================================
+   Base Table Styles
+   ========================================= */
+.app-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  min-width: 600px; /* Default min-width, overridable */
+}
+
+/* Table Header */
+.app-table thead {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+}
+
+.app-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: white;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+/* Table Body */
+.app-table tbody tr {
+  border-bottom: 1px solid var(--color-gray-200);
+  transition: background-color 0.2s ease;
+}
+
+.app-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.app-table tbody tr:hover {
+  background-color: var(--color-slate-100);
+}
+
+.app-table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  color: var(--color-gray-700);
+}
+
+/* Common Cell Types */
+.app-cell-id {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--color-gray-500);
+}
+
+.app-cell-name {
+  font-weight: 600;
+  color: var(--color-gray-800);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-cell-date {
+  color: var(--color-gray-500);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.app-cell-actions {
+  display: flex;
+  gap: 0.375rem;
+  justify-content: center;
+}
+
+/* Action Buttons */
+.app-btn-icon {
+  padding: 0.375rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+}
+
+.app-btn-edit {
+  background: var(--color-info-bg);
+  color: var(--color-primary);
+}
+.app-btn-edit:hover {
+  background: var(--color-info-lighter);
+  color: var(--color-primary-light);
+}
+
+.app-btn-delete {
+  background: var(--color-error-bg);
+  color: var(--color-error-dark);
+}
+.app-btn-delete:hover {
+  background: var(--color-error-light);
+  color: var(--color-error-darker);
+}
+
+.app-btn-restore {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+  color: #f97316;
+}
+.app-btn-restore:hover {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
+  color: #ea580c;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+  .app-modal-content {
+    max-height: calc(100vh - 2rem);
+  }
+}

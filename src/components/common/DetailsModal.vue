@@ -1,5 +1,6 @@
 <script setup>
 import { X } from 'lucide-vue-next'
+import BaseModal from '../common/BaseModal.vue'
 
 const _props = defineProps({
   show: {
@@ -32,104 +33,69 @@ const emit = defineEmits(['close'])
 function handleClose() {
   emit('close')
 }
-
-// Close modal on Escape key
-function handleKeydown(event) {
-  if (event.key === 'Escape') {
-    handleClose()
-  }
-}
-
-defineExpose({
-  handleKeydown,
-})
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="show"
-      class="modal-overlay"
-      @click="handleClose"
-      @keydown="handleKeydown"
-    >
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <div v-if="icon" class="header-icon-wrapper" :style="{ background: `rgba(255, 255, 255, 0.2)` }">
+  <BaseModal
+    :show="show"
+    size="md"
+    @close="handleClose"
+  >
+    <!-- Custom Header -->
+    <template #header>
+      <div class="custom-header">
+        <div class="header-content">
+          <div v-if="icon" class="header-icon-wrapper">
             <component :is="icon" class="header-icon" size="24" :style="{ color: 'white' }" />
           </div>
           <h3>{{ title }}</h3>
-          <button class="close-btn" @click="handleClose">
-            <X size="20" />
-          </button>
         </div>
-        <div class="modal-body">
-          <div v-if="items && items.length > 0" class="details-grid">
-            <div v-for="(item, index) in items" :key="index" class="detail-item" :class="{ 'full-width': item.fullWidth }">
-              <label class="detail-label">{{ item.label }}</label>
-              <div class="detail-value" :class="{ badge: item.badge, status: item.status }">
-                <component :is="item.icon" v-if="item.icon" class="detail-icon" size="16" />
-                <span v-if="item.badge" class="badge-content" :class="item.badgeClass">{{ item.value }}</span>
-                <span v-else>{{ item.value || '-' }}</span>
-              </div>
-            </div>
-          </div>
-          <div v-else class="empty-details">
-            <p>No details available</p>
-          </div>
+        <button class="app-btn-close" @click="handleClose">
+          <X size="24" />
+        </button>
+      </div>
+    </template>
 
-          <!-- Optional slot for custom content -->
-          <slot />
-        </div>
-        <div class="modal-footer">
-          <button class="btn-close" @click="handleClose">
-            Close
-          </button>
+    <!-- Body -->
+    <div v-if="items && items.length > 0" class="details-grid">
+      <div v-for="(item, index) in items" :key="index" class="detail-item" :class="{ 'full-width': item.fullWidth }">
+        <label class="detail-label">{{ item.label }}</label>
+        <div class="detail-value" :class="{ badge: item.badge, status: item.status }">
+          <component :is="item.icon" v-if="item.icon" class="detail-icon" size="16" />
+          <span v-if="item.badge" class="badge-content" :class="item.badgeClass">{{ item.value }}</span>
+          <span v-else>{{ item.value || '-' }}</span>
         </div>
       </div>
     </div>
-  </Teleport>
+    <div v-else class="empty-details">
+      <p>No details available</p>
+    </div>
+
+    <!-- Optional slot for custom content -->
+    <slot />
+
+    <!-- Footer -->
+    <template #footer>
+      <button class="btn-close" @click="handleClose">
+        Close
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-  backdrop-filter: blur(4px);
-}
-
-.modal-content {
-  background: white;
-  border-radius: 0.75rem;
-  width: 100%;
-  max-width: 420px;
-  max-height: calc(100vh - 2rem);
-  overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  margin: auto;
-}
-
-.modal-header {
+/* Custom Header Styles to match BaseModal but with added Icon */
+.custom-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
+  width: 100%;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .header-icon-wrapper {
@@ -140,45 +106,27 @@ defineExpose({
   height: 2.5rem;
   border-radius: 50%;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .header-icon {
   flex-shrink: 0;
 }
 
-.modal-header h3 {
+.custom-header h3 {
   font-size: 1.25rem;
   font-weight: bold;
   color: white;
   margin: 0;
-  flex: 1;
 }
 
-.close-btn {
-  background: transparent;
-  border: none;
+/* Close Button Override for Header Slot */
+.app-btn-close {
   color: white;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  margin-left: auto; /* Push to right if needed, though flex justified space-between handles it */
 }
 
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.modal-body {
-  padding: 1.25rem;
-  overflow-y: auto;
-  flex: 1;
-  background: white;
-}
-
+/* Grid Layout */
 .details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -254,6 +202,7 @@ defineExpose({
   color: var(--color-gray-700);
 }
 
+/* Badge variants */
 .badge-content.success {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
   color: var(--color-success);
@@ -292,16 +241,6 @@ defineExpose({
   font-weight: 500;
 }
 
-.modal-footer {
-  display: flex;
-  gap: 0.75rem;
-  padding: 1.25rem;
-  justify-content: flex-end;
-  background: white;
-  border-top: 1px solid var(--color-gray-200);
-  flex-shrink: 0;
-}
-
 .btn-close {
   padding: 0.625rem 1.5rem;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
@@ -320,17 +259,6 @@ defineExpose({
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -342,20 +270,10 @@ defineExpose({
   }
 }
 
-/* Responsive styles */
+/* Responsive */
 @media (max-width: 640px) {
-  .modal-content {
-    margin: 1rem;
-    max-width: calc(100% - 2rem);
-    max-height: calc(100vh - 2rem);
-  }
-
   .details-grid {
     grid-template-columns: 1fr;
-  }
-
-  .modal-footer {
-    flex-direction: column;
   }
 
   .btn-close {

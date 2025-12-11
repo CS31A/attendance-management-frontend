@@ -1,6 +1,7 @@
 <script setup>
 /**
  * FormModal - A generic, reusable modal component for creating and editing entities
+ * Refactored to use BaseModal
  *
  * @component
  * @example
@@ -80,8 +81,9 @@
  *   }
  * ]
  */
-import { AlertTriangle, Loader2, X } from 'lucide-vue-next'
+import { AlertTriangle, Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import BaseModal from '../common/BaseModal.vue'
 
 const props = defineProps({
   /** Controls modal visibility */
@@ -141,6 +143,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel'])
+
+// Map old sizes to BaseModal sizes
+const modalSize = computed(() => {
+  const map = {
+    small: 'sm',
+    medium: 'md',
+    large: 'lg',
+  }
+  return map[props.size] || 'md'
+})
+
+// Generate a unique ID for the form to link with submit button in footer
+const formId = computed(() => `form-modal-${props.title.toLowerCase().replace(/\s+/g, '-')}`)
 
 // Form state
 const formData = reactive({})
@@ -330,239 +345,155 @@ defineExpose({ handleError })
 </script>
 
 <template>
-  <div v-if="show" class="overlay">
-    <div class="modal" :class="`modal-${size}`">
-      <!-- Modal Header -->
-      <div class="modal-header">
-        <h2>{{ modalTitle }}</h2>
-        <button type="button" class="btn-close" :disabled="loading" @click="$emit('cancel')">
-          <X size="24" />
-        </button>
+  <BaseModal
+    :show="show"
+    :title="modalTitle"
+    :size="modalSize"
+    @close="$emit('cancel')"
+  >
+    <!-- Error Message Display -->
+    <div v-if="errorMessage" class="error-message">
+      <div class="error-content">
+        <AlertTriangle class="error-icon" size="20" />
+        <p>{{ errorMessage }}</p>
       </div>
-
-      <!-- Error Message Display -->
-      <div v-if="errorMessage" class="error-message">
-        <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
-          <p>{{ errorMessage }}</p>
-        </div>
-      </div>
-
-      <!-- Modal Body -->
-      <form class="modal-body" @submit.prevent="handleSubmit">
-        <!-- Read-only Info Section -->
-        <div v-if="infoSection" class="info-section">
-          <h3 v-if="infoSection.title" class="info-title">
-            {{ infoSection.title }}
-          </h3>
-          <div class="info-fields">
-            <div
-              v-for="(field, index) in infoSection.fields"
-              :key="index"
-              class="info-row"
-            >
-              <span class="info-label">{{ field.label }}:</span>
-              <span class="info-value">{{ field.value }}</span>
-            </div>
-          </div>
-          <p v-if="infoSection.note" class="info-note">
-            {{ infoSection.note }}
-          </p>
-        </div>
-
-        <!-- Dynamic field rendering -->
-        <div
-          v-for="field in visibleFields"
-          :key="field.name"
-          class="form-group"
-          :class="field.grid"
-        >
-          <label>
-            {{ field.label }}
-            <span v-if="field.required">*</span>
-          </label>
-
-          <!-- Text/Email/Number/Password/Time inputs -->
-          <div
-            v-if="['text', 'email', 'number', 'password', 'time'].includes(field.type)"
-            class="input-wrapper"
-          >
-            <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
-            <input
-              v-model="formData[field.name]"
-              :type="field.type"
-              :placeholder="field.placeholder"
-              :required="field.required"
-              :minlength="field.minlength"
-              :maxlength="field.maxlength"
-              :min="field.min"
-              :max="field.max"
-              :disabled="field.disabled ? field.disabled(formData) : false"
-            >
-          </div>
-
-          <!-- Select dropdown -->
-          <div v-else-if="field.type === 'select'" class="input-wrapper">
-            <component :is="field.icon" v-if="field.icon && !isFieldLoading(field.name)" class="input-icon" size="18" />
-            <Loader2 v-if="isFieldLoading(field.name)" class="input-icon loading-spinner" size="18" />
-            <select
-              v-model="formData[field.name]"
-              :required="field.required"
-              :disabled="field.disabled ? field.disabled(formData) : isFieldLoading(field.name)"
-            >
-              <option value="" disabled>
-                <template v-if="isFieldLoading(field.name)">
-                  Loading options...
-                </template>
-                <template v-else-if="hasLoadError(field.name)">
-                  Failed to load options
-                </template>
-                <template v-else>
-                  {{ field.placeholder || 'Select an option' }}
-                </template>
-              </option>
-              <option
-                v-for="opt in getFieldOptions(field)"
-                :key="opt.value"
-                :value="opt.value"
-              >
-                {{ opt.label }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Load error message for select fields -->
-          <small v-if="hasLoadError(field.name)" class="helper-text error">
-            {{ optionsLoadError[field.name] }}
-          </small>
-
-          <!-- Textarea -->
-          <div v-else-if="field.type === 'textarea'" class="input-wrapper">
-            <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
-            <textarea
-              v-model="formData[field.name]"
-              :placeholder="field.placeholder"
-              :required="field.required"
-              :minlength="field.minlength"
-              :maxlength="field.maxlength"
-              :disabled="field.disabled ? field.disabled(formData) : false"
-              rows="4"
-            />
-          </div>
-
-          <!-- Custom component -->
-          <component
-            :is="field.component"
-            v-else-if="field.type === 'custom'"
-            v-model="formData[field.name]"
-            v-bind="field.props"
-          />
-
-          <!-- Helper text -->
-          <small v-if="field.helperText" class="helper-text info">
-            {{ field.helperText }}
-          </small>
-
-          <!-- Field-specific error -->
-          <small v-if="fieldErrors[field.name]" class="helper-text error">
-            {{ fieldErrors[field.name] }}
-          </small>
-        </div>
-
-        <!-- Actions -->
-        <div class="actions">
-          <button type="submit" class="btn-submit" :disabled="!isFormValid || loading">
-            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
-            <span v-else>{{ submitButtonText }}</span>
-          </button>
-          <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
-            Cancel
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
+
+    <!-- Modal Body -->
+    <form :id="formId" @submit.prevent="handleSubmit">
+      <!-- Read-only Info Section -->
+      <div v-if="infoSection" class="info-section">
+        <h3 v-if="infoSection.title" class="info-title">
+          {{ infoSection.title }}
+        </h3>
+        <div class="info-fields">
+          <div
+            v-for="(field, index) in infoSection.fields"
+            :key="index"
+            class="info-row"
+          >
+            <span class="info-label">{{ field.label }}:</span>
+            <span class="info-value">{{ field.value }}</span>
+          </div>
+        </div>
+        <p v-if="infoSection.note" class="info-note">
+          {{ infoSection.note }}
+        </p>
+      </div>
+
+      <!-- Dynamic field rendering -->
+      <div
+        v-for="field in visibleFields"
+        :key="field.name"
+        class="form-group"
+        :class="field.grid"
+      >
+        <label>
+          {{ field.label }}
+          <span v-if="field.required">*</span>
+        </label>
+
+        <!-- Text/Email/Number/Password/Time inputs -->
+        <div
+          v-if="['text', 'email', 'number', 'password', 'time'].includes(field.type)"
+          class="input-wrapper"
+        >
+          <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
+          <input
+            v-model="formData[field.name]"
+            :type="field.type"
+            :placeholder="field.placeholder"
+            :required="field.required"
+            :minlength="field.minlength"
+            :maxlength="field.maxlength"
+            :min="field.min"
+            :max="field.max"
+            :disabled="field.disabled ? field.disabled(formData) : false"
+          >
+        </div>
+
+        <!-- Select dropdown -->
+        <div v-else-if="field.type === 'select'" class="input-wrapper">
+          <component :is="field.icon" v-if="field.icon && !isFieldLoading(field.name)" class="input-icon" size="18" />
+          <Loader2 v-if="isFieldLoading(field.name)" class="input-icon loading-spinner" size="18" />
+          <select
+            v-model="formData[field.name]"
+            :required="field.required"
+            :disabled="field.disabled ? field.disabled(formData) : isFieldLoading(field.name)"
+          >
+            <option value="" disabled>
+              <template v-if="isFieldLoading(field.name)">
+                Loading options...
+              </template>
+              <template v-else-if="hasLoadError(field.name)">
+                Failed to load options
+              </template>
+              <template v-else>
+                {{ field.placeholder || 'Select an option' }}
+              </template>
+            </option>
+            <option
+              v-for="opt in getFieldOptions(field)"
+              :key="opt.value"
+              :value="opt.value"
+            >
+              {{ opt.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Load error message for select fields -->
+        <small v-if="hasLoadError(field.name)" class="helper-text error">
+          {{ optionsLoadError[field.name] }}
+        </small>
+
+        <!-- Textarea -->
+        <div v-else-if="field.type === 'textarea'" class="input-wrapper">
+          <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
+          <textarea
+            v-model="formData[field.name]"
+            :placeholder="field.placeholder"
+            :required="field.required"
+            :minlength="field.minlength"
+            :maxlength="field.maxlength"
+            :disabled="field.disabled ? field.disabled(formData) : false"
+            rows="4"
+          />
+        </div>
+
+        <!-- Custom component -->
+        <component
+          :is="field.component"
+          v-else-if="field.type === 'custom'"
+          v-model="formData[field.name]"
+          v-bind="field.props"
+        />
+
+        <!-- Helper text -->
+        <small v-if="field.helperText" class="helper-text info">
+          {{ field.helperText }}
+        </small>
+
+        <!-- Field-specific error -->
+        <small v-if="fieldErrors[field.name]" class="helper-text error">
+          {{ fieldErrors[field.name] }}
+        </small>
+      </div>
+    </form>
+
+    <template #footer>
+      <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
+        Cancel
+      </button>
+      <button :form="formId" type="submit" class="btn-submit" :disabled="!isFormValid || loading">
+        <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+        <span v-else>{{ submitButtonText }}</span>
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  padding: 1rem;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal {
-  background: white;
-  border-radius: 1rem;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.3s ease-out;
-}
-
-.modal-small {
-  max-width: 380px;
-}
-
-.modal-medium {
-  max-width: 420px;
-}
-
-.modal-large {
-  max-width: 520px;
-}
-
-.modal-header {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.modal-header h2 {
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn-close {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
 .form-group {
   margin-bottom: 1.25rem;
 }
@@ -636,24 +567,20 @@ defineExpose({ handleError })
   font-weight: 500;
 }
 
-.actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
 .btn-submit {
-  flex: 1;
+  padding: 0.625rem 1.25rem;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -672,7 +599,7 @@ defineExpose({ handleError })
   background-color: white;
   color: var(--color-gray-600);
   border: 1px solid var(--color-gray-200);
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.95rem;
@@ -690,7 +617,7 @@ defineExpose({ handleError })
   background: var(--color-error-bg);
   border-left: 4px solid var(--color-error);
   padding: 1rem;
-  margin: 0;
+  margin-bottom: 1.5rem;
 }
 
 .error-content {
@@ -714,6 +641,10 @@ defineExpose({ handleError })
 .loading-spinner {
   animation: spin-centered 1s linear infinite;
   color: var(--color-primary);
+}
+
+.loading-spinner-btn {
+  animation: spin 1s linear infinite;
 }
 
 /* Info Section Styles */
@@ -769,39 +700,18 @@ defineExpose({ handleError })
   line-height: 1.4;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes spin-centered {
   from { transform: translateY(-50%) rotate(0deg); }
   to { transform: translateY(-50%) rotate(360deg); }
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Responsive */
 @media (max-width: 640px) {
-  .modal {
-    max-width: 100%;
-    margin: 1rem;
-    max-height: 85vh;
-  }
-
-  .modal-small,
-  .modal-medium,
-  .modal-large {
-    max-width: 100%;
-  }
-
-  .actions {
-    flex-direction: column-reverse;
-  }
-
   .btn-submit, .btn-cancel {
     width: 100%;
   }

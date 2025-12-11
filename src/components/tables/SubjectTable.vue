@@ -27,8 +27,8 @@ function formatDate(value) {
 </script>
 
 <template>
-  <div class="table-wrapper">
-    <table class="subjects-table">
+  <div class="app-table-wrapper">
+    <table class="app-table subjects-table">
       <thead>
         <tr>
           <th class="th-id">
@@ -63,30 +63,30 @@ function formatDate(value) {
             </div>
           </td>
           <td class="td-name">
-            <div class="name-cell">
+            <div class="app-cell-name">
               <BookOpen class="subject-icon" size="18" />
               <span class="subject-name">{{ subject.name }}</span>
             </div>
           </td>
           <td class="td-created">
-            <div class="date-cell">
+            <div class="app-cell-date">
               <Calendar class="date-icon" size="16" />
               <span class="date-text">{{ formatDate(subject?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-updated">
-            <div class="date-cell">
+            <div class="app-cell-date">
               <Calendar class="date-icon" size="16" />
               <span class="date-text">{{ formatDate(subject?.updatedAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
-            <div class="action-buttons">
-              <button class="btn-edit" title="Edit Subject" @click="$emit('edit', subject)">
-                <Edit class="btn-icon" size="16" />
+            <div class="app-cell-actions">
+              <button class="app-btn-icon app-btn-edit" title="Edit Subject" @click="$emit('edit', subject)">
+                <Edit size="16" />
               </button>
-              <button class="btn-delete" title="Delete Subject" @click="$emit('delete', subject.id)">
-                <Trash2 class="btn-icon" size="16" />
+              <button class="app-btn-icon app-btn-delete" title="Delete Subject" @click="$emit('delete', subject.id)">
+                <Trash2 size="16" />
               </button>
             </div>
           </td>
@@ -97,80 +97,20 @@ function formatDate(value) {
 </template>
 
 <style scoped>
-.table-wrapper {
-  overflow-x: auto;
-}
+/* Specific column widths */
+.th-id { width: 8%; min-width: 60px; }
+.th-code { width: 15%; min-width: 100px; }
+.th-name { width: 25%; }
+.th-created, .th-updated { width: 20%; text-align: left; }
+.th-actions { width: 12%; text-align: center; }
 
-/* Subjects Table */
-.subjects-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-/* Table Header */
-.subjects-table thead {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-}
-
-.subjects-table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: white;
-  font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.th-id {
-  width: 8%;
-  min-width: 60px;
-}
-
-.th-code {
-  width: 15%;
-  min-width: 100px;
-}
-
-.th-name {
-  width: 25%;
-}
-
-.th-created, .th-updated {
-  width: 20%;
-  text-align: left;
-}
-
-.th-actions {
-  width: 12%;
-  text-align: center;
-}
-
-/* Table Body */
-.subjects-table tbody tr {
-  border-bottom: 1px solid var(--color-gray-200);
-  transition: background-color 0.2s ease;
-}
-
-.subjects-table tbody tr:hover {
-  background-color: var(--color-slate-100);
-}
-
-.subjects-table td {
-  padding: 0.75rem 1rem;
-  vertical-align: middle;
-}
-
-/* ID Column */
-.td-id {
+/* Custom Cell Styles */
+.id-text {
   color: var(--color-gray-500);
   font-family: monospace;
   font-weight: 600;
 }
 
-/* Code Column */
 .td-code {
   font-family: monospace;
   font-weight: 600;
@@ -188,18 +128,6 @@ function formatDate(value) {
   flex-shrink: 0;
 }
 
-/* Name Column */
-.td-name {
-  font-weight: 600;
-  color: var(--color-gray-800);
-}
-
-.name-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .subject-icon {
   color: var(--color-primary);
   flex-shrink: 0;
@@ -209,97 +137,8 @@ function formatDate(value) {
   font-size: 0.8125rem;
 }
 
-/* Date Columns */
-.td-created, .td-updated {
-  text-align: left;
-  color: var(--color-gray-500);
-}
-
-.date-cell {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.375rem;
-}
-
-.date-icon {
-  color: var(--color-gray-400);
-  flex-shrink: 0;
-}
-
-.date-text {
-  font-size: 0.8125rem;
-  white-space: nowrap;
-}
-
-/* Actions Column */
-.td-actions {
-  text-align: center;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.375rem;
-  justify-content: center;
-}
-
-.btn-edit,
-.btn-delete {
-  padding: 0.375rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-edit {
-  background: var(--color-info-bg);
-  color: var(--color-primary);
-}
-
-.btn-edit:hover {
-  background: var(--color-info-lighter);
-  color: var(--color-primary-light);
-}
-
-.btn-delete {
-  background: var(--color-error-bg);
-  color: var(--color-error-dark);
-}
-
-.btn-delete:hover {
-  background: var(--color-error-light);
-  color: var(--color-error-darker);
-}
-
-.btn-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-/* Responsive Table */
-@media (max-width: 1024px) {
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
-  }
-
-  .subjects-table {
-    min-width: 700px;
-  }
-}
-
+/* Responsive Sticky Columns */
 @media (max-width: 768px) {
-  .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
-  }
-
   .subjects-table {
     min-width: 600px;
   }
@@ -349,25 +188,7 @@ function formatDate(value) {
     color: white;
   }
 
-  .subjects-table th,
-  .subjects-table td {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    padding: 0.375rem;
-  }
-
-  .btn-icon {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-
-  .action-buttons {
-    gap: 0.375rem;
-  }
-
+  /* Truncate text */
   .subject-name,
   .date-text,
   .code-text {
@@ -378,64 +199,22 @@ function formatDate(value) {
   }
 }
 
-/* Extra small screens */
 @media (max-width: 480px) {
   .subjects-table {
     min-width: 500px;
   }
 
-  .subjects-table th,
-  .subjects-table td {
-    padding: 0.375rem 0.5rem;
-  }
-
-  .th-name,
-  .td-name {
-    min-width: 100px;
-  }
-
-  .th-actions,
-  .td-actions {
-    min-width: 80px;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    padding: 0.25rem;
-  }
-
-  .btn-icon {
-    width: 0.75rem;
-    height: 0.75rem;
-  }
+  .th-name, .td-name { min-width: 100px; }
+  .th-actions, .td-actions { min-width: 80px; }
 }
 
-/* Very small screens */
 @media (max-width: 320px) {
   .subjects-table {
     min-width: 450px;
   }
 
-  .subjects-table th,
-  .subjects-table td {
-    padding: 0.3125rem 0.375rem;
-    font-size: 0.6875rem;
-  }
-
-  .subject-name,
-  .date-text,
-  .code-text {
-    font-size: 0.6875rem;
-  }
-
-  .th-name,
-  .td-name {
-    min-width: 80px;
-  }
-
-  .th-actions,
-  .td-actions {
-    min-width: 70px;
-  }
+  .subject-name, .date-text, .code-text { font-size: 0.6875rem; }
+  .th-name, .td-name { min-width: 80px; }
+  .th-actions, .td-actions { min-width: 70px; }
 }
 </style>
