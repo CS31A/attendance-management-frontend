@@ -16,7 +16,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     scans: [],
   })
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
   const isPolling = ref(false)
   const pollInterval = ref(null)
   const pollIntervalMs = ref(5000)
@@ -32,7 +32,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   // Actions
   function clearError() {
-    error.value = null
+    error.value = ''
   }
 
   /**

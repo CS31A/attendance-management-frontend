@@ -7,7 +7,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const schedules = ref([])
   const currentSchedule = ref(null)
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
 
   // Getters
   const hasSchedules = computed(() => schedules.value.length > 0)
@@ -27,7 +27,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     if (!skipLoadingState) {
       loading.value = true
     }
-    error.value = null
+    error.value = ''
     try {
       const data = await scheduleApi.getAllSchedules()
       schedules.value = data
@@ -45,7 +45,7 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   async function fetchSchedule(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const data = await scheduleApi.getScheduleById(id)
       currentSchedule.value = data
@@ -61,7 +61,7 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   async function createSchedule(data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const newSchedule = await scheduleApi.createSchedule(data)
       // Refetch all schedules to ensure we have fully populated data
@@ -87,7 +87,7 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   async function updateSchedule(id, data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const updatedSchedule = await scheduleApi.updateSchedule(id, data)
       // Refetch all schedules to ensure we have fully populated data
@@ -113,7 +113,7 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   async function deleteSchedule(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       await scheduleApi.deleteSchedule(id)
       schedules.value = schedules.value.filter(s => s.id !== id)

@@ -7,7 +7,7 @@ export const useCourseStore = defineStore('course', () => {
   const courses = ref([])
   const currentCourse = ref(null)
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
 
   // Getters
   const hasCourses = computed(() => courses.value.length > 0)
@@ -18,7 +18,7 @@ export const useCourseStore = defineStore('course', () => {
   // Actions
   async function fetchCourses() {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       // Para sa skeleton loader simulation
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -37,7 +37,7 @@ export const useCourseStore = defineStore('course', () => {
 
   async function fetchCourse(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await courseApi.getCourseById(id)
       currentCourse.value = response.data
@@ -53,7 +53,7 @@ export const useCourseStore = defineStore('course', () => {
 
   async function createCourse(data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await courseApi.createCourse(data)
       courses.value.push(response.data)
@@ -78,7 +78,7 @@ export const useCourseStore = defineStore('course', () => {
 
   async function updateCourse(id, data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await courseApi.updateCourse(id, data)
       const index = courses.value.findIndex(c => c.id === id)
@@ -106,7 +106,7 @@ export const useCourseStore = defineStore('course', () => {
 
   async function deleteCourse(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       await courseApi.deleteCourse(id)
       courses.value = courses.value.filter(c => c.id !== id)

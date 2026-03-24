@@ -6,7 +6,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
   const sections = ref([])
   const itemsPerPage = ref(10)
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
 
   const getSections = computed(() => sections.value)
   const getItemsPerPage = computed(() => itemsPerPage.value)
@@ -19,7 +19,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
 
   const fetchSections = async () => {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       // Para sa skeleton loader simulation
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -39,7 +39,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
 
   const addSection = async (sectionData) => {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const resp = await sectionsApi.createSection(sectionData)
       // Optimistically add to list or re-fetch
@@ -58,7 +58,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
 
   const updateSection = async (id, sectionData) => {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const resp = await sectionsApi.updateSection(id, sectionData)
       // Update in local list
@@ -80,7 +80,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
 
   const deleteSection = async (id) => {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       await sectionsApi.deleteSection(id)
       // Remove from local list

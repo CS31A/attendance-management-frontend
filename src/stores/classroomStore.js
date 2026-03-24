@@ -7,7 +7,7 @@ export const useClassroomStore = defineStore('classroom', () => {
   const classrooms = ref([])
   const currentClassroom = ref(null)
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
 
   // Getters
   const hasClassrooms = computed(() => classrooms.value.length > 0)
@@ -18,7 +18,7 @@ export const useClassroomStore = defineStore('classroom', () => {
   // Actions
   async function fetchClassrooms() {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await classroomApi.getAllClassrooms()
       classrooms.value = response.data
@@ -34,7 +34,7 @@ export const useClassroomStore = defineStore('classroom', () => {
 
   async function fetchClassroom(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await classroomApi.getClassroomById(id)
       currentClassroom.value = response.data
@@ -50,7 +50,7 @@ export const useClassroomStore = defineStore('classroom', () => {
 
   async function createClassroom(data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await classroomApi.createClassroom(data)
       classrooms.value.push(response.data)
@@ -75,7 +75,7 @@ export const useClassroomStore = defineStore('classroom', () => {
 
   async function updateClassroom(id, data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await classroomApi.updateClassroom(id, data)
       const index = classrooms.value.findIndex(c => c.id === id)
@@ -103,7 +103,7 @@ export const useClassroomStore = defineStore('classroom', () => {
 
   async function deleteClassroom(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       await classroomApi.deleteClassroom(id)
       classrooms.value = classrooms.value.filter(c => c.id !== id)

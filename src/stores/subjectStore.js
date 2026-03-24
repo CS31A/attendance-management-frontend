@@ -7,7 +7,7 @@ export const useSubjectStore = defineStore('subject', () => {
   const subjects = ref([])
   const currentSubject = ref(null)
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
 
   // Getters
   const hasSubjects = computed(() => subjects.value.length > 0)
@@ -18,7 +18,7 @@ export const useSubjectStore = defineStore('subject', () => {
   // Actions
   async function fetchSubjects() {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await subjectApi.getAllSubjects()
       subjects.value = response.data
@@ -34,7 +34,7 @@ export const useSubjectStore = defineStore('subject', () => {
 
   async function fetchSubject(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await subjectApi.getSubjectById(id)
       currentSubject.value = response.data
@@ -50,7 +50,7 @@ export const useSubjectStore = defineStore('subject', () => {
 
   async function createSubject(data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await subjectApi.createSubject(data)
       subjects.value.push(response.data)
@@ -75,7 +75,7 @@ export const useSubjectStore = defineStore('subject', () => {
 
   async function updateSubject(id, data) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await subjectApi.updateSubject(id, data)
       const index = subjects.value.findIndex(s => s.id === id)
@@ -103,7 +103,7 @@ export const useSubjectStore = defineStore('subject', () => {
 
   async function deleteSubject(id) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       await subjectApi.deleteSubject(id)
       subjects.value = subjects.value.filter(s => s.id !== id)

@@ -19,7 +19,7 @@ const emit = defineEmits(['close', 'viewQr'])
 
 const qrCodeStore = useQrCodeStore()
 const loading = ref(false)
-const error = ref(null)
+const error = ref('')
 
 // Computed
 const qrCodes = computed(() => qrCodeStore.sessionQrCodes)
@@ -30,7 +30,7 @@ async function loadQrCodes() {
     return
 
   loading.value = true
-  error.value = null
+  error.value = ''
 
   try {
     await qrCodeStore.fetchSessionQrCodes(props.session.id)

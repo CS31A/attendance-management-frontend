@@ -48,7 +48,7 @@ export const useUserStore = defineStore('user', () => {
   // State
   const users = ref([])
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
   // Pagination state
   const currentPage = ref(1)
   const itemsPerPage = ref(10)
@@ -110,7 +110,7 @@ export const useUserStore = defineStore('user', () => {
   // Actions
   async function fetchUsers(status = 'Active') {
     loading.value = true
-    error.value = null
+    error.value = ''
 
     try {
       // Para sa skeleton loader simulation
@@ -131,7 +131,7 @@ export const useUserStore = defineStore('user', () => {
 
   async function createUser(userData) {
     loading.value = true
-    error.value = null
+    error.value = ''
 
     try {
       // Transform data to match Scalar API documentation exactly
@@ -236,7 +236,7 @@ export const useUserStore = defineStore('user', () => {
 
   async function updateUser(userId, userData) {
     loading.value = true
-    error.value = null
+    error.value = ''
 
     try {
       // Find the original user to get their current role/endpoint
@@ -283,7 +283,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function softDeleteUser(userId) {
     loading.value = true
-    error.value = null
+    error.value = ''
 
     try {
       await api.patch(`/users/${userId}/soft-delete`)
@@ -316,7 +316,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function hardDeleteUser(userId) {
     loading.value = true
-    error.value = null
+    error.value = ''
 
     try {
       await api.delete(`/users/${userId}`)
@@ -345,7 +345,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function restoreUser(userId) {
     loading.value = true
-    error.value = null
+    error.value = ''
 
     try {
       await api.patch(`/users/${userId}/restore`)

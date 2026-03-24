@@ -7,7 +7,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
   const sectionStudents = ref([])
   const studentEnrollments = ref([])
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref('')
 
   // Getters
   const getSectionStudents = computed(() => sectionStudents.value)
@@ -18,7 +18,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
   // Actions
   async function enrollStudent(enrollmentData) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await enrollmentsApi.enrollStudent(enrollmentData)
       // Optionally add to section students if we're viewing that section
@@ -40,7 +40,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
 
   async function fetchSectionStudents(sectionId) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await enrollmentsApi.getSectionStudents(sectionId)
       sectionStudents.value = response.data
@@ -58,7 +58,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
 
   async function fetchStudentEnrollments(studentId) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await enrollmentsApi.getStudentEnrollments(studentId)
       studentEnrollments.value = response.data
@@ -76,7 +76,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
 
   async function dropStudent(enrollmentId, sectionId = null) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       await enrollmentsApi.dropStudent(enrollmentId)
       // Refresh section students if sectionId provided
@@ -100,7 +100,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
 
   async function reenrollStudent(enrollmentId, sectionId = null) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await enrollmentsApi.reenrollStudent(enrollmentId)
       // Refresh section students if sectionId provided
@@ -121,7 +121,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
 
   async function checkEnrollment(studentId, sectionId, subjectId) {
     loading.value = true
-    error.value = null
+    error.value = ''
     try {
       const response = await enrollmentsApi.checkEnrollment({
         studentId,
@@ -141,7 +141,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
   }
 
   function clearError() {
-    error.value = null
+    error.value = ''
   }
 
   function clearSectionStudents() {
