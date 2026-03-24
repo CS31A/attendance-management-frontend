@@ -342,8 +342,9 @@ onMounted(async () => {
       await filterByInstructor(route.query.instructorId)
     }
   }
-  catch {
-    // Error handled silently
+  catch (error) {
+    console.error('Failed to initialize schedules view:', error)
+    showToast('Failed to load schedules. Please try again.', 'error')
   }
 })
 </script>

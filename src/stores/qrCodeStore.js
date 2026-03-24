@@ -4,6 +4,8 @@ import qrCodeApi from '@/api/qrCode'
 import { parseUtcDate } from '@/utils/qrcode'
 
 export const useQrCodeStore = defineStore('qrCodeStore', () => {
+  let visibilityListenerAttached = false
+
   // State
   const activeQrCode = ref(null)
   const qrCodes = ref([])
@@ -240,6 +242,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
     currentQrCodeId.value = qrCodeId
     isPolling.value = true
+    attachVisibilityListener()
 
     // Calculate initial interval
     pollIntervalMs.value = calculatePollingInterval(activeQrCode.value?.expiresAt)
@@ -247,6 +250,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     if (pollIntervalMs.value === 0) {
       // Already expired, don't start
       isPolling.value = false
+      detachVisibilityListener()
       return
     }
 
@@ -274,12 +278,16 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     }
     isPolling.value = false
     currentQrCodeId.value = null
+    detachVisibilityListener()
   }
 
   /**
    * Handle visibility change (tab focus/blur)
    */
   function handleVisibilityChange() {
+    if (typeof document === 'undefined')
+      return
+
     isVisible.value = !document.hidden
 
     if (isVisible.value && isPolling.value && currentQrCodeId.value) {
@@ -288,9 +296,21 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     }
   }
 
-  // Set up visibility change listener
-  if (typeof document !== 'undefined') {
+  function attachVisibilityListener() {
+    if (visibilityListenerAttached || typeof document === 'undefined')
+      return
+
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    visibilityListenerAttached = true
+    isVisible.value = !document.hidden
+  }
+
+  function detachVisibilityListener() {
+    if (!visibilityListenerAttached || typeof document === 'undefined')
+      return
+
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
+    visibilityListenerAttached = false
   }
 
   return {
@@ -323,6 +343,8 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     revokeQrCode,
     startPolling,
     stopPolling,
+    attachVisibilityListener,
+    detachVisibilityListener,
     clearError,
   }
 })
