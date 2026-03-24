@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import api from '@/api/index.js'
 import { ROLES } from '@/utils/constants'
 
@@ -43,361 +44,391 @@ function mapUserProfile(user) {
   return mappedUser
 }
 
-export const useUserStore = defineStore('user', {
-  state: () => ({
-    users: [],
-    loading: false,
-    error: null,
-    // Pagination state
-    currentPage: 1,
-    itemsPerPage: 10,
-    totalItems: 0,
-  }),
+export const useUserStore = defineStore('user', () => {
+  // State
+  const users = ref([])
+  const loading = ref(false)
+  const error = ref(null)
+  // Pagination state
+  const currentPage = ref(1)
+  const itemsPerPage = ref(10)
+  const totalItems = ref(0)
 
-  getters: {
-    getUsers: state => state.users,
-    instructors: state => state.users.filter(user => user.role === ROLES.TEACHER),
-    students: state => state.users.filter(user => user.role === ROLES.STUDENT),
-    filteredUsers: state => (searchQuery, selectedRole) => {
-      let filtered = state.users
+  // Getters
+  const getUsers = computed(() => users.value)
+  const instructors = computed(() => users.value.filter(user => user.role === ROLES.TEACHER))
+  const students = computed(() => users.value.filter(user => user.role === ROLES.STUDENT))
 
-      if (selectedRole !== 'All Roles') {
-        filtered = filtered.filter(user => user.role === selectedRole)
+  const filteredUsers = computed(() => (searchQuery, selectedRole) => {
+    let filtered = users.value
+
+    if (selectedRole !== 'All Roles') {
+      filtered = filtered.filter(user => user.role === selectedRole)
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase().trim()
+      filtered = filtered.filter((user) => {
+        // Handle both camelCase and lowercase property names from API
+        const firstName = (user.firstName || user.firstname || '').toLowerCase()
+        const lastName = (user.lastName || user.lastname || '').toLowerCase()
+        const emailValue = (user.email || '').toLowerCase()
+        const username = (user.username || '').toLowerCase()
+
+        return firstName.includes(query)
+          || lastName.includes(query)
+          || emailValue.includes(query)
+          || username.includes(query)
+          || `${firstName} ${lastName}`.includes(query)
+      })
+    }
+
+    return filtered
+  })
+
+  // Pagination getters
+  const paginatedUsers = computed(() => (searchQuery, selectedRole) => {
+    const filtered = filteredUsers.value(searchQuery, selectedRole)
+    const start = (currentPage.value - 1) * itemsPerPage.value
+    const end = start + itemsPerPage.value
+    return filtered.slice(start, end)
+  })
+
+  const totalPages = computed(() => (searchQuery, selectedRole) => {
+    const filtered = filteredUsers.value(searchQuery, selectedRole)
+    return Math.ceil(filtered.length / itemsPerPage.value)
+  })
+
+  const hasNextPage = computed(() => (searchQuery, selectedRole) => {
+    const filtered = filteredUsers.value(searchQuery, selectedRole)
+    const computedTotalPages = Math.ceil(filtered.length / itemsPerPage.value)
+    return currentPage.value < computedTotalPages
+  })
+
+  const hasPreviousPage = computed(() => currentPage.value > 1)
+
+  // Actions
+  async function fetchUsers(status = 'Active') {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Para sa skeleton loader simulation
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      const resp = await api.get('/users', { params: { status } })
+      // Map user profile data to flat structure
+      users.value = resp.data.map(user => mapUserProfile(user))
+    }
+    catch (err) {
+      console.error('Error fetching users:', err)
+      error.value = 'Failed to fetch users'
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  async function createUser(userData) {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Transform data to match Scalar API documentation exactly
+      const registerData = {
+        username: userData.Username,
+        firstname: userData.FirstName,
+        lastname: userData.LastName,
+        email: userData.Email,
+        password: userData.Password,
+        repeatedPassword: userData.RepeatedPassword,
+        role: userData.Role === 'Instructor' ? 'teacher' : userData.Role.toLowerCase(),
+        sectionId: userData.Role === 'Student' ? Number.parseInt(userData.SectionId) : null,
       }
 
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase().trim()
-        filtered = filtered.filter((user) => {
-          // Handle both camelCase and lowercase property names from API
-          const firstName = (user.firstName || user.firstname || '').toLowerCase()
-          const lastName = (user.lastName || user.lastname || '').toLowerCase()
-          const email = (user.email || '').toLowerCase()
-          const username = (user.username || '').toLowerCase()
-
-          return firstName.includes(query)
-            || lastName.includes(query)
-            || email.includes(query)
-            || username.includes(query)
-            || `${firstName} ${lastName}`.includes(query)
-        })
+      // If section validation fails for students, try with a default section
+      if (registerData.sectionId && userData.Role.toLowerCase() === 'student' && !isValidSection(registerData.sectionId)) {
+        console.warn('Section validation failed for student, trying with default section 3')
+        registerData.sectionId = 3
       }
 
-      return filtered
-    },
-
-    // Pagination getters
-    paginatedUsers: state => (searchQuery, selectedRole) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole)
-      const start = (state.currentPage - 1) * state.itemsPerPage
-      const end = start + state.itemsPerPage
-      return filtered.slice(start, end)
-    },
-
-    totalPages: state => (searchQuery, selectedRole) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole)
-      return Math.ceil(filtered.length / state.itemsPerPage)
-    },
-
-    hasNextPage: state => (searchQuery, selectedRole) => {
-      const filtered = state.filteredUsers(searchQuery, selectedRole)
-      const totalPages = Math.ceil(filtered.length / state.itemsPerPage)
-      return state.currentPage < totalPages
-    },
-
-    hasPreviousPage: (state) => {
-      return state.currentPage > 1
-    },
-  },
-
-  actions: {
-    async fetchUsers(status = 'Active') {
-      this.loading = true
-      this.error = null
-
+      let response
       try {
-        // Para sa skeleton loader simulation
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        const resp = await api.get('/users', { params: { status } })
-        // Map user profile data to flat structure
-        this.users = resp.data.map(user => mapUserProfile(user))
+        response = await api.post('/account/register', registerData)
       }
-      catch (err) {
-        console.error('Error fetching users:', err)
-        this.error = 'Failed to fetch users'
-      }
-      finally {
-        this.loading = false
-      }
-    },
-    async createUser(userData) {
-      this.loading = true
-      this.error = null
+      catch (innerError) {
+        console.error('Backend error details:', innerError.response?.data)
+        console.error('Error status:', innerError.response?.status)
+        console.error('Error message:', innerError.response?.data?.message)
 
-      try {
-        // Transform data to match Scalar API documentation exactly
-        const registerData = {
-          username: userData.Username,
-          firstname: userData.FirstName,
-          lastname: userData.LastName,
-          email: userData.Email,
-          password: userData.Password,
-          repeatedPassword: userData.RepeatedPassword,
-          role: userData.Role === 'Instructor' ? 'teacher' : userData.Role.toLowerCase(),
-          sectionId: userData.Role === 'Student' ? Number.parseInt(userData.SectionId) : null,
-        }
-
-        // If section validation fails for students, try with a default section
-        if (registerData.sectionId && userData.Role.toLowerCase() === 'student' && !isValidSection(registerData.sectionId)) {
-          console.warn('Section validation failed for student, trying with default section 3')
-          registerData.sectionId = 3
-        }
-
-        let response
-        try {
-          response = await api.post('/account/register', registerData)
-        }
-        catch (error) {
-          console.error('Backend error details:', error.response?.data)
-          console.error('Error status:', error.response?.status)
-          console.error('Error message:', error.response?.data?.message)
-
-          // If section validation fails for students, try with a different approach
-          if (error.response?.status === 400 && error.response?.data?.message?.includes('section') && userData.Role.toLowerCase() === 'student') {
-            const fallbackData = {
-              ...registerData,
-              sectionId: Number.parseInt(registerData.sectionId) || 3,
-            }
-            response = await api.post('/account/register', fallbackData)
+        // If section validation fails for students, try with a different approach
+        if (innerError.response?.status === 400 && innerError.response?.data?.message?.includes('section') && userData.Role.toLowerCase() === 'student') {
+          const fallbackData = {
+            ...registerData,
+            sectionId: Number.parseInt(registerData.sectionId) || 3,
           }
-          else {
-            throw error
-          }
+          response = await api.post('/account/register', fallbackData)
         }
-
-        // Add the new user to the store
-        // Map profile data if present in response
-        const newUser = response.data.userId
-          ? mapUserProfile(response.data)
-          : {
-              id: response.data.id || Date.now(),
-              firstName: response.data.firstName || response.data.firstname || userData.FirstName,
-              lastName: response.data.lastName || response.data.lastname || userData.LastName,
-              email: response.data.email || userData.Email,
-              role: userData.Role,
-              sectionId: response.data.sectionId || userData.SectionId,
-              createdAt: response.data.createdAt || new Date().toISOString(),
-            }
-
-        this.users.push(newUser)
-
-        return { success: true, data: response.data }
+        else {
+          throw innerError
+        }
       }
-      catch (error) {
-        console.error('Error creating user:', error)
 
-        // For development: if backend fails, add to local store anyway
-        if (error.response?.status === 401 || error.response?.status === 400) {
-          const newUser = {
-            id: Date.now(), // Simple ID generation
-            firstName: userData.FirstName,
-            lastName: userData.LastName,
-            email: userData.Email,
+      // Add the new user to the store
+      // Map profile data if present in response
+      const newUser = response.data.userId
+        ? mapUserProfile(response.data)
+        : {
+            id: response.data.id || Date.now(),
+            firstName: response.data.firstName || response.data.firstname || userData.FirstName,
+            lastName: response.data.lastName || response.data.lastname || userData.LastName,
+            email: response.data.email || userData.Email,
             role: userData.Role,
-            sectionId: userData.SectionId,
-            createdAt: new Date().toISOString(),
+            sectionId: response.data.sectionId || userData.SectionId,
+            createdAt: response.data.createdAt || new Date().toISOString(),
           }
 
-          this.users.push(newUser)
-          return { success: true, data: newUser }
+      users.value.push(newUser)
+
+      return { success: true, data: response.data }
+    }
+    catch (caughtError) {
+      console.error('Error creating user:', caughtError)
+
+      // For development: if backend fails, add to local store anyway
+      if (caughtError.response?.status === 401 || caughtError.response?.status === 400) {
+        const newUser = {
+          id: Date.now(), // Simple ID generation
+          firstName: userData.FirstName,
+          lastName: userData.LastName,
+          email: userData.Email,
+          role: userData.Role,
+          sectionId: userData.SectionId,
+          createdAt: new Date().toISOString(),
         }
 
-        // Extract detailed error message from backend
-        let errorMessage = 'Failed to create user'
-        if (error.response?.data?.message) {
-          errorMessage = error.response.data.message
-        }
-        else if (error.response?.data?.errors) {
-          // Handle validation errors from backend
-          const errors = error.response.data.errors
-          const errorMessages = Object.values(errors).flat()
-          errorMessage = errorMessages.join(', ')
-        }
-        else if (error.response?.data) {
-          errorMessage = JSON.stringify(error.response.data)
-        }
-
-        this.error = errorMessage
-        return { success: false, error: errorMessage }
+        users.value.push(newUser)
+        return { success: true, data: newUser }
       }
-      finally {
-        this.loading = false
+
+      // Extract detailed error message from backend
+      let errorMessage = 'Failed to create user'
+      if (caughtError.response?.data?.message) {
+        errorMessage = caughtError.response.data.message
       }
-    },
-
-    async updateUser(userId, userData) {
-      this.loading = true
-      this.error = null
-
-      try {
-        // Find the original user to get their current role/endpoint
-        const originalUser = this.users.find(user => (user.userId || user.id) === userId)
-        if (!originalUser) {
-          throw new Error('User not found')
-        }
-
-        // Use the original user's role to determine the correct endpoint
-        // API returns 'Teacher' but we also handle 'Instructor' for compatibility
-        const isTeacher = originalUser.role === 'Teacher' || originalUser.role === 'Instructor'
-        const endpoint = isTeacher ? '/instructors' : '/students'
-
-        const response = await api.patch(`${endpoint}/${userId}`, userData)
-
-        // Update the user in the store with the original role (role cannot be changed)
-        const index = this.users.findIndex(user => (user.userId || user.id) === userId)
-        if (index !== -1) {
-          // Map profile data if present in response
-          const updatedUser = response.data.userId
-            ? mapUserProfile({ ...response.data, role: originalUser.role })
-            : { ...response.data, role: originalUser.role }
-          this.users[index] = updatedUser
-        }
-
-        return { success: true, data: response.data }
+      else if (caughtError.response?.data?.errors) {
+        // Handle validation errors from backend
+        const errors = caughtError.response.data.errors
+        const errorMessages = Object.values(errors).flat()
+        errorMessage = errorMessages.join(', ')
       }
-      catch (error) {
-        console.error('Error updating user:', error)
-        this.error = error.response?.data?.message || 'Failed to update user'
-        return { success: false, error: this.error }
+      else if (caughtError.response?.data) {
+        errorMessage = JSON.stringify(caughtError.response.data)
       }
-      finally {
-        this.loading = false
+
+      error.value = errorMessage
+      return { success: false, error: errorMessage }
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  async function updateUser(userId, userData) {
+    loading.value = true
+    error.value = null
+
+    try {
+      // Find the original user to get their current role/endpoint
+      const originalUser = users.value.find(user => (user.userId || user.id) === userId)
+      if (!originalUser) {
+        throw new Error('User not found')
       }
-    },
 
-    /**
-     * Soft delete a user (reversible)
-     * Endpoint: PATCH /api/users/{userId}/soft-delete
-     * Authorization: AdminPolicy
-     * @param {number} userId - The ID of the user to soft delete
-     * @returns {Promise<{success: boolean, error?: string}>} The result of the soft delete operation
-     */
-    async softDeleteUser(userId) {
-      this.loading = true
-      this.error = null
+      // Use the original user's role to determine the correct endpoint
+      // API returns 'Teacher' but we also handle 'Instructor' for compatibility
+      const isTeacher = originalUser.role === 'Teacher' || originalUser.role === 'Instructor'
+      const endpoint = isTeacher ? '/instructors' : '/students'
 
-      try {
-        await api.patch(`/users/${userId}/soft-delete`)
+      const response = await api.patch(`${endpoint}/${userId}`, userData)
 
-        // Mark user as deleted in local state
-        const index = this.users.findIndex(u => (u.userId || u.id) === userId)
-        if (index !== -1) {
-          this.users[index].deletedAt = new Date().toISOString()
-          this.users[index].isDeleted = true
-        }
-
-        return { success: true }
+      // Update the user in the store with the original role (role cannot be changed)
+      const index = users.value.findIndex(user => (user.userId || user.id) === userId)
+      if (index !== -1) {
+        // Map profile data if present in response
+        const updatedUser = response.data.userId
+          ? mapUserProfile({ ...response.data, role: originalUser.role })
+          : { ...response.data, role: originalUser.role }
+        users.value[index] = updatedUser
       }
-      catch (error) {
-        console.error('Error soft deleting user:', error)
-        this.error = error.response?.data?.message || 'Failed to soft delete user'
-        return { success: false, error: this.error }
+
+      return { success: true, data: response.data }
+    }
+    catch (caughtError) {
+      console.error('Error updating user:', caughtError)
+      error.value = caughtError.response?.data?.message || 'Failed to update user'
+      return { success: false, error: error.value }
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Soft delete a user (reversible)
+   * Endpoint: PATCH /api/users/{userId}/soft-delete
+   * Authorization: AdminPolicy
+   * @param {number} userId - The ID of the user to soft delete
+   * @returns {Promise<{success: boolean, error?: string}>} The result of the soft delete operation
+   */
+  async function softDeleteUser(userId) {
+    loading.value = true
+    error.value = null
+
+    try {
+      await api.patch(`/users/${userId}/soft-delete`)
+
+      // Mark user as deleted in local state
+      const index = users.value.findIndex(u => (u.userId || u.id) === userId)
+      if (index !== -1) {
+        users.value[index].deletedAt = new Date().toISOString()
+        users.value[index].isDeleted = true
       }
-      finally {
-        this.loading = false
+
+      return { success: true }
+    }
+    catch (caughtError) {
+      console.error('Error soft deleting user:', caughtError)
+      error.value = caughtError.response?.data?.message || 'Failed to soft delete user'
+      return { success: false, error: error.value }
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Hard delete a user (permanent)
+   * Endpoint: DELETE /api/users/{userId}
+   * Authorization: AdminPolicy
+   * @param {number} userId - The ID of the user to permanently delete
+   * @returns {Promise<{success: boolean, error?: string}>} The result of the hard delete operation
+   */
+  async function hardDeleteUser(userId) {
+    loading.value = true
+    error.value = null
+
+    try {
+      await api.delete(`/users/${userId}`)
+
+      // Remove the user from the store
+      users.value = users.value.filter(user => (user.userId || user.id) !== userId)
+
+      return { success: true }
+    }
+    catch (caughtError) {
+      console.error('Error hard deleting user:', caughtError)
+      error.value = caughtError.response?.data?.message || 'Failed to permanently delete user'
+      return { success: false, error: error.value }
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Restore a soft-deleted user
+   * Endpoint: PATCH /api/users/{userId}/restore
+   * Authorization: AdminPolicy
+   * @param {number} userId - The ID of the user to restore
+   * @returns {Promise<{success: boolean, error?: string}>} The result of the restore operation
+   */
+  async function restoreUser(userId) {
+    loading.value = true
+    error.value = null
+
+    try {
+      await api.patch(`/users/${userId}/restore`)
+
+      // Mark user as not deleted in local state
+      const index = users.value.findIndex(u => (u.userId || u.id) === userId)
+      if (index !== -1) {
+        users.value[index].deletedAt = null
+        users.value[index].isDeleted = false
       }
-    },
 
-    /**
-     * Hard delete a user (permanent)
-     * Endpoint: DELETE /api/users/{userId}
-     * Authorization: AdminPolicy
-     * @param {number} userId - The ID of the user to permanently delete
-     * @returns {Promise<{success: boolean, error?: string}>} The result of the hard delete operation
-     */
-    async hardDeleteUser(userId) {
-      this.loading = true
-      this.error = null
+      return { success: true }
+    }
+    catch (caughtError) {
+      console.error('Error restoring user:', caughtError)
+      error.value = caughtError.response?.data?.message || 'Failed to restore user'
+      return { success: false, error: error.value }
+    }
+    finally {
+      loading.value = false
+    }
+  }
 
-      try {
-        await api.delete(`/users/${userId}`)
+  // Pagination actions
+  function setCurrentPage(page) {
+    currentPage.value = page
+  }
 
-        // Remove the user from the store
-        this.users = this.users.filter(user => (user.userId || user.id) !== userId)
+  function setItemsPerPage(newItemsPerPage) {
+    itemsPerPage.value = newItemsPerPage
+    currentPage.value = 1 // Reset to first page when changing items per page
+  }
 
-        return { success: true }
-      }
-      catch (error) {
-        console.error('Error hard deleting user:', error)
-        this.error = error.response?.data?.message || 'Failed to permanently delete user'
-        return { success: false, error: this.error }
-      }
-      finally {
-        this.loading = false
-      }
-    },
+  function nextPage(searchQuery, selectedRole) {
+    const computedTotalPages = totalPages.value(searchQuery, selectedRole)
+    if (currentPage.value < computedTotalPages) {
+      currentPage.value++
+    }
+  }
 
-    /**
-     * Restore a soft-deleted user
-     * Endpoint: PATCH /api/users/{userId}/restore
-     * Authorization: AdminPolicy
-     * @param {number} userId - The ID of the user to restore
-     * @returns {Promise<{success: boolean, error?: string}>} The result of the restore operation
-     */
-    async restoreUser(userId) {
-      this.loading = true
-      this.error = null
+  function previousPage() {
+    if (currentPage.value > 1) {
+      currentPage.value--
+    }
+  }
 
-      try {
-        await api.patch(`/users/${userId}/restore`)
+  function goToPage(page, searchQuery, selectedRole) {
+    const computedTotalPages = totalPages.value(searchQuery, selectedRole)
+    if (page >= 1 && page <= computedTotalPages) {
+      currentPage.value = page
+    }
+  }
 
-        // Mark user as not deleted in local state
-        const index = this.users.findIndex(u => (u.userId || u.id) === userId)
-        if (index !== -1) {
-          this.users[index].deletedAt = null
-          this.users[index].isDeleted = false
-        }
+  return {
+    // State
+    users,
+    loading,
+    error,
+    currentPage,
+    itemsPerPage,
+    totalItems,
 
-        return { success: true }
-      }
-      catch (error) {
-        console.error('Error restoring user:', error)
-        this.error = error.response?.data?.message || 'Failed to restore user'
-        return { success: false, error: this.error }
-      }
-      finally {
-        this.loading = false
-      }
-    },
+    // Getters
+    getUsers,
+    instructors,
+    students,
+    filteredUsers,
+    paginatedUsers,
+    totalPages,
+    hasNextPage,
+    hasPreviousPage,
 
-    // Pagination actions
-    setCurrentPage(page) {
-      this.currentPage = page
-    },
-
-    setItemsPerPage(itemsPerPage) {
-      this.itemsPerPage = itemsPerPage
-      this.currentPage = 1 // Reset to first page when changing items per page
-    },
-
-    nextPage(searchQuery, selectedRole) {
-      const totalPages = this.totalPages(searchQuery, selectedRole)
-      if (this.currentPage < totalPages) {
-        this.currentPage++
-      }
-    },
-
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--
-      }
-    },
-
-    goToPage(page, searchQuery, selectedRole) {
-      const totalPages = this.totalPages(searchQuery, selectedRole)
-      if (page >= 1 && page <= totalPages) {
-        this.currentPage = page
-      }
-    },
-  },
+    // Actions
+    fetchUsers,
+    createUser,
+    updateUser,
+    softDeleteUser,
+    hardDeleteUser,
+    restoreUser,
+    setCurrentPage,
+    setItemsPerPage,
+    nextPage,
+    previousPage,
+    goToPage,
+  }
 })

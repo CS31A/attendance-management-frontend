@@ -114,6 +114,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
   return {
     // state
     sections,
+    itemsPerPage,
     loading,
     error,
     // getters

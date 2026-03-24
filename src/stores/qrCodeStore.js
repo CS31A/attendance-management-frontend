@@ -302,6 +302,10 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     loading,
     error,
     isPolling,
+    pollInterval,
+    pollIntervalMs,
+    currentQrCodeId,
+    isVisible,
 
     // Getters
     getActiveQrCode,
