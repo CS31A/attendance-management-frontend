@@ -1,3 +1,4 @@
+import type { NavigationGuardWithThis, RouteLocationNormalized } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
 /**
@@ -20,7 +21,10 @@ import { useAuthStore } from '@/stores/authStore'
  *   beforeEnter: authGuard
  * }
  */
-export async function authGuard(to, _from) {
+export const authGuard: NavigationGuardWithThis<undefined> = async (
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+) => {
   const authStore = useAuthStore()
 
   // If we're still initializing, allow the navigation to proceed for now
@@ -65,7 +69,10 @@ export async function authGuard(to, _from) {
  *   beforeEnter: guestGuard
  * }
  */
-export async function guestGuard(_to, _from) {
+export const guestGuard: NavigationGuardWithThis<undefined> = async (
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+) => {
   const authStore = useAuthStore()
 
   // If we're still initializing, allow the navigation to proceed for now
@@ -116,7 +123,10 @@ export async function guestGuard(_to, _from) {
  *   beforeEnter: adminGuard
  * }
  */
-export async function adminGuard(to, _from) {
+export const adminGuard: NavigationGuardWithThis<undefined> = async (
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+) => {
   const authStore = useAuthStore()
 
   // If we're still initializing, allow the navigation to proceed for now
@@ -166,7 +176,10 @@ export async function adminGuard(to, _from) {
  *   beforeEnter: [authGuard, instructorGuard]
  * }
  */
-export async function instructorGuard(to, _from) {
+export const instructorGuard: NavigationGuardWithThis<undefined> = async (
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+) => {
   const authStore = useAuthStore()
 
   // If we're still initializing, wait for initialization

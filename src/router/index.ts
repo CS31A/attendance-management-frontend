@@ -1,7 +1,8 @@
+import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import { adminGuard, authGuard, guestGuard, instructorGuard } from './authGuard'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     component: () => import('../views/LoginView.vue'),
