@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import enrollmentsApi from '@/api/enrollments.js'
+import enrollmentsApi from '@/api/enrollments'
 
 export const useEnrollmentStore = defineStore('enrollments', () => {
   // State

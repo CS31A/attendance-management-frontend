@@ -11,7 +11,7 @@ import {
   fetchSessionsByStatus as apiFetchSessionsByStatus,
   startSession as apiStartSession,
   updateSessionRoom as apiUpdateSessionRoom,
-} from '@/api/sessions.js'
+} from '@/api/sessions'
 
 /**
  * Session Store

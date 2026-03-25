@@ -10,7 +10,7 @@ import {
   recordAttendance as apiRecordAttendance,
   updateAttendance as apiUpdateAttendance,
   calculateAttendanceStats,
-} from '@/api/attendance.js'
+} from '@/api/attendance'
 
 /**
  * Attendance Store

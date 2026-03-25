@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import sectionsApi from '@/api/sections.js'
+import sectionsApi from '@/api/sections'
 
 export const useSectionStore = defineStore('sectionsStore', () => {
   const sections = ref([])

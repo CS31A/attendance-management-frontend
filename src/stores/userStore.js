@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import api from '@/api/index.js'
+import api from '@/api'
 import { ROLES } from '@/utils/constants'
 
 // Helper function to validate section
