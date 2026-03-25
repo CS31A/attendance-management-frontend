@@ -14,7 +14,7 @@ import {
   UserX,
 } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
-import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance.js'
+import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
 
 const props = defineProps({
   session: {
