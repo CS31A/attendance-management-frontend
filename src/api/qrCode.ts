@@ -1,4 +1,32 @@
+import type { PaginationParams } from '@/types'
 import api from '@/api'
+
+export interface QrCodePayload {
+  sessionId: number
+  expirationMinutes?: number
+  maxUsage?: number
+  [key: string]: unknown
+}
+
+export interface QrCodeScanPayload {
+  qrHash: string
+  studentId: number
+  deviceInfo?: Record<string, unknown>
+}
+
+export interface QrCodeResponseDto {
+  id?: number
+  qrCodeImage?: string
+  qrCodeImageUrl?: string
+  [key: string]: unknown
+}
+
+export type QrCodeValidationResponseDto = Record<string, unknown>
+export type QrCodeScanHistoryResponseDto = Record<string, unknown>
+
+export interface QrCodePaginationParams extends PaginationParams {
+  [key: string]: unknown
+}
 
 /**
  * QR Code API service for attendance tracking
@@ -20,7 +48,7 @@ import api from '@/api'
  * @param {number} [payload.maxUsage] - Maximum number of scans allowed (optional)
  * @returns {Promise<QrCodeGenerateResponseDto>} Generated QR code response with id, hash, and image
  */
-export async function generateQrCode(payload) {
+export async function generateQrCode(payload: QrCodePayload): Promise<QrCodeResponseDto> {
   const response = await api.post('/QrCode/generate', payload)
 
   const data = response.data
@@ -42,7 +70,7 @@ export async function generateQrCode(payload) {
  * @param {object} [payload.deviceInfo] - Optional device information
  * @returns {Promise<QrCodeValidationResponseDto>} Scan result
  */
-export async function scanQrCode(payload) {
+export async function scanQrCode(payload: QrCodeScanPayload): Promise<QrCodeValidationResponseDto> {
   const response = await api.post('/QrCode/scan', payload)
   return response.data
 }
@@ -53,7 +81,7 @@ export async function scanQrCode(payload) {
  * @param {string} qrHash - QR code hash
  * @returns {Promise<QrCodeValidationResponseDto>} Validation result
  */
-export async function validateQrCode(qrHash) {
+export async function validateQrCode(qrHash: string): Promise<QrCodeValidationResponseDto> {
   const response = await api.get(`/QrCode/validate/${qrHash}`)
   return response.data
 }
@@ -66,7 +94,7 @@ export async function validateQrCode(qrHash) {
  * @param {number} id - QR code ID
  * @returns {Promise<QrCodeResponseDto>} QR code details
  */
-export async function getQrCodeById(id) {
+export async function getQrCodeById(id: number): Promise<QrCodeResponseDto> {
   const response = await api.get(`/QrCode/${id}`)
   return response.data
 }
@@ -77,14 +105,14 @@ export async function getQrCodeById(id) {
  * @param {number} id - QR code ID
  * @returns {Promise<string>} QR code image as data URL
  */
-export async function getQrCodeImage(id) {
+export async function getQrCodeImage(id: number): Promise<string | ArrayBuffer | null> {
   const response = await api.get(`/QrCode/${id}/image`, {
     responseType: 'blob',
   })
 
   // Convert blob to data URL for display
   const blob = response.data
-  const dataUrl = await new Promise((resolve) => {
+  const dataUrl = await new Promise<string | ArrayBuffer | null>((resolve) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result)
     reader.readAsDataURL(blob)
@@ -99,7 +127,7 @@ export async function getQrCodeImage(id) {
  * @param {string} qrHash - QR code hash
  * @returns {Promise<QrCodeResponseDto>} QR code details
  */
-export async function getQrCodeByHash(qrHash) {
+export async function getQrCodeByHash(qrHash: string): Promise<QrCodeResponseDto> {
   const response = await api.get(`/QrCode/hash/${qrHash}`)
   return response.data
 }
@@ -112,7 +140,10 @@ export async function getQrCodeByHash(qrHash) {
  * @param {string} [payload.reason] - Reason for revocation
  * @returns {Promise<QrCodeResponseDto>} Updated QR code
  */
-export async function revokeQrCodeById(id, payload = {}) {
+export async function revokeQrCodeById(
+  id: number,
+  payload: Record<string, unknown> = {},
+): Promise<QrCodeResponseDto> {
   const response = await api.patch(`/QrCode/${id}/revoke`, payload)
   return response.data
 }
@@ -125,7 +156,10 @@ export async function revokeQrCodeById(id, payload = {}) {
  * @param {string} [payload.reason] - Reason for revocation
  * @returns {Promise<QrCodeResponseDto>} Updated QR code
  */
-export async function revokeQrCodeByHash(qrHash, payload = {}) {
+export async function revokeQrCodeByHash(
+  qrHash: string,
+  payload: Record<string, unknown> = {},
+): Promise<QrCodeResponseDto> {
   const response = await api.patch(`/QrCode/hash/${qrHash}/revoke`, payload)
   return response.data
 }
@@ -136,7 +170,7 @@ export async function revokeQrCodeByHash(qrHash, payload = {}) {
  * @param {number} id - QR code ID
  * @returns {Promise<QrCodeResponseDto>} Updated QR code
  */
-export async function reactivateQrCodeById(id) {
+export async function reactivateQrCodeById(id: number): Promise<QrCodeResponseDto> {
   const response = await api.patch(`/QrCode/${id}/reactivate`)
   return response.data
 }
@@ -147,7 +181,7 @@ export async function reactivateQrCodeById(id) {
  * @param {string} qrHash - QR code hash
  * @returns {Promise<QrCodeResponseDto>} Updated QR code
  */
-export async function reactivateQrCodeByHash(qrHash) {
+export async function reactivateQrCodeByHash(qrHash: string): Promise<QrCodeResponseDto> {
   const response = await api.patch(`/QrCode/hash/${qrHash}/reactivate`)
   return response.data
 }
@@ -160,7 +194,7 @@ export async function reactivateQrCodeByHash(qrHash) {
  * @param {number} sessionId - Session ID
  * @returns {Promise<Array<QrCodeResponseDto>>} List of QR codes for the session
  */
-export async function getSessionQrCodes(sessionId) {
+export async function getSessionQrCodes(sessionId: number): Promise<QrCodeResponseDto[]> {
   const response = await api.get(`/QrCode/session/${sessionId}`)
   return response.data
 }
@@ -174,7 +208,10 @@ export async function getSessionQrCodes(sessionId) {
  * @param {number} [params.limit] - Items per page
  * @returns {Promise<QrCodeScanHistoryResponseDto>} Scan history
  */
-export async function getScanHistoryById(id, params = {}) {
+export async function getScanHistoryById(
+  id: number,
+  params: QrCodePaginationParams = {},
+): Promise<QrCodeScanHistoryResponseDto> {
   const response = await api.get(`/QrCode/${id}/scan-history`, { params })
   return response.data
 }
@@ -188,7 +225,10 @@ export async function getScanHistoryById(id, params = {}) {
  * @param {number} [params.limit] - Items per page
  * @returns {Promise<QrCodeScanHistoryResponseDto>} Scan history
  */
-export async function getScanHistoryByHash(qrHash, params = {}) {
+export async function getScanHistoryByHash(
+  qrHash: string,
+  params: QrCodePaginationParams = {},
+): Promise<QrCodeScanHistoryResponseDto> {
   const response = await api.get(`/QrCode/hash/${qrHash}/scan-history`, { params })
   return response.data
 }

@@ -1,4 +1,22 @@
+import type {
+  AxiosError,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios'
 import axios from 'axios'
+
+interface RefreshTokenResponse {
+  success: boolean
+}
+
+interface RetryableRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean
+}
+
+interface FailedRequestQueueItem {
+  resolve: () => Promise<void> | void
+  reject: (error: unknown) => void
+}
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
@@ -9,13 +27,13 @@ const api = axios.create({
 // Flag to prevent multiple simultaneous refresh attempts
 let isRefreshing = false
 // Queue to store failed requests while token is being refreshed
-let failedRequestsQueue = []
+let failedRequestsQueue: FailedRequestQueueItem[] = []
 
 /**
  * Process the queue of failed requests after successful token refresh
  * @param {Error|null} error - Error object if refresh failed, null if successful
  */
-function processQueue(error = null) {
+function processQueue(error: unknown = null): void {
   failedRequestsQueue.forEach((promise) => {
     if (error) {
       promise.reject(error)
@@ -34,8 +52,11 @@ api.interceptors.response.use(
     // Pass through successful responses
     return response
   },
-  async (error) => {
-    const originalRequest = error.config
+  async (error: AxiosError<RefreshTokenResponse>) => {
+    const originalRequest = error.config as RetryableRequestConfig | undefined
+    if (!originalRequest) {
+      return Promise.reject(error)
+    }
 
     // Check if error is 401 and not from the refresh endpoint itself
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -54,7 +75,7 @@ api.interceptors.response.use(
 
         try {
           // Call refresh endpoint (cookie-based, no body needed)
-          const response = await api.post('/account/web/refresh')
+          const response = await api.post<RefreshTokenResponse>('/account/web/refresh')
           if (response.data.success) {
             // Token refreshed successfully
             isRefreshing = false
@@ -68,7 +89,7 @@ api.interceptors.response.use(
             throw new Error('Token refresh failed')
           }
         }
-        catch (refreshError) {
+        catch (refreshError: unknown) {
           // Refresh failed, reject all queued requests
           isRefreshing = false
           processQueue(refreshError)
@@ -77,12 +98,18 @@ api.interceptors.response.use(
       }
 
       // If already refreshing, queue this request
-      return new Promise((resolve, reject) => {
+      return new Promise<AxiosResponse>((resolve, reject) => {
         failedRequestsQueue.push({
-          resolve: () => {
-            resolve(api(originalRequest))
+          resolve: async () => {
+            try {
+              const response = await api(originalRequest)
+              resolve(response)
+            }
+            catch (requestError: unknown) {
+              reject(requestError)
+            }
           },
-          reject: (err) => {
+          reject: (err: unknown) => {
             reject(err)
           },
         })

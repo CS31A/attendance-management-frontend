@@ -1,3 +1,5 @@
+import type { AxiosResponse } from 'axios'
+import type { EntityId } from '@/types'
 import api from './index'
 
 /**
@@ -6,6 +8,26 @@ import api from './index'
  */
 
 const ENROLLMENT_ENDPOINT = '/StudentEnrollment'
+
+export interface EnrollmentData {
+  studentId: number
+  sectionId: number
+  subjectId: number
+  enrollmentType: string
+  academicYear?: string
+  semester?: string
+}
+
+export interface EnrollmentStatusQuery {
+  studentId: number
+  sectionId: number
+  subjectId: number
+}
+
+export interface EnrollmentDto {
+  id: EntityId
+  [key: string]: unknown
+}
 
 export default {
   /**
@@ -20,8 +42,8 @@ export default {
    * @param {string} [enrollmentData.semester] - Semester (optional)
    * @returns {Promise} Response with created enrollment
    */
-  enrollStudent(enrollmentData) {
-    return api.post(`${ENROLLMENT_ENDPOINT}/enroll`, enrollmentData)
+  enrollStudent(enrollmentData: EnrollmentData): Promise<AxiosResponse<EnrollmentDto>> {
+    return api.post<EnrollmentDto>(`${ENROLLMENT_ENDPOINT}/enroll`, enrollmentData)
   },
 
   /**
@@ -30,8 +52,8 @@ export default {
    * @param {number} studentId - Student ID
    * @returns {Promise} Response with array of student enrollments
    */
-  getStudentEnrollments(studentId) {
-    return api.get(`${ENROLLMENT_ENDPOINT}/student/${studentId}`)
+  getStudentEnrollments(studentId: EntityId): Promise<AxiosResponse<EnrollmentDto[]>> {
+    return api.get<EnrollmentDto[]>(`${ENROLLMENT_ENDPOINT}/student/${studentId}`)
   },
 
   /**
@@ -40,8 +62,8 @@ export default {
    * @param {number} sectionId - Section ID
    * @returns {Promise} Response with array of enrolled students
    */
-  getSectionStudents(sectionId) {
-    return api.get(`${ENROLLMENT_ENDPOINT}/section/${sectionId}/students`)
+  getSectionStudents(sectionId: EntityId): Promise<AxiosResponse<EnrollmentDto[]>> {
+    return api.get<EnrollmentDto[]>(`${ENROLLMENT_ENDPOINT}/section/${sectionId}/students`)
   },
 
   /**
@@ -50,7 +72,7 @@ export default {
    * @param {number} enrollmentId - Enrollment ID
    * @returns {Promise} Response confirming drop
    */
-  dropStudent(enrollmentId) {
+  dropStudent(enrollmentId: EntityId): Promise<AxiosResponse<unknown>> {
     return api.patch(`${ENROLLMENT_ENDPOINT}/${enrollmentId}/drop`)
   },
 
@@ -60,7 +82,7 @@ export default {
    * @param {number} enrollmentId - Enrollment ID
    * @returns {Promise} Response confirming re-enrollment
    */
-  reenrollStudent(enrollmentId) {
+  reenrollStudent(enrollmentId: EntityId): Promise<AxiosResponse<unknown>> {
     return api.patch(`${ENROLLMENT_ENDPOINT}/${enrollmentId}/reenroll`)
   },
 
@@ -73,7 +95,7 @@ export default {
    * @param {number} params.subjectId - Subject ID
    * @returns {Promise} Response with enrollment status
    */
-  checkEnrollment(params) {
+  checkEnrollment(params: EnrollmentStatusQuery): Promise<AxiosResponse<unknown>> {
     return api.get(`${ENROLLMENT_ENDPOINT}/check`, { params })
   },
 }

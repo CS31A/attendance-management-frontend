@@ -1,4 +1,38 @@
+import type { EntityId } from '@/types'
 import api from '@/api'
+
+export type SessionStatus = 'not_started' | 'active' | 'ended' | 'cancelled'
+
+export interface SessionResponseDto {
+  id: EntityId
+  status: SessionStatus
+  sessionDate?: string
+  subjectCode?: string
+  subjectName?: string
+  sectionName?: string
+  actualStartTime?: string
+  actualEndTime?: string
+  [key: string]: unknown
+}
+
+export interface CreateSessionPayload {
+  scheduleId: number
+  sessionDate?: string
+  description?: string
+}
+
+export interface StartSessionPayload {
+  actualRoomId?: number
+  attendanceCutoffMinutes?: number
+}
+
+export interface EndSessionPayload {
+  description?: string
+}
+
+export interface UpdateSessionRoomPayload {
+  actualRoomId: number
+}
 
 /**
  * Session API service for managing class sessions
@@ -26,7 +60,7 @@ import api from '@/api'
  * const sessions = await fetchSessions()
  * console.log(`Found ${sessions.length} sessions`)
  */
-export async function fetchSessions() {
+export async function fetchSessions(): Promise<SessionResponseDto[]> {
   const response = await api.get('/sessions')
   return response.data
 }
@@ -44,7 +78,7 @@ export async function fetchSessions() {
  * const mySessions = await fetchMySessions()
  * console.log(`Found ${mySessions.length} sessions for current instructor`)
  */
-export async function fetchMySessions() {
+export async function fetchMySessions(): Promise<SessionResponseDto[]> {
   const response = await api.get('/sessions/my-sessions')
   return response.data
 }
@@ -60,7 +94,7 @@ export async function fetchMySessions() {
  * const session = await fetchSessionById(123)
  * console.log(`Session status: ${session.status}`)
  */
-export async function fetchSessionById(sessionId) {
+export async function fetchSessionById(sessionId: EntityId): Promise<SessionResponseDto> {
   const response = await api.get(`/sessions/${sessionId}`)
   return response.data
 }
@@ -78,7 +112,7 @@ export async function fetchSessionById(sessionId) {
  * const sessions = await fetchSessionsBySchedule(456)
  * const upcoming = sessions.filter(s => s.status === 'not_started')
  */
-export async function fetchSessionsBySchedule(scheduleId) {
+export async function fetchSessionsBySchedule(scheduleId: EntityId): Promise<SessionResponseDto[]> {
   const response = await api.get(`/sessions/schedule/${scheduleId}`)
   return response.data
 }
@@ -96,7 +130,7 @@ export async function fetchSessionsBySchedule(scheduleId) {
  * const activeSessions = await fetchSessionsByStatus('active')
  * activeSessions.forEach(s => console.log(`Active: ${s.subjectName}`))
  */
-export async function fetchSessionsByStatus(status) {
+export async function fetchSessionsByStatus(status: SessionStatus): Promise<SessionResponseDto[]> {
   const response = await api.get(`/sessions/status/${status}`)
   return response.data
 }
@@ -114,7 +148,7 @@ export async function fetchSessionsByStatus(status) {
  * const today = new Date().toISOString().split('T')[0]
  * const todaySessions = await fetchSessionsByDate(today)
  */
-export async function fetchSessionsByDate(date) {
+export async function fetchSessionsByDate(date: string): Promise<SessionResponseDto[]> {
   const response = await api.get(`/sessions/date/${date}`)
   return response.data
 }
@@ -143,7 +177,7 @@ export async function fetchSessionsByDate(date) {
  * })
  * console.log(`Created session ${newSession.id}`)
  */
-export async function createSession(payload) {
+export async function createSession(payload: CreateSessionPayload): Promise<SessionResponseDto> {
   const response = await api.post('/sessions', payload)
   return response.data
 }
@@ -172,7 +206,10 @@ export async function createSession(payload) {
  *   attendanceCutoffMinutes: 20
  * })
  */
-export async function startSession(sessionId, payload = {}) {
+export async function startSession(
+  sessionId: EntityId,
+  payload: StartSessionPayload = {},
+): Promise<SessionResponseDto> {
   const response = await api.patch(`/sessions/${sessionId}/start`, payload)
   return response.data
 }
@@ -195,7 +232,10 @@ export async function startSession(sessionId, payload = {}) {
  *   description: 'Covered chapters 1-3. Quiz next week.'
  * })
  */
-export async function endSession(sessionId, payload = {}) {
+export async function endSession(
+  sessionId: EntityId,
+  payload: EndSessionPayload = {},
+): Promise<SessionResponseDto> {
   const response = await api.patch(`/sessions/${sessionId}/end`, payload)
   return response.data
 }
@@ -215,7 +255,7 @@ export async function endSession(sessionId, payload = {}) {
  * await deleteSession(123)
  * console.log('Session cancelled successfully')
  */
-export async function deleteSession(sessionId) {
+export async function deleteSession(sessionId: EntityId): Promise<SessionResponseDto> {
   const response = await api.delete(`/sessions/${sessionId}`)
   return response.data
 }
@@ -239,7 +279,10 @@ export async function deleteSession(sessionId) {
  * })
  * console.log(`Room changed to ${updated.actualRoomName}`)
  */
-export async function updateSessionRoom(sessionId, payload) {
+export async function updateSessionRoom(
+  sessionId: EntityId,
+  payload: UpdateSessionRoomPayload,
+): Promise<SessionResponseDto> {
   const response = await api.patch(`/sessions/${sessionId}/room`, payload)
   return response.data
 }
@@ -261,7 +304,7 @@ export async function updateSessionRoom(sessionId, payload) {
  * const formatted = formatDateForApi("2024-03-15T10:30:00Z")
  * // Returns: "2024-03-15"
  */
-export function formatDateForApi(date) {
+export function formatDateForApi(date: Date | string): string {
   if (date instanceof Date) {
     return date.toISOString().split('T')[0]
   }
@@ -283,7 +326,7 @@ export function formatDateForApi(date) {
  * isValidStatus('active')  // true
  * isValidStatus('pending') // false
  */
-export function isValidStatus(status) {
+export function isValidStatus(status: string): status is SessionStatus {
   return ['not_started', 'active', 'ended', 'cancelled'].includes(status)
 }
 
@@ -300,8 +343,8 @@ export function isValidStatus(status) {
  *   await startSession(session.id)
  * }
  */
-export function canStartSession(session) {
-  return session && session.status === 'not_started'
+export function canStartSession(session: SessionResponseDto | null | undefined): boolean {
+  return Boolean(session && session.status === 'not_started')
 }
 
 /**
@@ -312,8 +355,8 @@ export function canStartSession(session) {
  * @param {SessionResponseDto} session - Session object
  * @returns {boolean} Whether session can be ended
  */
-export function canEndSession(session) {
-  return session && session.status === 'active'
+export function canEndSession(session: SessionResponseDto | null | undefined): boolean {
+  return Boolean(session && session.status === 'active')
 }
 
 /**
@@ -324,8 +367,8 @@ export function canEndSession(session) {
  * @param {SessionResponseDto} session - Session object
  * @returns {boolean} Whether session can be deleted
  */
-export function canDeleteSession(session) {
-  return session && session.status === 'not_started'
+export function canDeleteSession(session: SessionResponseDto | null | undefined): boolean {
+  return Boolean(session && session.status === 'not_started')
 }
 
 /**
@@ -336,8 +379,8 @@ export function canDeleteSession(session) {
  * @param {SessionResponseDto} session - Session object
  * @returns {boolean} Whether session room can be updated
  */
-export function canUpdateRoom(session) {
-  return session && session.status === 'active'
+export function canUpdateRoom(session: SessionResponseDto | null | undefined): boolean {
+  return Boolean(session && session.status === 'active')
 }
 
 /**
@@ -354,13 +397,13 @@ export function canUpdateRoom(session) {
  *   console.log(`Session lasted ${duration} minutes`)
  * }
  */
-export function calculateSessionDuration(session) {
+export function calculateSessionDuration(session: SessionResponseDto): number | null {
   if (!session?.actualStartTime || !session?.actualEndTime) {
     return null
   }
   const start = new Date(session.actualStartTime)
   const end = new Date(session.actualEndTime)
-  return Math.round((end - start) / 1000 / 60)
+  return Math.round((end.getTime() - start.getTime()) / 1000 / 60)
 }
 
 /**
@@ -375,7 +418,7 @@ export function calculateSessionDuration(session) {
  * const name = getSessionDisplayName(session)
  * // Returns: "CS101 - Data Structures (Section A)"
  */
-export function getSessionDisplayName(session) {
+export function getSessionDisplayName(session: SessionResponseDto | null | undefined): string {
   if (!session)
     return 'Unknown Session'
 

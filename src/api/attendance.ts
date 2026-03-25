@@ -1,3 +1,4 @@
+import type { ApiEnvelope, PaginationParams } from '@/types'
 import api from '@/api'
 
 /**
@@ -9,6 +10,55 @@ import api from '@/api'
  *
  * @module api/attendance
  */
+
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
+
+export interface AttendanceResponseDto {
+  id: number
+  studentId: number
+  sessionId: number
+  status: AttendanceStatus
+  notes?: string
+  [key: string]: unknown
+}
+
+export interface AttendanceSummaryDto {
+  total?: number
+  presentCount?: number
+  absentCount?: number
+  lateCount?: number
+  excusedCount?: number
+  [key: string]: unknown
+}
+
+export interface AttendanceQueryParams extends PaginationParams {
+  date?: string
+  startDate?: string
+  endDate?: string
+  sessionId?: number
+  studentId?: number
+  sectionId?: number
+}
+
+export interface StudentAttendance {
+  studentId: number
+  status: AttendanceStatus
+  notes?: string
+}
+
+export interface RecordAttendancePayload {
+  sessionId: number
+  records: StudentAttendance[]
+}
+
+export interface UpdateAttendancePayload {
+  status?: AttendanceStatus
+  notes?: string
+}
+
+interface SessionAttendanceResponse {
+  attendanceRecords?: AttendanceResponseDto[]
+}
 
 // ==================== READ OPERATIONS ====================
 
@@ -29,7 +79,9 @@ import api from '@/api'
  * const attendance = await fetchAllAttendance({ date: '2024-03-15' })
  * console.log(`Found ${attendance.length} records`)
  */
-export async function fetchAllAttendance(params = {}) {
+export async function fetchAllAttendance(
+  params: AttendanceQueryParams = {},
+): Promise<AttendanceResponseDto[]> {
   const response = await api.get('/attendance', { params })
   return response.data
 }
@@ -45,7 +97,7 @@ export async function fetchAllAttendance(params = {}) {
  * const record = await fetchAttendanceById(123)
  * console.log(`Status: ${record.status}`)
  */
-export async function fetchAttendanceById(id) {
+export async function fetchAttendanceById(id: number): Promise<AttendanceResponseDto> {
   const response = await api.get(`/attendance/${id}`)
   return response.data
 }
@@ -63,7 +115,7 @@ export async function fetchAttendanceById(id) {
  * const studentAttendance = await fetchStudentAttendance(456)
  * const presentCount = studentAttendance.filter(a => a.status === 'present').length
  */
-export async function fetchStudentAttendance(studentId) {
+export async function fetchStudentAttendance(studentId: number): Promise<AttendanceResponseDto[]> {
   const response = await api.get(`/attendance/student/${studentId}`)
   return response.data
 }
@@ -82,8 +134,8 @@ export async function fetchStudentAttendance(studentId) {
  * const sessionAttendance = await fetchSessionAttendance(789)
  * sessionAttendance.forEach(a => console.log(`${a.studentName}: ${a.status}`))
  */
-export async function fetchSessionAttendance(sessionId) {
-  const response = await api.get(`/attendance/session/${sessionId}`)
+export async function fetchSessionAttendance(sessionId: number): Promise<AttendanceResponseDto[]> {
+  const response = await api.get<SessionAttendanceResponse>(`/attendance/session/${sessionId}`)
   // Backend returns a wrapper object with attendanceRecords array
   // Extract just the attendanceRecords array for frontend consumption
   return response.data.attendanceRecords || []
@@ -104,7 +156,9 @@ export async function fetchSessionAttendance(sessionId) {
  * const summary = await fetchAttendanceSummary({ sectionId: 10 })
  * console.log(`Attendance rate: ${summary.attendanceRate}%`)
  */
-export async function fetchAttendanceSummary(params = {}) {
+export async function fetchAttendanceSummary(
+  params: AttendanceQueryParams = {},
+): Promise<AttendanceSummaryDto> {
   const response = await api.get('/attendance/summary', { params })
   return response.data
 }
@@ -136,7 +190,9 @@ export async function fetchAttendanceSummary(params = {}) {
  *   ]
  * })
  */
-export async function recordAttendance(payload) {
+export async function recordAttendance(
+  payload: RecordAttendancePayload,
+): Promise<AttendanceResponseDto[]> {
   const response = await api.post('/attendance', payload)
   return response.data
 }
@@ -159,7 +215,10 @@ export async function recordAttendance(payload) {
  *   notes: 'Medical certificate provided'
  * })
  */
-export async function updateAttendance(id, payload) {
+export async function updateAttendance(
+  id: number,
+  payload: UpdateAttendancePayload,
+): Promise<AttendanceResponseDto> {
   const response = await api.put(`/attendance/${id}`, payload)
   return response.data
 }
@@ -177,8 +236,8 @@ export async function updateAttendance(id, payload) {
  * await deleteAttendance(123)
  * console.log('Attendance record deleted')
  */
-export async function deleteAttendance(id) {
-  const response = await api.delete(`/attendance/${id}`)
+export async function deleteAttendance(id: number): Promise<ApiEnvelope<null> | null> {
+  const response = await api.delete<ApiEnvelope<null> | null>(`/attendance/${id}`)
   return response.data
 }
 
@@ -192,7 +251,7 @@ export const ATTENDANCE_STATUSES = {
   ABSENT: 'absent',
   LATE: 'late',
   EXCUSED: 'excused',
-}
+} as const
 
 /**
  * Get display label for attendance status
@@ -203,14 +262,14 @@ export const ATTENDANCE_STATUSES = {
  * @example
  * getStatusLabel('present') // Returns "Present"
  */
-export function getStatusLabel(status) {
-  const labels = {
+export function getStatusLabel(status: AttendanceStatus | string): string {
+  const labels: Record<AttendanceStatus, string> = {
     present: 'Present',
     absent: 'Absent',
     late: 'Late',
     excused: 'Excused',
   }
-  return labels[status] || status
+  return labels[status as AttendanceStatus] || status
 }
 
 /**
@@ -222,7 +281,7 @@ export function getStatusLabel(status) {
  * @example
  * getStatusClass('present') // Returns "status-present"
  */
-export function getStatusClass(status) {
+export function getStatusClass(status: AttendanceStatus | string): string {
   return `status-${status}`
 }
 
@@ -236,8 +295,8 @@ export function getStatusClass(status) {
  * isValidAttendanceStatus('present') // true
  * isValidAttendanceStatus('invalid') // false
  */
-export function isValidAttendanceStatus(status) {
-  return Object.values(ATTENDANCE_STATUSES).includes(status)
+export function isValidAttendanceStatus(status: string): status is AttendanceStatus {
+  return (Object.values(ATTENDANCE_STATUSES) as string[]).includes(status)
 }
 
 /**
@@ -250,7 +309,7 @@ export function isValidAttendanceStatus(status) {
  * const stats = calculateAttendanceStats(records)
  * console.log(`Present: ${stats.presentCount} (${stats.presentPercentage}%)`)
  */
-export function calculateAttendanceStats(records) {
+export function calculateAttendanceStats(records: AttendanceResponseDto[]) {
   if (!records || records.length === 0) {
     return {
       total: 0,

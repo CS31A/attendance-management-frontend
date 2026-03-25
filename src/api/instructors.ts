@@ -1,4 +1,8 @@
+import type { EntityId } from '@/types'
 import api from './index'
+
+export type InstructorDto = Record<string, unknown>
+export type InstructorCollectionDto = InstructorDto[]
 
 /**
  * Instructor API Service
@@ -9,7 +13,7 @@ import api from './index'
  * Get current instructor's schedules
  * @returns {Promise<Array>} List of schedule objects
  */
-export async function getMySchedules() {
+export async function getMySchedules(): Promise<InstructorCollectionDto> {
   try {
     const response = await api.get('/instructors/me/schedules')
     return response.data
@@ -24,7 +28,7 @@ export async function getMySchedules() {
  * Get current instructor's information
  * @returns {Promise<object>} Instructor object
  */
-export async function getMyProfile() {
+export async function getMyProfile(): Promise<InstructorDto> {
   try {
     const response = await api.get('/instructors/me')
     return response.data
@@ -40,7 +44,7 @@ export async function getMyProfile() {
  * @param {number} id - Instructor ID
  * @returns {Promise<Array>} List of subject objects
  */
-export async function getInstructorSubjects(id) {
+export async function getInstructorSubjects(id: EntityId): Promise<InstructorCollectionDto> {
   try {
     const response = await api.get(`/instructors/${id}/subjects`)
     return response.data

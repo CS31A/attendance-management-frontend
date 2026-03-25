@@ -1,6 +1,15 @@
+import type { PaginationParams } from '@/types'
 import api from './index'
 
 const SCHEDULE_ENDPOINT = '/schedules'
+
+export type ScheduleDto = Record<string, unknown>
+export type ScheduleCollectionDto = ScheduleDto[]
+export type SchedulePayload = Record<string, unknown>
+
+export interface ScheduleQueryParams extends PaginationParams {
+  [key: string]: unknown
+}
 
 /**
  * Schedule API Service
@@ -11,7 +20,7 @@ const SCHEDULE_ENDPOINT = '/schedules'
  * Get all schedules
  * @returns {Promise<Array>} List of schedule objects
  */
-export async function getAllSchedules() {
+export async function getAllSchedules(): Promise<ScheduleCollectionDto> {
   try {
     const response = await api.get(SCHEDULE_ENDPOINT)
     return response.data
@@ -26,7 +35,7 @@ export async function getAllSchedules() {
  * Get schedules for the current instructor
  * @returns {Promise<Array>} List of schedule objects for the current instructor
  */
-export async function getMySchedules() {
+export async function getMySchedules(): Promise<ScheduleCollectionDto> {
   try {
     const response = await api.get(`${SCHEDULE_ENDPOINT}/my-schedules`)
     return response.data
@@ -42,7 +51,7 @@ export async function getMySchedules() {
  * @param {number} id - Schedule ID
  * @returns {Promise<object>} Schedule object
  */
-export async function getScheduleById(id) {
+export async function getScheduleById(id: number): Promise<ScheduleDto> {
   try {
     const response = await api.get(`${SCHEDULE_ENDPOINT}/${id}`)
     return response.data
@@ -58,7 +67,7 @@ export async function getScheduleById(id) {
  * @param {object} data - Schedule data
  * @returns {Promise<object>} Created schedule object
  */
-export async function createSchedule(data) {
+export async function createSchedule(data: SchedulePayload): Promise<ScheduleDto> {
   try {
     const response = await api.post(SCHEDULE_ENDPOINT, data)
     return response.data
@@ -75,7 +84,7 @@ export async function createSchedule(data) {
  * @param {object} data - Updated schedule data
  * @returns {Promise<object>} Updated schedule object
  */
-export async function updateSchedule(id, data) {
+export async function updateSchedule(id: number, data: SchedulePayload): Promise<ScheduleDto> {
   try {
     const response = await api.put(`${SCHEDULE_ENDPOINT}/${id}`, data)
     return response.data
@@ -91,7 +100,7 @@ export async function updateSchedule(id, data) {
  * @param {number} id - Schedule ID
  * @returns {Promise<void>}
  */
-export async function deleteSchedule(id) {
+export async function deleteSchedule(id: number): Promise<void> {
   try {
     await api.delete(`${SCHEDULE_ENDPOINT}/${id}`)
   }
@@ -106,7 +115,7 @@ export async function deleteSchedule(id) {
  * @param {number} instructorId - Instructor ID
  * @returns {Promise<Array>} List of schedule objects for the instructor
  */
-export async function getSchedulesByInstructor(instructorId) {
+export async function getSchedulesByInstructor(instructorId: number): Promise<ScheduleCollectionDto> {
   try {
     const response = await api.get(`${SCHEDULE_ENDPOINT}/instructor/${instructorId}`)
     return response.data
