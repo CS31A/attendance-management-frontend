@@ -1,7 +1,6 @@
 import type { EntityId } from '@/types'
+import type { SessionStatus } from '@/utils/constants'
 import api from '@/api'
-
-export type SessionStatus = 'not_started' | 'active' | 'ended' | 'cancelled'
 
 export interface SessionResponseDto {
   id: EntityId

@@ -16,13 +16,23 @@ export interface QrCodeScanPayload {
 
 export interface QrCodeResponseDto {
   id?: number
+  qrCodeId?: number
+  qrHash?: string
   qrCodeImage?: string
   qrCodeImageUrl?: string
+  generatedAt?: string
+  expiresAt?: string
+  usageCount?: number
+  isActive?: boolean
   [key: string]: unknown
 }
 
 export type QrCodeValidationResponseDto = Record<string, unknown>
-export type QrCodeScanHistoryResponseDto = Record<string, unknown>
+export interface QrCodeScanHistoryResponseDto {
+  qrCodeInfo: Record<string, unknown> | null
+  scanStatistics: Record<string, unknown> | null
+  scans: Record<string, unknown>[]
+}
 
 export interface QrCodePaginationParams extends PaginationParams {
   [key: string]: unknown

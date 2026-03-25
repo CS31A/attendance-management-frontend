@@ -13,7 +13,7 @@
  * @param {string|Date} dateString - Date string from backend
  * @returns {Date} Date object
  */
-export function parseUtcDate(dateString) {
+export function parseUtcDate(dateString: string | Date | null | undefined): Date | null {
   if (!dateString)
     return null
 
@@ -36,7 +36,7 @@ export function parseUtcDate(dateString) {
  * @param {string|Date} expiresAt - Expiration timestamp
  * @returns {number} Seconds remaining (0 if expired)
  */
-export function calculateRemainingTime(expiresAt) {
+export function calculateRemainingTime(expiresAt: string | Date | null | undefined): number {
   if (!expiresAt)
     return 0
 
@@ -53,8 +53,8 @@ export function calculateRemainingTime(expiresAt) {
  * @param {number|string|Date} input - Seconds or expiration date
  * @returns {string} Formatted time (e.g., "05:30")
  */
-export function formatCountdown(input) {
-  let seconds
+export function formatCountdown(input: number | string | Date | null | undefined): string {
+  let seconds: number
 
   // If input is a date/string (expiresAt), calculate remaining seconds
   if (typeof input === 'string' || input instanceof Date) {
@@ -76,7 +76,7 @@ export function formatCountdown(input) {
  * @param {string|Date} expiresAt - Expiration timestamp
  * @returns {boolean} True if expired
  */
-export function isQrExpired(expiresAt) {
+export function isQrExpired(expiresAt: string | Date | null | undefined): boolean {
   return calculateRemainingTime(expiresAt) <= 0
 }
 
@@ -86,7 +86,7 @@ export function isQrExpired(expiresAt) {
  * @param {string|Date} timestamp - Scan timestamp
  * @returns {string} Formatted string (e.g., "10:30 AM")
  */
-export function formatScanTime(timestamp) {
+export function formatScanTime(timestamp: string | Date | null | undefined): string {
   if (!timestamp)
     return '-'
 
@@ -102,7 +102,7 @@ export function formatScanTime(timestamp) {
  * @param {string|Date} date - Date to format
  * @returns {string} Formatted date (e.g., "Mar 15, 2024")
  */
-export function formatDate(date) {
+export function formatDate(date: string | Date | null | undefined): string {
   if (!date)
     return '-'
 

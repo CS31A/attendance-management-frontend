@@ -5,7 +5,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
-import { useClassroomStore } from '@/stores/classroomStore.js'
+import { useClassroomStore } from '@/stores/classroomStore'
 
 const ClassroomTableSection = defineAsyncComponent(() => import('@/components/tables/ClassroomTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))

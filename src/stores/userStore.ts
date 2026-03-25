@@ -1,18 +1,68 @@
+import type { EntityId } from '@/types'
+import type { UserRole } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
 import { ROLES } from '@/utils/constants'
 
+interface ApiUserProfile {
+  id?: EntityId
+  firstname?: string
+  lastname?: string
+  sectionId?: EntityId | null
+  isRegular?: boolean
+}
+
+interface ApiUser {
+  userId?: EntityId
+  id?: EntityId
+  username?: string
+  email?: string
+  role?: UserRole | 'Instructor'
+  createdAt?: string
+  updatedAt?: string
+  isDeleted?: boolean
+  firstName?: string
+  lastName?: string
+  profileId?: EntityId
+  sectionId?: EntityId | null
+  isRegular?: boolean
+  adminProfile?: ApiUserProfile | null
+  instructorProfile?: ApiUserProfile | null
+  studentProfile?: ApiUserProfile | null
+  deletedAt?: string | null
+  [key: string]: unknown
+}
+
+type UiRole = 'Admin' | 'Instructor' | 'Teacher' | 'Student'
+
+interface CreateUserInput {
+  Username: string
+  FirstName: string
+  LastName: string
+  Email: string
+  Password: string
+  RepeatedPassword: string
+  Role: UiRole
+  SectionId?: string
+}
+
+interface UserActionResult<T = unknown> {
+  success: boolean
+  data?: T
+  error?: string
+}
+
 // Helper function to validate section
-function isValidSection(sectionId) {
+function isValidSection(sectionId: string): boolean {
   const validSections = ['1', '2', '3', '4', '5', 'CS101', 'MATH201', 'ENG301']
   return validSections.includes(sectionId)
 }
 
 // Helper function to map user profile data from API response to flat structure
-function mapUserProfile(user) {
+function mapUserProfile(user: ApiUser): ApiUser {
   // Extract base fields
-  const mappedUser = {
+  const mappedUser: ApiUser = {
     userId: user.userId,
     username: user.username,
     email: user.email,
@@ -44,9 +94,19 @@ function mapUserProfile(user) {
   return mappedUser
 }
 
+function asLowerString(value: unknown): string {
+  return typeof value === 'string' ? value.toLowerCase() : ''
+}
+
+function normalizeRole(role: UiRole): UserRole {
+  if (role === 'Instructor')
+    return 'Teacher'
+  return role as UserRole
+}
+
 export const useUserStore = defineStore('user', () => {
   // State
-  const users = ref([])
+  const users = ref<ApiUser[]>([])
   const loading = ref(false)
   const error = ref('')
   // Pagination state
@@ -59,7 +119,7 @@ export const useUserStore = defineStore('user', () => {
   const instructors = computed(() => users.value.filter(user => user.role === ROLES.TEACHER))
   const students = computed(() => users.value.filter(user => user.role === ROLES.STUDENT))
 
-  const filteredUsers = computed(() => (searchQuery, selectedRole) => {
+  const filteredUsers = computed(() => (searchQuery: string, selectedRole: string) => {
     let filtered = users.value
 
     if (selectedRole !== 'All Roles') {
@@ -70,10 +130,10 @@ export const useUserStore = defineStore('user', () => {
       const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter((user) => {
         // Handle both camelCase and lowercase property names from API
-        const firstName = (user.firstName || user.firstname || '').toLowerCase()
-        const lastName = (user.lastName || user.lastname || '').toLowerCase()
-        const emailValue = (user.email || '').toLowerCase()
-        const username = (user.username || '').toLowerCase()
+        const firstName = asLowerString(user.firstName || user.firstname)
+        const lastName = asLowerString(user.lastName || user.lastname)
+        const emailValue = asLowerString(user.email)
+        const username = asLowerString(user.username)
 
         return firstName.includes(query)
           || lastName.includes(query)
@@ -87,19 +147,19 @@ export const useUserStore = defineStore('user', () => {
   })
 
   // Pagination getters
-  const paginatedUsers = computed(() => (searchQuery, selectedRole) => {
+  const paginatedUsers = computed(() => (searchQuery: string, selectedRole: string) => {
     const filtered = filteredUsers.value(searchQuery, selectedRole)
     const start = (currentPage.value - 1) * itemsPerPage.value
     const end = start + itemsPerPage.value
     return filtered.slice(start, end)
   })
 
-  const totalPages = computed(() => (searchQuery, selectedRole) => {
+  const totalPages = computed(() => (searchQuery: string, selectedRole: string) => {
     const filtered = filteredUsers.value(searchQuery, selectedRole)
     return Math.ceil(filtered.length / itemsPerPage.value)
   })
 
-  const hasNextPage = computed(() => (searchQuery, selectedRole) => {
+  const hasNextPage = computed(() => (searchQuery: string, selectedRole: string) => {
     const filtered = filteredUsers.value(searchQuery, selectedRole)
     const computedTotalPages = Math.ceil(filtered.length / itemsPerPage.value)
     return currentPage.value < computedTotalPages
@@ -129,7 +189,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function createUser(userData) {
+  async function createUser(userData: CreateUserInput): Promise<UserActionResult> {
     loading.value = true
     error.value = ''
 
@@ -143,11 +203,17 @@ export const useUserStore = defineStore('user', () => {
         password: userData.Password,
         repeatedPassword: userData.RepeatedPassword,
         role: userData.Role === 'Instructor' ? 'teacher' : userData.Role.toLowerCase(),
-        sectionId: userData.Role === 'Student' ? Number.parseInt(userData.SectionId) : null,
+        sectionId: userData.Role === 'Student' && userData.SectionId
+          ? Number.parseInt(userData.SectionId, 10)
+          : null,
       }
 
       // If section validation fails for students, try with a default section
-      if (registerData.sectionId && userData.Role.toLowerCase() === 'student' && !isValidSection(registerData.sectionId)) {
+      if (
+        registerData.sectionId
+        && userData.Role.toLowerCase() === 'student'
+        && !isValidSection(String(registerData.sectionId))
+      ) {
         console.warn('Section validation failed for student, trying with default section 3')
         registerData.sectionId = 3
       }
@@ -165,7 +231,7 @@ export const useUserStore = defineStore('user', () => {
         if (innerError.response?.status === 400 && innerError.response?.data?.message?.includes('section') && userData.Role.toLowerCase() === 'student') {
           const fallbackData = {
             ...registerData,
-            sectionId: Number.parseInt(registerData.sectionId) || 3,
+            sectionId: Number.parseInt(String(registerData.sectionId), 10) || 3,
           }
           response = await api.post('/account/register', fallbackData)
         }
@@ -183,7 +249,7 @@ export const useUserStore = defineStore('user', () => {
             firstName: response.data.firstName || response.data.firstname || userData.FirstName,
             lastName: response.data.lastName || response.data.lastname || userData.LastName,
             email: response.data.email || userData.Email,
-            role: userData.Role,
+            role: normalizeRole(userData.Role),
             sectionId: response.data.sectionId || userData.SectionId,
             createdAt: response.data.createdAt || new Date().toISOString(),
           }
@@ -202,7 +268,7 @@ export const useUserStore = defineStore('user', () => {
           firstName: userData.FirstName,
           lastName: userData.LastName,
           email: userData.Email,
-          role: userData.Role,
+          role: normalizeRole(userData.Role),
           sectionId: userData.SectionId,
           createdAt: new Date().toISOString(),
         }
@@ -234,7 +300,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function updateUser(userId, userData) {
+  async function updateUser(userId: EntityId, userData: Record<string, unknown>): Promise<UserActionResult> {
     loading.value = true
     error.value = ''
 
@@ -247,7 +313,7 @@ export const useUserStore = defineStore('user', () => {
 
       // Use the original user's role to determine the correct endpoint
       // API returns 'Teacher' but we also handle 'Instructor' for compatibility
-      const isTeacher = originalUser.role === 'Teacher' || originalUser.role === 'Instructor'
+      const isTeacher = originalUser.role === ROLES.TEACHER || originalUser.role === 'Instructor'
       const endpoint = isTeacher ? '/instructors' : '/students'
 
       const response = await api.patch(`${endpoint}/${userId}`, userData)
@@ -281,7 +347,7 @@ export const useUserStore = defineStore('user', () => {
    * @param {number} userId - The ID of the user to soft delete
    * @returns {Promise<{success: boolean, error?: string}>} The result of the soft delete operation
    */
-  async function softDeleteUser(userId) {
+  async function softDeleteUser(userId: EntityId): Promise<UserActionResult> {
     loading.value = true
     error.value = ''
 
@@ -314,7 +380,7 @@ export const useUserStore = defineStore('user', () => {
    * @param {number} userId - The ID of the user to permanently delete
    * @returns {Promise<{success: boolean, error?: string}>} The result of the hard delete operation
    */
-  async function hardDeleteUser(userId) {
+  async function hardDeleteUser(userId: EntityId): Promise<UserActionResult> {
     loading.value = true
     error.value = ''
 
@@ -343,7 +409,7 @@ export const useUserStore = defineStore('user', () => {
    * @param {number} userId - The ID of the user to restore
    * @returns {Promise<{success: boolean, error?: string}>} The result of the restore operation
    */
-  async function restoreUser(userId) {
+  async function restoreUser(userId: EntityId): Promise<UserActionResult> {
     loading.value = true
     error.value = ''
 
@@ -370,29 +436,29 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // Pagination actions
-  function setCurrentPage(page) {
+  function setCurrentPage(page: number): void {
     currentPage.value = page
   }
 
-  function setItemsPerPage(newItemsPerPage) {
+  function setItemsPerPage(newItemsPerPage: number): void {
     itemsPerPage.value = newItemsPerPage
     currentPage.value = 1 // Reset to first page when changing items per page
   }
 
-  function nextPage(searchQuery, selectedRole) {
+  function nextPage(searchQuery: string, selectedRole: string): void {
     const computedTotalPages = totalPages.value(searchQuery, selectedRole)
     if (currentPage.value < computedTotalPages) {
       currentPage.value++
     }
   }
 
-  function previousPage() {
+  function previousPage(): void {
     if (currentPage.value > 1) {
       currentPage.value--
     }
   }
 
-  function goToPage(page, searchQuery, selectedRole) {
+  function goToPage(page: number, searchQuery: string, selectedRole: string): void {
     const computedTotalPages = totalPages.value(searchQuery, selectedRole)
     if (page >= 1 && page <= computedTotalPages) {
       currentPage.value = page

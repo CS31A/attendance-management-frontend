@@ -34,7 +34,9 @@ const TOAST_TYPES = {
     bgColor: '#3b82f6',
     textColor: '#ffffff',
   },
-}
+} as const
+
+type ToastType = keyof typeof TOAST_TYPES
 
 /**
  * Ensure toast container exists in DOM
@@ -68,7 +70,7 @@ function getOrCreateToastContainer() {
  * @param {string} type - Toast type ('success' | 'error' | 'warning' | 'info')
  * @param {number} duration - Duration in milliseconds (default: 4000)
  */
-function showToast(message, type = 'info', duration = TOAST_DURATION) {
+function showToast(message: string, type: ToastType = 'info', duration = TOAST_DURATION): void {
   const container = getOrCreateToastContainer()
   const config = TOAST_TYPES[type] || TOAST_TYPES.info
 
@@ -171,7 +173,7 @@ function showToast(message, type = 'info', duration = TOAST_DURATION) {
  * @param {string} message - Success message
  * @param {number} duration - Duration in milliseconds
  */
-export function showSuccess(message, duration) {
+export function showSuccess(message: string, duration?: number): void {
   showToast(message, 'success', duration)
 }
 
@@ -180,7 +182,7 @@ export function showSuccess(message, duration) {
  * @param {string} message - Error message
  * @param {number} duration - Duration in milliseconds
  */
-export function showError(message, duration) {
+export function showError(message: string, duration?: number): void {
   showToast(message, 'error', duration)
 }
 
@@ -189,7 +191,7 @@ export function showError(message, duration) {
  * @param {string} message - Warning message
  * @param {number} duration - Duration in milliseconds
  */
-export function showWarning(message, duration) {
+export function showWarning(message: string, duration?: number): void {
   showToast(message, 'warning', duration)
 }
 
@@ -198,7 +200,7 @@ export function showWarning(message, duration) {
  * @param {string} message - Info message
  * @param {number} duration - Duration in milliseconds
  */
-export function showInfo(message, duration) {
+export function showInfo(message: string, duration?: number): void {
   showToast(message, 'info', duration)
 }
 

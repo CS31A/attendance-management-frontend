@@ -26,11 +26,11 @@ export default defineConfig({
 
           // Store chunks - group by feature
           'stores': [
-            './src/stores/authStore.js',
-            './src/stores/userStore.js',
-            './src/stores/courseStore.js',
-            './src/stores/sectionStore.js',
-            './src/stores/sessionStore.js',
+            './src/stores/authStore.ts',
+            './src/stores/userStore.ts',
+            './src/stores/courseStore.ts',
+            './src/stores/sectionStore.ts',
+            './src/stores/sessionStore.ts',
 
           ],
 

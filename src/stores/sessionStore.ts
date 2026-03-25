@@ -1,3 +1,12 @@
+import type {
+  CreateSessionPayload,
+  EndSessionPayload,
+  SessionResponseDto,
+  StartSessionPayload,
+  UpdateSessionRoomPayload,
+} from '@/api/sessions'
+import type { EntityId } from '@/types'
+import type { SessionStatus } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
@@ -11,6 +20,7 @@ import {
   fetchSessionsByStatus as apiFetchSessionsByStatus,
   startSession as apiStartSession,
   updateSessionRoom as apiUpdateSessionRoom,
+
 } from '@/api/sessions'
 
 /**
@@ -28,13 +38,13 @@ export const useSessionStore = defineStore('sessionStore', () => {
   // ==================== STATE ====================
 
   /** @type {import('vue').Ref<Array>} */
-  const sessions = ref([])
+  const sessions = ref<SessionResponseDto[]>([])
 
   /** @type {import('vue').Ref<boolean>} */
   const loading = ref(false)
 
   /** @type {import('vue').Ref<object | null>} */
-  const currentSession = ref(null)
+  const currentSession = ref<SessionResponseDto | null>(null)
 
   // ==================== GETTERS ====================
 
@@ -43,7 +53,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @param {string} status - Session status ('not_started' | 'active' | 'ended' | 'cancelled')
    * @returns {Array} Filtered sessions
    */
-  const sessionsByStatus = computed(() => (status) => {
+  const sessionsByStatus = computed(() => (status: SessionStatus) => {
     return sessions.value.filter(session => session.status === status)
   })
 
@@ -86,7 +96,11 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const upcomingSessions = computed(() => {
     return sessions.value
       .filter(session => session.status === 'not_started')
-      .sort((a, b) => new Date(`${a.sessionDate}Z`) - new Date(`${b.sessionDate}Z`))
+      .sort((a, b) => {
+        const left = new Date(`${a.sessionDate ?? ''}Z`).getTime()
+        const right = new Date(`${b.sessionDate ?? ''}Z`).getTime()
+        return left - right
+      })
   })
 
   /**
@@ -96,7 +110,11 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const completedSessions = computed(() => {
     return sessions.value
       .filter(session => session.status === 'ended' || session.status === 'cancelled')
-      .sort((a, b) => new Date(`${b.sessionDate}Z`) - new Date(`${a.sessionDate}Z`))
+      .sort((a, b) => {
+        const left = new Date(`${b.sessionDate ?? ''}Z`).getTime()
+        const right = new Date(`${a.sessionDate ?? ''}Z`).getTime()
+        return left - right
+      })
   })
 
   /**
@@ -104,7 +122,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @param {number} sessionId - Session ID
    * @returns {object | undefined} Session object
    */
-  const getSessionById = computed(() => (sessionId) => {
+  const getSessionById = computed(() => (sessionId: EntityId) => {
     return sessions.value.find(session => session.id === sessionId)
   })
 
@@ -140,7 +158,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @param {number} sessionId - Session ID
    * @returns {Promise<object>} Session object
    */
-  const fetchSessionById = async (sessionId) => {
+  const fetchSessionById = async (sessionId: EntityId) => {
     loading.value = true
 
     try {
@@ -172,7 +190,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @param {number} scheduleId - Schedule ID
    * @returns {Promise<Array>} Array of session objects
    */
-  const fetchSessionsBySchedule = async (scheduleId) => {
+  const fetchSessionsBySchedule = async (scheduleId: EntityId) => {
     loading.value = true
 
     try {
@@ -193,7 +211,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @param {string} status - Session status
    * @returns {Promise<Array>} Array of session objects
    */
-  const fetchSessionsByStatusApi = async (status) => {
+  const fetchSessionsByStatusApi = async (status: SessionStatus) => {
     loading.value = true
 
     try {
@@ -214,7 +232,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @param {string} date - Date in YYYY-MM-DD format
    * @returns {Promise<Array>} Array of session objects
    */
-  const fetchSessionsByDate = async (date) => {
+  const fetchSessionsByDate = async (date: string) => {
     loading.value = true
 
     try {
@@ -239,7 +257,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Created session object
    * @throws {Error} 403 if not instructor, 400 if business rule violated
    */
-  const createSession = async (payload) => {
+  const createSession = async (payload: CreateSessionPayload) => {
     loading.value = true
 
     try {
@@ -268,7 +286,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Updated session object
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
-  const startSession = async (sessionId, payload = {}) => {
+  const startSession = async (
+    sessionId: EntityId,
+    payload: StartSessionPayload = {},
+  ) => {
     loading.value = true
 
     // Store original state for rollback
@@ -313,7 +334,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Updated session object
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
-  const endSession = async (sessionId, payload = {}) => {
+  const endSession = async (sessionId: EntityId, payload: EndSessionPayload = {}) => {
     loading.value = true
 
     // Store original state for rollback
@@ -356,7 +377,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<void>}
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
-  const deleteSession = async (sessionId) => {
+  const deleteSession = async (sessionId: EntityId) => {
     loading.value = true
 
     // Store original state for rollback
@@ -395,7 +416,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Updated session object
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status or room
    */
-  const updateSessionRoom = async (sessionId, payload) => {
+  const updateSessionRoom = async (
+    sessionId: EntityId,
+    payload: UpdateSessionRoomPayload,
+  ) => {
     loading.value = true
 
     // Store original state for rollback

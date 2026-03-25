@@ -10,7 +10,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
-import { useScheduleStore } from '@/stores/scheduleStore.js'
+import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))

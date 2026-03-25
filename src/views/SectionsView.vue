@@ -5,7 +5,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
-import { useSectionStore } from '@/stores/sectionStore.js'
+import { useSectionStore } from '@/stores/sectionStore'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
