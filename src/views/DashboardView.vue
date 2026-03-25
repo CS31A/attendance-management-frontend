@@ -36,7 +36,7 @@ const refreshIntervals = ref({})
 const isAuthenticated = computed(() => authStore.getIsAuthenticated)
 const user = computed(() => authStore.userProfile) // Changed from authStore.user to authStore.userProfile for role info
 const isStudent = computed(() => user.value?.role === 'Student')
-const isInstructor = computed(() => user.value?.role === 'Teacher')
+const isInstructor = computed(() => user.value?.role === 'Instructor')
 const isAdmin = computed(() => user.value?.role === 'Admin')
 
 // User initials for avatar
@@ -279,7 +279,7 @@ onMounted(async () => {
     return
   }
 
-  // Only show instructor dashboard for teachers
+  // Only show instructor dashboard for instructors
   if (!isInstructor.value) {
     isLoading.value = false
     return
@@ -342,7 +342,7 @@ onBeforeUnmount(() => {
     <!-- Admin Dashboard -->
     <AdminDashboard v-else-if="isAdmin" />
 
-    <!-- Instructor Dashboard (Teachers Only) -->
+    <!-- Instructor Dashboard (Instructors Only) -->
     <template v-else-if="isInstructor">
       <!-- Header -->
       <header class="dashboard-header">

@@ -90,7 +90,7 @@ function formatDate(dateString) {
 
 const userRole = computed(() => userProfile.value?.role || 'User')
 const isStudent = computed(() => userRole.value === 'Student')
-const isInstructor = computed(() => userRole.value === 'Teacher')
+const isInstructor = computed(() => userRole.value === 'Instructor')
 
 // Helper to get initials for avatar
 function getInitials(name) {
@@ -244,7 +244,7 @@ async function saveProfile() {
 // Get role badge color
 const roleBadgeColor = computed(() => {
   switch (userRole.value) {
-    case 'Teacher':
+    case 'Instructor':
       return 'role-badge-instructor'
     case 'Student':
       return 'role-badge-student'
@@ -257,7 +257,7 @@ const roleBadgeColor = computed(() => {
 
 // Get role display text
 const roleDisplayText = computed(() => {
-  if (userRole.value === 'Teacher')
+  if (userRole.value === 'Instructor')
     return 'Instructor'
   return userRole.value
 })

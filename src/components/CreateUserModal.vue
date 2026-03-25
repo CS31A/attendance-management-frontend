@@ -22,7 +22,7 @@ const availableRoles = computed(() => {
     return ['Admin', 'Instructor', 'Student']
   }
   else if (authStore.isTeacher) {
-    // Teachers can only create students
+    // Instructors can only create students
     return ['Student']
   }
   return []

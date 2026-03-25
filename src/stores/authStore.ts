@@ -27,11 +27,11 @@ import { ROLES } from '@/utils/constants'
  * @typedef {object} UserProfile
  * @property {string} userId - User ID
  * @property {string} username - Username
- * @property {string} role - User's role ('Student' | 'Teacher' | 'Admin')
+ * @property {string} role - User's role ('Student' | 'Instructor' | 'Admin')
  * @property {string} createdAt - ISO datetime when user was created
  * @property {string} updatedAt - ISO datetime when user was last updated
  * @property {object | null} studentProfile - Student profile if user is a student
- * @property {object | null} instructorProfile - Instructor profile if user is a teacher
+ * @property {object | null} instructorProfile - Instructor profile if user is an instructor
  */
 export const useAuthStore = defineStore('authStore', () => {
   // State
@@ -73,10 +73,10 @@ export const useAuthStore = defineStore('authStore', () => {
   const getIsLoading = computed(() => isLoading.value)
 
   /**
-   * Check if the current user is a teacher (instructor)
-   * @returns {boolean} True if user has the Teacher role, false otherwise
+   * Check if the current user is an instructor
+   * @returns {boolean} True if user has the Instructor role, false otherwise
    */
-  const isTeacher = computed(() => userProfile.value?.role === ROLES.TEACHER)
+  const isTeacher = computed(() => userProfile.value?.role === ROLES.INSTRUCTOR)
 
   /**
    * Check if the current user is a student
@@ -103,6 +103,10 @@ export const useAuthStore = defineStore('authStore', () => {
     try {
       const response = await api.get('/account/me')
       if (response.data) {
+        // Normalize legacy 'Teacher' role to 'Instructor'
+        if (response.data.role === 'Teacher') {
+          response.data.role = 'Instructor'
+        }
         userProfile.value = response.data
         return response.data
       }
@@ -193,7 +197,7 @@ export const useAuthStore = defineStore('authStore', () => {
         isAuthenticated.value = true
         await checkAuth(true)
 
-        // Check if user role is allowed to log in (only Teacher and Admin)
+        // Check if user role is allowed to log in (only Instructor and Admin)
         if (userProfile.value?.role === ROLES.STUDENT) {
           // Students are not allowed to log in to the web application
           // Clear auth state
@@ -212,8 +216,8 @@ export const useAuthStore = defineStore('authStore', () => {
           }
         }
 
-        // Only allow Teacher and Admin roles
-        if (userProfile.value?.role !== ROLES.TEACHER && userProfile.value?.role !== ROLES.ADMIN) {
+        // Only allow Instructor and Admin roles
+        if (userProfile.value?.role !== ROLES.INSTRUCTOR && userProfile.value?.role !== ROLES.ADMIN) {
           // Clear auth state
           try {
             await api.post('/account/web/logout')

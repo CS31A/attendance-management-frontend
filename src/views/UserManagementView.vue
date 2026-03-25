@@ -405,7 +405,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
               User Management
             </h1>
             <p class="page-subtitle">
-              Manage teachers and students
+              Manage instructors and students
             </p>
           </div>
           <BaseButton
@@ -508,7 +508,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @set-items-per-page="setItemsPerPage"
       />
 
-      <!-- Teachers Table -->
+      <!-- Instructors Table -->
       <UserTableSection
         v-if="selectedRole === 'Instructor' && filteredInstructors.length > 0"
         :users="filteredInstructors"

@@ -18,7 +18,7 @@ interface ApiUser {
   id?: EntityId
   username?: string
   email?: string
-  role?: UserRole | 'Instructor'
+  role?: UserRole | 'Instructor' | 'Teacher'
   createdAt?: string
   updatedAt?: string
   isDeleted?: boolean
@@ -34,7 +34,7 @@ interface ApiUser {
   [key: string]: unknown
 }
 
-type UiRole = 'Admin' | 'Instructor' | 'Teacher' | 'Student'
+type UiRole = 'Admin' | 'Instructor' | 'Student'
 
 interface CreateUserInput {
   Username: string
@@ -61,29 +61,32 @@ function isValidSection(sectionId: string): boolean {
 
 // Helper function to map user profile data from API response to flat structure
 function mapUserProfile(user: ApiUser): ApiUser {
+  // Normalize legacy 'Teacher' role to 'Instructor'
+  const normalizedRole = user.role === 'Teacher' ? 'Instructor' : user.role
+
   // Extract base fields
   const mappedUser: ApiUser = {
     userId: user.userId,
     username: user.username,
     email: user.email,
-    role: user.role,
+    role: normalizedRole,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     isDeleted: user.isDeleted,
   }
 
   // Map profile data based on role
-  if (user.role === 'Admin' && user.adminProfile) {
+  if (normalizedRole === 'Admin' && user.adminProfile) {
     mappedUser.firstName = user.adminProfile.firstname
     mappedUser.lastName = user.adminProfile.lastname
     mappedUser.profileId = user.adminProfile.id
   }
-  else if (user.role === 'Teacher' && user.instructorProfile) {
+  else if (normalizedRole === 'Instructor' && user.instructorProfile) {
     mappedUser.firstName = user.instructorProfile.firstname
     mappedUser.lastName = user.instructorProfile.lastname
     mappedUser.profileId = user.instructorProfile.id
   }
-  else if (user.role === 'Student' && user.studentProfile) {
+  else if (normalizedRole === 'Student' && user.studentProfile) {
     mappedUser.firstName = user.studentProfile.firstname
     mappedUser.lastName = user.studentProfile.lastname
     mappedUser.sectionId = user.studentProfile.sectionId
@@ -99,8 +102,6 @@ function asLowerString(value: unknown): string {
 }
 
 function normalizeRole(role: UiRole): UserRole {
-  if (role === 'Instructor')
-    return 'Teacher'
   return role as UserRole
 }
 
@@ -116,7 +117,7 @@ export const useUserStore = defineStore('user', () => {
 
   // Getters
   const getUsers = computed(() => users.value)
-  const instructors = computed(() => users.value.filter(user => user.role === ROLES.TEACHER))
+  const instructors = computed(() => users.value.filter(user => user.role === ROLES.INSTRUCTOR))
   const students = computed(() => users.value.filter(user => user.role === ROLES.STUDENT))
 
   const filteredUsers = computed(() => (searchQuery: string, selectedRole: string) => {
@@ -202,7 +203,7 @@ export const useUserStore = defineStore('user', () => {
         email: userData.Email,
         password: userData.Password,
         repeatedPassword: userData.RepeatedPassword,
-        role: userData.Role === 'Instructor' ? 'teacher' : userData.Role.toLowerCase(),
+        role: userData.Role, // 'Admin' | 'Instructor' | 'Student'
         sectionId: userData.Role === 'Student' && userData.SectionId
           ? Number.parseInt(userData.SectionId, 10)
           : null,
@@ -312,9 +313,9 @@ export const useUserStore = defineStore('user', () => {
       }
 
       // Use the original user's role to determine the correct endpoint
-      // API returns 'Teacher' but we also handle 'Instructor' for compatibility
-      const isTeacher = originalUser.role === ROLES.TEACHER || originalUser.role === 'Instructor'
-      const endpoint = isTeacher ? '/instructors' : '/students'
+      // API may return 'Teacher' for legacy users, also handle 'Instructor' for compatibility
+      const isInstructor = originalUser.role === ROLES.INSTRUCTOR || originalUser.role === 'Teacher'
+      const endpoint = isInstructor ? '/instructors' : '/students'
 
       const response = await api.patch(`${endpoint}/${userId}`, userData)
 

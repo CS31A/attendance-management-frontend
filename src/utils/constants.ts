@@ -4,7 +4,7 @@
  */
 export const ROLES = {
   ADMIN: 'Admin',
-  TEACHER: 'Teacher',
+  INSTRUCTOR: 'Instructor',
   STUDENT: 'Student',
 } as const
 
