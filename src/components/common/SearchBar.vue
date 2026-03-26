@@ -1,29 +1,33 @@
-<script setup>
+<script setup lang="ts">
 import { Search } from 'lucide-vue-next'
 
-defineProps({
-  modelValue: {
-    type: String,
-    default: '',
-  },
-  placeholder: {
-    type: String,
-    default: 'Search...',
-  },
+const props = withDefaults(defineProps<{
+  modelValue?: string
+  placeholder?: string
+}>(), {
+  modelValue: '',
+  placeholder: 'Search...',
 })
 
-defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLInputElement | null
+  emit('update:modelValue', target?.value ?? '')
+}
 </script>
 
 <template>
   <div class="search-box">
-    <Search class="search-icon" size="18" />
+    <Search class="search-icon" :size="18" />
     <input
-      :value="modelValue"
+      :value="props.modelValue"
       type="text"
-      :placeholder="placeholder"
+      :placeholder="props.placeholder"
       class="search-input"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="handleInput"
     >
   </div>
 </template>

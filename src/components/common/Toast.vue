@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { AlertCircle, CheckCircle, Info, Loader2, X, XCircle } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   show: Boolean,
@@ -15,11 +15,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{ close: [] }>()
 
 const progress = ref(100)
-let timer = null
-let interval = null
+let timer: ReturnType<typeof setTimeout> | null = null
+let interval: ReturnType<typeof setInterval> | null = null
 
 const icons = {
   success: CheckCircle,
@@ -28,6 +28,14 @@ const icons = {
   info: Info,
   loading: Loader2,
 }
+
+type ToastType = keyof typeof icons
+const iconType = computed<ToastType>(() => {
+  if (typeof props.type === 'string' && props.type in icons) {
+    return props.type as ToastType
+  }
+  return 'success'
+})
 
 const isPaused = ref(false)
 
@@ -38,14 +46,23 @@ function startTimer() {
   const step = 100 / (props.duration / 10)
   progress.value = 100
 
-  clearInterval(interval)
-  clearTimeout(timer)
+  if (interval) {
+    clearInterval(interval)
+    interval = null
+  }
+  if (timer) {
+    clearTimeout(timer)
+    timer = null
+  }
 
   interval = setInterval(() => {
     if (!isPaused.value) {
       progress.value -= step
       if (progress.value <= 0) {
-        clearInterval(interval)
+        if (interval) {
+          clearInterval(interval)
+          interval = null
+        }
       }
     }
   }, 10)
@@ -56,8 +73,14 @@ function startTimer() {
 }
 
 function stopTimer() {
-  clearInterval(interval)
-  clearTimeout(timer)
+  if (interval) {
+    clearInterval(interval)
+    interval = null
+  }
+  if (timer) {
+    clearTimeout(timer)
+    timer = null
+  }
 }
 
 watch(() => props.show, (newVal) => {
@@ -80,7 +103,10 @@ watch(() => props.type, (newVal) => {
 
 function pause() {
   isPaused.value = true
-  clearTimeout(timer)
+  if (timer) {
+    clearTimeout(timer)
+    timer = null
+  }
 }
 
 function resume() {
@@ -106,7 +132,7 @@ function resume() {
       <div class="toast-container" :class="type">
         <div class="toast-content">
           <component
-            :is="icons[type]"
+            :is="icons[iconType]"
             class="toast-icon"
             :class="{ spin: type === 'loading' }"
           />
@@ -114,7 +140,7 @@ function resume() {
             <span class="toast-message">{{ message }}</span>
           </div>
           <button v-if="type !== 'loading'" class="close-btn" @click="$emit('close')">
-            <X size="16" />
+            <X :size="16" />
           </button>
         </div>
         <div

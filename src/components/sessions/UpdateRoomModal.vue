@@ -111,7 +111,7 @@ onMounted(() => {
       <div class="modal-header">
         <h2>Change Session Room</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
@@ -136,7 +136,7 @@ onMounted(() => {
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -184,7 +184,7 @@ onMounted(() => {
         <!-- Update Notice -->
         <div class="update-notice">
           <div class="notice-icon">
-            <MapPin size="20" />
+            <MapPin :size="20" />
           </div>
           <div class="notice-content">
             <p class="notice-title">
@@ -203,7 +203,7 @@ onMounted(() => {
             class="btn-update"
             :disabled="!isFormValid || loadingClassrooms"
           >
-            <MapPin size="18" />
+            <MapPin :size="18" />
             <span>Update Room</span>
           </button>
           <button type="button" class="btn-cancel" @click="$emit('cancel')">

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * FormModal - A generic, reusable modal component for creating and editing entities
  * Refactored to use BaseModal
@@ -85,6 +85,44 @@ import { AlertTriangle, Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import BaseModal from '../common/BaseModal.vue'
 
+interface FormOption {
+  value: string | number
+  label: string
+}
+
+interface FormFieldConfig {
+  name: string
+  label: string
+  type: string
+  icon?: object | null
+  placeholder?: string
+  required?: boolean
+  minlength?: number
+  maxlength?: number
+  min?: number | string
+  max?: number | string
+  default?: unknown
+  grid?: string
+  helperText?: string
+  component?: object | null
+  props?: Record<string, unknown>
+  options?: FormOption[] | (() => Promise<FormOption[]>)
+  show?: (formData: Record<string, unknown>) => boolean
+  disabled?: (formData: Record<string, unknown>) => boolean
+  validation?: (value: unknown, formData: Record<string, unknown>) => string | null
+}
+
+interface InfoSectionField {
+  label: string
+  value: string | number | null | undefined
+}
+
+interface InfoSection {
+  title?: string
+  note?: string
+  fields: InfoSectionField[]
+}
+
 const props = defineProps({
   /** Controls modal visibility */
   show: {
@@ -103,7 +141,7 @@ const props = defineProps({
   },
   /** Array of field configuration objects (see JSDoc example above) */
   fields: {
-    type: Array,
+    type: Array as () => FormFieldConfig[],
     required: true,
   },
   /** Custom submit button text (overrides default) */
@@ -115,7 +153,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'medium',
-    validator: (value) => {
+    validator: (value: string) => {
       return ['small', 'medium', 'large'].includes(value)
     },
   },
@@ -132,7 +170,7 @@ const props = defineProps({
    * }
    */
   infoSection: {
-    type: Object,
+    type: Object as () => InfoSection | null,
     default: null,
   },
   /** Loading state for form submission */
@@ -142,7 +180,10 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['save', 'cancel'])
+const emit = defineEmits<{
+  save: [payload: Record<string, unknown>]
+  cancel: []
+}>()
 
 // Map old sizes to BaseModal sizes
 const modalSize = computed(() => {
@@ -150,19 +191,22 @@ const modalSize = computed(() => {
     small: 'sm',
     medium: 'md',
     large: 'lg',
+  } as const
+  if (props.size in map) {
+    return map[props.size as keyof typeof map]
   }
-  return map[props.size] || 'md'
+  return 'md'
 })
 
 // Generate a unique ID for the form to link with submit button in footer
 const formId = computed(() => `form-modal-${props.title.toLowerCase().replace(/\s+/g, '-')}`)
 
 // Form state
-const formData = reactive({})
+const formData = reactive<Record<string, string | number | null | undefined>>({})
 const errorMessage = ref('')
-const loadingOptions = ref({})
-const loadingFields = ref(new Set())
-const optionsLoadError = ref({})
+const loadingOptions = ref<Record<string, FormOption[]>>({})
+const loadingFields = ref(new Set<string>())
+const optionsLoadError = ref<Record<string, string | null>>({})
 
 // Computed properties
 const isEditMode = computed(() => !!props.entity)
@@ -192,7 +236,7 @@ const visibleFields = computed(() => {
 
 // Field-level validation errors
 const fieldErrors = computed(() => {
-  const errors = {}
+  const errors: Record<string, string> = {}
   visibleFields.value.forEach((field) => {
     if (field.validation) {
       const error = field.validation(formData[field.name], formData)
@@ -225,13 +269,23 @@ watch(() => props.entity, (newEntity) => {
 
   // Initialize form data from fields
   props.fields.forEach((field) => {
+    const rawValue = newEntity
+      ? newEntity[field.name] ?? field.default ?? ''
+      : field.default ?? ''
+
+    const normalizedValue = typeof rawValue === 'string' || typeof rawValue === 'number'
+      ? rawValue
+      : rawValue == null
+        ? ''
+        : String(rawValue)
+
     if (newEntity) {
       // Edit mode: populate from entity
-      formData[field.name] = newEntity[field.name] ?? field.default ?? ''
+      formData[field.name] = normalizedValue
     }
     else {
       // Create mode: use default or empty
-      formData[field.name] = field.default ?? ''
+      formData[field.name] = normalizedValue
     }
   })
 
@@ -244,7 +298,7 @@ watch(() => props.entity, (newEntity) => {
  * @param {object} field - Field configuration object
  * @returns {Array} Array of option objects with value and label
  */
-function getFieldOptions(field) {
+function getFieldOptions(field: any) {
   if (!field.options)
     return []
 
@@ -266,7 +320,7 @@ function getFieldOptions(field) {
  * @param {string} fieldName - Name of the field
  * @returns {boolean} True if field is loading async options
  */
-function isFieldLoading(fieldName) {
+function isFieldLoading(fieldName: any) {
   return loadingFields.value.has(fieldName)
 }
 
@@ -275,7 +329,7 @@ function isFieldLoading(fieldName) {
  * @param {string} fieldName - Name of the field
  * @returns {boolean} True if field failed to load options
  */
-function hasLoadError(fieldName) {
+function hasLoadError(fieldName: any) {
   return !!optionsLoadError.value[fieldName]
 }
 
@@ -294,6 +348,9 @@ onMounted(async () => {
     await Promise.all(
       asyncFields.map(async (field) => {
         try {
+          if (typeof field.options !== 'function') {
+            return
+          }
           const options = await field.options()
           loadingOptions.value[field.name] = options
           optionsLoadError.value[field.name] = null
@@ -324,7 +381,7 @@ function handleSubmit() {
   }
 
   // Build submit data from visible fields only
-  const submitData = {}
+  const submitData: Record<string, unknown> = {}
   visibleFields.value.forEach((field) => {
     submitData[field.name] = formData[field.name]
   })
@@ -336,7 +393,7 @@ function handleSubmit() {
  * Handle error from parent (called via ref)
  * @param {string} error - Error message to display
  */
-function handleError(error) {
+function handleError(error: any) {
   errorMessage.value = error
 }
 
@@ -354,7 +411,7 @@ defineExpose({ handleError })
     <!-- Error Message Display -->
     <div v-if="errorMessage" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="20" />
+        <AlertTriangle class="error-icon" :size="20" />
         <p>{{ errorMessage }}</p>
       </div>
     </div>
@@ -398,7 +455,7 @@ defineExpose({ handleError })
           v-if="['text', 'email', 'number', 'password', 'time'].includes(field.type)"
           class="input-wrapper"
         >
-          <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
+          <component :is="field.icon" v-if="field.icon" class="input-icon" :size="18" />
           <input
             v-model="formData[field.name]"
             :type="field.type"
@@ -414,8 +471,8 @@ defineExpose({ handleError })
 
         <!-- Select dropdown -->
         <div v-else-if="field.type === 'select'" class="input-wrapper">
-          <component :is="field.icon" v-if="field.icon && !isFieldLoading(field.name)" class="input-icon" size="18" />
-          <Loader2 v-if="isFieldLoading(field.name)" class="input-icon loading-spinner" size="18" />
+          <component :is="field.icon" v-if="field.icon && !isFieldLoading(field.name)" class="input-icon" :size="18" />
+          <Loader2 v-if="isFieldLoading(field.name)" class="input-icon loading-spinner" :size="18" />
           <select
             v-model="formData[field.name]"
             :required="field.required"
@@ -449,7 +506,7 @@ defineExpose({ handleError })
 
         <!-- Textarea -->
         <div v-else-if="field.type === 'textarea'" class="input-wrapper">
-          <component :is="field.icon" v-if="field.icon" class="input-icon" size="18" />
+          <component :is="field.icon" v-if="field.icon" class="input-icon" :size="18" />
           <textarea
             v-model="formData[field.name]"
             :placeholder="field.placeholder"
@@ -486,7 +543,7 @@ defineExpose({ handleError })
         Cancel
       </button>
       <button :form="formId" type="submit" class="btn-submit" :disabled="!isFormValid || loading">
-        <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+        <Loader2 v-if="loading" class="loading-spinner-btn" :size="18" />
         <span v-else>{{ submitButtonText }}</span>
       </button>
     </template>

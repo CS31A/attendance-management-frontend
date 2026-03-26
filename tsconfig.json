@@ -11,9 +11,11 @@
     },
     "resolveJsonModule": true,
     "types": ["vite/client", "node"],
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "strict": false,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
@@ -22,8 +24,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.d.ts",
-    "src/**/*.vue",
-    "src/**/*.js"
+    "src/**/*.vue"
   ],
   "exclude": ["node_modules", "dist"]
 }

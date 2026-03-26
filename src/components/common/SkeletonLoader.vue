@@ -1,28 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  type: {
-    type: String,
-    default: 'text',
-    validator: value => ['text', 'circle', 'rectangle'].includes(value),
-  },
-  width: {
-    type: [String, Number],
-    default: undefined,
-  },
-  height: {
-    type: [String, Number],
-    default: undefined,
-  },
-  borderRadius: {
-    type: String,
-    default: undefined,
-  },
+type SkeletonType = 'text' | 'circle' | 'rectangle'
+type SizeValue = string | number
+
+const props = withDefaults(defineProps<{
+  type?: SkeletonType
+  width?: SizeValue
+  height?: SizeValue
+  borderRadius?: string
+}>(), {
+  type: 'text',
 })
 
 const style = computed(() => {
-  const styles = {}
+  const styles: Record<string, string> = {}
 
   if (props.width) {
     styles.width = typeof props.width === 'number' ? `${props.width}px` : props.width

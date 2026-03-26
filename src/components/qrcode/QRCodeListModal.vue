@@ -130,7 +130,7 @@ watch(() => props.show, (newVal) => {
         <div class="modal-container" @click.stop>
           <div class="modal-header">
             <div class="header-content">
-              <QrCode size="24" class="header-icon" />
+              <QrCode :size="24" class="header-icon" />
               <div>
                 <h2 class="modal-title">
                   QR Codes for Session
@@ -141,7 +141,7 @@ watch(() => props.show, (newVal) => {
               </div>
             </div>
             <button class="btn-close" @click="handleClose">
-              <X size="20" />
+              <X :size="20" />
             </button>
           </div>
 
@@ -154,17 +154,17 @@ watch(() => props.show, (newVal) => {
 
             <!-- Error State -->
             <div v-else-if="error" class="error-state">
-              <XCircle size="48" class="error-icon" />
+              <XCircle :size="48" class="error-icon" />
               <p>{{ error }}</p>
               <button class="btn-retry" @click="handleRefresh">
-                <RefreshCw size="16" />
+                <RefreshCw :size="16" />
                 Try Again
               </button>
             </div>
 
             <!-- Empty State -->
             <div v-else-if="!qrCodes.length" class="empty-state">
-              <QrCode size="64" class="empty-icon" />
+              <QrCode :size="64" class="empty-icon" />
               <h3>No QR Codes Generated</h3>
               <p>No QR codes have been generated for this session yet.</p>
             </div>
@@ -174,7 +174,7 @@ watch(() => props.show, (newVal) => {
               <div class="list-header">
                 <span class="list-count">{{ qrCodes.length }} QR code{{ qrCodes.length !== 1 ? 's' : '' }}</span>
                 <button class="btn-refresh" @click="handleRefresh">
-                  <RefreshCw size="16" />
+                  <RefreshCw :size="16" />
                   Refresh
                 </button>
               </div>
@@ -197,7 +197,7 @@ watch(() => props.show, (newVal) => {
 
                   <div class="card-body">
                     <div class="info-row">
-                      <Clock size="16" class="info-icon" />
+                      <Clock :size="16" class="info-icon" />
                       <div class="info-content">
                         <span class="info-label">Created:</span>
                         <span class="info-value">{{ formatDate(qrCode.createdAt) }}</span>
@@ -205,7 +205,7 @@ watch(() => props.show, (newVal) => {
                     </div>
 
                     <div class="info-row">
-                      <Clock size="16" class="info-icon" />
+                      <Clock :size="16" class="info-icon" />
                       <div class="info-content">
                         <span class="info-label">Expiration:</span>
                         <span class="info-value">{{ formatExpiration(qrCode.expiresAt) }}</span>
@@ -213,7 +213,7 @@ watch(() => props.show, (newVal) => {
                     </div>
 
                     <div class="info-row">
-                      <Check size="16" class="info-icon" />
+                      <Check :size="16" class="info-icon" />
                       <div class="info-content">
                         <span class="info-label">Usage:</span>
                         <span class="info-value">
@@ -229,7 +229,7 @@ watch(() => props.show, (newVal) => {
                       :disabled="!qrCode.isActive || qrCode.isExpired"
                       @click="handleViewQr(qrCode)"
                     >
-                      <Eye size="16" />
+                      <Eye :size="16" />
                       View QR Code
                     </button>
                   </div>

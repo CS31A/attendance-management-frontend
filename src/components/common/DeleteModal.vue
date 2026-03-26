@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Trash2, X } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -47,7 +47,7 @@ function handleCancel() {
 }
 
 // Close modal on Escape key
-function handleKeydown(event) {
+function handleKeydown(event: any) {
   if (event.key === 'Escape' && !props.isDeleting) {
     handleCancel()
   }
@@ -72,11 +72,11 @@ defineExpose({
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <div class="header-icon-wrapper">
-            <Trash2 class="header-icon" size="24" />
+            <Trash2 class="header-icon" :size="24" />
           </div>
           <h3>{{ title }}</h3>
           <button class="close-btn" :disabled="isDeleting" @click="handleCancel">
-            <X size="20" />
+            <X :size="20" />
           </button>
         </div>
         <div class="modal-body">

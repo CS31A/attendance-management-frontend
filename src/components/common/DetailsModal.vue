@@ -1,8 +1,19 @@
-<script setup>
+<script setup lang="ts">
+import type { PropType } from 'vue'
 import { X } from 'lucide-vue-next'
 import BaseModal from '../common/BaseModal.vue'
 
-const _props = defineProps({
+interface DetailItem {
+  label: string
+  value?: string | number | null
+  fullWidth?: boolean
+  badge?: boolean
+  status?: boolean
+  icon?: object | null
+  badgeClass?: string
+}
+
+const props = defineProps({
   show: {
     type: Boolean,
     required: true,
@@ -12,9 +23,9 @@ const _props = defineProps({
     default: 'Details',
   },
   items: {
-    type: Array,
+    type: Array as PropType<DetailItem[]>,
     default: () => [],
-    validator: (value) => {
+    validator: (value: DetailItem[]) => {
       return value.every(item => item.label && (item.value !== undefined))
     },
   },
@@ -28,7 +39,9 @@ const _props = defineProps({
   },
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  close: []
+}>()
 
 function handleClose() {
   emit('close')
@@ -37,7 +50,7 @@ function handleClose() {
 
 <template>
   <BaseModal
-    :show="show"
+    :show="props.show"
     size="md"
     @close="handleClose"
   >
@@ -46,22 +59,22 @@ function handleClose() {
       <div class="custom-header">
         <div class="header-content">
           <div v-if="icon" class="header-icon-wrapper">
-            <component :is="icon" class="header-icon" size="24" :style="{ color: 'white' }" />
+            <component :is="props.icon" class="header-icon" :size="24" :style="{ color: 'white' }" />
           </div>
-          <h3>{{ title }}</h3>
+          <h3>{{ props.title }}</h3>
         </div>
         <button class="app-btn-close" @click="handleClose">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
     </template>
 
     <!-- Body -->
-    <div v-if="items && items.length > 0" class="details-grid">
-      <div v-for="(item, index) in items" :key="index" class="detail-item" :class="{ 'full-width': item.fullWidth }">
+    <div v-if="props.items && props.items.length > 0" class="details-grid">
+      <div v-for="(item, index) in props.items" :key="index" class="detail-item" :class="{ 'full-width': item.fullWidth }">
         <label class="detail-label">{{ item.label }}</label>
         <div class="detail-value" :class="{ badge: item.badge, status: item.status }">
-          <component :is="item.icon" v-if="item.icon" class="detail-icon" size="16" />
+          <component :is="item.icon" v-if="item.icon" class="detail-icon" :size="16" />
           <span v-if="item.badge" class="badge-content" :class="item.badgeClass">{{ item.value }}</span>
           <span v-else>{{ item.value || '-' }}</span>
         </div>

@@ -159,14 +159,14 @@ defineExpose({ handleError })
       <div class="modal-header">
         <h2>{{ modalTitle }}</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -238,8 +238,8 @@ defineExpose({ handleError })
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
               @click="showPassword = !showPassword"
             >
-              <Eye v-if="!showPassword" size="18" />
-              <EyeOff v-else size="18" />
+              <Eye v-if="!showPassword" :size="18" />
+              <EyeOff v-else :size="18" />
             </button>
           </div>
           <small class="helper-text info">Must be at least 6 characters</small>
@@ -262,8 +262,8 @@ defineExpose({ handleError })
               :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
               @click="showConfirmPassword = !showConfirmPassword"
             >
-              <Eye v-if="!showConfirmPassword" size="18" />
-              <EyeOff v-else size="18" />
+              <Eye v-if="!showConfirmPassword" :size="18" />
+              <EyeOff v-else :size="18" />
             </button>
           </div>
           <small class="helper-text info">Must match the password above</small>
@@ -280,7 +280,7 @@ defineExpose({ handleError })
               :class="{ 'role-selected': role === 'Admin' }"
               @click="role = 'Admin'"
             >
-              <Shield class="role-icon" size="32" />
+              <Shield class="role-icon" :size="32" />
               <span class="role-name">Admin</span>
             </div>
             <div
@@ -289,7 +289,7 @@ defineExpose({ handleError })
               :class="{ 'role-selected': role === 'Instructor' }"
               @click="role = 'Instructor'"
             >
-              <GraduationCap class="role-icon" size="32" />
+              <GraduationCap class="role-icon" :size="32" />
               <span class="role-name">Instructor</span>
             </div>
             <div
@@ -298,7 +298,7 @@ defineExpose({ handleError })
               :class="{ 'role-selected': role === 'Student' }"
               @click="role = 'Student'"
             >
-              <User class="role-icon" size="32" />
+              <User class="role-icon" :size="32" />
               <span class="role-name">Student</span>
             </div>
           </div>
@@ -321,7 +321,7 @@ defineExpose({ handleError })
         <!-- Actions -->
         <div class="actions">
           <button type="submit" class="btn-create" :disabled="!isFormValid || loading">
-            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <Loader2 v-if="loading" class="loading-spinner-btn" :size="18" />
             <span v-else>{{ submitButtonText }}</span>
           </button>
           <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">

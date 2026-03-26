@@ -151,14 +151,14 @@ onMounted(() => {
       <div class="modal-header">
         <h2>Create New Session</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -234,7 +234,7 @@ onMounted(() => {
             class="btn-create"
             :disabled="!isFormValid || loadingSchedules"
           >
-            <Plus size="18" />
+            <Plus :size="18" />
             <span>Create Session</span>
           </button>
           <button type="button" class="btn-cancel" @click="$emit('cancel')">

@@ -15,5 +15,6 @@ export default antfu({
     'no-alert': 'off',
     'no-console': ['error', { allow: ['warn', 'error'] }],
     'regexp/no-super-linear-backtracking': 'off',
+    '@typescript-eslint/ban-ts-comment': 'error',
   },
 })

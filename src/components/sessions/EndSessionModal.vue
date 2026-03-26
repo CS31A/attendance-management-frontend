@@ -83,7 +83,7 @@ function endSession() {
       <div class="modal-header">
         <h2>End Session</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
@@ -110,7 +110,7 @@ function endSession() {
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -134,7 +134,7 @@ function endSession() {
         <!-- Confirmation Notice -->
         <div class="confirmation-notice">
           <div class="notice-icon">
-            <AlertTriangle size="20" />
+            <AlertTriangle :size="20" />
           </div>
           <div class="notice-content">
             <p class="notice-title">
@@ -153,7 +153,7 @@ function endSession() {
             type="submit"
             class="btn-end"
           >
-            <StopCircle size="18" />
+            <StopCircle :size="18" />
             <span>End Session</span>
           </button>
           <button type="button" class="btn-cancel" @click="$emit('cancel')">

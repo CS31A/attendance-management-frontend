@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { AlertTriangle, X } from 'lucide-vue-next'
 
 defineProps({
@@ -27,7 +27,7 @@ function handleConfirm() {
 }
 
 // Close modal on Escape key
-function handleKeydown(event) {
+function handleKeydown(event: any) {
   if (event.key === 'Escape') {
     handleConfirm()
   }
@@ -49,11 +49,11 @@ defineExpose({
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <div class="alert-icon">
-            <AlertTriangle size="24" />
+            <AlertTriangle :size="24" />
           </div>
           <h3>{{ title }}</h3>
           <button class="close-btn" @click="handleConfirm">
-            <X size="20" />
+            <X :size="20" />
           </button>
         </div>
         <div class="modal-body">

@@ -34,7 +34,7 @@ function formatTime(time) {
   <div class="table-section">
     <div class="table-header">
       <div class="table-title">
-        <Calendar class="table-icon" size="24" />
+        <Calendar class="table-icon" :size="24" />
         <h2>{{ title }} ({{ pagination ? pagination.totalSchedules : schedules.length }})</h2>
       </div>
     </div>
@@ -59,7 +59,7 @@ function formatTime(time) {
           <tbody>
             <tr v-if="schedules.length === 0">
               <td colspan="7" class="empty-state">
-                <Calendar class="empty-icon" size="48" />
+                <Calendar class="empty-icon" :size="48" />
                 <p>No schedules found</p>
               </td>
             </tr>
@@ -93,14 +93,14 @@ function formatTime(time) {
                     title="Edit schedule"
                     @click="$emit('edit', schedule)"
                   >
-                    <Edit size="16" />
+                    <Edit :size="16" />
                   </button>
                   <button
                     class="btn-action btn-delete"
                     title="Delete schedule"
                     @click="$emit('delete', schedule.id)"
                   >
-                    <Trash2 size="16" />
+                    <Trash2 :size="16" />
                   </button>
                 </div>
               </td>
@@ -148,7 +148,7 @@ function formatTime(time) {
             :class="{ disabled: !pagination.hasPreviousPage }"
             @click="$emit('previousPage')"
           >
-            <ChevronLeft class="pagination-icon" size="16" />
+            <ChevronLeft class="pagination-icon" :size="16" />
             Previous
           </button>
 
@@ -179,7 +179,7 @@ function formatTime(time) {
             @click="$emit('nextPage')"
           >
             Next
-            <ChevronRight class="pagination-icon" size="16" />
+            <ChevronRight class="pagination-icon" :size="16" />
           </button>
         </div>
       </div>

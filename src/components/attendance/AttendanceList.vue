@@ -128,7 +128,7 @@ function clearFilters() {
       <div class="filter-row">
         <!-- Search -->
         <div class="search-wrapper">
-          <Search size="18" class="search-icon" />
+          <Search :size="18" class="search-icon" />
           <input
             v-model="searchQuery"
             type="text"
@@ -139,7 +139,7 @@ function clearFilters() {
 
         <!-- Date Filter -->
         <div class="filter-group">
-          <Calendar size="18" class="filter-icon" />
+          <Calendar :size="18" class="filter-icon" />
           <input
             v-model="selectedDate"
             type="date"
@@ -149,7 +149,7 @@ function clearFilters() {
 
         <!-- Status Filter -->
         <div class="filter-group">
-          <Filter size="18" class="filter-icon" />
+          <Filter :size="18" class="filter-icon" />
           <select v-model="statusFilter" class="status-select">
             <option value="all">
               All Status
@@ -195,7 +195,7 @@ function clearFilters() {
 
     <!-- Empty State -->
     <div v-else-if="!filteredSessions.length" class="empty-state">
-      <Calendar size="48" class="empty-icon" />
+      <Calendar :size="48" class="empty-icon" />
       <h3>No Sessions Found</h3>
       <p v-if="searchQuery || selectedDate || statusFilter !== 'all'">
         Try adjusting your filters or selecting a different date.
@@ -230,26 +230,26 @@ function clearFilters() {
 
         <div class="session-details">
           <div class="detail-item">
-            <Calendar size="16" />
+            <Calendar :size="16" />
             <span>{{ formatDate(session.sessionDate) }}</span>
           </div>
           <div v-if="session.actualStartTime" class="detail-item">
-            <Clock size="16" />
+            <Clock :size="16" />
             <span>Started: {{ formatTime(session.actualStartTime) }}</span>
           </div>
           <div v-if="session.attendanceCutOff" class="detail-item">
-            <Clock size="16" />
+            <Clock :size="16" />
             <span>Cut-off: {{ formatTime(session.attendanceCutOff) }}</span>
           </div>
           <div v-if="session.actualRoomName || session.scheduledRoomName" class="detail-item">
-            <MapPin size="16" />
+            <MapPin :size="16" />
             <span>{{ session.actualRoomName || session.scheduledRoomName }}</span>
           </div>
         </div>
 
         <div class="card-footer">
           <span class="instructor-name">{{ session.startedByName || 'N/A' }}</span>
-          <ChevronRight size="20" class="arrow-icon" />
+          <ChevronRight :size="20" class="arrow-icon" />
         </div>
       </div>
     </div>

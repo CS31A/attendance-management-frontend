@@ -55,29 +55,29 @@ function formatDate(value) {
           </td>
           <td class="td-name">
             <div class="app-cell-name">
-              <BookOpen class="course-icon" size="18" />
+              <BookOpen class="course-icon" :size="18" />
               <span class="course-name">{{ course.name }}</span>
             </div>
           </td>
           <td class="td-created">
             <div class="app-cell-date">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(course?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-updated">
             <div class="app-cell-date">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(course?.updatedAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="app-cell-actions">
               <button class="app-btn-icon app-btn-edit" title="Edit Course" @click="$emit('edit', course)">
-                <Edit size="16" />
+                <Edit :size="16" />
               </button>
               <button class="app-btn-icon app-btn-delete" title="Delete Course" @click="$emit('delete', course.id)">
-                <Trash2 size="16" />
+                <Trash2 :size="16" />
               </button>
             </div>
           </td>

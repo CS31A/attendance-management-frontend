@@ -69,7 +69,7 @@ function formatDate(value) {
           </td>
           <td class="td-name">
             <div class="name-cell">
-              <BookOpen class="section-icon" size="18" />
+              <BookOpen class="section-icon" :size="18" />
               <span class="section-name">{{ getSectionName(section) }}</span>
             </div>
           </td>
@@ -78,20 +78,20 @@ function formatDate(value) {
           </td>
           <td class="td-created">
             <div class="created-cell">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(section?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="action-buttons">
               <button class="btn-enroll" title="Manage Enrollments" @click="$emit('manageEnrollments', section)">
-                <Users class="btn-icon" size="16" />
+                <Users class="btn-icon" :size="16" />
               </button>
               <button class="btn-edit" title="Edit Section" @click="$emit('edit', section)">
-                <Edit class="btn-icon" size="16" />
+                <Edit class="btn-icon" :size="16" />
               </button>
               <button class="btn-delete" title="Delete Section" @click="$emit('delete', section.id)">
-                <Trash2 class="btn-icon" size="16" />
+                <Trash2 class="btn-icon" :size="16" />
               </button>
             </div>
           </td>

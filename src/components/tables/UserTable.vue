@@ -100,7 +100,7 @@ function formatDate(value) {
         <tr v-for="user in users" :key="user.userId || user.id" class="user-row">
           <!-- <td class="td-avatar">
             <div class="avatar-circle" :class="user?.role?.toLowerCase() || 'default'">
-              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" size="20" />
+              <component :is="getRoleIcon(user?.role || '')" class="avatar-icon" :size="20" />
             </div>
           </td> -->
           <td class="td-name">
@@ -110,7 +110,7 @@ function formatDate(value) {
           </td>
           <td class="td-email">
             <div class="email-cell">
-              <Mail class="email-icon" size="16" />
+              <Mail class="email-icon" :size="16" />
               <span class="email-text">{{ user?.email || '⚠️ Email Missing' }}</span>
             </div>
           </td>
@@ -126,23 +126,23 @@ function formatDate(value) {
           </td> -->
           <td class="td-joined">
             <div class="app-cell-date">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(user?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="app-cell-actions">
               <button class="app-btn-icon app-btn-edit" title="Edit User" @click="$emit('edit', user)">
-                <Edit size="16" />
+                <Edit :size="16" />
               </button>
               <button v-if="showRestore" class="app-btn-icon app-btn-restore" title="Restore User" @click="$emit('restore', user)">
-                <ArchiveRestore size="16" />
+                <ArchiveRestore :size="16" />
               </button>
               <button v-else class="app-btn-icon app-btn-restore" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
-                <ArchiveX size="16" />
+                <ArchiveX :size="16" />
               </button>
               <button class="app-btn-icon app-btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
-                <Trash2 size="16" />
+                <Trash2 :size="16" />
               </button>
             </div>
           </td>

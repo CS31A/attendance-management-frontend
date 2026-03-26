@@ -1,41 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  variant: {
-    type: String,
-    default: 'primary',
-    validator: value => ['primary', 'secondary', 'error', 'success', 'ghost'].includes(value),
-  },
-  size: {
-    type: String,
-    default: 'medium',
-    validator: value => ['small', 'medium', 'large'].includes(value),
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  fullWidth: {
-    type: Boolean,
-    default: false,
-  },
-  icon: {
-    type: Object,
-    default: null,
-  },
-  iconPosition: {
-    type: String,
-    default: 'left',
-    validator: value => ['left', 'right'].includes(value),
-  },
+type ButtonVariant = 'primary' | 'secondary' | 'error' | 'success' | 'ghost'
+type ButtonSize = 'small' | 'medium' | 'large'
+type IconPosition = 'left' | 'right'
+
+const props = withDefaults(defineProps<{
+  variant?: ButtonVariant
+  size?: ButtonSize
+  disabled?: boolean
+  loading?: boolean
+  fullWidth?: boolean
+  icon?: object | null
+  iconPosition?: IconPosition
+}>(), {
+  variant: 'primary',
+  size: 'medium',
+  disabled: false,
+  loading: false,
+  fullWidth: false,
+  icon: null,
+  iconPosition: 'left',
 })
 
-const emit = defineEmits(['click'])
+const emit = defineEmits<{
+  click: [event: MouseEvent]
+}>()
 
 const buttonClasses = computed(() => {
   return [
@@ -51,7 +41,7 @@ const buttonClasses = computed(() => {
   ]
 })
 
-function handleClick(event) {
+function handleClick(event: MouseEvent) {
   if (!props.disabled && !props.loading) {
     emit('click', event)
   }

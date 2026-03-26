@@ -109,7 +109,7 @@ function formatTime(timeString) {
           <!-- Date Column -->
           <td class="td-date">
             <div class="date-cell">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(session.sessionDate) }}</span>
             </div>
           </td>
@@ -130,7 +130,7 @@ function formatTime(timeString) {
           <!-- Room Column -->
           <td class="td-room">
             <div class="room-cell">
-              <MapPin class="room-icon" size="16" />
+              <MapPin class="room-icon" :size="16" />
               <span class="room-text">{{ session.actualRoomName || session.scheduledRoomName || 'TBD' }}</span>
             </div>
           </td>
@@ -138,7 +138,7 @@ function formatTime(timeString) {
           <!-- Time Column -->
           <td class="td-time">
             <div class="time-cell">
-              <Clock class="time-icon" size="16" />
+              <Clock class="time-icon" :size="16" />
               <span class="time-text">{{ getTimeRange(session) }}</span>
             </div>
           </td>
@@ -153,7 +153,7 @@ function formatTime(timeString) {
                   title="Start Session"
                   @click="$emit('start', session)"
                 >
-                  <Play class="btn-icon" size="16" />
+                  <Play class="btn-icon" :size="16" />
                   <span>Start</span>
                 </button>
                 <button
@@ -161,7 +161,7 @@ function formatTime(timeString) {
                   title="Delete Session"
                   @click="$emit('delete', session.id)"
                 >
-                  <Trash2 class="btn-icon" size="16" />
+                  <Trash2 class="btn-icon" :size="16" />
                 </button>
               </template>
 
@@ -172,7 +172,7 @@ function formatTime(timeString) {
                   title="Generate QR Code"
                   @click="$emit('generateQr', session)"
                 >
-                  <QrCode class="btn-icon" size="16" />
+                  <QrCode class="btn-icon" :size="16" />
                   <span>QR</span>
                 </button>
                 <button
@@ -180,7 +180,7 @@ function formatTime(timeString) {
                   title="View QR Codes"
                   @click="$emit('viewQrCodes', session)"
                 >
-                  <Eye class="btn-icon" size="16" />
+                  <Eye class="btn-icon" :size="16" />
                   <span>View</span>
                 </button>
                 <button
@@ -188,7 +188,7 @@ function formatTime(timeString) {
                   title="End Session"
                   @click="$emit('end', session)"
                 >
-                  <StopCircle class="btn-icon" size="16" />
+                  <StopCircle class="btn-icon" :size="16" />
                   <span>End</span>
                 </button>
                 <button
@@ -196,7 +196,7 @@ function formatTime(timeString) {
                   title="Change Room"
                   @click="$emit('updateRoom', session)"
                 >
-                  <MapPin class="btn-icon" size="16" />
+                  <MapPin class="btn-icon" :size="16" />
                 </button>
               </template>
 

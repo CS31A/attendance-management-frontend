@@ -169,7 +169,7 @@ watch(() => props.session?.scheduleId, (newScheduleId) => {
       <div class="modal-header">
         <h2>Start Session</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
@@ -192,7 +192,7 @@ watch(() => props.session?.scheduleId, (newScheduleId) => {
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -254,7 +254,7 @@ watch(() => props.session?.scheduleId, (newScheduleId) => {
         <!-- Quick Start Notice -->
         <div class="quick-start-notice">
           <div class="notice-icon">
-            <Play size="20" />
+            <Play :size="20" />
           </div>
           <div class="notice-content">
             <p class="notice-title">
@@ -273,7 +273,7 @@ watch(() => props.session?.scheduleId, (newScheduleId) => {
             class="btn-start"
             :disabled="loadingClassrooms"
           >
-            <Play size="18" />
+            <Play :size="18" />
             <span>Start Session</span>
           </button>
           <button type="button" class="btn-cancel" @click="$emit('cancel')">

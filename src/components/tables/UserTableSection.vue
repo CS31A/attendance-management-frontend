@@ -41,7 +41,7 @@ function getRoleIcon(role) {
   <div class="table-section">
     <div class="table-header">
       <div class="table-title">
-        <component :is="getRoleIcon(role)" class="table-icon" :class="role.toLowerCase()" size="24" />
+        <component :is="getRoleIcon(role)" class="table-icon" :class="role.toLowerCase()" :size="24" />
         <h2>{{ title }} ({{ pagination ? pagination.totalUsers : users.length }})</h2>
       </div>
     </div>
@@ -95,7 +95,7 @@ function getRoleIcon(role) {
             :class="{ disabled: !pagination.hasPreviousPage }"
             @click="$emit('previousPage')"
           >
-            <ChevronLeft class="pagination-icon" size="16" />
+            <ChevronLeft class="pagination-icon" :size="16" />
             Previous
           </button>
 
@@ -126,7 +126,7 @@ function getRoleIcon(role) {
             @click="$emit('nextPage')"
           >
             Next
-            <ChevronRight class="pagination-icon" size="16" />
+            <ChevronRight class="pagination-icon" :size="16" />
           </button>
         </div>
       </div>

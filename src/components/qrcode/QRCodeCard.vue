@@ -88,19 +88,19 @@ onUnmounted(() => {
 
         <!-- Date -->
         <div class="detail-item">
-          <Calendar size="14" class="icon" />
+          <Calendar :size="14" class="icon" />
           <span>{{ formatDate(qrCode.sessionDate || qrCode.createdAt) }}</span>
         </div>
 
         <!-- Scans -->
         <div class="detail-item">
-          <Users size="14" class="icon" />
+          <Users :size="14" class="icon" />
           <span>{{ qrCode.usageCount || 0 }} scans</span>
         </div>
 
         <!-- Timer/Expiration -->
         <div class="detail-item timer" :class="{ urgent: timeRemaining < 300 && status === 'Active' }">
-          <Clock size="14" class="icon" />
+          <Clock :size="14" class="icon" />
           <span v-if="status === 'Active'">{{ formattedCountdown }}</span>
           <span v-else>--:--</span>
         </div>
@@ -114,7 +114,7 @@ onUnmounted(() => {
         title="View QR Code"
         @click="$emit('view', qrCode)"
       >
-        <Eye size="18" />
+        <Eye :size="18" />
       </button>
 
       <button
@@ -123,7 +123,7 @@ onUnmounted(() => {
         title="Revoke QR Code"
         @click="$emit('revoke', qrCode)"
       >
-        <Ban size="18" />
+        <Ban :size="18" />
       </button>
 
       <button
@@ -132,7 +132,7 @@ onUnmounted(() => {
         title="Reactivate QR Code"
         @click="$emit('reactivate', qrCode)"
       >
-        <RefreshCw size="18" />
+        <RefreshCw :size="18" />
       </button>
     </div>
   </div>
