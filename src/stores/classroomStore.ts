@@ -1,18 +1,20 @@
+import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import classroomApi from '@/api/classrooms'
 
 export const useClassroomStore = defineStore('classroom', () => {
   // State
-  const classrooms = ref([])
-  const currentClassroom = ref(null)
+  const classrooms = ref<ClassroomDto[]>([])
+  const currentClassroom = ref<ClassroomDto | null>(null)
   const loading = ref(false)
   const error = ref('')
 
   // Getters
   const hasClassrooms = computed(() => classrooms.value.length > 0)
   const sortedClassrooms = computed(() =>
-    [...classrooms.value].sort((a, b) => a.name.localeCompare(b.name)),
+    [...classrooms.value].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
   )
 
   // Actions
@@ -32,7 +34,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     }
   }
 
-  async function fetchClassroom(id) {
+  async function fetchClassroom(id: EntityId) {
     loading.value = true
     error.value = ''
     try {
@@ -48,7 +50,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     }
   }
 
-  async function createClassroom(data) {
+  async function createClassroom(data: ClassroomPayload) {
     loading.value = true
     error.value = ''
     try {
@@ -73,7 +75,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     }
   }
 
-  async function updateClassroom(id, data) {
+  async function updateClassroom(id: EntityId, data: ClassroomPayload) {
     loading.value = true
     error.value = ''
     try {
@@ -101,7 +103,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     }
   }
 
-  async function deleteClassroom(id) {
+  async function deleteClassroom(id: EntityId) {
     loading.value = true
     error.value = ''
     try {

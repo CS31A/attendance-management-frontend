@@ -1,9 +1,11 @@
+import type { SectionDto, SectionPayload } from '@/api/sections'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import sectionsApi from '@/api/sections'
 
 export const useSectionStore = defineStore('sectionsStore', () => {
-  const sections = ref([])
+  const sections = ref<SectionDto[]>([])
   const itemsPerPage = ref(10)
   const loading = ref(false)
   const error = ref('')
@@ -37,7 +39,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     }
   }
 
-  const addSection = async (sectionData) => {
+  const addSection = async (sectionData: SectionPayload) => {
     loading.value = true
     error.value = ''
     try {
@@ -56,7 +58,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     }
   }
 
-  const updateSection = async (id, sectionData) => {
+  const updateSection = async (id: EntityId, sectionData: SectionPayload) => {
     loading.value = true
     error.value = ''
     try {
@@ -78,7 +80,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     }
   }
 
-  const deleteSection = async (id) => {
+  const deleteSection = async (id: EntityId) => {
     loading.value = true
     error.value = ''
     try {
@@ -96,7 +98,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     }
   }
 
-  const getSection = async (id) => {
+  const getSection = async (id: EntityId) => {
     loading.value = true
     try {
       const resp = await sectionsApi.getSection(id)

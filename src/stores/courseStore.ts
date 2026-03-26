@@ -1,18 +1,20 @@
+import type { CourseDto, CoursePayload } from '@/api/courses'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import courseApi from '@/api/courses'
 
 export const useCourseStore = defineStore('course', () => {
   // State
-  const courses = ref([])
-  const currentCourse = ref(null)
+  const courses = ref<CourseDto[]>([])
+  const currentCourse = ref<CourseDto | null>(null)
   const loading = ref(false)
   const error = ref('')
 
   // Getters
   const hasCourses = computed(() => courses.value.length > 0)
   const sortedCourses = computed(() =>
-    [...courses.value].sort((a, b) => a.name.localeCompare(b.name)),
+    [...courses.value].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
   )
 
   // Actions
@@ -35,7 +37,7 @@ export const useCourseStore = defineStore('course', () => {
     }
   }
 
-  async function fetchCourse(id) {
+  async function fetchCourse(id: EntityId) {
     loading.value = true
     error.value = ''
     try {
@@ -51,7 +53,7 @@ export const useCourseStore = defineStore('course', () => {
     }
   }
 
-  async function createCourse(data) {
+  async function createCourse(data: CoursePayload) {
     loading.value = true
     error.value = ''
     try {
@@ -76,7 +78,7 @@ export const useCourseStore = defineStore('course', () => {
     }
   }
 
-  async function updateCourse(id, data) {
+  async function updateCourse(id: EntityId, data: CoursePayload) {
     loading.value = true
     error.value = ''
     try {
@@ -104,7 +106,7 @@ export const useCourseStore = defineStore('course', () => {
     }
   }
 
-  async function deleteCourse(id) {
+  async function deleteCourse(id: EntityId) {
     loading.value = true
     error.value = ''
     try {

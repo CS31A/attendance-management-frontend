@@ -1,11 +1,13 @@
+import type { ScheduleCollectionDto, ScheduleDto, SchedulePayload } from '@/api/schedules'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import scheduleApi from '@/api/schedules'
 
 export const useScheduleStore = defineStore('schedule', () => {
   // State
-  const schedules = ref([])
-  const currentSchedule = ref(null)
+  const schedules = ref<ScheduleCollectionDto>([])
+  const currentSchedule = ref<ScheduleDto | null>(null)
   const loading = ref(false)
   const error = ref('')
 
@@ -15,10 +17,10 @@ export const useScheduleStore = defineStore('schedule', () => {
     [...schedules.value].sort((a, b) => {
       // Sort by day of week first, then by time
       const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-      const dayDiff = dayOrder.indexOf(a.dayOfWeek) - dayOrder.indexOf(b.dayOfWeek)
+      const dayDiff = dayOrder.indexOf(a.dayOfWeek || '') - dayOrder.indexOf(b.dayOfWeek || '')
       if (dayDiff !== 0)
         return dayDiff
-      return a.timeIn?.localeCompare(b.timeIn) || 0
+      return (a.timeIn || '').localeCompare(b.timeIn || '')
     }),
   )
 
@@ -43,7 +45,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
-  async function fetchSchedule(id) {
+  async function fetchSchedule(id: EntityId) {
     loading.value = true
     error.value = ''
     try {
@@ -59,7 +61,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
-  async function createSchedule(data) {
+  async function createSchedule(data: SchedulePayload) {
     loading.value = true
     error.value = ''
     try {
@@ -85,7 +87,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
-  async function updateSchedule(id, data) {
+  async function updateSchedule(id: EntityId, data: SchedulePayload) {
     loading.value = true
     error.value = ''
     try {
@@ -111,7 +113,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
-  async function deleteSchedule(id) {
+  async function deleteSchedule(id: EntityId) {
     loading.value = true
     error.value = ''
     try {

@@ -1,11 +1,13 @@
+import type { EnrollmentData, EnrollmentDto } from '@/api/enrollments'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import enrollmentsApi from '@/api/enrollments'
 
 export const useEnrollmentStore = defineStore('enrollments', () => {
   // State
-  const sectionStudents = ref([])
-  const studentEnrollments = ref([])
+  const sectionStudents = ref<EnrollmentDto[]>([])
+  const studentEnrollments = ref<EnrollmentDto[]>([])
   const loading = ref(false)
   const error = ref('')
 
@@ -16,7 +18,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
   const getError = computed(() => error.value)
 
   // Actions
-  async function enrollStudent(enrollmentData) {
+  async function enrollStudent(enrollmentData: EnrollmentData) {
     loading.value = true
     error.value = ''
     try {
@@ -38,7 +40,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
   }
 
-  async function fetchSectionStudents(sectionId) {
+  async function fetchSectionStudents(sectionId: EntityId) {
     loading.value = true
     error.value = ''
     try {
@@ -56,7 +58,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
   }
 
-  async function fetchStudentEnrollments(studentId) {
+  async function fetchStudentEnrollments(studentId: EntityId) {
     loading.value = true
     error.value = ''
     try {
@@ -74,7 +76,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
   }
 
-  async function dropStudent(enrollmentId, sectionId = null) {
+  async function dropStudent(enrollmentId: EntityId, sectionId: EntityId | null = null) {
     loading.value = true
     error.value = ''
     try {
@@ -98,7 +100,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
   }
 
-  async function reenrollStudent(enrollmentId, sectionId = null) {
+  async function reenrollStudent(enrollmentId: EntityId, sectionId: EntityId | null = null) {
     loading.value = true
     error.value = ''
     try {
@@ -119,7 +121,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
   }
 
-  async function checkEnrollment(studentId, sectionId, subjectId) {
+  async function checkEnrollment(studentId: number, sectionId: number, subjectId: number) {
     loading.value = true
     error.value = ''
     try {

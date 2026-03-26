@@ -21,7 +21,10 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
   const scanHistory = ref<QrCodeScanHistoryResponseDto>({
     qrCodeInfo: null,
     scanStatistics: null,
-    scans: [],
+    scans: {
+      items: [],
+      totalItems: 0,
+    },
   })
   const loading = ref(false)
   const error = ref('')
@@ -197,6 +200,9 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
     const now = new Date()
     const expiration = parseUtcDate(expiresAt)
+    if (!expiration)
+      return 5000
+
     const secondsRemaining = Math.floor((expiration.getTime() - now.getTime()) / 1000)
 
     // Expired: stop polling

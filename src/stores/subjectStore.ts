@@ -1,18 +1,20 @@
+import type { SubjectDto, SubjectPayload } from '@/api/subjects'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import subjectApi from '@/api/subjects'
 
 export const useSubjectStore = defineStore('subject', () => {
   // State
-  const subjects = ref([])
-  const currentSubject = ref(null)
+  const subjects = ref<SubjectDto[]>([])
+  const currentSubject = ref<SubjectDto | null>(null)
   const loading = ref(false)
   const error = ref('')
 
   // Getters
   const hasSubjects = computed(() => subjects.value.length > 0)
   const sortedSubjects = computed(() =>
-    [...subjects.value].sort((a, b) => a.name.localeCompare(b.name)),
+    [...subjects.value].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
   )
 
   // Actions
@@ -32,7 +34,7 @@ export const useSubjectStore = defineStore('subject', () => {
     }
   }
 
-  async function fetchSubject(id) {
+  async function fetchSubject(id: EntityId) {
     loading.value = true
     error.value = ''
     try {
@@ -48,7 +50,7 @@ export const useSubjectStore = defineStore('subject', () => {
     }
   }
 
-  async function createSubject(data) {
+  async function createSubject(data: SubjectPayload) {
     loading.value = true
     error.value = ''
     try {
@@ -73,7 +75,7 @@ export const useSubjectStore = defineStore('subject', () => {
     }
   }
 
-  async function updateSubject(id, data) {
+  async function updateSubject(id: EntityId, data: SubjectPayload) {
     loading.value = true
     error.value = ''
     try {
@@ -101,7 +103,7 @@ export const useSubjectStore = defineStore('subject', () => {
     }
   }
 
-  async function deleteSubject(id) {
+  async function deleteSubject(id: EntityId) {
     loading.value = true
     error.value = ''
     try {

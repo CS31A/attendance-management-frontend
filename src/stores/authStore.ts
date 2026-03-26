@@ -1,3 +1,4 @@
+import type { AuthActionResponse, AuthenticatedUser, AuthUserProfile, CheckAuthResponse } from '@/types/auth'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
@@ -36,10 +37,10 @@ import { ROLES } from '@/utils/constants'
 export const useAuthStore = defineStore('authStore', () => {
   // State
   /** @type {import('vue').Ref<object | null>} */
-  const user = ref(null)
+  const user = ref<AuthenticatedUser | null>(null)
 
   /** @type {import('vue').Ref<object | null>} */
-  const userProfile = ref(null)
+  const userProfile = ref<AuthUserProfile | null>(null)
 
   /** @type {import('vue').Ref<boolean>} */
   const isAuthenticated = ref(false)
@@ -101,7 +102,7 @@ export const useAuthStore = defineStore('authStore', () => {
    */
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get('/account/me')
+      const response = await api.get<AuthUserProfile>('/account/me')
       if (response.data) {
         // Normalize legacy 'Teacher' role to 'Instructor'
         if (response.data.role === 'Teacher') {
@@ -132,7 +133,7 @@ export const useAuthStore = defineStore('authStore', () => {
     if (!background)
       isLoading.value = true
     try {
-      const response = await api.get('/account/check')
+      const response = await api.get<CheckAuthResponse>('/account/check')
 
       if (response.data && response.data.user) {
         user.value = response.data.user
@@ -186,12 +187,12 @@ export const useAuthStore = defineStore('authStore', () => {
    *   console.error('Login failed:', result.message)
    * }
    */
-  const login = async (identifier, password) => {
+  const login = async (identifier: string, password: string): Promise<AuthActionResponse> => {
     try {
       // Create the payload with identifier and password
       const payload = { identifier, password }
 
-      const response = await api.post('/account/web/login', payload)
+      const response = await api.post<AuthActionResponse>('/account/web/login', payload)
 
       if (response.data.success) {
         isAuthenticated.value = true
@@ -301,7 +302,7 @@ export const useAuthStore = defineStore('authStore', () => {
    */
   const refreshToken = async () => {
     try {
-      const response = await api.post('/account/web/refresh')
+      const response = await api.post<AuthActionResponse>('/account/web/refresh')
 
       if (response.data.success) {
         // Update the authentication state with the new access token info

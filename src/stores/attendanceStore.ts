@@ -1,3 +1,12 @@
+import type {
+  AttendanceQueryParams,
+  AttendanceResponseDto,
+  AttendanceStatus,
+  AttendanceSummaryDto,
+  RecordAttendancePayload,
+  UpdateAttendancePayload,
+} from '@/api/attendance'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
@@ -30,22 +39,22 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   // ==================== STATE ====================
 
   /** @type {import('vue').Ref<Array>} */
-  const attendanceRecords = ref([])
+  const attendanceRecords = ref<AttendanceResponseDto[]>([])
 
   /** @type {import('vue').Ref<Array>} */
-  const sessionAttendance = ref([])
+  const sessionAttendance = ref<AttendanceResponseDto[]>([])
 
   /** @type {import('vue').Ref<boolean>} */
   const loading = ref(false)
 
   /** @type {import('vue').Ref<object | null>} */
-  const currentRecord = ref(null)
+  const currentRecord = ref<AttendanceResponseDto | null>(null)
 
   /** @type {import('vue').Ref<object | null>} */
-  const summary = ref(null)
+  const summary = ref<AttendanceSummaryDto | null>(null)
 
   /** @type {import('vue').Ref<number | null>} */
-  const currentSessionId = ref(null)
+  const currentSessionId = ref<EntityId | null>(null)
 
   // ==================== GETTERS ====================
 
@@ -54,7 +63,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {string} status - Attendance status ('present' | 'absent' | 'late' | 'excused')
    * @returns {Array} Filtered attendance records
    */
-  const recordsByStatus = computed(() => (status) => {
+  const recordsByStatus = computed(() => (status: AttendanceStatus) => {
     return sessionAttendance.value.filter(record => record.status === status)
   })
 
@@ -103,7 +112,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {number} studentId - Student ID
    * @returns {object | undefined} Attendance record
    */
-  const getRecordByStudentId = computed(() => (studentId) => {
+  const getRecordByStudentId = computed(() => (studentId: EntityId) => {
     return sessionAttendance.value.find(record => record.studentId === studentId)
   })
 
@@ -122,7 +131,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {object} [params] - Query parameters
    * @returns {Promise<Array>} Array of attendance records
    */
-  const fetchAllAttendance = async (params = {}) => {
+  const fetchAllAttendance = async (params: AttendanceQueryParams = {}) => {
     loading.value = true
 
     try {
@@ -147,7 +156,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {number} id - Attendance record ID
    * @returns {Promise<object>} Attendance record
    */
-  const fetchAttendanceById = async (id) => {
+  const fetchAttendanceById = async (id: EntityId) => {
     loading.value = true
 
     try {
@@ -169,7 +178,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {number} sessionId - Session ID
    * @returns {Promise<Array>} Array of attendance records
    */
-  const fetchSessionAttendance = async (sessionId) => {
+  const fetchSessionAttendance = async (sessionId: EntityId) => {
     loading.value = true
     currentSessionId.value = sessionId
 
@@ -198,7 +207,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {number} studentId - Student ID
    * @returns {Promise<Array>} Array of attendance records
    */
-  const fetchStudentAttendance = async (studentId) => {
+  const fetchStudentAttendance = async (studentId: EntityId) => {
     loading.value = true
 
     try {
@@ -219,7 +228,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {object} [params] - Query parameters
    * @returns {Promise<object>} Summary statistics
    */
-  const fetchAttendanceSummary = async (params = {}) => {
+  const fetchAttendanceSummary = async (params: AttendanceQueryParams = {}) => {
     loading.value = true
 
     try {
@@ -243,7 +252,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {Array} payload.records - Array of student attendance records
    * @returns {Promise<Array>} Created/updated attendance records
    */
-  const submitAttendance = async (payload) => {
+  const submitAttendance = async (payload: RecordAttendancePayload) => {
     loading.value = true
 
     try {
@@ -271,7 +280,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {object} payload - Update data
    * @returns {Promise<object>} Updated attendance record
    */
-  const updateAttendanceRecord = async (id, payload) => {
+  const updateAttendanceRecord = async (id: EntityId, payload: UpdateAttendancePayload) => {
     loading.value = true
 
     // Store original state for rollback
@@ -306,7 +315,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {number} id - Attendance record ID
    * @returns {Promise<void>}
    */
-  const deleteAttendanceRecord = async (id) => {
+  const deleteAttendanceRecord = async (id: EntityId) => {
     loading.value = true
 
     // Store original state for rollback
@@ -337,7 +346,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {number} studentId - Student ID
    * @param {string} status - New status
    */
-  const updateLocalStatus = (studentId, status) => {
+  const updateLocalStatus = (studentId: EntityId, status: AttendanceStatus) => {
     const record = sessionAttendance.value.find(r => r.studentId === studentId)
     if (record) {
       record.status = status
@@ -348,7 +357,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * Set all students to a specific status (bulk local update)
    * @param {string} status - Status to set for all students
    */
-  const markAllAs = (status) => {
+  const markAllAs = (status: AttendanceStatus) => {
     sessionAttendance.value.forEach((record) => {
       record.status = status
     })

@@ -36,7 +36,7 @@ interface ApiUser {
 
 type UiRole = 'Admin' | 'Instructor' | 'Student'
 
-interface CreateUserInput {
+export interface CreateUserInput {
   Username: string
   FirstName: string
   LastName: string
@@ -177,7 +177,7 @@ export const useUserStore = defineStore('user', () => {
       // Para sa skeleton loader simulation
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      const resp = await api.get('/users', { params: { status } })
+      const resp = await api.get<ApiUser[]>('/users', { params: { status } })
       // Map user profile data to flat structure
       users.value = resp.data.map(user => mapUserProfile(user))
     }
