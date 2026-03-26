@@ -26,6 +26,11 @@ export interface EnrollmentStatusQuery {
 
 export interface EnrollmentDto {
   id: EntityId
+  enrollmentId?: EntityId
+  studentId?: EntityId
+  firstName?: string
+  lastName?: string
+  status?: string
   [key: string]: unknown
 }
 

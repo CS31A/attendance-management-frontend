@@ -28,10 +28,41 @@ export interface QrCodeResponseDto {
 }
 
 export type QrCodeValidationResponseDto = Record<string, unknown>
+export interface QrCodeScanInfoDto {
+  scheduleTitle?: string
+  generatedAt?: string
+  expiresAt?: string
+  [key: string]: unknown
+}
+
+export interface QrCodeScanStatisticsDto {
+  totalScans?: number
+  successfulScans?: number
+  failedScans?: number
+  uniqueStudents?: number
+  [key: string]: unknown
+}
+
+export interface QrCodeScanRecordDto {
+  id?: number
+  studentName?: string
+  studentId?: string | number
+  scannedAt?: string
+  status?: string
+  deviceInfo?: string
+  [key: string]: unknown
+}
+
+export interface QrCodeScanHistoryItemsDto {
+  items?: QrCodeScanRecordDto[]
+  totalItems?: number
+  [key: string]: unknown
+}
+
 export interface QrCodeScanHistoryResponseDto {
-  qrCodeInfo: Record<string, unknown> | null
-  scanStatistics: Record<string, unknown> | null
-  scans: Record<string, unknown>[]
+  qrCodeInfo: QrCodeScanInfoDto | null
+  scanStatistics: QrCodeScanStatisticsDto | null
+  scans: QrCodeScanHistoryItemsDto | null
 }
 
 export interface QrCodePaginationParams extends PaginationParams {

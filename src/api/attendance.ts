@@ -1,4 +1,4 @@
-import type { ApiEnvelope, PaginationParams } from '@/types'
+import type { ApiEnvelope, EntityId, PaginationParams } from '@/types'
 import api from '@/api'
 
 /**
@@ -97,7 +97,7 @@ export async function fetchAllAttendance(
  * const record = await fetchAttendanceById(123)
  * console.log(`Status: ${record.status}`)
  */
-export async function fetchAttendanceById(id: number): Promise<AttendanceResponseDto> {
+export async function fetchAttendanceById(id: EntityId): Promise<AttendanceResponseDto> {
   const response = await api.get(`/attendance/${id}`)
   return response.data
 }
@@ -115,7 +115,7 @@ export async function fetchAttendanceById(id: number): Promise<AttendanceRespons
  * const studentAttendance = await fetchStudentAttendance(456)
  * const presentCount = studentAttendance.filter(a => a.status === 'present').length
  */
-export async function fetchStudentAttendance(studentId: number): Promise<AttendanceResponseDto[]> {
+export async function fetchStudentAttendance(studentId: EntityId): Promise<AttendanceResponseDto[]> {
   const response = await api.get(`/attendance/student/${studentId}`)
   return response.data
 }
@@ -134,7 +134,7 @@ export async function fetchStudentAttendance(studentId: number): Promise<Attenda
  * const sessionAttendance = await fetchSessionAttendance(789)
  * sessionAttendance.forEach(a => console.log(`${a.studentName}: ${a.status}`))
  */
-export async function fetchSessionAttendance(sessionId: number): Promise<AttendanceResponseDto[]> {
+export async function fetchSessionAttendance(sessionId: EntityId): Promise<AttendanceResponseDto[]> {
   const response = await api.get<SessionAttendanceResponse>(`/attendance/session/${sessionId}`)
   // Backend returns a wrapper object with attendanceRecords array
   // Extract just the attendanceRecords array for frontend consumption
@@ -216,7 +216,7 @@ export async function recordAttendance(
  * })
  */
 export async function updateAttendance(
-  id: number,
+  id: EntityId,
   payload: UpdateAttendancePayload,
 ): Promise<AttendanceResponseDto> {
   const response = await api.put(`/attendance/${id}`, payload)
@@ -236,7 +236,7 @@ export async function updateAttendance(
  * await deleteAttendance(123)
  * console.log('Attendance record deleted')
  */
-export async function deleteAttendance(id: number): Promise<ApiEnvelope<null> | null> {
+export async function deleteAttendance(id: EntityId): Promise<ApiEnvelope<null> | null> {
   const response = await api.delete<ApiEnvelope<null> | null>(`/attendance/${id}`)
   return response.data
 }
