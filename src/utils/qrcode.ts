@@ -42,6 +42,9 @@ export function calculateRemainingTime(expiresAt: string | Date | null | undefin
 
   const now = new Date()
   const expiration = parseUtcDate(expiresAt)
+  if (!expiration)
+    return 0
+
   const diff = expiration.getTime() - now.getTime()
 
   return Math.max(0, Math.floor(diff / 1000))
@@ -90,7 +93,11 @@ export function formatScanTime(timestamp: string | Date | null | undefined): str
   if (!timestamp)
     return '-'
 
-  return parseUtcDate(timestamp).toLocaleTimeString([], {
+  const parsed = parseUtcDate(timestamp)
+  if (!parsed)
+    return '-'
+
+  return parsed.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   })
@@ -106,7 +113,11 @@ export function formatDate(date: string | Date | null | undefined): string {
   if (!date)
     return '-'
 
-  return parseUtcDate(date).toLocaleDateString([], {
+  const parsed = parseUtcDate(date)
+  if (!parsed)
+    return '-'
+
+  return parsed.toLocaleDateString([], {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
