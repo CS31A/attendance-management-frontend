@@ -1,4 +1,9 @@
-<script setup>
+<script setup lang="ts">
+import type { ClassroomDto } from '@/api/classrooms'
+import type { ScheduleDto, SchedulePayload } from '@/api/schedules'
+import type { SectionDto } from '@/api/sections'
+import type { SubjectDto } from '@/api/subjects'
+import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -20,8 +25,36 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
+interface HandleErrorableModal {
+  handleError?: (message?: string) => void
+}
+
+interface FormOption {
+  value: string | number
+  label: string
+}
+
+interface FormFieldConfig {
+  name: string
+  label: string
+  type: string
+  icon?: object | null
+  placeholder?: string
+  required?: boolean
+  validation?: (value: unknown, formData: Record<string, unknown>) => string | null
+  options?: FormOption[] | (() => Promise<FormOption[]>)
+}
+
+type ToastType = 'success' | 'error'
+
+function extractResponseData<T>(responseOrData: T | { data: T }): T {
+  return (responseOrData && typeof responseOrData === 'object' && 'data' in responseOrData)
+    ? responseOrData.data
+    : responseOrData as T
+}
+
 // Field configuration for FormModal with async options
-const scheduleFields = [
+const scheduleFields: FormFieldConfig[] = [
   {
     name: 'timeIn',
     label: 'Time In',
@@ -35,8 +68,10 @@ const scheduleFields = [
     type: 'time',
     icon: Clock,
     required: true,
-    validation: (value, formData) => {
-      if (value && formData.timeIn && value <= formData.timeIn) {
+    validation: (value: unknown, formData: Record<string, unknown>) => {
+      const timeOut = typeof value === 'string' ? value : ''
+      const timeIn = typeof formData.timeIn === 'string' ? formData.timeIn : ''
+      if (timeOut && timeIn && timeOut <= timeIn) {
         return 'Time Out must be after Time In'
       }
       return null
@@ -68,8 +103,8 @@ const scheduleFields = [
     placeholder: 'Select a subject',
     options: async () => {
       const response = await subjectApi.getAllSubjects()
-      const subjects = response.data || response
-      return subjects.map(s => ({
+      const subjects = extractResponseData(response)
+      return subjects.map((s: SubjectDto) => ({
         value: s.id,
         label: `${s.name} (${s.code})`,
       }))
@@ -84,10 +119,10 @@ const scheduleFields = [
     placeholder: 'Select a classroom',
     options: async () => {
       const response = await classroomApi.getAllClassrooms()
-      const classrooms = response.data || response
-      return classrooms.map(c => ({
+      const classrooms = extractResponseData(response)
+      return classrooms.map((c: ClassroomDto) => ({
         value: c.id,
-        label: c.name,
+        label: c.name || 'Unnamed Classroom',
       }))
     },
   },
@@ -100,10 +135,10 @@ const scheduleFields = [
     placeholder: 'Select a section',
     options: async () => {
       const response = await sectionsApi.getAllSections()
-      const sections = response.data || response
-      return sections.map(s => ({
+      const sections = extractResponseData(response)
+      return sections.map((s: SectionDto) => ({
         value: s.id,
-        label: s.name,
+        label: s.name || 'Unnamed Section',
       }))
     },
   },
@@ -118,24 +153,29 @@ const scheduleFields = [
       // Always fetch active users to ensure the list is fresh and filtered correctly
       // This handles cases where user might have navigated from 'Archived' view
       await userStore.fetchUsers('Active')
-      const instructors = userStore.instructors
-      return instructors.map(i => ({
-        value: i.profileId, // Use profileId (instructor profile integer ID) instead of userId (GUID)
-        label: `${i.firstName || i.firstname} ${i.lastName || i.lastname}`,
-      }))
+      return userStore.instructors.reduce<FormOption[]>((options, instructor) => {
+        if (instructor.profileId === undefined || instructor.profileId === null)
+          return options
+
+        options.push({
+          value: instructor.profileId,
+          label: `${instructor.firstName || instructor.firstname || ''} ${instructor.lastName || instructor.lastname || ''}`.trim() || 'Unnamed Instructor',
+        })
+        return options
+      }, [])
     },
   },
 ]
 
 const scheduleStore = useScheduleStore()
 const showModal = ref(false)
-const selectedSchedule = ref(null)
-const modalRef = ref(null)
+const selectedSchedule = ref<ScheduleDto | null>(null)
+const modalRef = ref<HandleErrorableModal | null>(null)
 
 // Modal state for confirmation and alerts
 const showDeleteModal = ref(false)
 const showAlertDialog = ref(false)
-const scheduleToDelete = ref(null)
+const scheduleToDelete = ref<ScheduleDto | null>(null)
 const isDeleting = ref(false)
 const alertModalConfig = ref({
   title: '',
@@ -148,7 +188,7 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
 // Instructor filter state
-const filteredInstructorId = ref(null)
+const filteredInstructorId = ref<EntityId | null>(null)
 const filteredInstructorName = ref('')
 const isLoadingInstructorFilter = ref(false)
 
@@ -191,13 +231,13 @@ function handlePreviousPage() {
   }
 }
 
-function handleGoToPage(page) {
+function handleGoToPage(page: number) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-function handleSetItemsPerPage(value) {
+function handleSetItemsPerPage(value: number) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
@@ -208,7 +248,7 @@ function openAddModal() {
   showModal.value = true
 }
 
-function openEditModal(schedule) {
+function openEditModal(schedule: ScheduleDto) {
   selectedSchedule.value = { ...schedule }
   showModal.value = true
 }
@@ -226,7 +266,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -237,7 +277,7 @@ function closeToast() {
   toast.show = false
 }
 
-async function handleSaveSchedule(scheduleData) {
+async function handleSaveSchedule(scheduleData: SchedulePayload) {
   try {
     if (selectedSchedule.value) {
       // Edit mode
@@ -252,13 +292,11 @@ async function handleSaveSchedule(scheduleData) {
     closeModal()
   }
   catch (error) {
-    if (modalRef.value) {
-      modalRef.value.handleError(error.response?.data?.message || 'Failed to save schedule')
-    }
+    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save schedule')
   }
 }
 
-function handleDeleteSchedule(id) {
+function handleDeleteSchedule(id: EntityId) {
   const schedule = scheduleStore.schedules.find(s => s.id === id)
   if (schedule) {
     scheduleToDelete.value = schedule
@@ -296,8 +334,12 @@ function cancelDelete() {
 }
 
 // Function to apply instructor filter
-async function filterByInstructor(instructorId) {
+async function filterByInstructor(instructorId: string | null | undefined) {
   if (!instructorId)
+    return
+
+  const parsedInstructorId = Number.parseInt(instructorId, 10)
+  if (Number.isNaN(parsedInstructorId))
     return
 
   isLoadingInstructorFilter.value = true
@@ -306,11 +348,11 @@ async function filterByInstructor(instructorId) {
     if (userStore.users.length === 0) {
       await userStore.fetchUsers()
     }
-    const instructor = userStore.users.find(i => i.id === Number.parseInt(instructorId))
+    const instructor = userStore.users.find(i => i.id === parsedInstructorId || i.profileId === parsedInstructorId)
 
     if (instructor) {
-      filteredInstructorId.value = Number.parseInt(instructorId)
-      filteredInstructorName.value = `${instructor.firstName} ${instructor.lastName}`
+      filteredInstructorId.value = parsedInstructorId
+      filteredInstructorName.value = `${instructor.firstName || instructor.firstname || ''} ${instructor.lastName || instructor.lastname || ''}`.trim() || 'Instructor'
       currentPage.value = 1 // Reset to first page when filtering
     }
   }
@@ -338,8 +380,12 @@ onMounted(async () => {
     await scheduleStore.fetchSchedules()
 
     // Check for instructorId query parameter
-    if (route.query.instructorId) {
-      await filterByInstructor(route.query.instructorId)
+    const instructorId = Array.isArray(route.query.instructorId)
+      ? route.query.instructorId[0]
+      : route.query.instructorId
+
+    if (instructorId) {
+      await filterByInstructor(instructorId)
     }
   }
   catch (error) {
@@ -376,9 +422,9 @@ onMounted(async () => {
     <!-- Error message -->
     <div v-else-if="scheduleStore.error" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="24" />
+        <AlertTriangle class="error-icon" :size="24" />
         <p>{{ scheduleStore.error }}</p>
-        <BaseButton variant="secondary" size="small" @click="scheduleStore.fetchSchedules">
+        <BaseButton variant="secondary" size="small" @click="() => scheduleStore.fetchSchedules()">
           Retry
         </BaseButton>
       </div>
@@ -445,7 +491,7 @@ onMounted(async () => {
     <FormModal
       ref="modalRef"
       :show="showModal"
-      :entity="selectedSchedule"
+      :entity="selectedSchedule ?? undefined"
       title="Schedule"
       :fields="scheduleFields"
       size="large"

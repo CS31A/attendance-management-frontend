@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { AlertTriangle, Clock, Loader2, RefreshCw, Users, X } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -12,10 +12,13 @@ const qrCodeStore = useQrCodeStore()
 const loading = ref(true)
 const error = ref('')
 const timeRemaining = ref(0)
-const timerInterval = ref(null)
+const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
 const qrCodeId = computed(() => Number(route.params.qrCodeId))
 const qrCode = computed(() => qrCodeStore.getActiveQrCode)
+const qrCodeImageSrc = computed(() =>
+  typeof qrCode.value?.qrCodeData === 'string' ? qrCode.value.qrCodeData : '',
+)
 
 const isExpired = computed(() => timeRemaining.value <= 0)
 const isNearExpiration = computed(() => timeRemaining.value > 0 && timeRemaining.value < 300)
@@ -59,7 +62,7 @@ function handleRefresh() {
   loadQrCode()
 }
 
-function handleKeyDown(event) {
+function handleKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     handleExit()
   }
@@ -112,17 +115,17 @@ onUnmounted(() => {
   <div class="qr-projection-view" role="main" aria-label="QR Code Projection">
     <!-- Loading State -->
     <div v-if="loading" class="loading-state" role="status" aria-live="polite">
-      <Loader2 class="spinner" size="48" aria-hidden="true" />
+      <Loader2 class="spinner" :size="48" aria-hidden="true" />
       <p>Loading QR Code...</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <AlertTriangle size="48" class="error-icon" />
+      <AlertTriangle :size="48" class="error-icon" />
       <h2>Failed to Load QR Code</h2>
       <p>{{ error }}</p>
       <button class="btn-retry" @click="loadQrCode">
-        <RefreshCw size="20" />
+        <RefreshCw :size="20" />
         Retry
       </button>
     </div>
@@ -145,11 +148,11 @@ onUnmounted(() => {
 
           <div class="header-actions">
             <button class="btn-refresh" title="Refresh (R)" @click="handleRefresh">
-              <RefreshCw size="18" />
+              <RefreshCw :size="18" />
               Refresh
             </button>
             <button class="btn-exit" title="Back" @click="handleExit">
-              <X size="20" />
+              <X :size="20" />
               <span>Close</span>
             </button>
           </div>
@@ -157,7 +160,7 @@ onUnmounted(() => {
 
         <!-- Warning Banner -->
         <div v-if="isNearExpiration && !isExpired" class="warning-banner">
-          <AlertTriangle size="20" />
+          <AlertTriangle :size="20" />
           <span>QR code expires soon!</span>
         </div>
 
@@ -168,7 +171,7 @@ onUnmounted(() => {
             <div class="qr-display" :class="{ expired: isExpired }">
               <img
                 v-if="qrCode.qrCodeData"
-                :src="qrCode.qrCodeData"
+                :src="qrCodeImageSrc"
                 alt="Attendance QR Code"
                 class="qr-image"
               >
@@ -188,7 +191,7 @@ onUnmounted(() => {
 
             <!-- Scan Counter -->
             <div class="scan-counter">
-              <Users size="24" class="counter-icon" />
+              <Users :size="24" class="counter-icon" />
               <div class="counter-content">
                 <span class="counter-value">{{ scanCount }}</span>
                 <span class="counter-label">Students Scanned</span>

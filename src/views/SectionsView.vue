@@ -1,4 +1,6 @@
-<script setup>
+<script setup lang="ts">
+import type { SectionDto, SectionPayload } from '@/api/sections'
+import type { EntityId } from '@/types'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -11,16 +13,22 @@ const SectionModal = defineAsyncComponent(() => import('@/components/SectionModa
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
+interface HandleErrorableModal {
+  handleError?: (message?: string) => void
+}
+
+type ToastType = 'success' | 'error'
+
 const sectionsStore = useSectionStore()
 const showModal = ref(false)
 const showEnrollmentModal = ref(false)
-const selectedSection = ref(null)
-const selectedEnrollmentSection = ref(null)
-const modalRef = ref(null)
+const selectedSection = ref<SectionDto | null>(null)
+const selectedEnrollmentSection = ref<SectionDto | null>(null)
+const modalRef = ref<HandleErrorableModal | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
-const sectionToDelete = ref(null)
+const sectionToDelete = ref<SectionDto | null>(null)
 const isDeleting = ref(false)
 
 // Pagination state
@@ -54,13 +62,13 @@ function handlePreviousPage() {
   }
 }
 
-function handleGoToPage(page) {
+function handleGoToPage(page: number) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-function handleSetItemsPerPage(value) {
+function handleSetItemsPerPage(value: number) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
@@ -71,7 +79,7 @@ function openAddModal() {
   showModal.value = true
 }
 
-function openEditModal(section) {
+function openEditModal(section: SectionDto) {
   selectedSection.value = { ...section }
   showModal.value = true
 }
@@ -81,7 +89,7 @@ function closeModal() {
   selectedSection.value = null
 }
 
-function openEnrollmentModal(section) {
+function openEnrollmentModal(section: SectionDto) {
   selectedEnrollmentSection.value = section
   showEnrollmentModal.value = true
 }
@@ -99,7 +107,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -110,7 +118,7 @@ function closeToast() {
   toast.show = false
 }
 
-async function handleSaveSection(sectionData) {
+async function handleSaveSection(sectionData: SectionPayload) {
   try {
     if (selectedSection.value) {
       // Edit mode
@@ -125,13 +133,11 @@ async function handleSaveSection(sectionData) {
     closeModal()
   }
   catch (error) {
-    if (modalRef.value) {
-      modalRef.value.handleError(error.response?.data?.message || 'Failed to save section')
-    }
+    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save section')
   }
 }
 
-function handleDeleteSection(id) {
+function handleDeleteSection(id: EntityId) {
   const section = sectionsStore.sections.find(s => s.id === id)
   if (section) {
     sectionToDelete.value = section
@@ -204,7 +210,7 @@ onMounted(async () => {
     <!-- Error message -->
     <div v-else-if="sectionsStore.error" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="24" />
+        <AlertTriangle class="error-icon" :size="24" />
         <p>{{ sectionsStore.error }}</p>
         <BaseButton variant="secondary" size="small" @click="sectionsStore.fetchSections">
           Retry
@@ -263,7 +269,7 @@ onMounted(async () => {
 
     <!-- Enrollment Modal -->
     <EnrollmentModal
-      v-if="showEnrollmentModal"
+      v-if="showEnrollmentModal && selectedEnrollmentSection"
       :section="selectedEnrollmentSection"
       @close="closeEnrollmentModal"
     />
@@ -273,7 +279,7 @@ onMounted(async () => {
       :show="showDeleteModal"
       title="Delete Section"
       message="Are you sure you want to delete this section? This action cannot be undone."
-      :item-name="sectionToDelete ? (sectionToDelete.name || sectionToDelete.sectionName || sectionToDelete.code) : ''"
+      :item-name="sectionToDelete ? String(sectionToDelete.name || sectionToDelete.sectionName || sectionToDelete.code || '') : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

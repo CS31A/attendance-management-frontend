@@ -1,4 +1,7 @@
-<script setup>
+<script setup lang="ts">
+import type { StudentAttendance } from '@/api/attendance'
+import type { SessionResponseDto } from '@/api/sessions'
+import type { EntityId } from '@/types'
 import { AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -15,13 +18,27 @@ const router = useRouter()
 const attendanceStore = useAttendanceStore()
 const sessionStore = useSessionStore()
 
+type ToastType = 'success' | 'error'
+type AttendanceViewMode = 'list' | 'record'
+
+function toNumericSessionId(id: EntityId): number | null {
+  if (typeof id === 'number')
+    return id
+
+  const parsed = Number.parseInt(id, 10)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
 // State
 const errorMessage = ref('')
-const currentView = ref('list') // 'list' or 'record'
-const selectedSession = ref(null)
+const currentView = ref<AttendanceViewMode>('list')
+const selectedSession = ref<SessionResponseDto | null>(null)
 
 // Computed
-const sessionId = computed(() => route.params.sessionId)
+const sessionId = computed<EntityId | undefined>(() => {
+  const value = route.params.sessionId
+  return Array.isArray(value) ? value[0] : value
+})
 const isRecordView = computed(() => !!sessionId.value)
 const sessions = computed(() => sessionStore.sessions)
 const loading = computed(() => sessionStore.loading || attendanceStore.loading)
@@ -47,7 +64,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -72,7 +89,7 @@ async function loadSessions() {
   }
 }
 
-async function loadSessionDetails(sessionId) {
+async function loadSessionDetails(sessionId: EntityId) {
   errorMessage.value = ''
   try {
     const session = await sessionStore.fetchSessionById(sessionId)
@@ -89,7 +106,7 @@ async function loadSessionDetails(sessionId) {
   }
 }
 
-function handleSelectSession(session) {
+function handleSelectSession(session: SessionResponseDto) {
   router.push(`/attendance/session/${session.id}`)
 }
 
@@ -97,11 +114,31 @@ function handleBackToList() {
   router.push('/attendance')
 }
 
-async function handleSubmitAttendance(attendanceData) {
+function retryCurrentView() {
+  if (isRecordView.value && sessionId.value) {
+    loadSessionDetails(sessionId.value)
+    return
+  }
+
+  loadSessions()
+}
+
+async function handleSubmitAttendance(attendanceData: StudentAttendance[]) {
   errorMessage.value = ''
+  if (!selectedSession.value)
+    return
+
+  const normalizedSessionId = toNumericSessionId(selectedSession.value.id)
+  if (normalizedSessionId === null) {
+    const message = 'Invalid session ID.'
+    showToast(message, 'error')
+    errorMessage.value = message
+    throw new Error(message)
+  }
+
   try {
     await attendanceStore.submitAttendance({
-      sessionId: selectedSession.value.id,
+      sessionId: normalizedSessionId,
       records: attendanceData,
     })
     showToast('Attendance recorded successfully!', 'success')
@@ -153,18 +190,18 @@ onMounted(() => {
 
     <!-- Error State -->
     <div v-else-if="errorMessage && !sessions.length && !selectedSession" class="error-state">
-      <AlertTriangle size="48" class="error-icon" />
+      <AlertTriangle :size="48" class="error-icon" />
       <h3>Failed to Load Data</h3>
       <p>{{ errorMessage }}</p>
-      <button class="btn-retry" @click="isRecordView ? loadSessionDetails(sessionId) : loadSessions()">
-        <RefreshCw size="18" />
+      <button class="btn-retry" @click="retryCurrentView">
+        <RefreshCw :size="18" />
         <span>Retry</span>
       </button>
     </div>
 
     <!-- Empty State for List View -->
     <div v-else-if="!isRecordView && !sessions.length && !loading" class="empty-state">
-      <ClipboardCheck size="64" class="empty-icon" />
+      <ClipboardCheck :size="64" class="empty-icon" />
       <h3>No Sessions Available</h3>
       <p>There are no sessions available for attendance recording.</p>
     </div>

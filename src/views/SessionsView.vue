@@ -1,4 +1,7 @@
-<script setup>
+<script setup lang="ts">
+import type { CreateSessionPayload, EndSessionPayload, SessionResponseDto, StartSessionPayload, UpdateSessionRoomPayload } from '@/api/sessions'
+import type { EntityId } from '@/types'
+import type { SessionStatus } from '@/utils/constants'
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -6,6 +9,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
+import { SESSION_STATUSES } from '@/utils/constants'
 
 const CreateSessionModal = defineAsyncComponent(() => import('@/components/sessions/CreateSessionModal.vue'))
 const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions/EndSessionModal.vue'))
@@ -21,8 +25,11 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const qrCodeStore = useQrCodeStore()
 
+type ToastType = 'success' | 'error'
+type DisplayedQrCode = Awaited<ReturnType<ReturnType<typeof useQrCodeStore>['fetchQrCode']>>
+
 // State
-const currentFilter = ref('all')
+const currentFilter = ref<'all' | SessionStatus>('all')
 const showCreateModal = ref(false)
 const showStartModal = ref(false)
 const showEndModal = ref(false)
@@ -30,13 +37,13 @@ const showUpdateRoomModal = ref(false)
 const showQRGenerateModal = ref(false)
 const showQRDisplayModal = ref(false)
 const showQRListModal = ref(false)
-const selectedSession = ref(null)
-const currentQrCode = ref(null)
+const selectedSession = ref<SessionResponseDto | null>(null)
+const currentQrCode = ref<DisplayedQrCode | null>(null)
 const errorMessage = ref('')
 
 // Delete modal state
 const showDeleteModal = ref(false)
-const sessionToDelete = ref(null)
+const sessionToDelete = ref<SessionResponseDto | null>(null)
 const isDeleting = ref(false)
 
 // Computed properties
@@ -49,12 +56,18 @@ const filteredSessions = computed(() => {
   return sessionStore.sessionsByStatus(currentFilter.value)
 })
 
-const statusFilters = computed(() => [
+interface StatusFilter {
+  label: string
+  value: 'all' | SessionStatus
+  count: number
+}
+
+const statusFilters = computed<StatusFilter[]>(() => [
   { label: 'All', value: 'all', count: sessions.value.length },
-  { label: 'Not Started', value: 'not_started', count: sessionStore.notStartedSessions.length },
-  { label: 'Active', value: 'active', count: sessionStore.activeSessions.length },
-  { label: 'Completed', value: 'completed', count: sessionStore.completedSessions.length },
-  { label: 'Cancelled', value: 'cancelled', count: sessionStore.cancelledSessions.length },
+  { label: 'Not Started', value: SESSION_STATUSES.NOT_STARTED, count: sessionStore.notStartedSessions.length },
+  { label: 'Active', value: SESSION_STATUSES.ACTIVE, count: sessionStore.activeSessions.length },
+  { label: 'Completed', value: SESSION_STATUSES.ENDED, count: sessionStore.endedSessions.length },
+  { label: 'Cancelled', value: SESSION_STATUSES.CANCELLED, count: sessionStore.cancelledSessions.length },
 ])
 
 const emptyStateTitle = computed(() => {
@@ -62,7 +75,7 @@ const emptyStateTitle = computed(() => {
     all: 'No Sessions Yet',
     not_started: 'No Upcoming Sessions',
     active: 'No Active Sessions',
-    completed: 'No Completed Sessions',
+    ended: 'No Completed Sessions',
     cancelled: 'No Cancelled Sessions',
   }
   return titles[currentFilter.value] || 'No Sessions'
@@ -73,7 +86,7 @@ const emptyStateMessage = computed(() => {
     all: 'Create your first session to start managing attendance',
     not_started: 'All your upcoming sessions will appear here',
     active: 'Start a session to begin tracking attendance',
-    completed: 'Completed sessions will be listed here',
+    ended: 'Completed sessions will be listed here',
     cancelled: 'Cancelled sessions will appear here',
   }
   return messages[currentFilter.value] || 'No sessions to display'
@@ -87,7 +100,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -112,7 +125,7 @@ async function loadSessions() {
   }
 }
 
-async function handleCreateSession(payload) {
+async function handleCreateSession(payload: CreateSessionPayload) {
   errorMessage.value = ''
   try {
     await sessionStore.createSession(payload)
@@ -127,13 +140,16 @@ async function handleCreateSession(payload) {
   }
 }
 
-function handleStartSession(session) {
+function handleStartSession(session: SessionResponseDto) {
   selectedSession.value = session
   showStartModal.value = true
 }
 
-async function handleConfirmStart(payload) {
+async function handleConfirmStart(payload: StartSessionPayload) {
   errorMessage.value = ''
+  if (!selectedSession.value)
+    return
+
   try {
     await sessionStore.startSession(selectedSession.value.id, payload)
     showStartModal.value = false
@@ -154,13 +170,16 @@ async function handleConfirmStart(payload) {
   }
 }
 
-function handleEndSession(session) {
+function handleEndSession(session: SessionResponseDto) {
   selectedSession.value = session
   showEndModal.value = true
 }
 
-async function handleConfirmEnd(payload) {
+async function handleConfirmEnd(payload: EndSessionPayload) {
   errorMessage.value = ''
+  if (!selectedSession.value)
+    return
+
   try {
     await sessionStore.endSession(selectedSession.value.id, payload)
     showEndModal.value = false
@@ -181,7 +200,7 @@ async function handleConfirmEnd(payload) {
   }
 }
 
-function handleDeleteSession(id) {
+function handleDeleteSession(id: EntityId) {
   const session = sessionStore.sessions.find(s => s.id === id)
   if (session) {
     sessionToDelete.value = session
@@ -223,13 +242,16 @@ function cancelDelete() {
   sessionToDelete.value = null
 }
 
-function handleUpdateRoom(session) {
+function handleUpdateRoom(session: SessionResponseDto) {
   selectedSession.value = session
   showUpdateRoomModal.value = true
 }
 
-async function handleConfirmUpdateRoom(payload) {
+async function handleConfirmUpdateRoom(payload: UpdateSessionRoomPayload) {
   errorMessage.value = ''
+  if (!selectedSession.value)
+    return
+
   try {
     await sessionStore.updateSessionRoom(selectedSession.value.id, payload)
     showUpdateRoomModal.value = false
@@ -250,18 +272,18 @@ async function handleConfirmUpdateRoom(payload) {
   }
 }
 
-function handleGenerateQr(session) {
+function handleGenerateQr(session: SessionResponseDto) {
   selectedSession.value = session
   showQRGenerateModal.value = true
 }
 
-async function handleQrGenerated(qrData) {
+async function handleQrGenerated(qrData: DisplayedQrCode) {
   currentQrCode.value = qrData
   showQRDisplayModal.value = true
   showToast('QR Code generated successfully!', 'success')
 }
 
-function handleQrRevoke(_qrCode) {
+function handleQrRevoke(_qrCode: DisplayedQrCode) {
   if (confirm('Are you sure you want to revoke this QR code? It will no longer be valid for attendance.')) {
     // Since we're dealing with a simple image response, we'll just close the modal
     // In a real implementation, you'd call an API to revoke the QR code
@@ -271,18 +293,22 @@ function handleQrRevoke(_qrCode) {
   }
 }
 
-function handleQrFullscreen(qrCodeId) {
+function handleQrFullscreen(qrCodeId: EntityId) {
   router.push(`/qr-code/projection/${qrCodeId}`)
 }
 
-function handleViewQrCodes(session) {
+function handleViewQrCodes(session: SessionResponseDto) {
   selectedSession.value = session
   showQRListModal.value = true
 }
 
-async function handleViewQrFromList(qrCode) {
+async function handleViewQrFromList(qrCode: DisplayedQrCode) {
   // Fetch the full QR code details including the image
   try {
+    if (qrCode.id == null) {
+      showToast('Failed to load QR code details', 'error')
+      return
+    }
     const qrCodeDetails = await qrCodeStore.fetchQrCode(qrCode.id)
     currentQrCode.value = qrCodeDetails
     showQRDisplayModal.value = true
@@ -312,7 +338,7 @@ onMounted(() => {
         </p>
       </div>
       <button class="btn-create-session" @click="showCreateModal = true">
-        <Plus size="20" />
+        <Plus :size="20" />
         <span>Create Session</span>
       </button>
     </div>
@@ -341,22 +367,22 @@ onMounted(() => {
 
     <!-- Error State -->
     <div v-else-if="errorMessage" class="error-state">
-      <AlertTriangle size="48" class="error-icon" />
+      <AlertTriangle :size="48" class="error-icon" />
       <h3>Failed to Load Sessions</h3>
       <p>{{ errorMessage }}</p>
       <button class="btn-retry" @click="loadSessions">
-        <RefreshCw size="18" />
+        <RefreshCw :size="18" />
         <span>Retry</span>
       </button>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="!filteredSessions.length && !sessionStore.loading" class="empty-state">
-      <Calendar size="64" class="empty-icon" />
+      <Calendar :size="64" class="empty-icon" />
       <h3>{{ emptyStateTitle }}</h3>
       <p>{{ emptyStateMessage }}</p>
       <button v-if="currentFilter === 'all'" class="btn-empty-action" @click="showCreateModal = true">
-        <Plus size="20" />
+        <Plus :size="20" />
         <span>Create Your First Session</span>
       </button>
     </div>
@@ -409,7 +435,7 @@ onMounted(() => {
     <QRGenerateModal
       v-if="showQRGenerateModal && selectedSession"
       :show="showQRGenerateModal"
-      :session-id="selectedSession.id"
+      :session-id="Number(selectedSession.id)"
       @generated="handleQrGenerated"
       @close="showQRGenerateModal = false"
     />

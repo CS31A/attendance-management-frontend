@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+import type { TooltipItem } from 'chart.js'
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { BarChart3, CheckCircle, GraduationCap, MoreVertical, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
@@ -19,8 +20,9 @@ const sessionStore = useSessionStore()
 const subjectStore = useSubjectStore()
 
 // Active tab
-const activeTab = ref('Today')
-const tabs = ['Today', 'Week', 'Month', 'Year']
+const tabs = ['Today', 'Week', 'Month', 'Year'] as const
+type ReportsTab = (typeof tabs)[number]
+const activeTab = ref<ReportsTab>('Today')
 
 // Loading state
 const isLoading = ref(false)
@@ -37,8 +39,8 @@ const attendanceRate = computed(() => {
 })
 
 // Attendance Trend Chart Data
-const attendanceTrendLabels = ref([])
-const attendanceTrendValues = ref([])
+const attendanceTrendLabels = ref<string[]>([])
+const attendanceTrendValues = ref<number[]>([])
 
 const attendanceTrendData = computed(() => ({
   labels: attendanceTrendLabels.value,
@@ -71,7 +73,7 @@ const attendanceTrendOptions = {
       borderRadius: 8,
       displayColors: false,
       callbacks: {
-        label: context => `${context.parsed.y}% Attendance`,
+        label: (context: TooltipItem<'line'>) => `${context.parsed.y}% Attendance`,
       },
     },
   },
@@ -81,7 +83,7 @@ const attendanceTrendOptions = {
       max: 100,
       ticks: {
         stepSize: 20,
-        callback: value => `${value}%`,
+        callback: (value: number | string) => `${value}%`,
         font: {
           size: 12,
         },
@@ -108,8 +110,8 @@ const attendanceTrendOptions = {
 }
 
 // Class Performance Chart Data
-const classPerformanceLabels = ref([])
-const classPerformanceValues = ref([])
+const classPerformanceLabels = ref<string[]>([])
+const classPerformanceValues = ref<number[]>([])
 
 const classPerformanceData = computed(() => ({
   labels: classPerformanceLabels.value,
@@ -141,7 +143,7 @@ const classPerformanceOptions = {
       borderRadius: 8,
       displayColors: false,
       callbacks: {
-        label: context => `${context.parsed.y}% Performance`,
+        label: (context: TooltipItem<'bar'>) => `${context.parsed.y}% Performance`,
       },
     },
   },
@@ -151,7 +153,7 @@ const classPerformanceOptions = {
       max: 100,
       ticks: {
         stepSize: 20,
-        callback: value => `${value}%`,
+        callback: (value: number | string) => `${value}%`,
         font: {
           size: 12,
         },
@@ -177,7 +179,7 @@ const classPerformanceOptions = {
   },
 }
 
-function setActiveTab(tab) {
+function setActiveTab(tab: ReportsTab) {
   activeTab.value = tab
   fetchDashboardData()
 }
@@ -208,8 +210,8 @@ async function fetchDashboardData() {
     absentToday.value = todayAbsent
 
     // 3. Fetch Attendance Trend (Last 7 days)
-    const trendLabels = []
-    const trendValues = []
+    const trendLabels: string[] = []
+    const trendValues: number[] = []
 
     // Calculate dates for the last 7 days
     for (let i = 6; i >= 0; i--) {
@@ -247,19 +249,19 @@ async function fetchDashboardData() {
       await subjectStore.fetchSubjects()
     }
 
-    const performanceLabels = []
-    const performanceValues = []
+    const performanceLabels: string[] = []
+    const performanceValues: number[] = []
 
     // Get top 5 subjects
     const subjects = subjectStore.subjects.slice(0, 5)
 
     for (const subject of subjects) {
-      performanceLabels.push(subject.name)
+      performanceLabels.push(subject.name || 'Unnamed Subject')
       // This is a placeholder logic. Real implementation would need a backend endpoint for subject stats
       // or we'd need to aggregate ALL sessions which is too heavy.
       // For now, we'll generate some realistic looking data based on the subject ID to keep it consistent
       // In a real app, we should add `fetchSubjectStats(subjectId)` to the API
-      const randomPerformance = 70 + (subject.id % 25)
+      const randomPerformance = 70 + (Number(subject.id) % 25)
       performanceValues.push(randomPerformance)
     }
 
@@ -314,7 +316,7 @@ onMounted(() => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon blue">
-              <Users size="24" />
+              <Users :size="24" />
             </div>
             <!-- <span class="stat-trend positive">+5.2%</span> -->
           </div>
@@ -329,7 +331,7 @@ onMounted(() => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon green">
-              <CheckCircle size="24" />
+              <CheckCircle :size="24" />
             </div>
             <!-- <span class="stat-trend positive">+2.1%</span> -->
           </div>
@@ -344,7 +346,7 @@ onMounted(() => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon red">
-              <XCircle size="24" />
+              <XCircle :size="24" />
             </div>
             <!-- <span class="stat-trend negative">-1.3%</span> -->
           </div>
@@ -359,7 +361,7 @@ onMounted(() => {
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon navy">
-              <BarChart3 size="24" />
+              <BarChart3 :size="24" />
             </div>
             <!-- <span class="stat-trend positive">+0.8%</span> -->
           </div>
@@ -379,7 +381,7 @@ onMounted(() => {
           <div class="chart-header">
             <div class="chart-title-wrapper">
               <div class="chart-icon">
-                <TrendingUp size="24" />
+                <TrendingUp :size="24" />
               </div>
               <div>
                 <h2 class="chart-title">
@@ -391,7 +393,7 @@ onMounted(() => {
               </div>
             </div>
             <button class="chart-action-btn">
-              <MoreVertical size="18" />
+              <MoreVertical :size="18" />
             </button>
           </div>
           <div class="chart-wrapper">
@@ -407,7 +409,7 @@ onMounted(() => {
           <div class="chart-header">
             <div class="chart-title-wrapper">
               <div class="chart-icon">
-                <GraduationCap size="24" />
+                <GraduationCap :size="24" />
               </div>
               <div>
                 <h2 class="chart-title">
@@ -419,7 +421,7 @@ onMounted(() => {
               </div>
             </div>
             <button class="chart-action-btn">
-              <MoreVertical size="18" />
+              <MoreVertical :size="18" />
             </button>
           </div>
           <div class="chart-wrapper">

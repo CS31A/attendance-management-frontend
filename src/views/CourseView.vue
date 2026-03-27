@@ -1,4 +1,6 @@
-<script setup>
+<script setup lang="ts">
+import type { CourseDto, CoursePayload } from '@/api/courses'
+import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -9,6 +11,12 @@ import { useCourseStore } from '@/stores/courseStore'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+interface HandleErrorableModal {
+  handleError?: (message?: string) => void
+}
+
+type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
 const courseFields = [
@@ -26,12 +34,12 @@ const courseFields = [
 
 const courseStore = useCourseStore()
 const showModal = ref(false)
-const selectedCourse = ref(null)
-const modalRef = ref(null)
+const selectedCourse = ref<CourseDto | null>(null)
+const modalRef = ref<HandleErrorableModal | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
-const courseToDelete = ref(null)
+const courseToDelete = ref<CourseDto | null>(null)
 const isDeleting = ref(false)
 
 // Pagination state
@@ -65,13 +73,13 @@ function handlePreviousPage() {
   }
 }
 
-function handleGoToPage(page) {
+function handleGoToPage(page: number) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-function handleSetItemsPerPage(value) {
+function handleSetItemsPerPage(value: number) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
@@ -82,7 +90,7 @@ function openAddModal() {
   showModal.value = true
 }
 
-function openEditModal(course) {
+function openEditModal(course: CourseDto) {
   selectedCourse.value = { ...course }
   showModal.value = true
 }
@@ -100,7 +108,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -111,7 +119,7 @@ function closeToast() {
   toast.show = false
 }
 
-async function handleSaveCourse(courseData) {
+async function handleSaveCourse(courseData: CoursePayload) {
   try {
     if (selectedCourse.value) {
       // Edit mode
@@ -126,13 +134,11 @@ async function handleSaveCourse(courseData) {
     closeModal()
   }
   catch (error) {
-    if (modalRef.value) {
-      modalRef.value.handleError(error.response?.data?.message || 'Failed to save course')
-    }
+    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save course')
   }
 }
 
-function handleDeleteCourse(id) {
+function handleDeleteCourse(id: EntityId) {
   const course = courseStore.courses.find(c => c.id === id)
   if (course) {
     courseToDelete.value = course
@@ -205,7 +211,7 @@ onMounted(async () => {
     <!-- Error message -->
     <div v-else-if="courseStore.error" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="24" />
+        <AlertTriangle class="error-icon" :size="24" />
         <p>{{ courseStore.error }}</p>
         <BaseButton variant="secondary" size="small" @click="courseStore.fetchCourses">
           Retry
@@ -255,7 +261,7 @@ onMounted(async () => {
     <FormModal
       ref="modalRef"
       :show="showModal"
-      :entity="selectedCourse"
+      :entity="selectedCourse ?? undefined"
       title="Course"
       :fields="courseFields"
       :loading="courseStore.loading"

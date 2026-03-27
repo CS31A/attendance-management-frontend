@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {
   AlertTriangle,
   Eye,
@@ -20,6 +20,9 @@ import { useAuthStore } from '@/stores/authStore'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+type ToastType = 'success' | 'error'
+type LoginField = 'username' | 'password'
 
 // Redirect if already authenticated
 onMounted(() => {
@@ -43,7 +46,7 @@ const errors = reactive({
 const isLoading = ref(false)
 const hasAttemptedSubmit = ref(false)
 const showPassword = ref(false)
-let navigationTimeout = null
+let navigationTimeout: ReturnType<typeof setTimeout> | null = null
 
 const toast = reactive({
   show: false,
@@ -52,7 +55,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 1000) {
+function showToast(message: string, type: ToastType = 'success', duration = 1000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -64,7 +67,7 @@ function closeToast() {
 }
 
 // Validation rules
-function validateUsername(username) {
+function validateUsername(username: string) {
   if (!username || username.trim() === '') {
     return 'Username or email is required'
   }
@@ -84,7 +87,7 @@ function validateUsername(username) {
   return ''
 }
 
-function validatePassword(password) {
+function validatePassword(password: string) {
   if (!password || password.trim() === '') {
     return 'Password is required'
   }
@@ -97,7 +100,7 @@ function validatePassword(password) {
 }
 
 // Real-time validation
-function validateField(field) {
+function validateField(field: LoginField) {
   if (!hasAttemptedSubmit.value)
     return
 

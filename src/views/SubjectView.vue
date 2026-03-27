@@ -1,4 +1,6 @@
-<script setup>
+<script setup lang="ts">
+import type { SubjectDto, SubjectPayload } from '@/api/subjects'
+import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -9,6 +11,12 @@ import { useSubjectStore } from '@/stores/subjectStore'
 
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+
+interface HandleErrorableModal {
+  handleError?: (message?: string) => void
+}
+
+type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
 const subjectFields = [
@@ -36,12 +44,12 @@ const subjectFields = [
 
 const subjectStore = useSubjectStore()
 const showModal = ref(false)
-const selectedSubject = ref(null)
-const modalRef = ref(null)
+const selectedSubject = ref<SubjectDto | null>(null)
+const modalRef = ref<HandleErrorableModal | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
-const subjectToDelete = ref(null)
+const subjectToDelete = ref<SubjectDto | null>(null)
 const isDeleting = ref(false)
 
 // Pagination state
@@ -75,13 +83,13 @@ function handlePreviousPage() {
   }
 }
 
-function handleGoToPage(page) {
+function handleGoToPage(page: number) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-function handleSetItemsPerPage(value) {
+function handleSetItemsPerPage(value: number) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
@@ -92,7 +100,7 @@ function openAddModal() {
   showModal.value = true
 }
 
-function openEditModal(subject) {
+function openEditModal(subject: SubjectDto) {
   selectedSubject.value = { ...subject }
   showModal.value = true
 }
@@ -110,7 +118,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -121,7 +129,7 @@ function closeToast() {
   toast.show = false
 }
 
-async function handleSaveSubject(subjectData) {
+async function handleSaveSubject(subjectData: SubjectPayload) {
   try {
     if (selectedSubject.value) {
       // Edit mode
@@ -136,13 +144,11 @@ async function handleSaveSubject(subjectData) {
     closeModal()
   }
   catch (error) {
-    if (modalRef.value) {
-      modalRef.value.handleError(error.response?.data?.message || 'Failed to save subject')
-    }
+    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save subject')
   }
 }
 
-function handleDeleteSubject(id) {
+function handleDeleteSubject(id: EntityId) {
   const subject = subjectStore.subjects.find(s => s.id === id)
   if (subject) {
     subjectToDelete.value = subject
@@ -215,7 +221,7 @@ onMounted(async () => {
     <!-- Error message -->
     <div v-else-if="subjectStore.error" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="24" />
+        <AlertTriangle class="error-icon" :size="24" />
         <p>{{ subjectStore.error }}</p>
         <BaseButton variant="secondary" size="small" @click="subjectStore.fetchSubjects">
           Retry
@@ -265,7 +271,7 @@ onMounted(async () => {
     <FormModal
       ref="modalRef"
       :show="showModal"
-      :entity="selectedSubject"
+      :entity="selectedSubject ?? undefined"
       title="Subject"
       :fields="subjectFields"
       :loading="subjectStore.loading"
