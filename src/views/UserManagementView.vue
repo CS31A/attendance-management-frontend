@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CreateUserInput } from '@/stores/userStore'
 import type { Id } from '@/types'
+import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -19,10 +20,6 @@ type ToastType = 'success' | 'error'
 type ManagedUser = ReturnType<typeof useUserStore>['users'][number]
 
 const userStore = useUserStore()
-
-interface HandleErrorableModal {
-  handleError?: (message?: string) => void
-}
 
 interface EditableUser {
   userId?: string | number

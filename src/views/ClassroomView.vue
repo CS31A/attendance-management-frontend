@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
 import type { EntityId } from '@/types'
+import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -12,14 +13,10 @@ import { useClassroomStore } from '@/stores/classroomStore'
 const ClassroomTableSection = defineAsyncComponent(() => import('@/components/tables/ClassroomTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
-interface HandleErrorableModal {
-  handleError?: (message?: string) => void
-}
-
 type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
-const classroomFields = [
+const classroomFields: FormFieldConfig[] = [
   {
     name: 'name',
     label: 'Classroom Name',

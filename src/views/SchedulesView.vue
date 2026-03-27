@@ -4,6 +4,7 @@ import type { ScheduleDto, SchedulePayload } from '@/api/schedules'
 import type { SectionDto } from '@/api/sections'
 import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
+import type { FormFieldConfig, FormOption, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -24,26 +25,6 @@ const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/Sk
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-
-interface HandleErrorableModal {
-  handleError?: (message?: string) => void
-}
-
-interface FormOption {
-  value: string | number
-  label: string
-}
-
-interface FormFieldConfig {
-  name: string
-  label: string
-  type: string
-  icon?: object | null
-  placeholder?: string
-  required?: boolean
-  validation?: (value: unknown, formData: Record<string, unknown>) => string | null
-  options?: FormOption[] | (() => Promise<FormOption[]>)
-}
 
 type ToastType = 'success' | 'error'
 

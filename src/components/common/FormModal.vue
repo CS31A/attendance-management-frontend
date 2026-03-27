@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { FormFieldConfig, FormOption } from '@/types/ui'
 /**
  * FormModal - A generic, reusable modal component for creating and editing entities
  * Refactored to use BaseModal
@@ -84,33 +85,6 @@
 import { AlertTriangle, Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import BaseModal from '../common/BaseModal.vue'
-
-interface FormOption {
-  value: string | number
-  label: string
-}
-
-interface FormFieldConfig {
-  name: string
-  label: string
-  type: string
-  icon?: object | null
-  placeholder?: string
-  required?: boolean
-  minlength?: number
-  maxlength?: number
-  min?: number | string
-  max?: number | string
-  default?: unknown
-  grid?: string
-  helperText?: string
-  component?: object | null
-  props?: Record<string, unknown>
-  options?: FormOption[] | (() => Promise<FormOption[]>)
-  show?: (formData: Record<string, unknown>) => boolean
-  disabled?: (formData: Record<string, unknown>) => boolean
-  validation?: (value: unknown, formData: Record<string, unknown>) => string | null
-}
 
 interface InfoSectionField {
   label: string

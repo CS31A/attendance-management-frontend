@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SectionDto, SectionPayload } from '@/api/sections'
 import type { EntityId } from '@/types'
+import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -12,10 +13,6 @@ import { useSectionStore } from '@/stores/sectionStore'
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
-
-interface HandleErrorableModal {
-  handleError?: (message?: string) => void
-}
 
 type ToastType = 'success' | 'error'
 

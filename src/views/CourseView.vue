@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CourseDto, CoursePayload } from '@/api/courses'
 import type { EntityId } from '@/types'
+import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -12,14 +13,10 @@ import { useCourseStore } from '@/stores/courseStore'
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
-interface HandleErrorableModal {
-  handleError?: (message?: string) => void
-}
-
 type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
-const courseFields = [
+const courseFields: FormFieldConfig[] = [
   {
     name: 'name',
     label: 'Course Name',

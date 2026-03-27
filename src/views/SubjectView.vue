@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SubjectDto, SubjectPayload } from '@/api/subjects'
 import type { EntityId } from '@/types'
+import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -12,14 +13,10 @@ import { useSubjectStore } from '@/stores/subjectStore'
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
-interface HandleErrorableModal {
-  handleError?: (message?: string) => void
-}
-
 type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
-const subjectFields = [
+const subjectFields: FormFieldConfig[] = [
   {
     name: 'name',
     label: 'Subject Name',
