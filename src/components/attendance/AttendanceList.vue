@@ -1,6 +1,7 @@
 <script setup>
 import { Calendar, ChevronRight, Clock, Filter, MapPin, Search } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref } from 'vue'
+import { formatShortWeekdayDate as formatDate } from '@/utils/date'
 
 const props = defineProps({
   sessions: {
@@ -76,17 +77,6 @@ const sessionCounts = computed(() => ({
 // Methods
 function handleSelectSession(session) {
   emit('select', session)
-}
-
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 function formatTime(timeString) {

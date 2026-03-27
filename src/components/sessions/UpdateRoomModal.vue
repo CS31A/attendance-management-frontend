@@ -2,6 +2,7 @@
 import { AlertTriangle, MapPin, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import classroomApi from '@/api/classrooms'
+import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
 defineProps({
   session: {
@@ -68,18 +69,6 @@ function getCourseName(session) {
     || session.courseName
     || session.courseCode
     || 'Unknown Course'
-}
-
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
 }
 
 function updateRoom() {

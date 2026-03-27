@@ -1,5 +1,6 @@
 <script setup>
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
+import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 defineProps({
@@ -10,19 +11,6 @@ defineProps({
 })
 
 defineEmits(['start', 'end', 'delete', 'updateRoom', 'generateQr', 'viewQrCodes'])
-
-// Helper functions
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 
 function getCourseName(session) {
   if (!session)

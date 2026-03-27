@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
+import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
 const props = defineProps({
   session: {
@@ -153,19 +154,6 @@ function handleBack() {
     }
   }
   emit('back')
-}
-
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  // sessionDate is date-only (no time component), parse as local date
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
 }
 
 function formatTime(timeString) {

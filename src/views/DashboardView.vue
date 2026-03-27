@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ArcElement, CategoryScale, Chart as ChartJS, DoughnutController, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -7,8 +7,42 @@ import { getInstructorSubjects, getMySchedules } from '@/api/instructors'
 import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
+import { formatLongDate } from '@/utils/date'
 
 const Doughnut = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Doughnut })))
+
+interface InstructorProfile {
+  id?: number | string
+  firstname?: string
+  lastname?: string
+}
+
+interface ScheduleItem {
+  id: number | string
+  dayOfWeek?: string
+  timeIn?: string
+  timeOut?: string
+  subject?: { code?: string, name?: string }
+  classroom?: { name?: string }
+  section?: { name?: string }
+}
+
+interface RawScheduleItem extends Record<string, unknown> {
+  id?: number | string
+  dayOfWeek?: string
+  timeIn?: string
+  timeOut?: string
+  subject?: { code?: string, name?: string }
+  classroom?: { name?: string }
+  section?: { name?: string }
+}
+
+interface RefreshIntervalMap {
+  activeSessions?: ReturnType<typeof setInterval>
+  upcomingSessions?: ReturnType<typeof setInterval>
+  attendanceStats?: ReturnType<typeof setInterval>
+  timeUpdate?: ReturnType<typeof setInterval>
+}
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, DoughnutController, ArcElement)
@@ -19,18 +53,18 @@ const router = useRouter()
 
 // State
 const isLoading = ref(true)
-const instructorProfile = ref(null)
-const schedules = ref([])
-const activeSessions = ref([])
-const upcomingSessions = ref([])
-const attendanceSummary = ref(null)
-const subjects = ref([])
-const todaySessions = ref([])
+const instructorProfile = ref<InstructorProfile | null>(null)
+const schedules = ref<ScheduleItem[]>([])
+const activeSessions = ref<any[]>([])
+const upcomingSessions = ref<any[]>([])
+const attendanceSummary = ref<any>(null)
+const subjects = ref<any[]>([])
+const todaySessions = ref<any[]>([])
 const showModal = ref(false)
-const modalSessionData = ref(null)
+const modalSessionData = ref<any>(null)
 const modalLoading = ref(false)
 const currentDateTime = ref(new Date())
-const refreshIntervals = ref({})
+const refreshIntervals = ref<RefreshIntervalMap>({})
 
 // Computed
 const isAuthenticated = computed(() => authStore.getIsAuthenticated)
@@ -123,7 +157,7 @@ const attendanceChartOptions = {
 // Weekly schedule grouped by day
 const weeklySchedule = computed(() => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-  const grouped = {}
+  const grouped: Record<string, ScheduleItem[]> = {}
 
   days.forEach((day) => {
     grouped[day] = schedules.value.filter(s => s.dayOfWeek === day)
@@ -160,6 +194,19 @@ async function loadSchedules() {
   try {
     const data = await getMySchedules()
     schedules.value = data
+      .filter((item): item is RawScheduleItem => typeof item === 'object' && item !== null)
+      .map((item) => {
+        const fallbackId = `${item.dayOfWeek ?? ''}-${item.timeIn ?? ''}-${item.timeOut ?? ''}`
+        return {
+          id: item.id ?? fallbackId,
+          dayOfWeek: item.dayOfWeek,
+          timeIn: item.timeIn,
+          timeOut: item.timeOut,
+          subject: item.subject,
+          classroom: item.classroom,
+          section: item.section,
+        }
+      })
   }
   catch (error) {
     console.error('Failed to load schedules:', error)
@@ -201,6 +248,8 @@ async function loadTodaySessions() {
     await sessionStore.fetchSessions()
     const today = new Date().toDateString()
     todaySessions.value = sessionStore.sessions.filter((session) => {
+      if (!session.sessionDate)
+        return false
       const sessionDate = new Date(session.sessionDate)
       return sessionDate.toDateString() === today
     })
@@ -211,7 +260,7 @@ async function loadTodaySessions() {
 }
 
 // Modal functions
-async function openSessionModal(sessionId) {
+async function openSessionModal(sessionId: any) {
   showModal.value = true
   modalLoading.value = true
   modalSessionData.value = null
@@ -234,7 +283,7 @@ function closeModal() {
 }
 
 // Utility functions
-function formatTime(isoString) {
+function formatTime(isoString: any) {
   if (!isoString)
     return '-'
   const date = new Date(isoString)
@@ -242,17 +291,6 @@ function formatTime(isoString) {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
-  })
-}
-
-function formatDate(isoString) {
-  if (!isoString)
-    return '-'
-  const date = new Date(isoString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
   })
 }
 
@@ -318,7 +356,11 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  Object.values(refreshIntervals.value).forEach(interval => clearInterval(interval))
+  Object.values(refreshIntervals.value).forEach((interval) => {
+    if (interval) {
+      clearInterval(interval)
+    }
+  })
 })
 </script>
 
@@ -621,10 +663,10 @@ onBeforeUnmount(() => {
                             {{ schedule.timeIn }} - {{ schedule.timeOut }}
                           </div>
                           <div class="schedule-subject">
-                            {{ schedule.subject.code }} - {{ schedule.subject.name }}
+                            {{ schedule.subject?.code || '-' }} - {{ schedule.subject?.name || 'Unknown Subject' }}
                           </div>
                           <div class="schedule-location">
-                            {{ schedule.classroom.name }} • {{ schedule.section.name }}
+                            {{ schedule.classroom?.name || 'TBA' }} • {{ schedule.section?.name || 'TBA' }}
                           </div>
                         </div>
                       </div>
@@ -696,7 +738,7 @@ onBeforeUnmount(() => {
           <div v-else-if="modalSessionData" class="modal-content">
             <div class="session-info">
               <h3>{{ modalSessionData.subjectName }} - {{ modalSessionData.sectionName }}</h3>
-              <p>{{ formatDate(modalSessionData.sessionDate) }} • {{ modalSessionData.totalEnrolled }} students enrolled</p>
+              <p>{{ formatLongDate(modalSessionData.sessionDate, '-') }} • {{ modalSessionData.totalEnrolled }} students enrolled</p>
             </div>
 
             <div class="attendance-stats-grid" style="margin: 1.5rem 0;">

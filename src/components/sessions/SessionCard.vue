@@ -1,5 +1,6 @@
 <script setup>
 import { Calendar, Clock, MapPin } from 'lucide-vue-next'
+import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 /**
@@ -11,23 +12,6 @@ defineProps({
     required: true,
   },
 })
-
-/**
- * Format date to readable string
- * @param {string} dateString - ISO date string
- * @returns {string} Formatted date
- */
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 
 /**
  * Format time to readable string

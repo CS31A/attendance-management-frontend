@@ -1,5 +1,6 @@
 <script setup>
 import { ArchiveRestore, ArchiveX, Calendar, Edit, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
+import { formatShortTableDate as formatDate } from '@/utils/date'
 
 defineProps({
   users: {
@@ -54,21 +55,6 @@ function _getUserSection(user) {
     return user.sectionName
   }
   return '-'
-}
-
-// Format date for display
-function formatDate(value) {
-  if (!value)
-    return 'N/A'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime()))
-    return 'N/A'
-
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(date)
 }
 </script>
 

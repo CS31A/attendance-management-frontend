@@ -1,5 +1,6 @@
 <script setup>
 import { BookOpen, Calendar, Edit, Trash2, Users } from 'lucide-vue-next'
+import { formatShortTableDate as formatDate } from '@/utils/date'
 
 defineProps({
   sections: {
@@ -22,21 +23,6 @@ function getSectionName(section) {
     return section.code
   }
   return `Section ${section.id}`
-}
-
-// Format date for display
-function formatDate(value) {
-  if (!value)
-    return 'N/A'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime()))
-    return 'N/A'
-
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(date)
 }
 </script>
 
