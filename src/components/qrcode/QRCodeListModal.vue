@@ -2,7 +2,7 @@
 import { Check, Clock, Eye, QrCode, RefreshCw, X, XCircle } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
-import { parseUtcDate } from '@/utils/qrcode'
+import { formatDateTime, parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({
   show: {
@@ -55,19 +55,6 @@ function handleViewQr(qrCode) {
 
 async function handleRefresh() {
   await loadQrCodes()
-}
-
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  const date = parseUtcDate(dateString)
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 function getStatusBadgeClass(qrCode) {
@@ -200,7 +187,7 @@ watch(() => props.show, (newVal) => {
                       <Clock :size="16" class="info-icon" />
                       <div class="info-content">
                         <span class="info-label">Created:</span>
-                        <span class="info-value">{{ formatDate(qrCode.createdAt) }}</span>
+                        <span class="info-value">{{ formatDateTime(qrCode.createdAt) }}</span>
                       </div>
                     </div>
 

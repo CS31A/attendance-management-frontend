@@ -18,7 +18,7 @@ interface ApiUser {
   id?: EntityId
   username?: string
   email?: string
-  role?: UserRole | 'Instructor' | 'Teacher'
+  role?: UserRole | 'Teacher'
   createdAt?: string
   updatedAt?: string
   isDeleted?: boolean

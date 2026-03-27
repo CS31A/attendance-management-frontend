@@ -124,6 +124,23 @@ export function formatDate(date: string | Date | null | undefined): string {
   })
 }
 
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date)
+    return '-'
+
+  const parsed = parseUtcDate(date)
+  if (!parsed)
+    return '-'
+
+  return parsed.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export default {
   parseUtcDate,
   calculateRemainingTime,
@@ -131,4 +148,5 @@ export default {
   isQrExpired,
   formatScanTime,
   formatDate,
+  formatDateTime,
 }

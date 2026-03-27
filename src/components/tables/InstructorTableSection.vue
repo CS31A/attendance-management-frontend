@@ -74,6 +74,11 @@ function nextPage() {
 function goToPage(page) {
   currentPage.value = page
 }
+
+function formatCreatedAt(value) {
+  const parsed = parseUtcDate(value)
+  return parsed ? parsed.toLocaleDateString() : '-'
+}
 </script>
 
 <template>
@@ -129,7 +134,7 @@ function goToPage(page) {
                 {{ instructor.email }}
               </td>
               <td class="td-created">
-                {{ parseUtcDate(instructor.createdAt).toLocaleDateString() }}
+                {{ formatCreatedAt(instructor.createdAt) }}
               </td>
               <td class="td-actions">
                 <div class="action-buttons">
