@@ -3,6 +3,7 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import scheduleApi from '@/api/schedules'
+import { entityIdsMatch } from '@/utils/entityId'
 
 export const useScheduleStore = defineStore('schedule', () => {
   // State
@@ -118,7 +119,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     error.value = ''
     try {
       await scheduleApi.deleteSchedule(id)
-      schedules.value = schedules.value.filter(s => s.id !== id)
+      schedules.value = schedules.value.filter(s => !entityIdsMatch(s.id, id))
     }
     catch (err) {
       error.value = err.response?.data?.message || 'Failed to delete schedule'

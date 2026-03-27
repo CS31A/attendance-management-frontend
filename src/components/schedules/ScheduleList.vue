@@ -28,6 +28,14 @@ function formatTime(time) {
   const formattedHour = hour % 12 || 12
   return `${formattedHour}:${minutes} ${ampm}`
 }
+
+function getInstructorName(schedule) {
+  const instructor = schedule.instructor || {}
+  const firstName = instructor.firstName || instructor.firstname || schedule.instructorFirstName || ''
+  const lastName = instructor.lastName || instructor.lastname || schedule.instructorLastName || ''
+  const fullName = `${firstName} ${lastName}`.trim()
+  return fullName || '-'
+}
 </script>
 
 <template>
@@ -81,10 +89,7 @@ function formatTime(time) {
               </td>
               <td>{{ schedule.classroom?.name || schedule.classroomName || '-' }}</td>
               <td>
-                <span class="instructor-name">
-                  {{ schedule.instructor?.firstname || schedule.instructorFirstName || '' }}
-                  {{ schedule.instructor?.lastname || schedule.instructorLastName || '' }}
-                </span>
+                <span class="instructor-name">{{ getInstructorName(schedule) }}</span>
               </td>
               <td class="actions-col">
                 <div class="action-buttons">

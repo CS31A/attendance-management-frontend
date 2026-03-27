@@ -20,6 +20,7 @@ import {
   updateAttendance as apiUpdateAttendance,
   calculateAttendanceStats,
 } from '@/api/attendance'
+import { entityIdsMatch } from '@/utils/entityId'
 
 /**
  * Attendance Store
@@ -113,7 +114,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {object | undefined} Attendance record
    */
   const getRecordByStudentId = computed(() => (studentId: EntityId) => {
-    return sessionAttendance.value.find(record => record.studentId === studentId)
+    return sessionAttendance.value.find(record => entityIdsMatch(record.studentId, studentId))
   })
 
   /**
@@ -259,7 +260,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       const data = await apiRecordAttendance(payload)
 
       // Update local state with new records
-      if (payload.sessionId === currentSessionId.value) {
+      if (entityIdsMatch(payload.sessionId, currentSessionId.value)) {
         sessionAttendance.value = data
       }
 
@@ -285,7 +286,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
     // Store original state for rollback
     const originalRecords = [...sessionAttendance.value]
-    const recordIndex = sessionAttendance.value.findIndex(r => r.id === id)
+    const recordIndex = sessionAttendance.value.findIndex(r => entityIdsMatch(r.id, id))
 
     try {
       const updatedRecord = await apiUpdateAttendance(id, payload)
@@ -325,7 +326,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       await apiDeleteAttendance(id)
 
       // Remove from local state
-      sessionAttendance.value = sessionAttendance.value.filter(r => r.id !== id)
+      sessionAttendance.value = sessionAttendance.value.filter(r => !entityIdsMatch(r.id, id))
     }
     catch (err) {
       console.error('Failed to delete attendance record:', err)
@@ -347,7 +348,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {string} status - New status
    */
   const updateLocalStatus = (studentId: EntityId, status: AttendanceStatus) => {
-    const record = sessionAttendance.value.find(r => r.studentId === studentId)
+    const record = sessionAttendance.value.find(r => entityIdsMatch(r.studentId, studentId))
     if (record) {
       record.status = status
     }

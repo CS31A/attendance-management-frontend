@@ -37,14 +37,27 @@ const enrolledStudents = computed(() => enrollmentStore.getSectionStudents)
 const availableStudents = computed(() => userStore.students)
 const isLoading = computed(() => enrollmentStore.isLoading || userStore.loading)
 
+function asSearchableString(value) {
+  if (typeof value === 'string')
+    return value.toLowerCase()
+  if (typeof value === 'number')
+    return String(value).toLowerCase()
+  return ''
+}
+
+function formatEnrollmentDate(value) {
+  const parsed = parseUtcDate(value)
+  return parsed ? parsed.toLocaleDateString() : '-'
+}
+
 const filteredEnrolledStudents = computed(() => {
   if (!searchQuery.value)
     return enrolledStudents.value
   const query = searchQuery.value.toLowerCase()
   return enrolledStudents.value.filter(s =>
-    s.firstName.toLowerCase().includes(query)
-    || s.lastName.toLowerCase().includes(query)
-    || (s.studentId && s.studentId.toLowerCase().includes(query)),
+    asSearchableString(s.firstName).includes(query)
+    || asSearchableString(s.lastName).includes(query)
+    || asSearchableString(s.studentId).includes(query),
   )
 })
 
@@ -274,7 +287,7 @@ watch(() => props.section, () => {
                     {{ student.status || 'Active' }}
                   </span>
                 </td>
-                <td>{{ parseUtcDate(student.enrollmentDate).toLocaleDateString() }}</td>
+                <td>{{ formatEnrollmentDate(student.enrollmentDate) }}</td>
                 <td>
                   <div class="row-actions">
                     <button

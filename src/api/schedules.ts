@@ -17,6 +17,7 @@ export interface ScheduleRelationDto {
 
 export interface ScheduleInstructorDto {
   id?: EntityId
+  // Backend responses currently vary between lowercase and camelCase naming.
   firstname?: string
   lastname?: string
   firstName?: string
@@ -160,22 +161,6 @@ export async function deleteSchedule(id: EntityId): Promise<void> {
   }
 }
 
-/**
- * Get schedules by instructor ID
- * @param {number} instructorId - Instructor ID
- * @returns {Promise<Array>} List of schedule objects for the instructor
- */
-export async function getSchedulesByInstructor(instructorId: EntityId): Promise<ScheduleCollectionDto> {
-  try {
-    const response = await api.get(`${SCHEDULE_ENDPOINT}/instructor/${instructorId}`)
-    return response.data
-  }
-  catch (error) {
-    console.error(`Failed to fetch schedules for instructor ${instructorId}:`, error)
-    return Promise.reject(error)
-  }
-}
-
 export default {
   getAllSchedules,
   getMySchedules,
@@ -183,5 +168,4 @@ export default {
   createSchedule,
   updateSchedule,
   deleteSchedule,
-  getSchedulesByInstructor,
 }
