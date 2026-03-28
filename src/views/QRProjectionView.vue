@@ -19,6 +19,7 @@ const qrCode = computed(() => qrCodeStore.getActiveQrCode)
 const qrCodeImageSrc = computed(() =>
   typeof qrCode.value?.qrCodeData === 'string' ? qrCode.value.qrCodeData : '',
 )
+const hasQrCodeImage = computed(() => qrCodeImageSrc.value.length > 0)
 
 const isExpired = computed(() => timeRemaining.value <= 0)
 const isNearExpiration = computed(() => timeRemaining.value > 0 && timeRemaining.value < 300)
@@ -170,7 +171,7 @@ onUnmounted(() => {
           <div class="qr-column-left" style="display: flex; align-items: center; justify-content: center;">
             <div class="qr-display" :class="{ expired: isExpired }">
               <img
-                v-if="qrCode.qrCodeData"
+                v-if="hasQrCodeImage"
                 :src="qrCodeImageSrc"
                 alt="Attendance QR Code"
                 class="qr-image"

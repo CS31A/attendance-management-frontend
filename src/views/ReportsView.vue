@@ -261,7 +261,9 @@ async function fetchDashboardData() {
       // or we'd need to aggregate ALL sessions which is too heavy.
       // For now, we'll generate some realistic looking data based on the subject ID to keep it consistent
       // In a real app, we should add `fetchSubjectStats(subjectId)` to the API
-      const randomPerformance = 70 + (Number(subject.id) % 25)
+      const numericSubjectId = Number(subject.id)
+      const performanceSeed = Number.isFinite(numericSubjectId) ? numericSubjectId % 25 : 0
+      const randomPerformance = 70 + performanceSeed
       performanceValues.push(randomPerformance)
     }
 
