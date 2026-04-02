@@ -7,6 +7,7 @@ export default antfu({
     quotes: 'single',
   },
   ignores: [
+    '.serena/**',
     '**/*.md',
     '**/dist/**',
     '**/node_modules/**',
@@ -16,5 +17,6 @@ export default antfu({
     'no-console': ['error', { allow: ['warn', 'error'] }],
     'regexp/no-super-linear-backtracking': 'off',
     '@typescript-eslint/ban-ts-comment': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
   },
 })

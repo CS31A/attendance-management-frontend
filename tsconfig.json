@@ -13,9 +13,10 @@
     "types": ["vite/client", "node"],
     "allowJs": false,
     "checkJs": false,
-    "strict": false,
+    "strict": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
+    "useUnknownInCatchVariables": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
