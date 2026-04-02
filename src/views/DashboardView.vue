@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import type { AttendanceSummaryDto, SessionAttendanceResponseDto } from '@/api/attendance'
+import type { SessionResponseDto } from '@/api/sessions'
+import type { EntityId } from '@/types'
 import { ArcElement, CategoryScale, Chart as ChartJS, DoughnutController, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance'
+import { calculateAttendanceStats, fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance'
 import { getInstructorSubjects, getMySchedules } from '@/api/instructors'
 import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { formatLongDate } from '@/utils/date'
+import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorMessage } from '@/utils/httpError'
 
 const Doughnut = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Doughnut })))
 
@@ -44,6 +49,33 @@ interface RefreshIntervalMap {
   timeUpdate?: ReturnType<typeof setInterval>
 }
 
+interface DashboardAttendanceSummary extends AttendanceSummaryDto {
+  totalSessions?: number
+  totalPresent?: number
+  totalLate?: number
+  totalAbsent?: number
+  totalExcused?: number
+  attendanceRate?: number
+}
+
+interface InstructorSubject extends Record<string, unknown> {
+  id?: EntityId
+  code?: string
+  name?: string
+}
+
+interface SessionAttendanceModalData {
+  session: SessionResponseDto
+  attendanceRecords: SessionAttendanceResponseDto[]
+  presentCount: number
+  lateCount: number
+  absentCount: number
+  excusedCount: number
+  attendanceRate: number
+  totalEnrolled: number | null
+  attendanceMeta: string
+}
+
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, DoughnutController, ArcElement)
 
@@ -55,14 +87,16 @@ const router = useRouter()
 const isLoading = ref(true)
 const instructorProfile = ref<InstructorProfile | null>(null)
 const schedules = ref<ScheduleItem[]>([])
-const activeSessions = ref<any[]>([])
-const upcomingSessions = ref<any[]>([])
-const attendanceSummary = ref<any>(null)
-const subjects = ref<any[]>([])
-const todaySessions = ref<any[]>([])
+const activeSessions = ref<SessionResponseDto[]>([])
+const upcomingSessions = ref<SessionResponseDto[]>([])
+const attendanceSummary = ref<DashboardAttendanceSummary | null>(null)
+const subjects = ref<InstructorSubject[]>([])
+const todaySessions = ref<SessionResponseDto[]>([])
 const showModal = ref(false)
-const modalSessionData = ref<any>(null)
+const modalSessionData = ref<SessionAttendanceModalData | null>(null)
 const modalLoading = ref(false)
+const modalErrorMessage = ref('')
+const activeModalSessionId = ref<EntityId | null>(null)
 const currentDateTime = ref(new Date())
 const refreshIntervals = ref<RefreshIntervalMap>({})
 
@@ -182,7 +216,7 @@ async function loadInstructorData() {
 
     if (instructorProfile.value?.id) {
       const subjectsData = await getInstructorSubjects(instructorProfile.value.id)
-      subjects.value = subjectsData
+      subjects.value = subjectsData.filter((item): item is InstructorSubject => typeof item === 'object' && item !== null)
     }
   }
   catch (error) {
@@ -260,30 +294,76 @@ async function loadTodaySessions() {
 }
 
 // Modal functions
-async function openSessionModal(sessionId: any) {
+async function openSessionModal(sessionId: EntityId) {
+  activeModalSessionId.value = sessionId
   showModal.value = true
   modalLoading.value = true
   modalSessionData.value = null
+  modalErrorMessage.value = ''
+  const requestSessionId = sessionId
 
   try {
-    const data = await fetchSessionAttendance(sessionId)
-    modalSessionData.value = data
+    const selectedSession = sessionStore.sessions.find(session => entityIdsMatch(session.id, sessionId))
+      || activeSessions.value.find(session => entityIdsMatch(session.id, sessionId))
+      || upcomingSessions.value.find(session => entityIdsMatch(session.id, sessionId))
+      || todaySessions.value.find(session => entityIdsMatch(session.id, sessionId))
+      || await sessionStore.fetchSessionById(sessionId)
+
+    const attendanceRecords = await fetchSessionAttendance(sessionId)
+    const stats = calculateAttendanceStats(attendanceRecords)
+    const totalEnrolled = typeof selectedSession.totalEnrolled === 'number'
+      ? selectedSession.totalEnrolled
+      : null
+    const attendanceMeta = attendanceRecords.length === 0
+      ? 'Attendance not recorded yet'
+      : `${attendanceRecords.length} attendance record${attendanceRecords.length === 1 ? '' : 's'}`
+
+    if (!entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
+      return
+    }
+
+    modalSessionData.value = {
+      session: selectedSession,
+      attendanceRecords,
+      presentCount: stats.presentCount,
+      lateCount: stats.lateCount,
+      absentCount: stats.absentCount,
+      excusedCount: stats.excusedCount,
+      attendanceRate: stats.presentPercentage,
+      totalEnrolled,
+      attendanceMeta,
+    }
   }
   catch (error) {
     console.error('Failed to load session attendance:', error)
+    if (!entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
+      return
+    }
+    modalSessionData.value = null
+    modalErrorMessage.value = getErrorMessage(error, 'Failed to load session attendance. Please try again.')
   }
   finally {
-    modalLoading.value = false
+    if (entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
+      modalLoading.value = false
+    }
+  }
+}
+
+function retrySessionModal() {
+  if (activeModalSessionId.value !== null) {
+    void openSessionModal(activeModalSessionId.value)
   }
 }
 
 function closeModal() {
   showModal.value = false
   modalSessionData.value = null
+  modalErrorMessage.value = ''
+  activeModalSessionId.value = null
 }
 
 // Utility functions
-function formatTime(isoString: any) {
+function formatTime(isoString?: string | null) {
   if (!isoString)
     return '-'
   const date = new Date(isoString)
@@ -737,8 +817,12 @@ onBeforeUnmount(() => {
           </div>
           <div v-else-if="modalSessionData" class="modal-content">
             <div class="session-info">
-              <h3>{{ modalSessionData.subjectName }} - {{ modalSessionData.sectionName }}</h3>
-              <p>{{ formatLongDate(modalSessionData.sessionDate, '-') }} • {{ modalSessionData.totalEnrolled }} students enrolled</p>
+              <h3>{{ modalSessionData.session.subjectName }} - {{ modalSessionData.session.sectionName }}</h3>
+              <p>
+                {{ formatLongDate(modalSessionData.session.sessionDate, '-') }} •
+                {{ modalSessionData.totalEnrolled === null ? 'Enrollment unavailable' : `${modalSessionData.totalEnrolled} students enrolled` }}
+                • {{ modalSessionData.attendanceMeta }}
+              </p>
             </div>
 
             <div class="attendance-stats-grid" style="margin: 1.5rem 0;">
@@ -798,6 +882,19 @@ onBeforeUnmount(() => {
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div v-else class="modal-error-state">
+            <p class="modal-error-message">
+              {{ modalErrorMessage || 'Failed to load session attendance. Please try again.' }}
+            </p>
+            <div class="modal-error-actions">
+              <button class="btn-secondary" @click="closeModal">
+                Close
+              </button>
+              <button class="btn-primary" @click="retrySessionModal">
+                Retry
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1418,6 +1515,25 @@ onBeforeUnmount(() => {
   padding: var(--spacing-2xl);
   gap: var(--spacing-md);
   color: var(--text-secondary);
+}
+
+.modal-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.modal-error-message {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.modal-error-actions {
+  display: flex;
+  gap: var(--spacing-sm);
 }
 
 .session-info h3 {

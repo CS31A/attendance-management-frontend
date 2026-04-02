@@ -5,6 +5,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import { formatLongDate } from '@/utils/date'
+import { getErrorMessage } from '@/utils/httpError'
 
 const authStore = useAuthStore()
 const { userProfile, isLoading } = storeToRefs(authStore)
@@ -102,12 +103,12 @@ const isStudent = computed(() => userRole.value === 'Student')
 const isInstructor = computed(() => userRole.value === 'Instructor')
 
 // Helper to get initials for avatar
-function getInitials(name: any) {
+function getInitials(name?: string | null) {
   if (!name)
     return 'U'
   return name
     .split(' ')
-    .map((word: any) => word[0])
+    .map(word => word[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
@@ -242,7 +243,7 @@ async function saveProfile() {
   }
   catch (error) {
     console.error('Failed to update profile:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to update profile. Please try again.'
+    errorMessage.value = getErrorMessage(error, 'Failed to update profile. Please try again.')
     showErrorMessage.value = true
   }
   finally {

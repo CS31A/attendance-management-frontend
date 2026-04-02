@@ -9,6 +9,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSectionStore } from '@/stores/sectionStore'
+import { getErrorMessage } from '@/utils/httpError'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
@@ -130,7 +131,7 @@ async function handleSaveSection(sectionData: SectionPayload) {
     closeModal()
   }
   catch (error) {
-    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save section')
+    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save section'))
   }
 }
 
@@ -158,7 +159,7 @@ async function confirmDelete() {
     sectionToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete section: ${error.response?.data?.message || error.message}`, 'error')
+    showToast(`Failed to delete section: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
   }
   finally {
     isDeleting.value = false

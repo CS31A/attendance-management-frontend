@@ -17,6 +17,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useAuthStore } from '@/stores/authStore'
+import { getErrorMessage } from '@/utils/httpError'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -161,7 +162,7 @@ async function handleLogin() {
   }
   catch (error) {
     console.error('Login failed:', error)
-    errors.general = error.message || 'Invalid username or password. Please try again.'
+    errors.general = getErrorMessage(error, 'Invalid username or password. Please try again.')
   }
   finally {
     isLoading.value = false

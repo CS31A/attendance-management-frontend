@@ -84,6 +84,7 @@ import type { FormFieldConfig, FormOption } from '@/types/ui'
  */
 import { AlertTriangle, Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { getErrorMessage } from '@/utils/httpError'
 import BaseModal from '../common/BaseModal.vue'
 
 interface InfoSectionField {
@@ -272,7 +273,7 @@ watch(() => props.entity, (newEntity) => {
  * @param {object} field - Field configuration object
  * @returns {Array} Array of option objects with value and label
  */
-function getFieldOptions(field: any) {
+function getFieldOptions(field: FormFieldConfig): FormOption[] {
   if (!field.options)
     return []
 
@@ -294,7 +295,7 @@ function getFieldOptions(field: any) {
  * @param {string} fieldName - Name of the field
  * @returns {boolean} True if field is loading async options
  */
-function isFieldLoading(fieldName: any) {
+function isFieldLoading(fieldName: string): boolean {
   return loadingFields.value.has(fieldName)
 }
 
@@ -303,7 +304,7 @@ function isFieldLoading(fieldName: any) {
  * @param {string} fieldName - Name of the field
  * @returns {boolean} True if field failed to load options
  */
-function hasLoadError(fieldName: any) {
+function hasLoadError(fieldName: string): boolean {
   return !!optionsLoadError.value[fieldName]
 }
 
@@ -331,7 +332,7 @@ onMounted(async () => {
         }
         catch (error) {
           console.error(`Error loading options for field "${field.name}":`, error)
-          optionsLoadError.value[field.name] = error.message || 'Failed to load options'
+          optionsLoadError.value[field.name] = getErrorMessage(error, 'Failed to load options')
           loadingOptions.value[field.name] = []
         }
         finally {
@@ -367,8 +368,8 @@ function handleSubmit() {
  * Handle error from parent (called via ref)
  * @param {string} error - Error message to display
  */
-function handleError(error: any) {
-  errorMessage.value = error
+function handleError(error?: string | null) {
+  errorMessage.value = error ?? ''
 }
 
 // Expose methods to parent component

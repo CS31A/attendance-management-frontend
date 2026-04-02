@@ -1,38 +1,30 @@
 <script setup lang="ts">
 import { Trash2, X } from 'lucide-vue-next'
+import { nextTick, ref, watch } from 'vue'
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true,
-  },
-  title: {
-    type: String,
-    default: 'Confirm Deletion',
-  },
-  message: {
-    type: String,
-    default: 'Are you sure you want to delete this item? This action cannot be undone.',
-  },
-  itemName: {
-    type: String,
-    default: '',
-  },
-  confirmText: {
-    type: String,
-    default: 'Delete',
-  },
-  cancelText: {
-    type: String,
-    default: 'Cancel',
-  },
-  isDeleting: {
-    type: Boolean,
-    default: false,
-  },
+const props = withDefaults(defineProps<{
+  show: boolean
+  title?: string
+  message?: string
+  itemName?: string
+  confirmText?: string
+  cancelText?: string
+  isDeleting?: boolean
+}>(), {
+  title: 'Confirm Deletion',
+  message: 'Are you sure you want to delete this item? This action cannot be undone.',
+  itemName: '',
+  confirmText: 'Delete',
+  cancelText: 'Cancel',
+  isDeleting: false,
 })
 
-const emit = defineEmits(['confirm', 'cancel'])
+const emit = defineEmits<{
+  confirm: []
+  cancel: []
+}>()
+
+const modalContentRef = ref<HTMLDivElement | null>(null)
 
 function handleConfirm() {
   if (!props.isDeleting) {
@@ -47,14 +39,18 @@ function handleCancel() {
 }
 
 // Close modal on Escape key
-function handleKeydown(event: any) {
+function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && !props.isDeleting) {
     handleCancel()
   }
-  else if (event.key === 'Enter' && !props.isDeleting) {
-    handleConfirm()
-  }
 }
+
+watch(() => props.show, async (isVisible) => {
+  if (isVisible) {
+    await nextTick()
+    modalContentRef.value?.focus()
+  }
+})
 
 defineExpose({
   handleKeydown,
@@ -64,36 +60,35 @@ defineExpose({
 <template>
   <Teleport to="body">
     <div
-      v-if="show"
+      v-if="props.show"
       class="modal-overlay"
       @click="handleCancel"
-      @keydown="handleKeydown"
     >
-      <div class="modal-content" @click.stop>
+      <div ref="modalContentRef" class="modal-content" tabindex="-1" @click.stop @keydown="handleKeydown">
         <div class="modal-header">
           <div class="header-icon-wrapper">
             <Trash2 class="header-icon" :size="24" />
           </div>
-          <h3>{{ title }}</h3>
-          <button class="close-btn" :disabled="isDeleting" @click="handleCancel">
+          <h3>{{ props.title }}</h3>
+          <button class="close-btn" :disabled="props.isDeleting" @click="handleCancel">
             <X :size="20" />
           </button>
         </div>
         <div class="modal-body">
           <p class="message">
-            {{ message }}
+            {{ props.message }}
           </p>
-          <p v-if="itemName" class="item-name">
-            <strong>{{ itemName }}</strong>
+          <p v-if="props.itemName" class="item-name">
+            <strong>{{ props.itemName }}</strong>
           </p>
         </div>
         <div class="modal-footer">
-          <button class="btn-cancel" :disabled="isDeleting" @click="handleCancel">
-            {{ cancelText }}
+          <button class="btn-cancel" :disabled="props.isDeleting" @click="handleCancel">
+            {{ props.cancelText }}
           </button>
-          <button class="btn-delete" :disabled="isDeleting" @click="handleConfirm">
-            <span v-if="isDeleting" class="spinner" />
-            <span v-else>{{ confirmText }}</span>
+          <button class="btn-delete" :disabled="props.isDeleting" @click="handleConfirm">
+            <span v-if="props.isDeleting" class="spinner" />
+            <span v-else>{{ props.confirmText }}</span>
           </button>
         </div>
       </div>

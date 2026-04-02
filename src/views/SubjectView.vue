@@ -9,6 +9,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSubjectStore } from '@/stores/subjectStore'
+import { getErrorMessage } from '@/utils/httpError'
 
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -141,7 +142,7 @@ async function handleSaveSubject(subjectData: SubjectPayload) {
     closeModal()
   }
   catch (error) {
-    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save subject')
+    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save subject'))
   }
 }
 
@@ -169,7 +170,7 @@ async function confirmDelete() {
     subjectToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete subject: ${error.response?.data?.message || error.message}`, 'error')
+    showToast(`Failed to delete subject: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
   }
   finally {
     isDeleting.value = false

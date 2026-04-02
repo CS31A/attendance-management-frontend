@@ -10,6 +10,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { SESSION_STATUSES } from '@/utils/constants'
+import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
 const CreateSessionModal = defineAsyncComponent(() => import('@/components/sessions/CreateSessionModal.vue'))
 const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions/EndSessionModal.vue'))
@@ -119,7 +120,7 @@ async function loadSessions() {
   }
   catch (error) {
     console.error('Failed to load sessions:', error)
-    const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
+    const message = getErrorMessage(error, 'Failed to load sessions. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
@@ -134,7 +135,7 @@ async function handleCreateSession(payload: CreateSessionPayload) {
   }
   catch (error) {
     console.error('Failed to create session:', error)
-    const message = error.response?.data?.message || 'Failed to create session. Please try again.'
+    const message = getErrorMessage(error, 'Failed to create session. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
@@ -159,11 +160,12 @@ async function handleConfirmStart(payload: StartSessionPayload) {
   catch (error) {
     console.error('Failed to start session:', error)
     let message = 'Failed to start session. Please try again.'
-    if (error.response?.status === 403) {
+    const status = getErrorStatus(error)
+    if (status === 403) {
       message = 'You are not authorized to start this session. Only the assigned instructor can manage this session.'
     }
-    else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot start this session. Check the session status.'
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Cannot start this session. Check the session status.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -189,11 +191,12 @@ async function handleConfirmEnd(payload: EndSessionPayload) {
   catch (error) {
     console.error('Failed to end session:', error)
     let message = 'Failed to end session. Please try again.'
-    if (error.response?.status === 403) {
+    const status = getErrorStatus(error)
+    if (status === 403) {
       message = 'You are not authorized to end this session. Only the assigned instructor can manage this session.'
     }
-    else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot end this session. Check the session status.'
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Cannot end this session. Check the session status.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -223,11 +226,12 @@ async function confirmDelete() {
   catch (error) {
     console.error('Failed to delete session:', error)
     let message = 'Failed to delete session. Please try again.'
-    if (error.response?.status === 403) {
+    const status = getErrorStatus(error)
+    if (status === 403) {
       message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
     }
-    else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot delete this session. Only sessions that have not started can be deleted.'
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Cannot delete this session. Only sessions that have not started can be deleted.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -261,11 +265,12 @@ async function handleConfirmUpdateRoom(payload: UpdateSessionRoomPayload) {
   catch (error) {
     console.error('Failed to update room:', error)
     let message = 'Failed to update room. Please try again.'
-    if (error.response?.status === 403) {
+    const status = getErrorStatus(error)
+    if (status === 403) {
       message = 'You are not authorized to update this session. Only the assigned instructor can manage this session.'
     }
-    else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Cannot update room. Check the session status.'
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Cannot update room. Check the session status.')
     }
     showToast(message, 'error')
     errorMessage.value = message

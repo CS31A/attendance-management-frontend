@@ -15,6 +15,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
+import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
 const props = defineProps({
@@ -30,6 +31,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  onSubmit: {
+    type: Function,
+    required: true,
+  },
   stats: {
     type: Object,
     default: () => ({
@@ -43,7 +48,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['submit', 'back'])
+const emit = defineEmits(['back'])
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
@@ -55,11 +60,8 @@ const hasChanges = ref(false)
 
 // Initialize local attendance from props
 watch(() => props.attendance, (newAttendance) => {
-  localAttendance.value = newAttendance.map(record => ({
-    ...record,
-    originalStatus: record.status,
-  }))
-  hasChanges.value = false
+  localAttendance.value = mergeAttendanceWithLocalChanges(newAttendance, localAttendance.value)
+  hasChanges.value = localAttendance.value.some(hasUnsavedAttendanceChanges)
 }, { immediate: true, deep: true })
 
 // Computed
@@ -122,9 +124,7 @@ function markAllAs(status) {
 }
 
 function checkForChanges() {
-  hasChanges.value = localAttendance.value.some(
-    record => record.status !== record.originalStatus,
-  )
+  hasChanges.value = localAttendance.value.some(hasUnsavedAttendanceChanges)
 }
 
 async function handleSubmit() {
@@ -135,12 +135,16 @@ async function handleSubmit() {
       status: record.status,
       notes: record.notes || '',
     }))
-    emit('submit', attendanceData)
-    // Update original status after successful submit
+    await props.onSubmit(attendanceData)
+
     localAttendance.value.forEach((record) => {
       record.originalStatus = record.status
+      record.originalNotes = record.notes || ''
     })
     hasChanges.value = false
+  }
+  catch {
+    // Parent view already surfaces the error; keep local unsaved edits intact.
   }
   finally {
     submitting.value = false
@@ -185,6 +189,7 @@ onMounted(() => {
       studentNumber: student.studentNumber,
       status: ATTENDANCE_STATUSES.ABSENT,
       originalStatus: null,
+      originalNotes: '',
       notes: '',
     }))
   }

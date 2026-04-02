@@ -18,6 +18,7 @@ import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
+import { getErrorMessage } from '@/utils/httpError'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -273,7 +274,7 @@ async function handleSaveSchedule(scheduleData: SchedulePayload) {
     closeModal()
   }
   catch (error) {
-    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save schedule')
+    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save schedule'))
   }
 }
 
@@ -300,7 +301,7 @@ async function confirmDelete() {
       scheduleToDelete.value = null
     }
     catch (error) {
-      showToast(`Failed to delete schedule: ${error.response?.data?.message || error.message}`, 'error')
+      showToast(`Failed to delete schedule: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
     }
     finally {
       isDeleting.value = false

@@ -22,6 +22,12 @@ export interface AttendanceResponseDto {
   [key: string]: unknown
 }
 
+export interface SessionAttendanceResponseDto extends AttendanceResponseDto {
+  studentNumber?: string
+  studentName?: string
+  checkInTime?: string
+}
+
 export interface AttendanceSummaryDto {
   total?: number
   presentCount?: number
@@ -57,7 +63,7 @@ export interface UpdateAttendancePayload {
 }
 
 interface SessionAttendanceResponse {
-  attendanceRecords?: AttendanceResponseDto[]
+  attendanceRecords?: SessionAttendanceResponseDto[]
 }
 
 // ==================== READ OPERATIONS ====================
@@ -127,14 +133,14 @@ export async function fetchStudentAttendance(studentId: EntityId): Promise<Atten
  * including student information.
  *
  * @param {number} sessionId - Session ID
- * @returns {Promise<Array<AttendanceResponseDto>>} Array of attendance records
+ * @returns {Promise<Array<SessionAttendanceResponseDto>>} Array of attendance records
  * @throws {Error} 404 if session not found
  *
  * @example
  * const sessionAttendance = await fetchSessionAttendance(789)
  * sessionAttendance.forEach(a => console.log(`${a.studentName}: ${a.status}`))
  */
-export async function fetchSessionAttendance(sessionId: EntityId): Promise<AttendanceResponseDto[]> {
+export async function fetchSessionAttendance(sessionId: EntityId): Promise<SessionAttendanceResponseDto[]> {
   const response = await api.get<SessionAttendanceResponse>(`/attendance/session/${sessionId}`)
   // Backend returns a wrapper object with attendanceRecords array
   // Extract just the attendanceRecords array for frontend consumption

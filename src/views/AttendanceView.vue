@@ -8,6 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { useSessionStore } from '@/stores/sessionStore'
+import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
 const AttendanceList = defineAsyncComponent(() => import('@/components/attendance/AttendanceList.vue'))
 const AttendanceRecord = defineAsyncComponent(() => import('@/components/attendance/AttendanceRecord.vue'))
@@ -42,19 +43,31 @@ const sessionId = computed<EntityId | undefined>(() => {
 const isRecordView = computed(() => !!sessionId.value)
 const sessions = computed(() => sessionStore.sessions)
 const loading = computed(() => sessionStore.loading || attendanceStore.loading)
+const syncWarning = computed(() => attendanceStore.syncWarning)
 
 // Watch for route changes to switch views
 watch(sessionId, async (newSessionId) => {
   if (newSessionId) {
     currentView.value = 'record'
+    attendanceStore.clearSyncWarning()
     await loadSessionDetails(newSessionId)
   }
   else {
     currentView.value = 'list'
     selectedSession.value = null
+    attendanceStore.clearSyncWarning()
     attendanceStore.clearSessionAttendance()
   }
 }, { immediate: true })
+
+watch(syncWarning, (warning) => {
+  if (!warning) {
+    return
+  }
+
+  showToast(warning, 'error', 6000)
+  attendanceStore.clearSyncWarning()
+})
 
 // Toast state and helpers
 const toast = reactive({
@@ -83,7 +96,7 @@ async function loadSessions() {
   }
   catch (error) {
     console.error('Failed to load sessions:', error)
-    const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
+    const message = getErrorMessage(error, 'Failed to load sessions. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
@@ -100,7 +113,7 @@ async function loadSessionDetails(sessionId: EntityId) {
   }
   catch (error) {
     console.error('Failed to load session details:', error)
-    const message = error.response?.data?.message || 'Failed to load session details. Please try again.'
+    const message = getErrorMessage(error, 'Failed to load session details. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
@@ -146,11 +159,12 @@ async function handleSubmitAttendance(attendanceData: StudentAttendance[]) {
   catch (error) {
     console.error('Failed to submit attendance:', error)
     let message = 'Failed to record attendance. Please try again.'
-    if (error.response?.status === 403) {
+    const status = getErrorStatus(error)
+    if (status === 403) {
       message = 'You are not authorized to record attendance for this session.'
     }
-    else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Invalid attendance data.'
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Invalid attendance data.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -220,8 +234,8 @@ onMounted(() => {
       :session="selectedSession"
       :attendance="attendanceStore.sessionAttendance"
       :loading="attendanceStore.loading"
+      :on-submit="handleSubmitAttendance"
       :stats="attendanceStore.sessionStats"
-      @submit="handleSubmitAttendance"
       @back="handleBackToList"
     />
 

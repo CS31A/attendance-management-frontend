@@ -3,6 +3,7 @@ import { AlertTriangle, Clock, Loader2, RefreshCw, Users, X } from 'lucide-vue-n
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
+import { getErrorMessage } from '@/utils/httpError'
 import { calculateRemainingTime } from '@/utils/qrcode'
 
 const route = useRoute()
@@ -92,7 +93,7 @@ async function loadQrCode() {
     }
   }
   catch (err) {
-    error.value = err.response?.data?.message || 'Failed to load QR code'
+    error.value = getErrorMessage(err, 'Failed to load QR code')
     console.error('QR load error:', err)
   }
   finally {

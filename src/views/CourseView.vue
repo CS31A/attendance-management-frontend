@@ -9,6 +9,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCourseStore } from '@/stores/courseStore'
+import { getErrorMessage } from '@/utils/httpError'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -131,7 +132,7 @@ async function handleSaveCourse(courseData: CoursePayload) {
     closeModal()
   }
   catch (error) {
-    modalRef.value?.handleError?.(error.response?.data?.message || 'Failed to save course')
+    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save course'))
   }
 }
 
@@ -159,7 +160,7 @@ async function confirmDelete() {
     courseToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete course: ${error.response?.data?.message || error.message}`, 'error')
+    showToast(`Failed to delete course: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
   }
   finally {
     isDeleting.value = false
