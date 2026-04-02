@@ -1,14 +1,23 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, test } from 'bun:test'
 
+type DateInput = Date | string | null | undefined
+
+interface DateUtilsModule {
+  formatShortTableDate: (date: DateInput, fallback?: string) => string
+  formatLongDate: (date: DateInput, fallback?: string) => string
+  formatShortWeekdayDate: (date: DateInput, options?: { includeYear?: boolean, fallback?: string }) => string
+  formatLongWeekdayDate: (date: DateInput, fallback?: string) => string
+}
+
 describe('date format consolidation', () => {
   test('shared date utilities exist and preserve formatter families', async () => {
     expect(existsSync('src/utils/date.ts')).toBe(true)
 
-    let dateUtils: null | Record<string, (...args: any[]) => string> = null
+    let dateUtils: DateUtilsModule | null = null
 
     try {
-      dateUtils = await import('../src/utils/date.ts') as Record<string, (...args: any[]) => string>
+      dateUtils = await import('../src/utils/date.ts') as DateUtilsModule
     }
     catch {
       dateUtils = null
