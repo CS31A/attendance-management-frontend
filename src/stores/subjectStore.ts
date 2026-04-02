@@ -3,6 +3,7 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import subjectApi from '@/api/subjects'
+import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export const useSubjectStore = defineStore('subject', () => {
   // State
@@ -26,7 +27,7 @@ export const useSubjectStore = defineStore('subject', () => {
       subjects.value = response.data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to fetch subjects'
+      error.value = getErrorMessage(err, 'Failed to fetch subjects')
       console.error('Error fetching subjects:', err)
     }
     finally {
@@ -42,7 +43,7 @@ export const useSubjectStore = defineStore('subject', () => {
       currentSubject.value = response.data
     }
     catch (err) {
-      error.value = err.response?.data?.message || `Subject with ID ${id} not found`
+      error.value = getErrorMessage(err, `Subject with ID ${id} not found`)
       console.error('Error fetching subject:', err)
     }
     finally {
@@ -59,13 +60,10 @@ export const useSubjectStore = defineStore('subject', () => {
       return response.data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to create subject'
-
-      // Handle validation errors
-      if (err.response?.data?.errors) {
-        const validationErrors = err.response.data.errors
-        error.value = Object.values(validationErrors).flat().join(', ')
-      }
+      error.value = getErrorMessage(err, 'Failed to create subject')
+      const validationErrors = getValidationErrorMessages(err)
+      if (validationErrors.length > 0)
+        error.value = validationErrors.join(', ')
 
       console.error('Error creating subject:', err)
       throw err
@@ -87,13 +85,10 @@ export const useSubjectStore = defineStore('subject', () => {
       return response.data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to update subject'
-
-      // Handle validation errors
-      if (err.response?.data?.errors) {
-        const validationErrors = err.response.data.errors
-        error.value = Object.values(validationErrors).flat().join(', ')
-      }
+      error.value = getErrorMessage(err, 'Failed to update subject')
+      const validationErrors = getValidationErrorMessages(err)
+      if (validationErrors.length > 0)
+        error.value = validationErrors.join(', ')
 
       console.error('Error updating subject:', err)
       throw err
@@ -111,7 +106,7 @@ export const useSubjectStore = defineStore('subject', () => {
       subjects.value = subjects.value.filter(s => s.id !== id)
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to delete subject'
+      error.value = getErrorMessage(err, 'Failed to delete subject')
       console.error('Error deleting subject:', err)
       throw err
     }

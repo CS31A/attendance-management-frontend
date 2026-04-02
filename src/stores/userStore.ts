@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
 import { ROLES } from '@/utils/constants'
+import { getErrorMessage, getErrorStatus, getValidationErrorMessages } from '@/utils/httpError'
 
 interface ApiUserProfile {
   id?: EntityId
@@ -224,12 +225,12 @@ export const useUserStore = defineStore('user', () => {
         response = await api.post('/account/register', registerData)
       }
       catch (innerError) {
-        console.error('Backend error details:', innerError.response?.data)
-        console.error('Error status:', innerError.response?.status)
-        console.error('Error message:', innerError.response?.data?.message)
+        const status = getErrorStatus(innerError)
+        const message = getErrorMessage(innerError, 'Registration request failed')
+        console.error('Backend registration error:', { status, message })
 
         // If section validation fails for students, try with a different approach
-        if (innerError.response?.status === 400 && innerError.response?.data?.message?.includes('section') && userData.Role.toLowerCase() === 'student') {
+        if (status === 400 && message.toLowerCase().includes('section') && userData.Role.toLowerCase() === 'student') {
           const fallbackData = {
             ...registerData,
             sectionId: Number.parseInt(String(registerData.sectionId), 10) || 3,
@@ -263,7 +264,8 @@ export const useUserStore = defineStore('user', () => {
       console.error('Error creating user:', caughtError)
 
       // For development: if backend fails, add to local store anyway
-      if (caughtError.response?.status === 401 || caughtError.response?.status === 400) {
+      const status = getErrorStatus(caughtError)
+      if (status === 401 || status === 400) {
         const newUser = {
           id: Date.now(), // Simple ID generation
           firstName: userData.FirstName,
@@ -279,18 +281,10 @@ export const useUserStore = defineStore('user', () => {
       }
 
       // Extract detailed error message from backend
-      let errorMessage = 'Failed to create user'
-      if (caughtError.response?.data?.message) {
-        errorMessage = caughtError.response.data.message
-      }
-      else if (caughtError.response?.data?.errors) {
-        // Handle validation errors from backend
-        const errors = caughtError.response.data.errors
-        const errorMessages = Object.values(errors).flat()
-        errorMessage = errorMessages.join(', ')
-      }
-      else if (caughtError.response?.data) {
-        errorMessage = JSON.stringify(caughtError.response.data)
+      let errorMessage = getErrorMessage(caughtError, 'Failed to create user')
+      const validationErrors = getValidationErrorMessages(caughtError)
+      if (validationErrors.length > 0) {
+        errorMessage = validationErrors.join(', ')
       }
 
       error.value = errorMessage
@@ -333,7 +327,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error updating user:', caughtError)
-      error.value = caughtError.response?.data?.message || 'Failed to update user'
+      error.value = getErrorMessage(caughtError, 'Failed to update user')
       return { success: false, error: error.value }
     }
     finally {
@@ -366,7 +360,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error soft deleting user:', caughtError)
-      error.value = caughtError.response?.data?.message || 'Failed to soft delete user'
+      error.value = getErrorMessage(caughtError, 'Failed to soft delete user')
       return { success: false, error: error.value }
     }
     finally {
@@ -395,7 +389,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error hard deleting user:', caughtError)
-      error.value = caughtError.response?.data?.message || 'Failed to permanently delete user'
+      error.value = getErrorMessage(caughtError, 'Failed to permanently delete user')
       return { success: false, error: error.value }
     }
     finally {
@@ -428,7 +422,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error restoring user:', caughtError)
-      error.value = caughtError.response?.data?.message || 'Failed to restore user'
+      error.value = getErrorMessage(caughtError, 'Failed to restore user')
       return { success: false, error: error.value }
     }
     finally {

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
 import { ROLES } from '@/utils/constants'
+import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
 /**
  * Authentication Store
@@ -151,7 +152,7 @@ export const useAuthStore = defineStore('authStore', () => {
       return false
     }
     catch (error) {
-      const status = error?.response?.status
+      const status = getErrorStatus(error)
       if (status === 401) {
         user.value = null
         userProfile.value = null
@@ -243,7 +244,7 @@ export const useAuthStore = defineStore('authStore', () => {
     }
     catch (error) {
       console.error('Login error:', error)
-      const message = error.response?.data?.message || 'Invalid credentials'
+      const message = getErrorMessage(error, 'Invalid credentials')
       return { success: false, message }
     }
   }
@@ -320,7 +321,7 @@ export const useAuthStore = defineStore('authStore', () => {
     }
     catch (error) {
       console.error('Token refresh error:', error)
-      const status = error?.response?.status
+      const status = getErrorStatus(error)
 
       // If refresh token is also expired or invalid, logout user
       if (status === 401 || status === 403) {

@@ -3,6 +3,7 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import enrollmentsApi from '@/api/enrollments'
+import { getErrorMessage } from '@/utils/httpError'
 
 export const useEnrollmentStore = defineStore('enrollments', () => {
   // State
@@ -32,7 +33,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
     catch (err) {
       console.error('Error enrolling student:', err)
-      error.value = err.response?.data?.message || 'Failed to enroll student'
+      error.value = getErrorMessage(err, 'Failed to enroll student')
       throw err
     }
     finally {
@@ -50,7 +51,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
     catch (err) {
       console.error('Error fetching section students:', err)
-      error.value = err.response?.data?.message || 'Failed to fetch section students'
+      error.value = getErrorMessage(err, 'Failed to fetch section students')
       throw err
     }
     finally {
@@ -68,7 +69,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
     catch (err) {
       console.error('Error fetching student enrollments:', err)
-      error.value = err.response?.data?.message || 'Failed to fetch student enrollments'
+      error.value = getErrorMessage(err, 'Failed to fetch student enrollments')
       throw err
     }
     finally {
@@ -92,7 +93,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
     catch (err) {
       console.error('Error dropping student:', err)
-      error.value = err.response?.data?.message || 'Failed to drop student'
+      error.value = getErrorMessage(err, 'Failed to drop student')
       throw err
     }
     finally {
@@ -113,7 +114,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
     catch (err) {
       console.error('Error re-enrolling student:', err)
-      error.value = err.response?.data?.message || 'Failed to re-enroll student'
+      error.value = getErrorMessage(err, 'Failed to re-enroll student')
       throw err
     }
     finally {
@@ -134,7 +135,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     }
     catch (err) {
       console.error('Error checking enrollment:', err)
-      error.value = err.response?.data?.message || 'Failed to check enrollment'
+      error.value = getErrorMessage(err, 'Failed to check enrollment')
       throw err
     }
     finally {

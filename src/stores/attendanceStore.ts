@@ -4,6 +4,7 @@ import type {
   AttendanceStatus,
   AttendanceSummaryDto,
   RecordAttendancePayload,
+  SessionAttendanceResponseDto,
   UpdateAttendancePayload,
 } from '@/api/attendance'
 import type { EntityId } from '@/types'
@@ -21,6 +22,7 @@ import {
   calculateAttendanceStats,
 } from '@/api/attendance'
 import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorStatus } from '@/utils/httpError'
 
 /**
  * Attendance Store
@@ -43,7 +45,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const attendanceRecords = ref<AttendanceResponseDto[]>([])
 
   /** @type {import('vue').Ref<Array>} */
-  const sessionAttendance = ref<AttendanceResponseDto[]>([])
+  const sessionAttendance = ref<SessionAttendanceResponseDto[]>([])
 
   /** @type {import('vue').Ref<boolean>} */
   const loading = ref(false)
@@ -56,6 +58,73 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
   /** @type {import('vue').Ref<number | null>} */
   const currentSessionId = ref<EntityId | null>(null)
+
+  /** @type {import('vue').Ref<string | null>} */
+  const syncWarning = ref<string | null>(null)
+
+  function clearSyncWarning() {
+    syncWarning.value = null
+  }
+
+  function isCurrentSession(sessionId: EntityId) {
+    return currentSessionId.value !== null && entityIdsMatch(sessionId, currentSessionId.value)
+  }
+
+  function applyAttendanceUpdates(records: AttendanceResponseDto[], allowInsert = false) {
+    records.forEach((record) => {
+      const indexById = sessionAttendance.value.findIndex(existing => entityIdsMatch(existing.id, record.id))
+      if (indexById !== -1) {
+        sessionAttendance.value[indexById] = {
+          ...sessionAttendance.value[indexById],
+          ...record,
+        }
+        return
+      }
+
+      const indexByStudent = sessionAttendance.value.findIndex(existing => entityIdsMatch(existing.studentId, record.studentId))
+      if (indexByStudent !== -1) {
+        sessionAttendance.value[indexByStudent] = {
+          ...sessionAttendance.value[indexByStudent],
+          ...record,
+        }
+        return
+      }
+
+      if (allowInsert) {
+        sessionAttendance.value.push(record)
+      }
+    })
+  }
+
+  // Re-fetch keeps enriched student metadata (name/number/check-in) that mutation responses do not always include.
+  async function refreshSessionAttendanceWithRetry(sessionId: EntityId, retries = 1): Promise<boolean> {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const refreshedAttendance = await apiFetchSessionAttendance(sessionId)
+        if (isCurrentSession(sessionId)) {
+          sessionAttendance.value = refreshedAttendance
+        }
+        return true
+      }
+      catch (error) {
+        console.error(`Failed to refresh session attendance (attempt ${attempt + 1}/${retries + 1}):`, error)
+      }
+    }
+
+    return false
+  }
+
+  function refreshSessionAttendanceInBackground(sessionId: EntityId, warningMessage: string) {
+    if (!isCurrentSession(sessionId)) {
+      return
+    }
+
+    void refreshSessionAttendanceWithRetry(sessionId).then((refreshed) => {
+      if (!refreshed && isCurrentSession(sessionId)) {
+        syncWarning.value = warningMessage
+      }
+    })
+  }
 
   // ==================== GETTERS ====================
 
@@ -182,6 +251,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const fetchSessionAttendance = async (sessionId: EntityId) => {
     loading.value = true
     currentSessionId.value = sessionId
+    clearSyncWarning()
 
     try {
       // API returns attendanceRecords array directly (extracted in api layer)
@@ -192,7 +262,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     catch (err) {
       console.error('Failed to fetch session attendance:', err)
       // If attendance doesn't exist yet (404), return empty array
-      if (err.response?.status === 404) {
+      if (getErrorStatus(err) === 404) {
         sessionAttendance.value = []
         return []
       }
@@ -255,14 +325,21 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const submitAttendance = async (payload: RecordAttendancePayload) => {
     loading.value = true
+    clearSyncWarning()
 
     try {
       const data = await apiRecordAttendance(payload)
+      const shouldRefreshCurrentSession = isCurrentSession(payload.sessionId)
 
-      // Update local state with new records
-      if (entityIdsMatch(payload.sessionId, currentSessionId.value)) {
-        sessionAttendance.value = data
+      if (shouldRefreshCurrentSession) {
+        applyAttendanceUpdates(data, true)
       }
+
+      // Use the mutation response immediately, then reconcile richer metadata in the background.
+      refreshSessionAttendanceInBackground(
+        payload.sessionId,
+        'Attendance was saved, but latest details could not be refreshed. Please refresh the page.',
+      )
 
       return data
     }
@@ -283,6 +360,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const updateAttendanceRecord = async (id: EntityId, payload: UpdateAttendancePayload) => {
     loading.value = true
+    clearSyncWarning()
 
     // Store original state for rollback
     const originalRecords = [...sessionAttendance.value]
@@ -290,9 +368,17 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
     try {
       const updatedRecord = await apiUpdateAttendance(id, payload)
-
-      // Update local state
       if (recordIndex !== -1) {
+        applyAttendanceUpdates([updatedRecord])
+      }
+
+      if (currentSessionId.value !== null) {
+        refreshSessionAttendanceInBackground(
+          currentSessionId.value,
+          'Attendance was updated, but latest details could not be refreshed. Please refresh the page.',
+        )
+      }
+      else if (recordIndex !== -1) {
         sessionAttendance.value[recordIndex] = updatedRecord
       }
 
@@ -389,6 +475,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     currentRecord.value = null
     summary.value = null
     currentSessionId.value = null
+    syncWarning.value = null
   }
 
   // ==================== RETURN ====================
@@ -401,6 +488,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     currentRecord,
     summary,
     currentSessionId,
+    syncWarning,
 
     // Getters
     recordsByStatus,
@@ -425,6 +513,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     markAllAs,
     clearSessionAttendance,
     clearCurrentRecord,
+    clearSyncWarning,
     resetStore,
   }
 })

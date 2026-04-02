@@ -2,6 +2,7 @@ import type { QrCodeResponseDto, QrCodeScanHistoryResponseDto } from '@/api/qrCo
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import qrCodeApi from '@/api/qrCode'
+import { getErrorMessage } from '@/utils/httpError'
 import { parseUtcDate } from '@/utils/qrcode'
 
 interface ActiveQrCode extends QrCodeResponseDto {
@@ -74,7 +75,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       return qrCodeObject
     }
     catch (err) {
-      error.value = err.response?.data?.message || err.message || 'Error generating QR code'
+      error.value = getErrorMessage(err, 'Error generating QR code')
       throw err
     }
     finally {
@@ -107,7 +108,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       return data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Error fetching QR code'
+      error.value = getErrorMessage(err, 'Error fetching QR code')
       throw err
     }
     finally {
@@ -128,7 +129,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       return data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Error fetching session QR codes'
+      error.value = getErrorMessage(err, 'Error fetching session QR codes')
       throw err
     }
     finally {
@@ -159,7 +160,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       console.error('Error fetching scan history:', err)
       // We generally don't set global error during polling to avoid disrupting UI
       if (!isPolling.value) {
-        error.value = err.response?.data?.message || 'Error fetching history'
+        error.value = getErrorMessage(err, 'Error fetching history')
       }
     }
   }
@@ -181,7 +182,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       return data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Error revoking QR code'
+      error.value = getErrorMessage(err, 'Error revoking QR code')
       throw err
     }
     finally {

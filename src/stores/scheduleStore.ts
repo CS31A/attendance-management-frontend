@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import scheduleApi from '@/api/schedules'
 import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export const useScheduleStore = defineStore('schedule', () => {
   // State
@@ -36,7 +37,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       schedules.value = data
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to fetch schedules'
+      error.value = getErrorMessage(err, 'Failed to fetch schedules')
       console.error('Error fetching schedules:', err)
     }
     finally {
@@ -54,7 +55,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       currentSchedule.value = data
     }
     catch (err) {
-      error.value = err.response?.data?.message || `Schedule with ID ${id} not found`
+      error.value = getErrorMessage(err, `Schedule with ID ${id} not found`)
       console.error('Error fetching schedule:', err)
     }
     finally {
@@ -72,13 +73,10 @@ export const useScheduleStore = defineStore('schedule', () => {
       return newSchedule
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to create schedule'
-
-      // Handle validation errors
-      if (err.response?.data?.errors) {
-        const validationErrors = err.response.data.errors
-        error.value = Object.values(validationErrors).flat().join(', ')
-      }
+      error.value = getErrorMessage(err, 'Failed to create schedule')
+      const validationErrors = getValidationErrorMessages(err)
+      if (validationErrors.length > 0)
+        error.value = validationErrors.join(', ')
 
       console.error('Error creating schedule:', err)
       throw err
@@ -98,13 +96,10 @@ export const useScheduleStore = defineStore('schedule', () => {
       return updatedSchedule
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to update schedule'
-
-      // Handle validation errors
-      if (err.response?.data?.errors) {
-        const validationErrors = err.response.data.errors
-        error.value = Object.values(validationErrors).flat().join(', ')
-      }
+      error.value = getErrorMessage(err, 'Failed to update schedule')
+      const validationErrors = getValidationErrorMessages(err)
+      if (validationErrors.length > 0)
+        error.value = validationErrors.join(', ')
 
       console.error('Error updating schedule:', err)
       throw err
@@ -122,7 +117,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       schedules.value = schedules.value.filter(s => !entityIdsMatch(s.id, id))
     }
     catch (err) {
-      error.value = err.response?.data?.message || 'Failed to delete schedule'
+      error.value = getErrorMessage(err, 'Failed to delete schedule')
       console.error('Error deleting schedule:', err)
       throw err
     }
