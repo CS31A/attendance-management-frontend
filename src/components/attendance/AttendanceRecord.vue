@@ -134,7 +134,7 @@ async function handleSubmit() {
       id: record.id,
       studentId: record.studentId,
       status: record.status,
-      notes: record.notes || '',
+      notes: record.notes,
       checkInTime: record.checkInTime,
     }))
     await props.onSubmit(attendanceData)

@@ -24,6 +24,7 @@ import {
 } from '@/api/attendance'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
+import { normalizeNotes } from '@/utils/attendanceRecord'
 
 /**
  * Attendance Store
@@ -69,10 +70,6 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
   function isCurrentSession(sessionId: EntityId) {
     return currentSessionId.value !== null && entityIdsMatch(sessionId, currentSessionId.value)
-  }
-
-  function normalizeAttendanceNotes(notes: unknown): string {
-    return typeof notes === 'string' ? notes : ''
   }
 
   const attendanceStatusWriteMap: Record<AttendanceStatus, BackendAttendanceStatus> = {
@@ -349,7 +346,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
     try {
       for (const record of payload.records) {
-        const normalizedNotes = normalizeAttendanceNotes(record.notes)
+        const normalizedNotes = normalizeNotes(record.notes)
         const backendStatus = mapAttendanceStatusForWrite(record.status)
         const existingRecordId = record.id
 
@@ -363,7 +360,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
               studentId: record.studentId,
               status: backendStatus,
               notes: normalizedNotes,
-              checkInTime: record.checkInTime,
+              ...(record.checkInTime !== undefined && { checkInTime: record.checkInTime }),
             })
 
         submittedRecords.push(savedRecord)

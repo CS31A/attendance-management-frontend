@@ -12,7 +12,7 @@ export interface EditableAttendanceRecord {
   [key: string]: unknown
 }
 
-function normalizeNotes(notes: unknown): string {
+export function normalizeNotes(notes: unknown): string {
   return typeof notes === 'string' ? notes : ''
 }
 
