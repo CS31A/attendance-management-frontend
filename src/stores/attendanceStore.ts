@@ -1,10 +1,10 @@
 import type {
-  AttendanceUpdateInput,
-  BackendAttendanceStatus,
   AttendanceQueryParams,
   AttendanceResponseDto,
   AttendanceStatus,
   AttendanceSummaryDto,
+  AttendanceUpdateInput,
+  BackendAttendanceStatus,
   RecordAttendancePayload,
   SessionAttendanceResponseDto,
 } from '@/api/attendance'
@@ -22,9 +22,9 @@ import {
   updateAttendance as apiUpdateAttendance,
   calculateAttendanceStats,
 } from '@/api/attendance'
+import { normalizeNotes } from '@/utils/attendanceRecord'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
-import { normalizeNotes } from '@/utils/attendanceRecord'
 
 /**
  * Attendance Store
