@@ -85,6 +85,33 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     return attendanceStatusWriteMap[status]
   }
 
+  interface AttendanceSubmissionError extends Error {
+    savedCount: number
+    totalCount: number
+    response?: unknown
+  }
+
+  function createAttendanceSubmissionError(
+    error: unknown,
+    savedCount: number,
+    totalCount: number,
+  ): AttendanceSubmissionError {
+    const sourceError = error instanceof Error
+      ? error
+      : new Error('Failed to record attendance.')
+
+    const enhancedError = new Error(sourceError.message, { cause: error }) as AttendanceSubmissionError
+    enhancedError.name = sourceError.name
+    enhancedError.savedCount = savedCount
+    enhancedError.totalCount = totalCount
+
+    if (error && typeof error === 'object' && 'response' in error) {
+      enhancedError.response = (error as { response?: unknown }).response
+    }
+
+    return enhancedError
+  }
+
   function applyAttendanceUpdates(records: AttendanceResponseDto[], allowInsert = false) {
     records.forEach((record) => {
       const indexById = sessionAttendance.value.findIndex(existing => entityIdsMatch(existing.id, record.id))
@@ -370,31 +397,25 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
         }
       }
 
-      const data = submittedRecords
-      const shouldRefreshCurrentSession = isCurrentSession(payload.sessionId)
-
-      if (shouldRefreshCurrentSession) {
-        applyAttendanceUpdates(data, true)
-      }
-
       // Use the mutation response immediately, then reconcile richer metadata in the background.
       refreshSessionAttendanceInBackground(
         payload.sessionId,
         'Attendance was saved, but latest details could not be refreshed. Please refresh the page.',
       )
 
-      return data
+      return submittedRecords
     }
     catch (err) {
-      if (submittedRecords.length > 0 && isCurrentSession(payload.sessionId)) {
-        const refreshed = await refreshSessionAttendanceWithRetry(payload.sessionId)
-        if (!refreshed && isCurrentSession(payload.sessionId)) {
-          syncWarning.value = 'Some attendance entries were saved before the request stopped. Please refresh the page to review the latest attendance details.'
-        }
+      const savedCount = submittedRecords.length
+      const totalCount = payload.records.length
+
+      if (savedCount > 0) {
+        syncWarning.value = `${savedCount} of ${totalCount} records saved. Please refresh the page to review the latest attendance details.`
       }
 
       console.error('Failed to record attendance:', err)
-      throw err
+
+      throw createAttendanceSubmissionError(err, savedCount, totalCount)
     }
     finally {
       loading.value = false

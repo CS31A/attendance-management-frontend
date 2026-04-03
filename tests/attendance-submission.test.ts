@@ -5,6 +5,17 @@ import api from '@/api'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { getAttendanceSubmissionErrorMessage } from '@/utils/attendanceSubmission'
 
+type SubmissionError = {
+  response?: {
+    status?: number
+    data?: {
+      message?: string
+    }
+  }
+  savedCount?: number
+  totalCount?: number
+}
+
 describe('attendance submission contract', () => {
   const originalPost = api.post
   const originalPut = api.put
@@ -18,7 +29,7 @@ describe('attendance submission contract', () => {
     api.put = originalPut
   })
 
-  test('submitAttendance posts one new attendance record and accepts 201 Created', async () => {
+  test('submitAttendance posts one new attendance record with backend status casing', async () => {
     const attendanceStore = useAttendanceStore()
     const createdRecord = {
       id: 101,
@@ -27,15 +38,16 @@ describe('attendance submission contract', () => {
       status: 'present',
       notes: 'On time',
     }
-    const calls = []
+    const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
 
-    api.post = async (url, payload) => {
+    const mockPost = async (url: string, payload: Record<string, unknown>) => {
       calls.push({ url, payload })
       return {
         status: 201,
         data: createdRecord,
       }
     }
+    api.post = mockPost as typeof api.post
 
     const result = await attendanceStore.submitAttendance({
       sessionId: 55,
@@ -48,22 +60,19 @@ describe('attendance submission contract', () => {
       ],
     })
 
-    expect(calls).toEqual([
-      {
-        url: '/attendance',
-        payload: {
-          sessionId: 55,
-          studentId: 1,
-          status: 'Present',
-          notes: 'On time',
-          checkInTime: undefined,
-        },
-      },
-    ])
+    expect(calls).toHaveLength(1)
+    expect(calls[0].url).toBe('/attendance')
+    expect(calls[0].payload).toEqual({
+      sessionId: 55,
+      studentId: 1,
+      status: 'Present',
+      notes: 'On time',
+    })
+    expect(calls[0].payload).not.toHaveProperty('checkInTime')
     expect(result).toEqual([createdRecord])
   })
 
-  test('submitAttendance treats 200 OK idempotent retries as successful saves', async () => {
+  test('submitAttendance returns successful data regardless of 200 or 201 when API responds', async () => {
     const attendanceStore = useAttendanceStore()
     const existingRecord = {
       id: 101,
@@ -73,12 +82,13 @@ describe('attendance submission contract', () => {
       notes: 'Already recorded',
     }
 
-    api.post = async () => {
+    const mockPost = async () => {
       return {
         status: 200,
         data: existingRecord,
       }
     }
+    api.post = mockPost as typeof api.post
 
     const result = await attendanceStore.submitAttendance({
       sessionId: 55,
@@ -94,9 +104,16 @@ describe('attendance submission contract', () => {
     expect(result).toEqual([existingRecord])
   })
 
-  test('submitAttendance preserves 409 conflicts as real business errors', async () => {
+  test('submitAttendance preserves conflict details and attaches submission metadata', async () => {
     const attendanceStore = useAttendanceStore()
-    const conflictError = new Error('Conflict')
+    const conflictError = new Error('Conflict') as Error & {
+      response?: {
+        status: number
+        data: {
+          message: string
+        }
+      }
+    }
 
     conflictError.response = {
       status: 409,
@@ -105,11 +122,12 @@ describe('attendance submission contract', () => {
       },
     }
 
-    api.post = async () => {
+    const mockPost = async () => {
       throw conflictError
     }
+    api.post = mockPost as typeof api.post
 
-    let caughtError
+    let caughtError: unknown
     try {
       await attendanceStore.submitAttendance({
         sessionId: 55,
@@ -125,7 +143,11 @@ describe('attendance submission contract', () => {
       caughtError = error
     }
 
-    expect(caughtError).toBe(conflictError)
+    const submissionError = caughtError as SubmissionError
+    expect(submissionError.response?.status).toBe(409)
+    expect(submissionError.savedCount).toBe(0)
+    expect(submissionError.totalCount).toBe(1)
+    expect(attendanceStore.syncWarning).toBeNull()
   })
 
   test('submitAttendance updates existing attendance records via PUT instead of POST', async () => {
@@ -137,10 +159,10 @@ describe('attendance submission contract', () => {
       status: 'late',
       notes: 'Updated by instructor',
     }
-    const postCalls = []
-    const putCalls = []
+    const postCalls: Array<{ url: string, payload: Record<string, unknown> }> = []
+    const putCalls: Array<{ url: string, payload: Record<string, unknown> }> = []
 
-    api.post = async (url, payload) => {
+    const mockPost = async (url: string, payload: Record<string, unknown>) => {
       postCalls.push({ url, payload })
       return {
         status: 201,
@@ -150,14 +172,16 @@ describe('attendance submission contract', () => {
         },
       }
     }
+    api.post = mockPost as typeof api.post
 
-    api.put = async (url, payload) => {
+    const mockPut = async (url: string, payload: Record<string, unknown>) => {
       putCalls.push({ url, payload })
       return {
         status: 200,
         data: updatedRecord,
       }
     }
+    api.put = mockPut as typeof api.put
 
     const result = await attendanceStore.submitAttendance({
       sessionId: 55,
@@ -186,9 +210,9 @@ describe('attendance submission contract', () => {
 
   test('submitAttendance supports mixed update and create records in one save', async () => {
     const attendanceStore = useAttendanceStore()
-    const calls = []
+    const calls: Array<{ method: 'put' | 'post', url: string, payload: Record<string, unknown> }> = []
 
-    api.put = async (url, payload) => {
+    const mockPut = async (url: string, payload: Record<string, unknown>) => {
       calls.push({ method: 'put', url, payload })
       return {
         status: 200,
@@ -201,8 +225,9 @@ describe('attendance submission contract', () => {
         },
       }
     }
+    api.put = mockPut as typeof api.put
 
-    api.post = async (url, payload) => {
+    const mockPost = async (url: string, payload: Record<string, unknown>) => {
       calls.push({ method: 'post', url, payload })
       return {
         status: 201,
@@ -215,6 +240,7 @@ describe('attendance submission contract', () => {
         },
       }
     }
+    api.post = mockPost as typeof api.post
 
     const result = await attendanceStore.submitAttendance({
       sessionId: 55,
@@ -233,27 +259,24 @@ describe('attendance submission contract', () => {
       ],
     })
 
-    expect(calls).toEqual([
-      {
-        method: 'put',
-        url: '/attendance/101',
-        payload: {
-          status: 'Present',
-          notes: 'Kept present',
-        },
+    expect(calls).toHaveLength(2)
+    expect(calls[0]).toEqual({
+      method: 'put',
+      url: '/attendance/101',
+      payload: {
+        status: 'Present',
+        notes: 'Kept present',
       },
-      {
-        method: 'post',
-        url: '/attendance',
-        payload: {
-          sessionId: 55,
-          studentId: 2,
-          status: 'Absent',
-          notes: 'No show',
-          checkInTime: undefined,
-        },
-      },
-    ])
+    })
+    expect(calls[1].method).toBe('post')
+    expect(calls[1].url).toBe('/attendance')
+    expect(calls[1].payload).toEqual({
+      sessionId: 55,
+      studentId: 2,
+      status: 'Absent',
+      notes: 'No show',
+    })
+    expect(calls[1].payload).not.toHaveProperty('checkInTime')
 
     expect(result).toEqual([
       {
@@ -271,6 +294,80 @@ describe('attendance submission contract', () => {
         notes: 'No show',
       },
     ])
+  })
+
+  test('submitAttendance sets count-aware warning on partial save and includes metadata', async () => {
+    const attendanceStore = useAttendanceStore()
+    let attempt = 0
+
+    const mockPost = async (_url: string, payload: Record<string, unknown>) => {
+      attempt += 1
+      if (attempt <= 2) {
+        return {
+          status: 201,
+          data: {
+            id: 100 + attempt,
+            studentId: payload.studentId,
+            sessionId: payload.sessionId,
+            status: String(payload.status).toLowerCase(),
+            notes: payload.notes,
+          },
+        }
+      }
+
+      const error = new Error('Conflict') as Error & { response?: { status: number } }
+      error.response = { status: 409 }
+      throw error
+    }
+    api.post = mockPost as typeof api.post
+
+    let caughtError: unknown
+    try {
+      await attendanceStore.submitAttendance({
+        sessionId: 55,
+        records: [
+          { studentId: 1, status: 'present' },
+          { studentId: 2, status: 'absent' },
+          { studentId: 3, status: 'late' },
+        ],
+      })
+    }
+    catch (error) {
+      caughtError = error
+    }
+
+    expect(attendanceStore.syncWarning).toBe(
+      '2 of 3 records saved. Please refresh the page to review the latest attendance details.',
+    )
+
+    const submissionError = caughtError as SubmissionError
+    expect(submissionError.savedCount).toBe(2)
+    expect(submissionError.totalCount).toBe(3)
+  })
+
+  test('submitAttendance does not set partial-save warning when first record fails', async () => {
+    const attendanceStore = useAttendanceStore()
+
+    const mockPost = async () => {
+      const error = new Error('Conflict') as Error & { response?: { status: number } }
+      error.response = { status: 409 }
+      throw error
+    }
+    api.post = mockPost as typeof api.post
+
+    try {
+      await attendanceStore.submitAttendance({
+        sessionId: 55,
+        records: [
+          { studentId: 1, status: 'present' },
+        ],
+      })
+    }
+    catch {
+      // Expected failure path.
+    }
+
+    expect(attendanceStore.syncWarning).toBeNull()
   })
 
   test('attendance conflict messaging stays actionable for 409 responses', () => {

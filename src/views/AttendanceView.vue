@@ -159,8 +159,24 @@ async function handleSubmitAttendance(attendanceData: StudentAttendance[]) {
   }
   catch (error) {
     console.error('Failed to submit attendance:', error)
-    const message = getAttendanceSubmissionErrorMessage(error)
-    showToast(message, 'error')
+
+    const savedCount = (error as { savedCount?: number }).savedCount
+    const totalCount = (error as { totalCount?: number }).totalCount
+
+    const isPartialSave = savedCount !== undefined
+      && totalCount !== undefined
+      && savedCount > 0
+
+    let message = getAttendanceSubmissionErrorMessage(error)
+    if (isPartialSave) {
+      message = `${savedCount} of ${totalCount} records saved. ${message}`
+    }
+
+    // Partial-save warning is surfaced via syncWarning watcher; avoid duplicate error toasts.
+    if (!isPartialSave) {
+      showToast(message, 'error')
+    }
+
     errorMessage.value = message
     // Re-throw error so child component doesn't reset its state
     throw error

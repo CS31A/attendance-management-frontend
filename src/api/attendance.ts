@@ -78,8 +78,6 @@ export interface AttendanceUpdateInput {
   notes?: string
 }
 
-export type AttendanceRecordResponseDto = AttendanceResponseDto
-
 interface SessionAttendanceResponse {
   attendanceRecords?: SessionAttendanceResponseDto[]
 }
@@ -189,9 +187,19 @@ export async function fetchAttendanceSummary(
 
 // ==================== WRITE OPERATIONS ====================
 
+/**
+ * Create a single attendance record.
+ *
+ * Backend write models require PascalCase status values.
+ * Callers should map lowercase UI status values before invoking this method.
+ *
+ * @param {CreateAttendancePayload} payload - Attendance create payload
+ * @returns {Promise<AttendanceResponseDto>} Created attendance record
+ * @throws {Error} 400 for validation errors, 403 for authorization errors, 409 for conflicts
+ */
 export async function createAttendance(
   payload: CreateAttendancePayload,
-): Promise<AttendanceRecordResponseDto> {
+): Promise<AttendanceResponseDto> {
   const response = await api.post('/attendance', payload)
   return response.data
 }
