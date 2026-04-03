@@ -381,6 +381,52 @@ describe('attendance submission contract', () => {
     expect(submissionError.totalCount).toBe(3)
   })
 
+  test('submitAttendance sets syncWarning with counts on partial failure', async () => {
+    const attendanceStore = useAttendanceStore()
+    let attempt = 0
+
+    const mockPost = async (_url: string, payload: Record<string, unknown>) => {
+      attempt += 1
+
+      if (attempt === 1) {
+        return {
+          status: 201,
+          data: {
+            id: 101,
+            studentId: payload.studentId,
+            sessionId: payload.sessionId,
+            status: String(payload.status).toLowerCase(),
+          },
+        }
+      }
+
+      const error = new Error('Conflict') as Error & { response?: { status: number } }
+      error.response = { status: 409 }
+      throw error
+    }
+    api.post = mockPost as typeof api.post
+
+    let caughtError: unknown
+    try {
+      await attendanceStore.submitAttendance({
+        sessionId: 55,
+        records: [
+          { studentId: 1, status: 'present' },
+          { studentId: 2, status: 'absent' },
+        ],
+      })
+    }
+    catch (error) {
+      caughtError = error
+    }
+
+    expect(attendanceStore.syncWarning).toContain('1 of 2')
+
+    const submissionError = caughtError as SubmissionError
+    expect(submissionError.savedCount).toBe(1)
+    expect(submissionError.totalCount).toBe(2)
+  })
+
   test('submitAttendance does not set partial-save warning when first record fails', async () => {
     const attendanceStore = useAttendanceStore()
 
