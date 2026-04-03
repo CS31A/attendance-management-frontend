@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import api from '@/api'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { getAttendanceSubmissionErrorMessage } from '@/utils/attendanceSubmission'
 
-type SubmissionError = {
+interface SubmissionError {
   response?: {
     status?: number
     data?: {
@@ -31,7 +31,7 @@ describe('attendance submission contract', () => {
     api.get = originalGet
   })
 
-  test('submitAttendance posts one new attendance record with backend status casing', async () => {
+  it('submitAttendance posts one new attendance record with backend status casing', async () => {
     const attendanceStore = useAttendanceStore()
     const createdRecord = {
       id: 101,
@@ -74,7 +74,7 @@ describe('attendance submission contract', () => {
     expect(result).toEqual([createdRecord])
   })
 
-  test('submitAttendance maps all status values to PascalCase for backend', async () => {
+  it('submitAttendance maps all status values to PascalCase for backend', async () => {
     const attendanceStore = useAttendanceStore()
     const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
 
@@ -108,7 +108,7 @@ describe('attendance submission contract', () => {
     expect(calls[3].payload.status).toBe('Excused')
   })
 
-  test('submitAttendance returns successful data when API responds with created or existing record', async () => {
+  it('submitAttendance returns successful data when API responds with created or existing record', async () => {
     const attendanceStore = useAttendanceStore()
     const existingRecord = {
       id: 101,
@@ -140,7 +140,7 @@ describe('attendance submission contract', () => {
     expect(result).toEqual([existingRecord])
   })
 
-  test('submitAttendance preserves conflict details and attaches submission metadata', async () => {
+  it('submitAttendance preserves conflict details and attaches submission metadata', async () => {
     const attendanceStore = useAttendanceStore()
     const conflictError = new Error('Conflict') as Error & {
       response?: {
@@ -186,7 +186,7 @@ describe('attendance submission contract', () => {
     expect(attendanceStore.syncWarning).toBeNull()
   })
 
-  test('submitAttendance updates existing attendance records via PUT instead of POST', async () => {
+  it('submitAttendance updates existing attendance records via PUT instead of POST', async () => {
     const attendanceStore = useAttendanceStore()
     const updatedRecord = {
       id: 101,
@@ -244,7 +244,7 @@ describe('attendance submission contract', () => {
     expect(result).toEqual([updatedRecord])
   })
 
-  test('submitAttendance supports mixed update and create records in one save', async () => {
+  it('submitAttendance supports mixed update and create records in one save', async () => {
     const attendanceStore = useAttendanceStore()
     const calls: Array<{ method: 'put' | 'post', url: string, payload: Record<string, unknown> }> = []
 
@@ -332,7 +332,7 @@ describe('attendance submission contract', () => {
     ])
   })
 
-  test('submitAttendance sets count-aware warning on partial save and includes metadata', async () => {
+  it('submitAttendance sets count-aware warning on partial save and includes metadata', async () => {
     const attendanceStore = useAttendanceStore()
     let attempt = 0
 
@@ -381,7 +381,7 @@ describe('attendance submission contract', () => {
     expect(submissionError.totalCount).toBe(3)
   })
 
-  test('submitAttendance sets syncWarning with counts on partial failure', async () => {
+  it('submitAttendance sets syncWarning with counts on partial failure', async () => {
     const attendanceStore = useAttendanceStore()
     let attempt = 0
 
@@ -427,7 +427,7 @@ describe('attendance submission contract', () => {
     expect(submissionError.totalCount).toBe(2)
   })
 
-  test('submitAttendance does not set partial-save warning when first record fails', async () => {
+  it('submitAttendance does not set partial-save warning when first record fails', async () => {
     const attendanceStore = useAttendanceStore()
 
     const mockPost = async () => {
@@ -452,7 +452,7 @@ describe('attendance submission contract', () => {
     expect(attendanceStore.syncWarning).toBeNull()
   })
 
-  test('submitAttendance omits checkInTime when undefined', async () => {
+  it('submitAttendance omits checkInTime when undefined', async () => {
     const attendanceStore = useAttendanceStore()
     const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
 
@@ -480,7 +480,7 @@ describe('attendance submission contract', () => {
     expect(calls[0].payload).not.toHaveProperty('checkInTime')
   })
 
-  test('submitAttendance normalizes notes through single path', async () => {
+  it('submitAttendance normalizes notes through single path', async () => {
     const attendanceStore = useAttendanceStore()
     const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
 
@@ -513,7 +513,7 @@ describe('attendance submission contract', () => {
     expect(calls[2].payload.notes).toBeUndefined()
   })
 
-  test('submitAttendance applies updates once after all records saved', async () => {
+  it('submitAttendance applies updates once after all records saved', async () => {
     const attendanceStore = useAttendanceStore()
     attendanceStore.currentSessionId = 55
     attendanceStore.sessionAttendance = [
@@ -560,7 +560,7 @@ describe('attendance submission contract', () => {
     expect(attendanceStore.sessionAttendance[1].status).toBe('present')
   })
 
-  test('attendance conflict messaging stays actionable for 409 responses', () => {
+  it('attendance conflict messaging stays actionable for 409 responses', () => {
     const error = {
       response: {
         status: 409,

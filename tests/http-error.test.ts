@@ -1,9 +1,9 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 
 import { getErrorMessage, getErrorStatus, getValidationErrorMessages } from '@/utils/httpError'
 
 describe('httpError helpers', () => {
-  test('reads status and message from response-like mock errors', () => {
+  it('reads status and message from response-like mock errors', () => {
     const error = new Error('Unauthorized') as Error & {
       response?: { status: number }
     }
@@ -13,7 +13,7 @@ describe('httpError helpers', () => {
     expect(getErrorMessage(error, 'fallback')).toBe('Unauthorized')
   })
 
-  test('prefers backend response message when available', () => {
+  it('prefers backend response message when available', () => {
     const error = {
       message: 'Request failed with status code 400',
       response: {
@@ -27,7 +27,7 @@ describe('httpError helpers', () => {
     expect(getErrorMessage(error, 'fallback')).toBe('Email already exists')
   })
 
-  test('prefers friendly fallback over generic axios response errors', () => {
+  it('prefers friendly fallback over generic axios response errors', () => {
     const error = {
       isAxiosError: true,
       message: 'Request failed with status code 500',
@@ -40,7 +40,7 @@ describe('httpError helpers', () => {
     expect(getErrorMessage(error, 'Failed to save classroom')).toBe('Failed to save classroom')
   })
 
-  test('normalizes validation messages from response-like payloads', () => {
+  it('normalizes validation messages from response-like payloads', () => {
     const error = {
       response: {
         status: 400,

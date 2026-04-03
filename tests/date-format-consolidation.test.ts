@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 
 type DateInput = Date | string | null | undefined
 
@@ -11,7 +11,7 @@ interface DateUtilsModule {
 }
 
 describe('date format consolidation', () => {
-  test('shared date utilities exist and preserve formatter families', async () => {
+  it('shared date utilities exist and preserve formatter families', async () => {
     expect(existsSync('src/utils/date.ts')).toBe(true)
 
     let dateUtils: DateUtilsModule | null = null
@@ -37,7 +37,7 @@ describe('date format consolidation', () => {
     expect(dateUtils.formatLongWeekdayDate(sample)).toBe('Friday, March 15, 2024')
   })
 
-  test('targeted files no longer define local formatDate helpers', () => {
+  it('targeted files no longer define local formatDate helpers', () => {
     const files = [
       'src/components/tables/UserTable.vue',
       'src/components/tables/SubjectTable.vue',

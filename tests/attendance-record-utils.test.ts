@@ -1,9 +1,9 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 
 import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
 
 describe('attendance record helpers', () => {
-  test('preserves unsaved local changes during background refresh', () => {
+  it('preserves unsaved local changes during background refresh', () => {
     const previousRecords = [
       {
         id: 11,
@@ -42,7 +42,7 @@ describe('attendance record helpers', () => {
     expect(hasUnsavedAttendanceChanges(merged)).toBe(true)
   })
 
-  test('accepts refreshed server data when there are no unsaved edits', () => {
+  it('accepts refreshed server data when there are no unsaved edits', () => {
     const previousRecords = [
       {
         id: 22,
