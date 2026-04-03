@@ -27,6 +27,7 @@ The ACLC Attendance Monitoring System is a comprehensive solution designed to st
 - **HTTP Client**: [Axios](https://axios-http.com/)
 - **Charts**: [Chart.js](https://www.chartjs.org/) + [Vue-ChartJS](https://vue-chartjs.org/)
 - **Icons**: [Lucide Vue Next](https://lucide.dev/)
+- **Testing**: [Vitest](https://vitest.dev/)
 - **Linting**: [ESLint](https://eslint.org/) with [@antfu/eslint-config](https://github.com/antfu/eslint-config)
 
 ## 📋 Prerequisites
@@ -80,6 +81,10 @@ The application will be available at `http://localhost:5173`
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Run ESLint to check code quality |
 | `npm run lint:fix` | Auto-fix ESLint issues |
+| `npm run typecheck` | Run Vue TypeScript type checking |
+| `npm run test` | Run the Vitest suite once |
+| `npm run test:watch` | Start Vitest in watch mode |
+| `npm run check` | Run lint, typecheck, tests, and build |
 
 ## 📁 Project Structure
 
@@ -174,7 +179,7 @@ Ensure the `VITE_API_BASE_URL` environment variable points to your production AP
 
 1. Follow the existing code style and conventions
 2. Run `npm run lint:fix` before committing
-3. Test your changes thoroughly
+3. Run `npm run test` to validate the Vitest suite for your changes
 4. Update documentation as needed
 
 
