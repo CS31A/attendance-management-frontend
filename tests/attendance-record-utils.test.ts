@@ -36,7 +36,7 @@ describe('attendance record helpers', () => {
     expect(merged.status).toBe('late')
     expect(merged.notes).toBe('Traffic')
     expect(merged.originalStatus).toBe('present')
-    expect(merged.originalNotes).toBe('')
+    expect(merged.originalNotes).toBeUndefined()
     expect(merged.studentName).toBe('Alice Santos')
     expect(merged.checkInTime).toBe('08:05:00')
     expect(hasUnsavedAttendanceChanges(merged)).toBe(true)

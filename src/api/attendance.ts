@@ -12,6 +12,8 @@ import api from '@/api'
  */
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
+
+/** PascalCase status values required by backend write operations ('Present' | 'Absent' | 'Late' | 'Excused') */
 export type BackendAttendanceStatus = Capitalize<AttendanceStatus>
 
 export interface AttendanceResponseDto {
@@ -190,11 +192,12 @@ export async function fetchAttendanceSummary(
 /**
  * Create a single attendance record.
  *
- * Backend write models require PascalCase status values.
- * Callers should map lowercase UI status values before invoking this method.
+ * Backend write models require PascalCase status values ('Present', 'Absent', 'Late', 'Excused').
+ * Callers must map lowercase UI status values before invoking this method.
+ * Omit checkInTime if undefined to avoid sending null/undefined to the backend.
  *
  * @param {CreateAttendancePayload} payload - Attendance create payload
- * @returns {Promise<AttendanceResponseDto>} Created attendance record
+ * @returns {Promise<AttendanceResponseDto>} Created attendance record with lowercase status
  * @throws {Error} 400 for validation errors, 403 for authorization errors, 409 for conflicts
  */
 export async function createAttendance(

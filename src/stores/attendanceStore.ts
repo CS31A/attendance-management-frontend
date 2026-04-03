@@ -391,13 +391,12 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
             })
 
         submittedRecords.push(savedRecord)
-
-        if (isCurrentSession(payload.sessionId)) {
-          applyAttendanceUpdates([savedRecord], true)
-        }
       }
 
-      // Use the mutation response immediately, then reconcile richer metadata in the background.
+      if (isCurrentSession(payload.sessionId)) {
+        applyAttendanceUpdates(submittedRecords, true)
+      }
+
       refreshSessionAttendanceInBackground(
         payload.sessionId,
         'Attendance was saved, but latest details could not be refreshed. Please refresh the page.',

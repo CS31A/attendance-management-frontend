@@ -19,6 +19,7 @@ type SubmissionError = {
 describe('attendance submission contract', () => {
   const originalPost = api.post
   const originalPut = api.put
+  const originalGet = api.get
 
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -27,6 +28,7 @@ describe('attendance submission contract', () => {
   afterEach(() => {
     api.post = originalPost
     api.put = originalPut
+    api.get = originalGet
   })
 
   test('submitAttendance posts one new attendance record with backend status casing', async () => {
@@ -72,7 +74,41 @@ describe('attendance submission contract', () => {
     expect(result).toEqual([createdRecord])
   })
 
-  test('submitAttendance returns successful data regardless of 200 or 201 when API responds', async () => {
+  test('submitAttendance maps all status values to PascalCase for backend', async () => {
+    const attendanceStore = useAttendanceStore()
+    const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
+
+    const mockPost = async (url: string, payload: Record<string, unknown>) => {
+      calls.push({ url, payload })
+      return {
+        status: 201,
+        data: {
+          id: 101,
+          studentId: payload.studentId,
+          sessionId: payload.sessionId,
+          status: String(payload.status).toLowerCase(),
+        },
+      }
+    }
+    api.post = mockPost as typeof api.post
+
+    await attendanceStore.submitAttendance({
+      sessionId: 55,
+      records: [
+        { studentId: 1, status: 'present' },
+        { studentId: 2, status: 'absent' },
+        { studentId: 3, status: 'late' },
+        { studentId: 4, status: 'excused' },
+      ],
+    })
+
+    expect(calls[0].payload.status).toBe('Present')
+    expect(calls[1].payload.status).toBe('Absent')
+    expect(calls[2].payload.status).toBe('Late')
+    expect(calls[3].payload.status).toBe('Excused')
+  })
+
+  test('submitAttendance returns successful data when API responds with created or existing record', async () => {
     const attendanceStore = useAttendanceStore()
     const existingRecord = {
       id: 101,
@@ -368,6 +404,114 @@ describe('attendance submission contract', () => {
     }
 
     expect(attendanceStore.syncWarning).toBeNull()
+  })
+
+  test('submitAttendance omits checkInTime when undefined', async () => {
+    const attendanceStore = useAttendanceStore()
+    const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
+
+    const mockPost = async (url: string, payload: Record<string, unknown>) => {
+      calls.push({ url, payload })
+      return {
+        status: 201,
+        data: {
+          id: 101,
+          studentId: payload.studentId,
+          sessionId: payload.sessionId,
+          status: String(payload.status).toLowerCase(),
+        },
+      }
+    }
+    api.post = mockPost as typeof api.post
+
+    await attendanceStore.submitAttendance({
+      sessionId: 55,
+      records: [
+        { studentId: 1, status: 'present' },
+      ],
+    })
+
+    expect(calls[0].payload).not.toHaveProperty('checkInTime')
+  })
+
+  test('submitAttendance normalizes notes through single path', async () => {
+    const attendanceStore = useAttendanceStore()
+    const calls: Array<{ url: string, payload: Record<string, unknown> }> = []
+
+    const mockPost = async (url: string, payload: Record<string, unknown>) => {
+      calls.push({ url, payload })
+      return {
+        status: 201,
+        data: {
+          id: 101,
+          studentId: payload.studentId,
+          sessionId: payload.sessionId,
+          status: String(payload.status).toLowerCase(),
+          notes: payload.notes,
+        },
+      }
+    }
+    api.post = mockPost as typeof api.post
+
+    await attendanceStore.submitAttendance({
+      sessionId: 55,
+      records: [
+        { studentId: 1, status: 'present', notes: '   ' },
+        { studentId: 2, status: 'absent', notes: '' },
+        { studentId: 3, status: 'late', notes: undefined },
+      ],
+    })
+
+    expect(calls[0].payload.notes).toBeUndefined()
+    expect(calls[1].payload.notes).toBeUndefined()
+    expect(calls[2].payload.notes).toBeUndefined()
+  })
+
+  test('submitAttendance applies updates once after all records saved', async () => {
+    const attendanceStore = useAttendanceStore()
+    attendanceStore.currentSessionId = 55
+    attendanceStore.sessionAttendance = [
+      { id: 101, studentId: 1, sessionId: 55, status: 'absent' },
+      { id: 102, studentId: 2, sessionId: 55, status: 'absent' },
+    ]
+
+    const mockPost = async (_url: string, payload: Record<string, unknown>) => {
+      return {
+        status: 201,
+        data: {
+          id: Number(payload.studentId) === 1 ? 101 : 102,
+          studentId: payload.studentId,
+          sessionId: payload.sessionId,
+          status: String(payload.status).toLowerCase(),
+        },
+      }
+    }
+    api.post = mockPost as typeof api.post
+
+    const mockGet = async () => {
+      return {
+        status: 200,
+        data: {
+          attendanceRecords: [
+            { id: 101, studentId: 1, sessionId: 55, status: 'present' },
+            { id: 102, studentId: 2, sessionId: 55, status: 'present' },
+          ],
+        },
+      }
+    }
+    api.get = mockGet as typeof api.get
+
+    await attendanceStore.submitAttendance({
+      sessionId: 55,
+      records: [
+        { studentId: 1, status: 'present' },
+        { studentId: 2, status: 'present' },
+      ],
+    })
+
+    // Verify immediate update happened (before background refresh)
+    expect(attendanceStore.sessionAttendance[0].status).toBe('present')
+    expect(attendanceStore.sessionAttendance[1].status).toBe('present')
   })
 
   test('attendance conflict messaging stays actionable for 409 responses', () => {

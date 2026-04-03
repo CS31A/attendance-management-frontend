@@ -12,8 +12,12 @@ export interface EditableAttendanceRecord {
   [key: string]: unknown
 }
 
-export function normalizeNotes(notes: unknown): string {
-  return typeof notes === 'string' ? notes : ''
+export function normalizeNotes(notes: unknown): string | undefined {
+  if (typeof notes !== 'string') {
+    return undefined
+  }
+  const trimmed = notes.trim()
+  return trimmed === '' ? undefined : notes
 }
 
 export function hasUnsavedAttendanceChanges(record: EditableAttendanceRecord): boolean {
