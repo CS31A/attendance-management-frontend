@@ -8,7 +8,8 @@ import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { useSessionStore } from '@/stores/sessionStore'
-import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
+import { getAttendanceSubmissionErrorMessage } from '@/utils/attendanceSubmission'
+import { getErrorMessage } from '@/utils/httpError'
 
 const AttendanceList = defineAsyncComponent(() => import('@/components/attendance/AttendanceList.vue'))
 const AttendanceRecord = defineAsyncComponent(() => import('@/components/attendance/AttendanceRecord.vue'))
@@ -154,18 +155,11 @@ async function handleSubmitAttendance(attendanceData: StudentAttendance[]) {
       sessionId: normalizedSessionId,
       records: attendanceData,
     })
-    showToast('Attendance recorded successfully!', 'success')
+    showToast('Attendance saved successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to submit attendance:', error)
-    let message = 'Failed to record attendance. Please try again.'
-    const status = getErrorStatus(error)
-    if (status === 403) {
-      message = 'You are not authorized to record attendance for this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Invalid attendance data.')
-    }
+    const message = getAttendanceSubmissionErrorMessage(error)
     showToast(message, 'error')
     errorMessage.value = message
     // Re-throw error so child component doesn't reset its state

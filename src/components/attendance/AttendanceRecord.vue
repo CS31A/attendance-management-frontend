@@ -131,9 +131,11 @@ async function handleSubmit() {
   submitting.value = true
   try {
     const attendanceData = localAttendance.value.map(record => ({
+      id: record.id,
       studentId: record.studentId,
       status: record.status,
       notes: record.notes || '',
+      checkInTime: record.checkInTime,
     }))
     await props.onSubmit(attendanceData)
 

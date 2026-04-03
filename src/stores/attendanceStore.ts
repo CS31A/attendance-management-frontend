@@ -1,23 +1,24 @@
 import type {
+  AttendanceUpdateInput,
+  BackendAttendanceStatus,
   AttendanceQueryParams,
   AttendanceResponseDto,
   AttendanceStatus,
   AttendanceSummaryDto,
   RecordAttendancePayload,
   SessionAttendanceResponseDto,
-  UpdateAttendancePayload,
 } from '@/api/attendance'
 import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
+  createAttendance as apiCreateAttendance,
   deleteAttendance as apiDeleteAttendance,
   fetchAllAttendance as apiFetchAllAttendance,
   fetchAttendanceById as apiFetchAttendanceById,
   fetchAttendanceSummary as apiFetchAttendanceSummary,
   fetchSessionAttendance as apiFetchSessionAttendance,
   fetchStudentAttendance as apiFetchStudentAttendance,
-  recordAttendance as apiRecordAttendance,
   updateAttendance as apiUpdateAttendance,
   calculateAttendanceStats,
 } from '@/api/attendance'
@@ -68,6 +69,23 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
   function isCurrentSession(sessionId: EntityId) {
     return currentSessionId.value !== null && entityIdsMatch(sessionId, currentSessionId.value)
+  }
+
+  function normalizeAttendanceNotes(notes: unknown): string {
+    return typeof notes === 'string' ? notes : ''
+  }
+
+  const attendanceStatusWriteMap: Record<AttendanceStatus, BackendAttendanceStatus> = {
+    present: 'Present',
+    absent: 'Absent',
+    late: 'Late',
+    excused: 'Excused',
+  }
+
+  function mapAttendanceStatusForWrite(
+    status: AttendanceStatus,
+  ): BackendAttendanceStatus {
+    return attendanceStatusWriteMap[status]
   }
 
   function applyAttendanceUpdates(records: AttendanceResponseDto[], allowInsert = false) {
@@ -317,7 +335,8 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   }
 
   /**
-   * Record attendance for a session (bulk operation)
+   * Save attendance for a session (bulk create/update operation)
+   * Existing records are updated by ID, while new records are created.
    * @param {object} payload - Attendance data
    * @param {number} payload.sessionId - Session ID
    * @param {Array} payload.records - Array of student attendance records
@@ -326,9 +345,35 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const submitAttendance = async (payload: RecordAttendancePayload) => {
     loading.value = true
     clearSyncWarning()
+    const submittedRecords: AttendanceResponseDto[] = []
 
     try {
-      const data = await apiRecordAttendance(payload)
+      for (const record of payload.records) {
+        const normalizedNotes = normalizeAttendanceNotes(record.notes)
+        const backendStatus = mapAttendanceStatusForWrite(record.status)
+        const existingRecordId = record.id
+
+        const savedRecord = existingRecordId !== undefined && existingRecordId !== null
+          ? await apiUpdateAttendance(existingRecordId, {
+              status: backendStatus,
+              notes: normalizedNotes,
+            })
+          : await apiCreateAttendance({
+              sessionId: payload.sessionId,
+              studentId: record.studentId,
+              status: backendStatus,
+              notes: normalizedNotes,
+              checkInTime: record.checkInTime,
+            })
+
+        submittedRecords.push(savedRecord)
+
+        if (isCurrentSession(payload.sessionId)) {
+          applyAttendanceUpdates([savedRecord], true)
+        }
+      }
+
+      const data = submittedRecords
       const shouldRefreshCurrentSession = isCurrentSession(payload.sessionId)
 
       if (shouldRefreshCurrentSession) {
@@ -344,6 +389,13 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       return data
     }
     catch (err) {
+      if (submittedRecords.length > 0 && isCurrentSession(payload.sessionId)) {
+        const refreshed = await refreshSessionAttendanceWithRetry(payload.sessionId)
+        if (!refreshed && isCurrentSession(payload.sessionId)) {
+          syncWarning.value = 'Some attendance entries were saved before the request stopped. Please refresh the page to review the latest attendance details.'
+        }
+      }
+
       console.error('Failed to record attendance:', err)
       throw err
     }
@@ -358,7 +410,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @param {object} payload - Update data
    * @returns {Promise<object>} Updated attendance record
    */
-  const updateAttendanceRecord = async (id: EntityId, payload: UpdateAttendancePayload) => {
+  const updateAttendanceRecord = async (id: EntityId, payload: AttendanceUpdateInput) => {
     loading.value = true
     clearSyncWarning()
 
@@ -367,7 +419,10 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     const recordIndex = sessionAttendance.value.findIndex(r => entityIdsMatch(r.id, id))
 
     try {
-      const updatedRecord = await apiUpdateAttendance(id, payload)
+      const updatedRecord = await apiUpdateAttendance(id, {
+        ...payload,
+        status: payload.status ? mapAttendanceStatusForWrite(payload.status) : undefined,
+      })
       if (recordIndex !== -1) {
         applyAttendanceUpdates([updatedRecord])
       }

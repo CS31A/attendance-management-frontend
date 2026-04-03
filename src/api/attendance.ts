@@ -12,6 +12,7 @@ import api from '@/api'
  */
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
+export type BackendAttendanceStatus = Capitalize<AttendanceStatus>
 
 export interface AttendanceResponseDto {
   id: number
@@ -47,9 +48,11 @@ export interface AttendanceQueryParams extends PaginationParams {
 }
 
 export interface StudentAttendance {
+  id?: EntityId
   studentId: number
   status: AttendanceStatus
   notes?: string
+  checkInTime?: string
 }
 
 export interface RecordAttendancePayload {
@@ -57,10 +60,25 @@ export interface RecordAttendancePayload {
   records: StudentAttendance[]
 }
 
+export interface CreateAttendancePayload {
+  studentId: number
+  status: BackendAttendanceStatus
+  notes?: string
+  checkInTime?: string
+  sessionId: number
+}
+
 export interface UpdateAttendancePayload {
+  status?: BackendAttendanceStatus
+  notes?: string
+}
+
+export interface AttendanceUpdateInput {
   status?: AttendanceStatus
   notes?: string
 }
+
+export type AttendanceRecordResponseDto = AttendanceResponseDto
 
 interface SessionAttendanceResponse {
   attendanceRecords?: SessionAttendanceResponseDto[]
@@ -171,34 +189,9 @@ export async function fetchAttendanceSummary(
 
 // ==================== WRITE OPERATIONS ====================
 
-/**
- * Record attendance for a session
- *
- * Creates or updates attendance records for students in a session.
- * Can record attendance for multiple students at once.
- *
- * @param {RecordAttendancePayload} payload - Attendance data
- * @param {number} payload.sessionId - Session ID
- * @param {Array<StudentAttendance>} payload.records - Array of student attendance records
- * @param {number} payload.records[].studentId - Student ID
- * @param {('present'|'absent'|'late'|'excused')} payload.records[].status - Attendance status
- * @param {string} [payload.records[].notes] - Optional notes
- * @returns {Promise<Array<AttendanceResponseDto>>} Created/updated attendance records
- * @throws {Error} 403 if not authorized, 400 if invalid data
- *
- * @example
- * const records = await recordAttendance({
- *   sessionId: 123,
- *   records: [
- *     { studentId: 1, status: 'present' },
- *     { studentId: 2, status: 'late', notes: 'Arrived 10 minutes late' },
- *     { studentId: 3, status: 'absent' }
- *   ]
- * })
- */
-export async function recordAttendance(
-  payload: RecordAttendancePayload,
-): Promise<AttendanceResponseDto[]> {
+export async function createAttendance(
+  payload: CreateAttendancePayload,
+): Promise<AttendanceRecordResponseDto> {
   const response = await api.post('/attendance', payload)
   return response.data
 }
@@ -210,14 +203,14 @@ export async function recordAttendance(
  *
  * @param {number} id - Attendance record ID
  * @param {UpdateAttendancePayload} payload - Update data
- * @param {('present'|'absent'|'late'|'excused')} [payload.status] - New status
+ * @param {('Present'|'Absent'|'Late'|'Excused')} [payload.status] - New status
  * @param {string} [payload.notes] - Updated notes
  * @returns {Promise<AttendanceResponseDto>} Updated attendance record
  * @throws {Error} 404 if record not found, 403 if not authorized
  *
  * @example
  * const updated = await updateAttendance(123, {
- *   status: 'excused',
+ *   status: 'Excused',
  *   notes: 'Medical certificate provided'
  * })
  */
