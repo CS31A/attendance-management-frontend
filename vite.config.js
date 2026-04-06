@@ -17,6 +17,9 @@ export default defineConfig({
   },
   test: {
     include: ['tests/**/*.test.ts'],
+    typecheck: {
+      include: ['src/type-tests/**/*.test.ts'],
+    },
     environment: 'node',
   },
   build: {

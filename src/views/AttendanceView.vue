@@ -27,8 +27,8 @@ function toNumericSessionId(id: EntityId): number | null {
   if (typeof id === 'number')
     return id
 
-  const parsed = Number.parseInt(id, 10)
-  return Number.isNaN(parsed) ? null : parsed
+  const parsed = Number(id)
+  return Number.isInteger(parsed) ? parsed : null
 }
 
 // State

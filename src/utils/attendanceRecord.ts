@@ -17,7 +17,7 @@ export function normalizeNotes(notes: unknown): string | undefined {
     return undefined
   }
   const trimmed = notes.trim()
-  return trimmed === '' ? undefined : notes
+  return trimmed === '' ? undefined : trimmed
 }
 
 export function hasUnsavedAttendanceChanges(record: EditableAttendanceRecord): boolean {

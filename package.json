@@ -12,9 +12,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "check": "eslint . && vue-tsc --noEmit && vitest run && vite build",
+    "check": "eslint . && vitest --typecheck run && vite build",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
+    "test:typecheck": "vitest --typecheck run",
     "test:watch": "vitest"
   },
   "dependencies": {
