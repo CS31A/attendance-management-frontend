@@ -23,9 +23,6 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     loading.value = true
     error.value = ''
     try {
-      // Para sa skeleton loader simulation
-      await new Promise(resolve => setTimeout(resolve, 500))
-
       const resp = await sectionsApi.getAllSections()
       sections.value = resp.data
     }

@@ -50,7 +50,8 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const sessionAttendance = ref<SessionAttendanceResponseDto[]>([])
 
   /** @type {import('vue').Ref<boolean>} */
-  const loading = ref(false)
+  const loadingCount = ref(0)
+  const loading = computed(() => loadingCount.value > 0)
 
   /** @type {import('vue').Ref<object | null>} */
   const currentRecord = ref<AttendanceResponseDto | null>(null)
@@ -236,6 +237,14 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     return sessionAttendance.value.length > 0
   })
 
+  function beginLoading() {
+    loadingCount.value += 1
+  }
+
+  function endLoading() {
+    loadingCount.value = Math.max(0, loadingCount.value - 1)
+  }
+
   // ==================== ACTIONS ====================
 
   /**
@@ -244,12 +253,9 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Array of attendance records
    */
   const fetchAllAttendance = async (params: AttendanceQueryParams = {}) => {
-    loading.value = true
+    beginLoading()
 
     try {
-      // Para sa skeleton loader simulation
-      await new Promise(resolve => setTimeout(resolve, 500))
-
       const data = await apiFetchAllAttendance(params)
       attendanceRecords.value = data
       return data
@@ -259,7 +265,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -269,7 +275,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<object>} Attendance record
    */
   const fetchAttendanceById = async (id: EntityId) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchAttendanceById(id)
@@ -281,7 +287,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -291,7 +297,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Array of attendance records
    */
   const fetchSessionAttendance = async (sessionId: EntityId) => {
-    loading.value = true
+    beginLoading()
     currentSessionId.value = sessionId
     clearSyncWarning()
 
@@ -311,7 +317,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -321,7 +327,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Array of attendance records
    */
   const fetchStudentAttendance = async (studentId: EntityId) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchStudentAttendance(studentId)
@@ -332,7 +338,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -342,7 +348,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<object>} Summary statistics
    */
   const fetchAttendanceSummary = async (params: AttendanceQueryParams = {}) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchAttendanceSummary(params)
@@ -354,7 +360,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -367,7 +373,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Created/updated attendance records
    */
   const submitAttendance = async (payload: RecordAttendancePayload) => {
-    loading.value = true
+    beginLoading()
     clearSyncWarning()
     const submittedRecords: AttendanceResponseDto[] = []
 
@@ -417,7 +423,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw createAttendanceSubmissionError(err, savedCount, totalCount)
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -428,7 +434,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<object>} Updated attendance record
    */
   const updateAttendanceRecord = async (id: EntityId, payload: AttendanceUpdateInput) => {
-    loading.value = true
+    beginLoading()
     clearSyncWarning()
 
     // Store original state for rollback
@@ -465,7 +471,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -475,7 +481,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<void>}
    */
   const deleteAttendanceRecord = async (id: EntityId) => {
-    loading.value = true
+    beginLoading()
 
     // Store original state for rollback
     const originalRecords = [...sessionAttendance.value]
@@ -495,7 +501,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -543,7 +549,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const resetStore = () => {
     attendanceRecords.value = []
     sessionAttendance.value = []
-    loading.value = false
+    loadingCount.value = 0
     currentRecord.value = null
     summary.value = null
     currentSessionId.value = null

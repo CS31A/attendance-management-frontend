@@ -41,7 +41,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const sessions = ref<SessionResponseDto[]>([])
 
   /** @type {import('vue').Ref<boolean>} */
-  const loading = ref(false)
+  const loadingCount = ref(0)
+  const loading = computed(() => loadingCount.value > 0)
 
   /** @type {import('vue').Ref<object | null>} */
   const currentSession = ref<SessionResponseDto | null>(null)
@@ -126,6 +127,14 @@ export const useSessionStore = defineStore('sessionStore', () => {
     return sessions.value.find(session => session.id === sessionId)
   })
 
+  function beginLoading() {
+    loadingCount.value += 1
+  }
+
+  function endLoading() {
+    loadingCount.value = Math.max(0, loadingCount.value - 1)
+  }
+
   // ==================== ACTIONS ====================
 
   /**
@@ -134,12 +143,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessions = async () => {
-    loading.value = true
+    beginLoading()
 
     try {
-      // Para sa skeleton loader simulation
-      await new Promise(resolve => setTimeout(resolve, 500))
-
       const data = await apiFetchMySessions()
       sessions.value = data
       return data
@@ -149,7 +155,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -159,7 +165,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Session object
    */
   const fetchSessionById = async (sessionId: EntityId) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchSessionById(sessionId)
@@ -181,7 +187,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -191,7 +197,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessionsBySchedule = async (scheduleId: EntityId) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchSessionsBySchedule(scheduleId)
@@ -202,7 +208,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -212,7 +218,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessionsByStatusApi = async (status: SessionStatus) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchSessionsByStatus(status)
@@ -223,7 +229,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -233,7 +239,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessionsByDate = async (date: string) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const data = await apiFetchSessionsByDate(date)
@@ -244,7 +250,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -258,7 +264,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @throws {Error} 403 if not instructor, 400 if business rule violated
    */
   const createSession = async (payload: CreateSessionPayload) => {
-    loading.value = true
+    beginLoading()
 
     try {
       const newSession = await apiCreateSession(payload)
@@ -273,7 +279,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -290,7 +296,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     sessionId: EntityId,
     payload: StartSessionPayload = {},
   ) => {
-    loading.value = true
+    beginLoading()
 
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
@@ -322,7 +328,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -335,7 +341,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
   const endSession = async (sessionId: EntityId, payload: EndSessionPayload = {}) => {
-    loading.value = true
+    beginLoading()
 
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
@@ -367,7 +373,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -378,7 +384,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
   const deleteSession = async (sessionId: EntityId) => {
-    loading.value = true
+    beginLoading()
 
     // Store original state for rollback
     const originalSessions = [...sessions.value]
@@ -404,7 +410,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -420,7 +426,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     sessionId: EntityId,
     payload: UpdateSessionRoomPayload,
   ) => {
-    loading.value = true
+    beginLoading()
 
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
@@ -452,7 +458,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -468,7 +474,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    */
   const resetStore = () => {
     sessions.value = []
-    loading.value = false
+    loadingCount.value = 0
     currentSession.value = null
   }
 

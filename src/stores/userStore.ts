@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
 import { ROLES } from '@/utils/constants'
-import { getErrorMessage, getErrorStatus, getValidationErrorMessages } from '@/utils/httpError'
+import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 interface ApiUserProfile {
   id?: EntityId
@@ -52,12 +52,6 @@ interface UserActionResult<T = unknown> {
   success: boolean
   data?: T
   error?: string
-}
-
-// Helper function to validate section
-function isValidSection(sectionId: string): boolean {
-  const validSections = ['1', '2', '3', '4', '5', 'CS101', 'MATH201', 'ENG301']
-  return validSections.includes(sectionId)
 }
 
 // Helper function to map user profile data from API response to flat structure
@@ -109,7 +103,8 @@ function normalizeRole(role: UiRole): UserRole {
 export const useUserStore = defineStore('user', () => {
   // State
   const users = ref<ApiUser[]>([])
-  const loading = ref(false)
+  const loadingCount = ref(0)
+  const loading = computed(() => loadingCount.value > 0)
   const error = ref('')
   // Pagination state
   const currentPage = ref(1)
@@ -169,15 +164,20 @@ export const useUserStore = defineStore('user', () => {
 
   const hasPreviousPage = computed(() => currentPage.value > 1)
 
+  function beginLoading() {
+    loadingCount.value += 1
+  }
+
+  function endLoading() {
+    loadingCount.value = Math.max(0, loadingCount.value - 1)
+  }
+
   // Actions
   async function fetchUsers(status = 'Active') {
-    loading.value = true
+    beginLoading()
     error.value = ''
 
     try {
-      // Para sa skeleton loader simulation
-      await new Promise(resolve => setTimeout(resolve, 500))
-
       const resp = await api.get<ApiUser[]>('/users', { params: { status } })
       // Map user profile data to flat structure
       users.value = resp.data.map(user => mapUserProfile(user))
@@ -187,12 +187,12 @@ export const useUserStore = defineStore('user', () => {
       error.value = 'Failed to fetch users'
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
   async function createUser(userData: CreateUserInput): Promise<UserActionResult> {
-    loading.value = true
+    beginLoading()
     error.value = ''
 
     try {
@@ -209,38 +209,7 @@ export const useUserStore = defineStore('user', () => {
           ? Number.parseInt(userData.SectionId, 10)
           : null,
       }
-
-      // If section validation fails for students, try with a default section
-      if (
-        registerData.sectionId
-        && userData.Role.toLowerCase() === 'student'
-        && !isValidSection(String(registerData.sectionId))
-      ) {
-        console.warn('Section validation failed for student, trying with default section 3')
-        registerData.sectionId = 3
-      }
-
-      let response
-      try {
-        response = await api.post('/account/register', registerData)
-      }
-      catch (innerError) {
-        const status = getErrorStatus(innerError)
-        const message = getErrorMessage(innerError, 'Registration request failed')
-        console.error('Backend registration error:', { status, message })
-
-        // If section validation fails for students, try with a different approach
-        if (status === 400 && message.toLowerCase().includes('section') && userData.Role.toLowerCase() === 'student') {
-          const fallbackData = {
-            ...registerData,
-            sectionId: Number.parseInt(String(registerData.sectionId), 10) || 3,
-          }
-          response = await api.post('/account/register', fallbackData)
-        }
-        else {
-          throw innerError
-        }
-      }
+      const response = await api.post('/account/register', registerData)
 
       // Add the new user to the store
       // Map profile data if present in response
@@ -263,23 +232,6 @@ export const useUserStore = defineStore('user', () => {
     catch (caughtError) {
       console.error('Error creating user:', caughtError)
 
-      // For development: if backend fails, add to local store anyway
-      const status = getErrorStatus(caughtError)
-      if (status === 401 || status === 400) {
-        const newUser = {
-          id: Date.now(), // Simple ID generation
-          firstName: userData.FirstName,
-          lastName: userData.LastName,
-          email: userData.Email,
-          role: normalizeRole(userData.Role),
-          sectionId: userData.SectionId,
-          createdAt: new Date().toISOString(),
-        }
-
-        users.value.push(newUser)
-        return { success: true, data: newUser }
-      }
-
       // Extract detailed error message from backend
       let errorMessage = getErrorMessage(caughtError, 'Failed to create user')
       const validationErrors = getValidationErrorMessages(caughtError)
@@ -291,12 +243,12 @@ export const useUserStore = defineStore('user', () => {
       return { success: false, error: errorMessage }
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
   async function updateUser(userId: EntityId, userData: Record<string, unknown>): Promise<UserActionResult> {
-    loading.value = true
+    beginLoading()
     error.value = ''
 
     try {
@@ -331,7 +283,7 @@ export const useUserStore = defineStore('user', () => {
       return { success: false, error: error.value }
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -343,7 +295,7 @@ export const useUserStore = defineStore('user', () => {
    * @returns {Promise<{success: boolean, error?: string}>} The result of the soft delete operation
    */
   async function softDeleteUser(userId: EntityId): Promise<UserActionResult> {
-    loading.value = true
+    beginLoading()
     error.value = ''
 
     try {
@@ -364,7 +316,7 @@ export const useUserStore = defineStore('user', () => {
       return { success: false, error: error.value }
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -376,7 +328,7 @@ export const useUserStore = defineStore('user', () => {
    * @returns {Promise<{success: boolean, error?: string}>} The result of the hard delete operation
    */
   async function hardDeleteUser(userId: EntityId): Promise<UserActionResult> {
-    loading.value = true
+    beginLoading()
     error.value = ''
 
     try {
@@ -393,7 +345,7 @@ export const useUserStore = defineStore('user', () => {
       return { success: false, error: error.value }
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 
@@ -405,7 +357,7 @@ export const useUserStore = defineStore('user', () => {
    * @returns {Promise<{success: boolean, error?: string}>} The result of the restore operation
    */
   async function restoreUser(userId: EntityId): Promise<UserActionResult> {
-    loading.value = true
+    beginLoading()
     error.value = ''
 
     try {
@@ -426,7 +378,7 @@ export const useUserStore = defineStore('user', () => {
       return { success: false, error: error.value }
     }
     finally {
-      loading.value = false
+      endLoading()
     }
   }
 

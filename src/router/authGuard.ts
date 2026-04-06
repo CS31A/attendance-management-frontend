@@ -144,12 +144,16 @@ export const adminGuard: NavigationGuardWithThis<undefined> = async (
     if (isAuthOk && authStore.isAdmin)
       return true
 
-    // Either not authenticated or not an admin - redirect to dashboard
-    return { path: '/dashboard', query: { redirect: to.fullPath } }
+    if (!isAuthOk) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+
+    // Authenticated but not authorized
+    return { path: '/dashboard' }
   }
   catch {
-    // Fail closed on errors - redirect to dashboard
-    return { path: '/dashboard', query: { redirect: to.fullPath } }
+    // Fail closed on errors while preserving the original destination
+    return { path: '/login', query: { redirect: to.fullPath } }
   }
 }
 
@@ -197,11 +201,15 @@ export const instructorGuard: NavigationGuardWithThis<undefined> = async (
     if (isAuthOk && authStore.isTeacher)
       return true
 
-    // Either not authenticated or not an instructor - redirect to dashboard
-    return { path: '/dashboard', query: { redirect: to.fullPath } }
+    if (!isAuthOk) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+
+    // Authenticated but not authorized
+    return { path: '/dashboard' }
   }
   catch {
-    // Fail closed on errors - redirect to dashboard
-    return { path: '/dashboard', query: { redirect: to.fullPath } }
+    // Fail closed on errors while preserving the original destination
+    return { path: '/login', query: { redirect: to.fullPath } }
   }
 }
