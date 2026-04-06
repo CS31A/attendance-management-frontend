@@ -125,7 +125,7 @@ onUnmounted(() => {
           aria-label="Close modal"
           @click="$emit('close')"
         >
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
@@ -133,12 +133,12 @@ onUnmounted(() => {
       <div class="modal-body">
         <!-- Expiration Warning -->
         <div v-if="isNearExpiration && !isExpired" class="warning-banner">
-          <AlertTriangle size="16" />
+          <AlertTriangle :size="16" />
           <span>Expires in less than 5 minutes!</span>
         </div>
 
         <div v-if="isExpired" class="error-banner">
-          <Ban size="16" />
+          <Ban :size="16" />
           <span>QR Code Expired</span>
         </div>
 
@@ -162,14 +162,14 @@ onUnmounted(() => {
 
         <!-- Countdown -->
         <div class="timer-display" :class="{ urgent: isNearExpiration }">
-          <Clock size="20" />
+          <Clock :size="20" />
           <span class="time">{{ formattedTime }}</span>
         </div>
 
         <!-- Stats -->
         <div class="stats-row">
           <div class="stat-item">
-            <Users size="18" class="stat-icon" />
+            <Users :size="18" class="stat-icon" />
             <div class="stat-content">
               <span class="stat-value">{{ scanCount }}</span>
               <span class="stat-label">Scanned</span>
@@ -196,7 +196,7 @@ onUnmounted(() => {
       <!-- Footer Actions -->
       <div class="modal-footer">
         <button class="btn-action secondary" @click="handleFullscreen">
-          <Maximize size="18" />
+          <Maximize :size="18" />
           Fullscreen
         </button>
 
@@ -205,12 +205,12 @@ onUnmounted(() => {
           :disabled="!qrCode.qrCodeData"
           @click="handleDownload"
         >
-          <Download size="18" />
+          <Download :size="18" />
           Download
         </button>
 
         <button class="btn-action danger" @click="handleRevoke">
-          <Ban size="18" />
+          <Ban :size="18" />
           Revoke
         </button>
       </div>

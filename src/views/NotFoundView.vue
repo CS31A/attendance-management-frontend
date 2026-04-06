@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ArrowLeft, Calendar, ClipboardCheck, FileText, Home, LayoutDashboard } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'

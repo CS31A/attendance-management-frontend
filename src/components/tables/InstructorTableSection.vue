@@ -74,13 +74,18 @@ function nextPage() {
 function goToPage(page) {
   currentPage.value = page
 }
+
+function formatCreatedAt(value) {
+  const parsed = parseUtcDate(value)
+  return parsed ? parsed.toLocaleDateString() : '-'
+}
 </script>
 
 <template>
   <div class="table-section">
     <div class="table-header">
       <div class="table-title">
-        <Users class="table-icon" size="24" />
+        <Users class="table-icon" :size="24" />
         <h2>All Instructors ({{ instructors.length }})</h2>
       </div>
     </div>
@@ -129,7 +134,7 @@ function goToPage(page) {
                 {{ instructor.email }}
               </td>
               <td class="td-created">
-                {{ parseUtcDate(instructor.createdAt).toLocaleDateString() }}
+                {{ formatCreatedAt(instructor.createdAt) }}
               </td>
               <td class="td-actions">
                 <div class="action-buttons">
@@ -139,7 +144,7 @@ function goToPage(page) {
                     title="View Instructor Details"
                     @click="$emit('view', instructor)"
                   >
-                    <Eye class="btn-icon" size="16" />
+                    <Eye class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -147,7 +152,7 @@ function goToPage(page) {
                     title="View Schedule"
                     @click="$emit('viewSchedule', instructor)"
                   >
-                    <Calendar class="btn-icon" size="16" />
+                    <Calendar class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -155,7 +160,7 @@ function goToPage(page) {
                     title="Edit Instructor"
                     @click="$emit('edit', instructor)"
                   >
-                    <Edit class="btn-icon" size="16" />
+                    <Edit class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -163,7 +168,7 @@ function goToPage(page) {
                     title="Soft Delete (Can be restored)"
                     @click="$emit('softDelete', instructor)"
                   >
-                    <ArchiveX class="btn-icon" size="16" />
+                    <ArchiveX class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -171,7 +176,7 @@ function goToPage(page) {
                     title="Permanently Delete"
                     @click="$emit('delete', instructor)"
                   >
-                    <Trash2 class="btn-icon" size="16" />
+                    <Trash2 class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="showDeleted"
@@ -179,7 +184,7 @@ function goToPage(page) {
                     title="Restore Instructor"
                     @click="$emit('restore', instructor)"
                   >
-                    <RotateCcw class="btn-icon" size="16" />
+                    <RotateCcw class="btn-icon" :size="16" />
                   </button>
                 </div>
               </td>
@@ -205,7 +210,7 @@ function goToPage(page) {
             :class="{ disabled: currentPage === 1 }"
             @click="previousPage"
           >
-            <ChevronLeft class="pagination-icon" size="16" />
+            <ChevronLeft class="pagination-icon" :size="16" />
             Previous
           </button>
 
@@ -228,7 +233,7 @@ function goToPage(page) {
             @click="nextPage"
           >
             Next
-            <ChevronRight class="pagination-icon" size="16" />
+            <ChevronRight class="pagination-icon" :size="16" />
           </button>
         </div>
       </div>

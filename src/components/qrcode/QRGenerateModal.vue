@@ -99,20 +99,20 @@ async function handleSubmit() {
       <!-- Header -->
       <div class="modal-header">
         <div class="header-content">
-          <QrCode class="header-icon" size="24" aria-hidden="true" />
+          <QrCode class="header-icon" :size="24" aria-hidden="true" />
           <h2 id="generate-qr-title">
             Generate QR Code
           </h2>
         </div>
         <button type="button" class="btn-close" aria-label="Close modal" @click="handleClose">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
       <!-- Error -->
       <div v-if="error" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ error }}</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ async function handleSubmit() {
             <span class="required">*</span>
           </label>
           <div class="input-wrapper">
-            <Clock class="input-icon" size="18" />
+            <Clock class="input-icon" :size="18" />
             <select v-model="expirationMinutes" required :disabled="loading">
               <option v-for="opt in expirationOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
@@ -147,7 +147,7 @@ async function handleSubmit() {
             <span class="optional">(Optional)</span>
           </label>
           <div class="input-wrapper">
-            <Hash class="input-icon" size="18" />
+            <Hash class="input-icon" :size="18" />
             <input
               v-model="maxUsage"
               type="number"
@@ -167,7 +167,7 @@ async function handleSubmit() {
           </label>
           <div class="input-wrapper-with-button">
             <div class="input-wrapper">
-              <Hash class="input-icon" size="18" />
+              <Hash class="input-icon" :size="18" />
               <input
                 v-model="uniqueHash"
                 type="text"
@@ -183,7 +183,7 @@ async function handleSubmit() {
               aria-label="Regenerate hash"
               @click="generateHash"
             >
-              <RefreshCw size="18" />
+              <RefreshCw :size="18" />
             </button>
           </div>
           <small class="helper-text info">Client-side signature identifier for this QR code.</small>

@@ -1,5 +1,6 @@
 <script setup>
 import { BookOpen, Calendar, Edit, Hash, Trash2 } from 'lucide-vue-next'
+import { formatShortTableDate as formatDate } from '@/utils/date'
 
 defineProps({
   subjects: {
@@ -9,21 +10,6 @@ defineProps({
 })
 
 defineEmits(['edit', 'delete'])
-
-// Format date for display
-function formatDate(value) {
-  if (!value)
-    return 'N/A'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime()))
-    return 'N/A'
-
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(date)
-}
 </script>
 
 <template>
@@ -58,35 +44,35 @@ function formatDate(value) {
           </td>
           <td class="td-code">
             <div class="code-cell">
-              <Hash class="code-icon" size="16" />
+              <Hash class="code-icon" :size="16" />
               <span class="code-text">{{ subject.code }}</span>
             </div>
           </td>
           <td class="td-name">
             <div class="app-cell-name">
-              <BookOpen class="subject-icon" size="18" />
+              <BookOpen class="subject-icon" :size="18" />
               <span class="subject-name">{{ subject.name }}</span>
             </div>
           </td>
           <td class="td-created">
             <div class="app-cell-date">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(subject?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-updated">
             <div class="app-cell-date">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(subject?.updatedAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="app-cell-actions">
               <button class="app-btn-icon app-btn-edit" title="Edit Subject" @click="$emit('edit', subject)">
-                <Edit size="16" />
+                <Edit :size="16" />
               </button>
               <button class="app-btn-icon app-btn-delete" title="Delete Subject" @click="$emit('delete', subject.id)">
-                <Trash2 size="16" />
+                <Trash2 :size="16" />
               </button>
             </div>
           </td>

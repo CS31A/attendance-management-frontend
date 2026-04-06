@@ -79,19 +79,19 @@ function handleToggleCollapse() {
           class="header-collapse-btn"
           @click="handleToggleCollapse"
         >
-          <component :is="isCollapsed ? ChevronRight : ChevronLeft" size="16" />
+          <component :is="isCollapsed ? ChevronRight : ChevronLeft" :size="16" />
         </button>
       </div>
     </div>
 
     <div class="header-right">
       <button class="icon-button notification-button" @click="handleNotificationClick">
-        <Bell size="20" />
+        <Bell :size="20" />
         <span v-if="notificationCount > 0" class="notification-badge">{{ notificationCount }}</span>
       </button>
 
       <button class="icon-button profile-button" @click="handleProfileClick">
-        <User size="20" />
+        <User :size="20" />
       </button>
     </div>
   </header>

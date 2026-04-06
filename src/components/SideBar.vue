@@ -165,25 +165,25 @@ onUnmounted(() => {
         <ul>
           <li>
             <router-link to="/dashboard" class="nav-link" @click="closeSidebar">
-              <Grid3X3 class="nav-icon" size="20" />
+              <Grid3X3 class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Dashboard</span>
             </router-link>
           </li>
           <li v-if="authStore.isTeacher">
             <router-link to="/sessions" class="nav-link" @click="closeSidebar">
-              <Calendar class="nav-icon" size="20" />
+              <Calendar class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Sessions</span>
             </router-link>
           </li>
           <li v-if="authStore.isTeacher">
             <router-link to="/attendance" class="nav-link" @click="closeSidebar">
-              <ClipboardCheck class="nav-icon" size="20" />
+              <ClipboardCheck class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Attendance</span>
             </router-link>
           </li>
           <li v-if="isAdmin">
             <router-link to="/users" class="nav-link" @click="closeSidebar">
-              <Users class="nav-icon" size="20" />
+              <Users class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Users</span>
             </router-link>
           </li>
@@ -195,13 +195,13 @@ onUnmounted(() => {
               :class="{ active: isSubmenuActive(['/sections']) }"
               @click="isCollapsed ? null : toggleSubmenu('academic')"
             >
-              <GraduationCap class="nav-icon" size="20" />
+              <GraduationCap class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Academic</span>
               <ChevronDown
                 v-show="!isCollapsed"
                 class="submenu-arrow"
                 :class="{ expanded: expandedMenus.academic }"
-                size="16"
+                :size="16"
               />
             </div>
             <ul v-show="!isCollapsed && expandedMenus.academic" class="submenu">
@@ -220,13 +220,13 @@ onUnmounted(() => {
               :class="{ active: isSubmenuActive(['/courses', '/subjects']) }"
               @click="isCollapsed ? null : toggleSubmenu('curriculum')"
             >
-              <BookOpen class="nav-icon" size="20" />
+              <BookOpen class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Curriculum</span>
               <ChevronDown
                 v-show="!isCollapsed"
                 class="submenu-arrow"
                 :class="{ expanded: expandedMenus.curriculum }"
-                size="16"
+                :size="16"
               />
             </div>
             <ul v-show="!isCollapsed && expandedMenus.curriculum" class="submenu">
@@ -245,19 +245,19 @@ onUnmounted(() => {
 
           <li v-if="isAdmin">
             <router-link to="/schedules" class="nav-link" @click="closeSidebar">
-              <CalendarClock class="nav-icon" size="20" />
+              <CalendarClock class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Schedules</span>
             </router-link>
           </li>
           <li v-if="isAdmin">
             <router-link to="/classrooms" class="nav-link" @click="closeSidebar">
-              <DoorOpen class="nav-icon" size="20" />
+              <DoorOpen class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Classrooms</span>
             </router-link>
           </li>
           <li>
             <router-link to="/reports" class="nav-link" @click="closeSidebar">
-              <BarChart3 class="nav-icon" size="20" />
+              <BarChart3 class="nav-icon" :size="20" />
               <span v-show="!isCollapsed" class="nav-text">Reports</span>
             </router-link>
           </li>
@@ -267,7 +267,7 @@ onUnmounted(() => {
       <div class="sidebar-footer">
         <div class="user-info" style="cursor: pointer;" @click="router.push('/profile')">
           <div class="user-avatar">
-            <UserCircle size="20" />
+            <UserCircle :size="20" />
           </div>
           <div v-show="!isCollapsed" class="user-details">
             <span class="user-name">{{ user }}</span>
@@ -280,7 +280,7 @@ onUnmounted(() => {
           title="Logout"
           @click="initiateLogout"
         >
-          <LogOut size="20" />
+          <LogOut :size="20" />
         </button>
       </div>
     </aside>

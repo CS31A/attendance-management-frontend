@@ -24,7 +24,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
   <div class="table-section">
     <div class="table-header">
       <div class="table-title">
-        <BookOpen class="table-icon" size="24" />
+        <BookOpen class="table-icon" :size="24" />
         <h2>{{ title }} ({{ pagination ? pagination.totalSections : sections.length }})</h2>
       </div>
     </div>
@@ -76,7 +76,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
             :class="{ disabled: !pagination.hasPreviousPage }"
             @click="$emit('previousPage')"
           >
-            <ChevronLeft class="pagination-icon" size="16" />
+            <ChevronLeft class="pagination-icon" :size="16" />
             Previous
           </button>
 
@@ -107,7 +107,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
             @click="$emit('nextPage')"
           >
             Next
-            <ChevronRight class="pagination-icon" size="16" />
+            <ChevronRight class="pagination-icon" :size="16" />
           </button>
         </div>
       </div>

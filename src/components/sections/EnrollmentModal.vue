@@ -37,14 +37,27 @@ const enrolledStudents = computed(() => enrollmentStore.getSectionStudents)
 const availableStudents = computed(() => userStore.students)
 const isLoading = computed(() => enrollmentStore.isLoading || userStore.loading)
 
+function asSearchableString(value) {
+  if (typeof value === 'string')
+    return value.toLowerCase()
+  if (typeof value === 'number')
+    return String(value).toLowerCase()
+  return ''
+}
+
+function formatEnrollmentDate(value) {
+  const parsed = parseUtcDate(value)
+  return parsed ? parsed.toLocaleDateString() : '-'
+}
+
 const filteredEnrolledStudents = computed(() => {
   if (!searchQuery.value)
     return enrolledStudents.value
   const query = searchQuery.value.toLowerCase()
   return enrolledStudents.value.filter(s =>
-    s.firstName.toLowerCase().includes(query)
-    || s.lastName.toLowerCase().includes(query)
-    || (s.studentId && s.studentId.toLowerCase().includes(query)),
+    asSearchableString(s.firstName).includes(query)
+    || asSearchableString(s.lastName).includes(query)
+    || asSearchableString(s.studentId).includes(query),
   )
 })
 
@@ -134,7 +147,7 @@ watch(() => props.section, () => {
           </p>
         </div>
         <button class="btn-close" @click="$emit('close')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
@@ -142,24 +155,24 @@ watch(() => props.section, () => {
       <div class="modal-body">
         <!-- Messages -->
         <div v-if="errorMessage" class="alert error">
-          <AlertTriangle size="18" />
+          <AlertTriangle :size="18" />
           <span>{{ errorMessage }}</span>
           <button class="btn-icon-small" @click="errorMessage = ''">
-            <X size="14" />
+            <X :size="14" />
           </button>
         </div>
         <div v-if="successMessage" class="alert success">
-          <Check size="18" />
+          <Check :size="18" />
           <span>{{ successMessage }}</span>
           <button class="btn-icon-small" @click="successMessage = ''">
-            <X size="14" />
+            <X :size="14" />
           </button>
         </div>
 
         <!-- Actions Bar -->
         <div class="actions-bar">
           <div class="search-wrapper">
-            <Search class="search-icon" size="18" />
+            <Search class="search-icon" :size="18" />
             <input
               v-model="searchQuery"
               type="text"
@@ -168,7 +181,7 @@ watch(() => props.section, () => {
             >
           </div>
           <button class="btn-primary" @click="showAddForm = !showAddForm">
-            <UserPlus size="18" />
+            <UserPlus :size="18" />
             <span>{{ showAddForm ? 'Cancel Enrollment' : 'Enroll Student' }}</span>
           </button>
         </div>
@@ -228,7 +241,7 @@ watch(() => props.section, () => {
           </div>
           <div class="form-actions">
             <button class="btn-submit" :disabled="isLoading" @click="handleEnroll">
-              <Loader2 v-if="isLoading" class="loading-spinner-btn" size="18" />
+              <Loader2 v-if="isLoading" class="loading-spinner-btn" :size="18" />
               <span v-else>Enroll Student</span>
             </button>
           </div>
@@ -274,7 +287,7 @@ watch(() => props.section, () => {
                     {{ student.status || 'Active' }}
                   </span>
                 </td>
-                <td>{{ parseUtcDate(student.enrollmentDate).toLocaleDateString() }}</td>
+                <td>{{ formatEnrollmentDate(student.enrollmentDate) }}</td>
                 <td>
                   <div class="row-actions">
                     <button
@@ -283,7 +296,7 @@ watch(() => props.section, () => {
                       title="Drop Student"
                       @click="handleDrop(student.enrollmentId)"
                     >
-                      <Trash2 size="16" />
+                      <Trash2 :size="16" />
                     </button>
                     <button
                       v-else
@@ -291,7 +304,7 @@ watch(() => props.section, () => {
                       title="Re-enroll Student"
                       @click="handleReenroll(student.enrollmentId)"
                     >
-                      <RefreshCw size="16" />
+                      <RefreshCw :size="16" />
                     </button>
                   </div>
                 </td>

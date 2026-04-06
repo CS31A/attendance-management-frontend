@@ -1,12 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { Calendar, Clock, Eye, EyeOff, Hash, Lock, Mail, Pencil, Save, Shield, X } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/api'
 import { useAuthStore } from '@/stores/authStore'
+import { formatLongDate } from '@/utils/date'
+import { getErrorMessage } from '@/utils/httpError'
 
 const authStore = useAuthStore()
 const { userProfile, isLoading } = storeToRefs(authStore)
+
+interface UpdateProfilePayload {
+  firstname?: string
+  lastname?: string
+  email?: string
+  currentPassword?: string
+  newPassword?: string
+  confirmNewPassword?: string
+  sectionId?: number | string | null
+}
+
+interface EditProfileForm {
+  email: string
+  username: string
+  firstname: string
+  lastname: string
+  sectionId: number | string | null
+}
 
 // UI State
 const isEditing = ref(false)
@@ -23,7 +43,7 @@ const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
 // Edit form data
-const editForm = reactive({
+const editForm = reactive<EditProfileForm>({
   email: '',
   username: '',
   firstname: '',
@@ -78,22 +98,12 @@ function resetPasswordForm() {
   passwordErrors.confirmNewPassword = ''
 }
 
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
 const userRole = computed(() => userProfile.value?.role || 'User')
 const isStudent = computed(() => userRole.value === 'Student')
-const isInstructor = computed(() => userRole.value === 'Teacher')
+const isInstructor = computed(() => userRole.value === 'Instructor')
 
 // Helper to get initials for avatar
-function getInitials(name) {
+function getInitials(name?: string | null) {
   if (!name)
     return 'U'
   return name
@@ -196,7 +206,7 @@ async function saveProfile() {
 
   try {
     // Build the update payload based on UpdateProfile DTO
-    const payload = {
+    const payload: UpdateProfilePayload = {
       firstname: editForm.firstname || undefined,
       lastname: editForm.lastname || undefined,
       email: editForm.email || undefined,
@@ -233,7 +243,7 @@ async function saveProfile() {
   }
   catch (error) {
     console.error('Failed to update profile:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to update profile. Please try again.'
+    errorMessage.value = getErrorMessage(error, 'Failed to update profile. Please try again.')
     showErrorMessage.value = true
   }
   finally {
@@ -244,7 +254,7 @@ async function saveProfile() {
 // Get role badge color
 const roleBadgeColor = computed(() => {
   switch (userRole.value) {
-    case 'Teacher':
+    case 'Instructor':
       return 'role-badge-instructor'
     case 'Student':
       return 'role-badge-student'
@@ -257,7 +267,7 @@ const roleBadgeColor = computed(() => {
 
 // Get role display text
 const roleDisplayText = computed(() => {
-  if (userRole.value === 'Teacher')
+  if (userRole.value === 'Instructor')
     return 'Instructor'
   return userRole.value
 })
@@ -340,7 +350,7 @@ const roleDisplayText = computed(() => {
               </div>
               <div class="detail-content">
                 <span class="detail-label">MEMBER SINCE</span>
-                <span class="detail-value">{{ formatDate(userProfile.createdAt) }}</span>
+                <span class="detail-value">{{ formatLongDate(userProfile.createdAt) }}</span>
               </div>
             </div>
             <div class="detail-item">
@@ -349,7 +359,7 @@ const roleDisplayText = computed(() => {
               </div>
               <div class="detail-content">
                 <span class="detail-label">LAST UPDATED</span>
-                <span class="detail-value">{{ formatDate(userProfile.updatedAt) }}</span>
+                <span class="detail-value">{{ formatLongDate(userProfile.updatedAt) }}</span>
               </div>
             </div>
           </div>
@@ -542,7 +552,7 @@ const roleDisplayText = computed(() => {
                     id="userId"
                     type="text"
                     class="form-input form-input-readonly"
-                    :value="userProfile.userId"
+                    :value="userProfile?.userId || ''"
                     readonly
                   >
                 </div>

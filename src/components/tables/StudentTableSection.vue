@@ -79,7 +79,7 @@ function goToPage(page) {
   <div class="table-section">
     <div class="table-header">
       <div class="table-title">
-        <GraduationCap class="table-icon" size="24" />
+        <GraduationCap class="table-icon" :size="24" />
         <h2>All Students ({{ students.length }})</h2>
       </div>
     </div>
@@ -144,7 +144,7 @@ function goToPage(page) {
                     title="View Student Details"
                     @click="$emit('view', student)"
                   >
-                    <Eye class="btn-icon" size="16" />
+                    <Eye class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -152,7 +152,7 @@ function goToPage(page) {
                     title="Edit Student"
                     @click="$emit('edit', student)"
                   >
-                    <Edit class="btn-icon" size="16" />
+                    <Edit class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -160,7 +160,7 @@ function goToPage(page) {
                     title="Soft Delete (Can be restored)"
                     @click="$emit('softDelete', student)"
                   >
-                    <ArchiveX class="btn-icon" size="16" />
+                    <ArchiveX class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="!showDeleted"
@@ -168,7 +168,7 @@ function goToPage(page) {
                     title="Permanently Delete"
                     @click="$emit('delete', student)"
                   >
-                    <Trash2 class="btn-icon" size="16" />
+                    <Trash2 class="btn-icon" :size="16" />
                   </button>
                   <button
                     v-if="showDeleted"
@@ -176,7 +176,7 @@ function goToPage(page) {
                     title="Restore Student"
                     @click="$emit('restore', student)"
                   >
-                    <RotateCcw class="btn-icon" size="16" />
+                    <RotateCcw class="btn-icon" :size="16" />
                   </button>
                 </div>
               </td>
@@ -202,7 +202,7 @@ function goToPage(page) {
             :class="{ disabled: currentPage === 1 }"
             @click="previousPage"
           >
-            <ChevronLeft class="pagination-icon" size="16" />
+            <ChevronLeft class="pagination-icon" :size="16" />
             Previous
           </button>
 
@@ -225,7 +225,7 @@ function goToPage(page) {
             @click="nextPage"
           >
             Next
-            <ChevronRight class="pagination-icon" size="16" />
+            <ChevronRight class="pagination-icon" :size="16" />
           </button>
         </div>
       </div>

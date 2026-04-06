@@ -1,37 +1,41 @@
-<script setup>
+<script setup lang="ts">
 import { AlertTriangle, X } from 'lucide-vue-next'
+import { nextTick, ref, watch } from 'vue'
 
-defineProps({
-  show: {
-    type: Boolean,
-    required: true,
-  },
-  title: {
-    type: String,
-    default: 'Alert',
-  },
-  message: {
-    type: String,
-    default: 'An error occurred',
-  },
-  confirmText: {
-    type: String,
-    default: 'OK',
-  },
+const props = withDefaults(defineProps<{
+  show: boolean
+  title?: string
+  message?: string
+  confirmText?: string
+}>(), {
+  title: 'Alert',
+  message: 'An error occurred',
+  confirmText: 'OK',
 })
 
-const emit = defineEmits(['confirm'])
+const emit = defineEmits<{
+  confirm: []
+}>()
+
+const modalContentRef = ref<HTMLDivElement | null>(null)
 
 function handleConfirm() {
   emit('confirm')
 }
 
 // Close modal on Escape key
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     handleConfirm()
   }
 }
+
+watch(() => props.show, async (isVisible) => {
+  if (isVisible) {
+    await nextTick()
+    modalContentRef.value?.focus()
+  }
+})
 
 defineExpose({
   handleKeydown,
@@ -41,27 +45,26 @@ defineExpose({
 <template>
   <Teleport to="body">
     <div
-      v-if="show"
+      v-if="props.show"
       class="modal-overlay"
       @click="handleConfirm"
-      @keydown="handleKeydown"
     >
-      <div class="modal-content" @click.stop>
+      <div ref="modalContentRef" class="modal-content" tabindex="-1" @click.stop @keydown="handleKeydown">
         <div class="modal-header">
           <div class="alert-icon">
-            <AlertTriangle size="24" />
+            <AlertTriangle :size="24" />
           </div>
-          <h3>{{ title }}</h3>
+          <h3>{{ props.title }}</h3>
           <button class="close-btn" @click="handleConfirm">
-            <X size="20" />
+            <X :size="20" />
           </button>
         </div>
         <div class="modal-body">
-          <p>{{ message }}</p>
+          <p>{{ props.message }}</p>
         </div>
         <div class="modal-footer">
           <button class="btn-confirm" @click="handleConfirm">
-            {{ confirmText }}
+            {{ props.confirmText }}
           </button>
         </div>
       </div>

@@ -1,17 +1,23 @@
-<script setup>
+<script setup lang="ts">
+import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
+import type { EntityId } from '@/types'
+import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
-import { useClassroomStore } from '@/stores/classroomStore.js'
+import { useClassroomStore } from '@/stores/classroomStore'
+import { getErrorMessage } from '@/utils/httpError'
 
 const ClassroomTableSection = defineAsyncComponent(() => import('@/components/tables/ClassroomTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
+type ToastType = 'success' | 'error'
+
 // Field configuration for FormModal
-const classroomFields = [
+const classroomFields: FormFieldConfig[] = [
   {
     name: 'name',
     label: 'Classroom Name',
@@ -27,12 +33,12 @@ const classroomFields = [
 
 const classroomStore = useClassroomStore()
 const showModal = ref(false)
-const selectedClassroom = ref(null)
-const modalRef = ref(null)
+const selectedClassroom = ref<ClassroomDto | null>(null)
+const modalRef = ref<HandleErrorableModal | null>(null)
 
 // Delete modal state
 const showDeleteModal = ref(false)
-const classroomToDelete = ref(null)
+const classroomToDelete = ref<ClassroomDto | null>(null)
 const isDeleting = ref(false)
 
 // Pagination state
@@ -66,13 +72,13 @@ function handlePreviousPage() {
   }
 }
 
-function handleGoToPage(page) {
+function handleGoToPage(page: number) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
 
-function handleSetItemsPerPage(value) {
+function handleSetItemsPerPage(value: number) {
   itemsPerPage.value = value
   currentPage.value = 1 // Reset to first page
 }
@@ -83,7 +89,7 @@ function openAddModal() {
   showModal.value = true
 }
 
-function openEditModal(classroom) {
+function openEditModal(classroom: ClassroomDto) {
   selectedClassroom.value = { ...classroom }
   showModal.value = true
 }
@@ -101,7 +107,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -112,7 +118,7 @@ function closeToast() {
   toast.show = false
 }
 
-async function handleSaveClassroom(classroomData) {
+async function handleSaveClassroom(classroomData: ClassroomPayload) {
   try {
     if (selectedClassroom.value) {
       // Edit mode
@@ -127,13 +133,11 @@ async function handleSaveClassroom(classroomData) {
     closeModal()
   }
   catch (error) {
-    if (modalRef.value) {
-      modalRef.value.handleError(error.response?.data?.message || 'Failed to save classroom')
-    }
+    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save classroom'))
   }
 }
 
-function handleDeleteClassroom(id) {
+function handleDeleteClassroom(id: EntityId) {
   const classroom = classroomStore.classrooms.find(c => c.id === id)
   if (classroom) {
     classroomToDelete.value = classroom
@@ -157,7 +161,7 @@ async function confirmDelete() {
     classroomToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete classroom: ${error.response?.data?.message || error.message}`, 'error')
+    showToast(`Failed to delete classroom: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
   }
   finally {
     isDeleting.value = false
@@ -206,7 +210,7 @@ onMounted(async () => {
     <!-- Error message -->
     <div v-else-if="classroomStore.error" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="24" />
+        <AlertTriangle class="error-icon" :size="24" />
         <p>{{ classroomStore.error }}</p>
         <BaseButton variant="secondary" size="small" @click="classroomStore.fetchClassrooms">
           Retry
@@ -256,7 +260,7 @@ onMounted(async () => {
     <FormModal
       ref="modalRef"
       :show="showModal"
-      :entity="selectedClassroom"
+      :entity="selectedClassroom ?? undefined"
       title="Classroom"
       :fields="classroomFields"
       :loading="classroomStore.loading"

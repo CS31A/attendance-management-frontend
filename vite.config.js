@@ -1,8 +1,8 @@
 import { fileURLToPath, URL } from 'node:url'
 
 import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,6 +15,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  test: {
+    include: ['tests/**/*.test.ts'],
+    typecheck: {
+      include: ['src/type-tests/**/*.test.ts'],
+    },
+    environment: 'node',
+  },
   build: {
     rollupOptions: {
       output: {
@@ -26,11 +33,11 @@ export default defineConfig({
 
           // Store chunks - group by feature
           'stores': [
-            './src/stores/authStore.js',
-            './src/stores/userStore.js',
-            './src/stores/courseStore.js',
-            './src/stores/sectionStore.js',
-            './src/stores/sessionStore.js',
+            './src/stores/authStore.ts',
+            './src/stores/userStore.ts',
+            './src/stores/courseStore.ts',
+            './src/stores/sectionStore.ts',
+            './src/stores/sessionStore.ts',
 
           ],
 

@@ -1,38 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next'
 import { onMounted, onUnmounted, ref } from 'vue'
 
-defineProps({
-  options: {
-    type: Array,
-    required: true,
-  },
-  modelValue: {
-    type: String,
-    required: true,
-  },
-  placeholder: {
-    type: String,
-    default: 'Select an option',
-  },
+interface Props {
+  options: string[]
+  modelValue: string
+  placeholder?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  placeholder: 'Select an option',
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
 
 const isOpen = ref(false)
-const dropdownRef = ref(null)
+const dropdownRef = ref<HTMLElement | null>(null)
 
 function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
 
-function selectOption(option) {
+function selectOption(option: string) {
   emit('update:modelValue', option)
   isOpen.value = false
 }
 
-function closeDropdown(e) {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+function closeDropdown(e: MouseEvent) {
+  const target = e.target as Node | null
+  if (dropdownRef.value && target && !dropdownRef.value.contains(target)) {
     isOpen.value = false
   }
 }
@@ -53,17 +51,17 @@ onUnmounted(() => {
       :class="{ 'is-open': isOpen }"
       @click="toggleDropdown"
     >
-      <span class="selected-value">{{ modelValue || placeholder }}</span>
-      <ChevronDown class="chevron-icon" :class="{ 'is-rotated': isOpen }" size="16" />
+      <span class="selected-value">{{ props.modelValue || props.placeholder }}</span>
+      <ChevronDown class="chevron-icon" :class="{ 'is-rotated': isOpen }" :size="16" />
     </div>
 
     <transition name="dropdown-fade">
       <div v-if="isOpen" class="dropdown-menu">
         <div
-          v-for="option in options"
+          v-for="option in props.options"
           :key="option"
           class="dropdown-item"
-          :class="{ 'is-selected': option === modelValue }"
+          :class="{ 'is-selected': option === props.modelValue }"
           @click="selectOption(option)"
         >
           {{ option }}

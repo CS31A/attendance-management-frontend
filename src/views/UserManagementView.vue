@@ -1,4 +1,7 @@
-<script setup>
+<script setup lang="ts">
+import type { CreateUserInput } from '@/stores/userStore'
+import type { Id } from '@/types'
+import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -13,25 +16,33 @@ const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserMo
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
 const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))
 
+type ToastType = 'success' | 'error'
+type ManagedUser = ReturnType<typeof useUserStore>['users'][number]
+
 const userStore = useUserStore()
+
+interface EditableUser {
+  userId?: string | number
+  id?: string | number
+}
 
 const showAddUser = ref(false)
 const showEditUser = ref(false)
-const editingUser = ref(null)
+const editingUser = ref<EditableUser | null>(null)
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const isSearching = ref(false)
-const selectedRole = ref('All Roles')
-const viewMode = ref('Active') // 'Active', 'Archived', 'All'
-const createModal = ref(null)
-const editModal = ref(null)
+const selectedRole = ref<'All Roles' | 'Instructor' | 'Student'>('All Roles')
+const viewMode = ref<'Active' | 'Archived' | 'All'>('Active')
+const createModal = ref<HandleErrorableModal | null>(null)
+const editModal = ref<HandleErrorableModal | null>(null)
 
 // Debounce timer reference
-let debounceTimer = null
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 const DEBOUNCE_DELAY = 300 // milliseconds
 
 // Debounced search handler
-function handleSearchInput(value) {
+function handleSearchInput(value: string) {
   searchQuery.value = value
   isSearching.value = true
 
@@ -45,6 +56,11 @@ function handleSearchInput(value) {
     debouncedSearchQuery.value = value
     isSearching.value = false
   }, DEBOUNCE_DELAY)
+}
+
+function handleSearchInputEvent(event: Event) {
+  const target = event.target as HTMLInputElement | null
+  handleSearchInput(target?.value ?? '')
 }
 
 // Clear search
@@ -66,13 +82,13 @@ onUnmounted(() => {
 
 // Delete modal state
 const showDeleteModal = ref(false)
-const userToDelete = ref(null)
+const userToDelete = ref<ManagedUser | null>(null)
 const isDeleting = ref(false)
 const deleteType = ref('soft') // 'soft' or 'hard'
 
 // Restore modal state
 const showRestoreModal = ref(false)
-const userToRestore = ref(null)
+const userToRestore = ref<ManagedUser | null>(null)
 const isRestoring = ref(false)
 
 const roleFilters = ['All Roles', 'Instructor', 'Student']
@@ -147,7 +163,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -158,27 +174,35 @@ function closeToast() {
   toast.show = false
 }
 
-async function handleCreateUser(userData) {
+async function handleCreateUser(userData: CreateUserInput) {
   const result = await userStore.createUser(userData)
   if (result.success) {
     showAddUser.value = false
     showToast('User created successfully', 'success')
   }
   else {
-    createModal.value?.handleError(result.error)
+    if (createModal.value?.handleError) {
+      createModal.value.handleError(result.error)
+    }
   }
 }
 
-async function handleUpdateUser(updatedUserData) {
-  const id = editingUser.value.userId || editingUser.value.id
+async function handleUpdateUser(updatedUserData: Record<string, unknown>) {
+  if (!editingUser.value)
+    return
+
+  const id = (editingUser.value.userId || editingUser.value.id) as Id | undefined
+  if (id == null)
+    return
+
   const result = await userStore.updateUser(id, updatedUserData)
   if (result.success) {
     showEditUser.value = false
     editingUser.value = null
     showToast('User updated successfully', 'success')
   }
-  else {
-    editModal.value?.handleError(result.error)
+  else if (editModal.value?.handleError) {
+    editModal.value.handleError(result.error)
   }
 }
 
@@ -188,7 +212,7 @@ function handleCancel() {
   editingUser.value = null
 }
 
-function handleSoftDeleteUser(user) {
+function handleSoftDeleteUser(user: ManagedUser | null) {
   if (user) {
     userToDelete.value = user
     deleteType.value = 'soft'
@@ -200,7 +224,7 @@ function handleSoftDeleteUser(user) {
   }
 }
 
-function handleHardDeleteUser(user) {
+function handleHardDeleteUser(user: ManagedUser | null) {
   if (user) {
     userToDelete.value = user
     deleteType.value = 'hard'
@@ -212,7 +236,7 @@ function handleHardDeleteUser(user) {
   }
 }
 
-function handleRestoreUser(user) {
+function handleRestoreUser(user: ManagedUser | null) {
   if (user) {
     userToRestore.value = user
     showRestoreModal.value = true
@@ -311,7 +335,7 @@ function cancelDelete() {
   userToDelete.value = null
 }
 
-function handleEditUser(user) {
+function handleEditUser(user: ManagedUser) {
   editingUser.value = user
   showEditUser.value = true
 }
@@ -325,11 +349,11 @@ function previousPage() {
   userStore.previousPage()
 }
 
-function goToPage(page) {
+function goToPage(page: number) {
   userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value)
 }
 
-function setItemsPerPage(itemsPerPage) {
+function setItemsPerPage(itemsPerPage: number) {
   userStore.setItemsPerPage(itemsPerPage)
 }
 
@@ -383,7 +407,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
     <!-- Error message -->
     <div v-else-if="userStore.error" class="error-message">
       <div class="error-content">
-        <AlertTriangle class="error-icon" size="24" />
+        <AlertTriangle class="error-icon" :size="24" />
         <p>{{ userStore.error }}</p>
         <BaseButton
           variant="ghost"
@@ -405,7 +429,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
               User Management
             </h1>
             <p class="page-subtitle">
-              Manage teachers and students
+              Manage instructors and students
             </p>
           </div>
           <BaseButton
@@ -431,7 +455,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
               type="text"
               placeholder="Search by name or email..."
               class="live-search-input"
-              @input="handleSearchInput($event.target.value)"
+              @input="handleSearchInputEvent"
             >
             <div v-if="isSearching" class="search-spinner">
               <div class="spinner" />
@@ -443,7 +467,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
               title="Clear search"
               @click="clearSearch"
             >
-              <X size="16" />
+              <X :size="16" />
             </button>
           </div>
           <div v-if="hasActiveSearch && !isSearching" class="search-results-info">
@@ -508,7 +532,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @set-items-per-page="setItemsPerPage"
       />
 
-      <!-- Teachers Table -->
+      <!-- Instructors Table -->
       <UserTableSection
         v-if="selectedRole === 'Instructor' && filteredInstructors.length > 0"
         :users="filteredInstructors"
@@ -537,7 +561,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
       <!-- Empty State -->
       <div v-if="filteredUsers.length === 0" class="empty-state">
         <div class="empty-icon-container">
-          <Users class="empty-icon" size="48" />
+          <Users class="empty-icon" :size="48" />
         </div>
         <h3 class="empty-title">
           No Users Found

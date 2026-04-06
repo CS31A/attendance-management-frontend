@@ -80,14 +80,14 @@ defineExpose({ handleError })
       <div class="modal-header">
         <h2>{{ modalTitle }}</h2>
         <button type="button" class="btn-close" :disabled="loading" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -98,7 +98,7 @@ defineExpose({ handleError })
         <div class="form-group">
           <label>Section Name *</label>
           <div class="input-wrapper">
-            <BookOpen class="input-icon" size="18" />
+            <BookOpen class="input-icon" :size="18" />
             <input
               v-model="name"
               type="text"
@@ -126,7 +126,7 @@ defineExpose({ handleError })
         <!-- Actions -->
         <div class="actions">
           <button type="submit" class="btn-submit" :disabled="!isFormValid || loading">
-            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <Loader2 v-if="loading" class="loading-spinner-btn" :size="18" />
             <span v-else>{{ submitButtonText }}</span>
           </button>
           <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">

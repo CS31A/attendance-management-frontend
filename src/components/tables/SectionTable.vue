@@ -1,5 +1,6 @@
 <script setup>
 import { BookOpen, Calendar, Edit, Trash2, Users } from 'lucide-vue-next'
+import { formatShortTableDate as formatDate } from '@/utils/date'
 
 defineProps({
   sections: {
@@ -22,21 +23,6 @@ function getSectionName(section) {
     return section.code
   }
   return `Section ${section.id}`
-}
-
-// Format date for display
-function formatDate(value) {
-  if (!value)
-    return 'N/A'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime()))
-    return 'N/A'
-
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(date)
 }
 </script>
 
@@ -69,7 +55,7 @@ function formatDate(value) {
           </td>
           <td class="td-name">
             <div class="name-cell">
-              <BookOpen class="section-icon" size="18" />
+              <BookOpen class="section-icon" :size="18" />
               <span class="section-name">{{ getSectionName(section) }}</span>
             </div>
           </td>
@@ -78,20 +64,20 @@ function formatDate(value) {
           </td>
           <td class="td-created">
             <div class="created-cell">
-              <Calendar class="date-icon" size="16" />
+              <Calendar class="date-icon" :size="16" />
               <span class="date-text">{{ formatDate(section?.createdAt) }}</span>
             </div>
           </td>
           <td class="td-actions">
             <div class="action-buttons">
               <button class="btn-enroll" title="Manage Enrollments" @click="$emit('manageEnrollments', section)">
-                <Users class="btn-icon" size="16" />
+                <Users class="btn-icon" :size="16" />
               </button>
               <button class="btn-edit" title="Edit Section" @click="$emit('edit', section)">
-                <Edit class="btn-icon" size="16" />
+                <Edit class="btn-icon" :size="16" />
               </button>
               <button class="btn-delete" title="Delete Section" @click="$emit('delete', section.id)">
-                <Trash2 class="btn-icon" size="16" />
+                <Trash2 class="btn-icon" :size="16" />
               </button>
             </div>
           </td>

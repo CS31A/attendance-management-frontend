@@ -99,14 +99,14 @@ watch(() => props.show, (newVal) => {
           Scan History
         </h2>
         <button type="button" class="btn-close" aria-label="Close modal" @click="$emit('close')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
       <!-- Statistics Summary -->
       <div v-if="statistics" class="stats-summary">
         <div class="stat-card">
-          <Users class="stat-icon" size="24" />
+          <Users class="stat-icon" :size="24" />
           <div class="stat-content">
             <span class="stat-value">{{ statistics.totalScans || 0 }}</span>
             <span class="stat-label">Total Scans</span>
@@ -114,7 +114,7 @@ watch(() => props.show, (newVal) => {
         </div>
 
         <div class="stat-card">
-          <CheckCircle class="stat-icon success" size="24" />
+          <CheckCircle class="stat-icon success" :size="24" />
           <div class="stat-content">
             <span class="stat-value">{{ statistics.successfulScans || 0 }}</span>
             <span class="stat-label">Successful</span>
@@ -122,7 +122,7 @@ watch(() => props.show, (newVal) => {
         </div>
 
         <div class="stat-card">
-          <XCircle class="stat-icon error" size="24" />
+          <XCircle class="stat-icon error" :size="24" />
           <div class="stat-content">
             <span class="stat-value">{{ statistics.failedScans || 0 }}</span>
             <span class="stat-label">Failed</span>
@@ -130,7 +130,7 @@ watch(() => props.show, (newVal) => {
         </div>
 
         <div class="stat-card">
-          <Clock class="stat-icon" size="24" />
+          <Clock class="stat-icon" :size="24" />
           <div class="stat-content">
             <span class="stat-value">{{ statistics.uniqueStudents || 0 }}</span>
             <span class="stat-label">Unique Students</span>
@@ -164,7 +164,7 @@ watch(() => props.show, (newVal) => {
 
         <!-- Empty State -->
         <div v-else-if="!hasScans" class="empty-state">
-          <Users size="48" class="empty-icon" />
+          <Users :size="48" class="empty-icon" />
           <h3>No Scans Yet</h3>
           <p>Students who scan this QR code will appear here.</p>
         </div>
@@ -235,7 +235,7 @@ watch(() => props.show, (newVal) => {
           :disabled="!hasScans"
           @click="exportToCSV"
         >
-          <Download size="18" />
+          <Download :size="18" />
           Export to CSV
         </button>
       </div>

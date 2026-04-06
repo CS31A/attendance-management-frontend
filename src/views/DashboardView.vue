@@ -1,14 +1,80 @@
-<script setup>
+<script setup lang="ts">
+import type { AttendanceSummaryDto, SessionAttendanceResponseDto } from '@/api/attendance'
+import type { SessionResponseDto } from '@/api/sessions'
+import type { EntityId } from '@/types'
 import { ArcElement, CategoryScale, Chart as ChartJS, DoughnutController, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance.js'
-import { getInstructorSubjects, getMySchedules } from '@/api/instructors.js'
+import { calculateAttendanceStats, fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance'
+import { getInstructorSubjects, getMySchedules } from '@/api/instructors'
 import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
+import { formatLongDate } from '@/utils/date'
+import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorMessage } from '@/utils/httpError'
 
 const Doughnut = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Doughnut })))
+
+interface InstructorProfile {
+  id?: number | string
+  firstname?: string
+  lastname?: string
+}
+
+interface ScheduleItem {
+  id: number | string
+  dayOfWeek?: string
+  timeIn?: string
+  timeOut?: string
+  subject?: { code?: string, name?: string }
+  classroom?: { name?: string }
+  section?: { name?: string }
+}
+
+interface RawScheduleItem extends Record<string, unknown> {
+  id?: number | string
+  dayOfWeek?: string
+  timeIn?: string
+  timeOut?: string
+  subject?: { code?: string, name?: string }
+  classroom?: { name?: string }
+  section?: { name?: string }
+}
+
+interface RefreshIntervalMap {
+  activeSessions?: ReturnType<typeof setInterval>
+  upcomingSessions?: ReturnType<typeof setInterval>
+  attendanceStats?: ReturnType<typeof setInterval>
+  timeUpdate?: ReturnType<typeof setInterval>
+}
+
+interface DashboardAttendanceSummary extends AttendanceSummaryDto {
+  totalSessions?: number
+  totalPresent?: number
+  totalLate?: number
+  totalAbsent?: number
+  totalExcused?: number
+  attendanceRate?: number
+}
+
+interface InstructorSubject extends Record<string, unknown> {
+  id?: EntityId
+  code?: string
+  name?: string
+}
+
+interface SessionAttendanceModalData {
+  session: SessionResponseDto
+  attendanceRecords: SessionAttendanceResponseDto[]
+  presentCount: number
+  lateCount: number
+  absentCount: number
+  excusedCount: number
+  attendanceRate: number
+  totalEnrolled: number | null
+  attendanceMeta: string
+}
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, DoughnutController, ArcElement)
@@ -19,24 +85,26 @@ const router = useRouter()
 
 // State
 const isLoading = ref(true)
-const instructorProfile = ref(null)
-const schedules = ref([])
-const activeSessions = ref([])
-const upcomingSessions = ref([])
-const attendanceSummary = ref(null)
-const subjects = ref([])
-const todaySessions = ref([])
+const instructorProfile = ref<InstructorProfile | null>(null)
+const schedules = ref<ScheduleItem[]>([])
+const activeSessions = ref<SessionResponseDto[]>([])
+const upcomingSessions = ref<SessionResponseDto[]>([])
+const attendanceSummary = ref<DashboardAttendanceSummary | null>(null)
+const subjects = ref<InstructorSubject[]>([])
+const todaySessions = ref<SessionResponseDto[]>([])
 const showModal = ref(false)
-const modalSessionData = ref(null)
+const modalSessionData = ref<SessionAttendanceModalData | null>(null)
 const modalLoading = ref(false)
+const modalErrorMessage = ref('')
+const activeModalSessionId = ref<EntityId | null>(null)
 const currentDateTime = ref(new Date())
-const refreshIntervals = ref({})
+const refreshIntervals = ref<RefreshIntervalMap>({})
 
 // Computed
 const isAuthenticated = computed(() => authStore.getIsAuthenticated)
 const user = computed(() => authStore.userProfile) // Changed from authStore.user to authStore.userProfile for role info
 const isStudent = computed(() => user.value?.role === 'Student')
-const isInstructor = computed(() => user.value?.role === 'Teacher')
+const isInstructor = computed(() => user.value?.role === 'Instructor')
 const isAdmin = computed(() => user.value?.role === 'Admin')
 
 // User initials for avatar
@@ -123,7 +191,7 @@ const attendanceChartOptions = {
 // Weekly schedule grouped by day
 const weeklySchedule = computed(() => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-  const grouped = {}
+  const grouped: Record<string, ScheduleItem[]> = {}
 
   days.forEach((day) => {
     grouped[day] = schedules.value.filter(s => s.dayOfWeek === day)
@@ -148,7 +216,7 @@ async function loadInstructorData() {
 
     if (instructorProfile.value?.id) {
       const subjectsData = await getInstructorSubjects(instructorProfile.value.id)
-      subjects.value = subjectsData
+      subjects.value = subjectsData.filter((item): item is InstructorSubject => typeof item === 'object' && item !== null)
     }
   }
   catch (error) {
@@ -160,6 +228,19 @@ async function loadSchedules() {
   try {
     const data = await getMySchedules()
     schedules.value = data
+      .filter((item): item is RawScheduleItem => typeof item === 'object' && item !== null)
+      .map((item) => {
+        const fallbackId = `${item.dayOfWeek ?? ''}-${item.timeIn ?? ''}-${item.timeOut ?? ''}`
+        return {
+          id: item.id ?? fallbackId,
+          dayOfWeek: item.dayOfWeek,
+          timeIn: item.timeIn,
+          timeOut: item.timeOut,
+          subject: item.subject,
+          classroom: item.classroom,
+          section: item.section,
+        }
+      })
   }
   catch (error) {
     console.error('Failed to load schedules:', error)
@@ -201,6 +282,8 @@ async function loadTodaySessions() {
     await sessionStore.fetchSessions()
     const today = new Date().toDateString()
     todaySessions.value = sessionStore.sessions.filter((session) => {
+      if (!session.sessionDate)
+        return false
       const sessionDate = new Date(session.sessionDate)
       return sessionDate.toDateString() === today
     })
@@ -211,30 +294,76 @@ async function loadTodaySessions() {
 }
 
 // Modal functions
-async function openSessionModal(sessionId) {
+async function openSessionModal(sessionId: EntityId) {
+  activeModalSessionId.value = sessionId
   showModal.value = true
   modalLoading.value = true
   modalSessionData.value = null
+  modalErrorMessage.value = ''
+  const requestSessionId = sessionId
 
   try {
-    const data = await fetchSessionAttendance(sessionId)
-    modalSessionData.value = data
+    const selectedSession = sessionStore.sessions.find(session => entityIdsMatch(session.id, sessionId))
+      || activeSessions.value.find(session => entityIdsMatch(session.id, sessionId))
+      || upcomingSessions.value.find(session => entityIdsMatch(session.id, sessionId))
+      || todaySessions.value.find(session => entityIdsMatch(session.id, sessionId))
+      || await sessionStore.fetchSessionById(sessionId)
+
+    const attendanceRecords = await fetchSessionAttendance(sessionId)
+    const stats = calculateAttendanceStats(attendanceRecords)
+    const totalEnrolled = typeof selectedSession.totalEnrolled === 'number'
+      ? selectedSession.totalEnrolled
+      : null
+    const attendanceMeta = attendanceRecords.length === 0
+      ? 'Attendance not recorded yet'
+      : `${attendanceRecords.length} attendance record${attendanceRecords.length === 1 ? '' : 's'}`
+
+    if (!entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
+      return
+    }
+
+    modalSessionData.value = {
+      session: selectedSession,
+      attendanceRecords,
+      presentCount: stats.presentCount,
+      lateCount: stats.lateCount,
+      absentCount: stats.absentCount,
+      excusedCount: stats.excusedCount,
+      attendanceRate: stats.presentPercentage,
+      totalEnrolled,
+      attendanceMeta,
+    }
   }
   catch (error) {
     console.error('Failed to load session attendance:', error)
+    if (!entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
+      return
+    }
+    modalSessionData.value = null
+    modalErrorMessage.value = getErrorMessage(error, 'Failed to load session attendance. Please try again.')
   }
   finally {
-    modalLoading.value = false
+    if (entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
+      modalLoading.value = false
+    }
+  }
+}
+
+function retrySessionModal() {
+  if (activeModalSessionId.value !== null) {
+    void openSessionModal(activeModalSessionId.value)
   }
 }
 
 function closeModal() {
   showModal.value = false
   modalSessionData.value = null
+  modalErrorMessage.value = ''
+  activeModalSessionId.value = null
 }
 
 // Utility functions
-function formatTime(isoString) {
+function formatTime(isoString?: string | null) {
   if (!isoString)
     return '-'
   const date = new Date(isoString)
@@ -242,17 +371,6 @@ function formatTime(isoString) {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
-  })
-}
-
-function formatDate(isoString) {
-  if (!isoString)
-    return '-'
-  const date = new Date(isoString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
   })
 }
 
@@ -279,7 +397,7 @@ onMounted(async () => {
     return
   }
 
-  // Only show instructor dashboard for teachers
+  // Only show instructor dashboard for instructors
   if (!isInstructor.value) {
     isLoading.value = false
     return
@@ -318,7 +436,11 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  Object.values(refreshIntervals.value).forEach(interval => clearInterval(interval))
+  Object.values(refreshIntervals.value).forEach((interval) => {
+    if (interval) {
+      clearInterval(interval)
+    }
+  })
 })
 </script>
 
@@ -342,7 +464,7 @@ onBeforeUnmount(() => {
     <!-- Admin Dashboard -->
     <AdminDashboard v-else-if="isAdmin" />
 
-    <!-- Instructor Dashboard (Teachers Only) -->
+    <!-- Instructor Dashboard (Instructors Only) -->
     <template v-else-if="isInstructor">
       <!-- Header -->
       <header class="dashboard-header">
@@ -621,10 +743,10 @@ onBeforeUnmount(() => {
                             {{ schedule.timeIn }} - {{ schedule.timeOut }}
                           </div>
                           <div class="schedule-subject">
-                            {{ schedule.subject.code }} - {{ schedule.subject.name }}
+                            {{ schedule.subject?.code || '-' }} - {{ schedule.subject?.name || 'Unknown Subject' }}
                           </div>
                           <div class="schedule-location">
-                            {{ schedule.classroom.name }} • {{ schedule.section.name }}
+                            {{ schedule.classroom?.name || 'TBA' }} • {{ schedule.section?.name || 'TBA' }}
                           </div>
                         </div>
                       </div>
@@ -695,8 +817,12 @@ onBeforeUnmount(() => {
           </div>
           <div v-else-if="modalSessionData" class="modal-content">
             <div class="session-info">
-              <h3>{{ modalSessionData.subjectName }} - {{ modalSessionData.sectionName }}</h3>
-              <p>{{ formatDate(modalSessionData.sessionDate) }} • {{ modalSessionData.totalEnrolled }} students enrolled</p>
+              <h3>{{ modalSessionData.session.subjectName }} - {{ modalSessionData.session.sectionName }}</h3>
+              <p>
+                {{ formatLongDate(modalSessionData.session.sessionDate, '-') }} •
+                {{ modalSessionData.totalEnrolled === null ? 'Enrollment unavailable' : `${modalSessionData.totalEnrolled} students enrolled` }}
+                • {{ modalSessionData.attendanceMeta }}
+              </p>
             </div>
 
             <div class="attendance-stats-grid" style="margin: 1.5rem 0;">
@@ -756,6 +882,19 @@ onBeforeUnmount(() => {
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div v-else class="modal-error-state">
+            <p class="modal-error-message">
+              {{ modalErrorMessage || 'Failed to load session attendance. Please try again.' }}
+            </p>
+            <div class="modal-error-actions">
+              <button class="btn-secondary" @click="closeModal">
+                Close
+              </button>
+              <button class="btn-primary" @click="retrySessionModal">
+                Retry
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1376,6 +1515,25 @@ onBeforeUnmount(() => {
   padding: var(--spacing-2xl);
   gap: var(--spacing-md);
   color: var(--text-secondary);
+}
+
+.modal-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.modal-error-message {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.modal-error-actions {
+  display: flex;
+  gap: var(--spacing-sm);
 }
 
 .session-info h3 {

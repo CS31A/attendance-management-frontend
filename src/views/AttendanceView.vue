@@ -1,10 +1,15 @@
-<script setup>
+<script setup lang="ts">
+import type { StudentAttendance } from '@/api/attendance'
+import type { SessionResponseDto } from '@/api/sessions'
+import type { EntityId } from '@/types'
 import { AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { useSessionStore } from '@/stores/sessionStore'
+import { getAttendanceSubmissionErrorMessage } from '@/utils/attendanceSubmission'
+import { getErrorMessage } from '@/utils/httpError'
 
 const AttendanceList = defineAsyncComponent(() => import('@/components/attendance/AttendanceList.vue'))
 const AttendanceRecord = defineAsyncComponent(() => import('@/components/attendance/AttendanceRecord.vue'))
@@ -15,29 +20,55 @@ const router = useRouter()
 const attendanceStore = useAttendanceStore()
 const sessionStore = useSessionStore()
 
+type ToastType = 'success' | 'error'
+type AttendanceViewMode = 'list' | 'record'
+
+function toNumericSessionId(id: EntityId): number | null {
+  if (typeof id === 'number')
+    return id
+
+  const parsed = Number(id)
+  return Number.isInteger(parsed) ? parsed : null
+}
+
 // State
 const errorMessage = ref('')
-const currentView = ref('list') // 'list' or 'record'
-const selectedSession = ref(null)
+const currentView = ref<AttendanceViewMode>('list')
+const selectedSession = ref<SessionResponseDto | null>(null)
 
 // Computed
-const sessionId = computed(() => route.params.sessionId)
+const sessionId = computed<EntityId | undefined>(() => {
+  const value = route.params.sessionId
+  return Array.isArray(value) ? value[0] : value
+})
 const isRecordView = computed(() => !!sessionId.value)
 const sessions = computed(() => sessionStore.sessions)
 const loading = computed(() => sessionStore.loading || attendanceStore.loading)
+const syncWarning = computed(() => attendanceStore.syncWarning)
 
 // Watch for route changes to switch views
 watch(sessionId, async (newSessionId) => {
   if (newSessionId) {
     currentView.value = 'record'
+    attendanceStore.clearSyncWarning()
     await loadSessionDetails(newSessionId)
   }
   else {
     currentView.value = 'list'
     selectedSession.value = null
+    attendanceStore.clearSyncWarning()
     attendanceStore.clearSessionAttendance()
   }
 }, { immediate: true })
+
+watch(syncWarning, (warning) => {
+  if (!warning) {
+    return
+  }
+
+  showToast(warning, 'error', 6000)
+  attendanceStore.clearSyncWarning()
+})
 
 // Toast state and helpers
 const toast = reactive({
@@ -47,7 +78,7 @@ const toast = reactive({
   duration: 3000,
 })
 
-function showToast(message, type = 'success', duration = 3000) {
+function showToast(message: string, type: ToastType = 'success', duration = 3000) {
   toast.message = message
   toast.type = type
   toast.duration = duration
@@ -66,13 +97,13 @@ async function loadSessions() {
   }
   catch (error) {
     console.error('Failed to load sessions:', error)
-    const message = error.response?.data?.message || 'Failed to load sessions. Please try again.'
+    const message = getErrorMessage(error, 'Failed to load sessions. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
 }
 
-async function loadSessionDetails(sessionId) {
+async function loadSessionDetails(sessionId: EntityId) {
   errorMessage.value = ''
   try {
     const session = await sessionStore.fetchSessionById(sessionId)
@@ -83,13 +114,13 @@ async function loadSessionDetails(sessionId) {
   }
   catch (error) {
     console.error('Failed to load session details:', error)
-    const message = error.response?.data?.message || 'Failed to load session details. Please try again.'
+    const message = getErrorMessage(error, 'Failed to load session details. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
 }
 
-function handleSelectSession(session) {
+function handleSelectSession(session: SessionResponseDto) {
   router.push(`/attendance/session/${session.id}`)
 }
 
@@ -97,25 +128,55 @@ function handleBackToList() {
   router.push('/attendance')
 }
 
-async function handleSubmitAttendance(attendanceData) {
+function retryCurrentView() {
+  if (isRecordView.value && sessionId.value) {
+    loadSessionDetails(sessionId.value)
+    return
+  }
+
+  loadSessions()
+}
+
+async function handleSubmitAttendance(attendanceData: StudentAttendance[]) {
   errorMessage.value = ''
+  if (!selectedSession.value)
+    return
+
+  const normalizedSessionId = toNumericSessionId(selectedSession.value.id)
+  if (normalizedSessionId === null) {
+    const message = 'Invalid session ID.'
+    showToast(message, 'error')
+    errorMessage.value = message
+    throw new Error(message)
+  }
+
   try {
     await attendanceStore.submitAttendance({
-      sessionId: selectedSession.value.id,
+      sessionId: normalizedSessionId,
       records: attendanceData,
     })
-    showToast('Attendance recorded successfully!', 'success')
+    showToast('Attendance saved successfully!', 'success')
   }
   catch (error) {
     console.error('Failed to submit attendance:', error)
-    let message = 'Failed to record attendance. Please try again.'
-    if (error.response?.status === 403) {
-      message = 'You are not authorized to record attendance for this session.'
+
+    const savedCount = (error as { savedCount?: number }).savedCount
+    const totalCount = (error as { totalCount?: number }).totalCount
+
+    const isPartialSave = savedCount !== undefined
+      && totalCount !== undefined
+      && savedCount > 0
+
+    let message = getAttendanceSubmissionErrorMessage(error)
+    if (isPartialSave) {
+      message = `${savedCount} of ${totalCount} records saved. ${message}`
     }
-    else if (error.response?.status === 400) {
-      message = error.response?.data?.message || 'Invalid attendance data.'
+
+    // Partial-save warning is surfaced via syncWarning watcher; avoid duplicate error toasts.
+    if (!isPartialSave) {
+      showToast(message, 'error')
     }
-    showToast(message, 'error')
+
     errorMessage.value = message
     // Re-throw error so child component doesn't reset its state
     throw error
@@ -153,18 +214,18 @@ onMounted(() => {
 
     <!-- Error State -->
     <div v-else-if="errorMessage && !sessions.length && !selectedSession" class="error-state">
-      <AlertTriangle size="48" class="error-icon" />
+      <AlertTriangle :size="48" class="error-icon" />
       <h3>Failed to Load Data</h3>
       <p>{{ errorMessage }}</p>
-      <button class="btn-retry" @click="isRecordView ? loadSessionDetails(sessionId) : loadSessions()">
-        <RefreshCw size="18" />
+      <button class="btn-retry" @click="retryCurrentView">
+        <RefreshCw :size="18" />
         <span>Retry</span>
       </button>
     </div>
 
     <!-- Empty State for List View -->
     <div v-else-if="!isRecordView && !sessions.length && !loading" class="empty-state">
-      <ClipboardCheck size="64" class="empty-icon" />
+      <ClipboardCheck :size="64" class="empty-icon" />
       <h3>No Sessions Available</h3>
       <p>There are no sessions available for attendance recording.</p>
     </div>
@@ -183,8 +244,8 @@ onMounted(() => {
       :session="selectedSession"
       :attendance="attendanceStore.sessionAttendance"
       :loading="attendanceStore.loading"
+      :on-submit="handleSubmitAttendance"
       :stats="attendanceStore.sessionStats"
-      @submit="handleSubmitAttendance"
       @back="handleBackToList"
     />
 

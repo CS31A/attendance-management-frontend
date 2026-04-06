@@ -1,38 +1,28 @@
-<script setup>
+<script setup lang="ts">
 import { Loader2 } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-const props = defineProps({
-  type: {
-    type: String,
-    default: 'inline',
-    validator: value => ['overlay', 'inline', 'spinner-only'].includes(value),
-  },
-  message: {
-    type: String,
-    default: 'Loading...',
-  },
-  size: {
-    type: String,
-    default: 'medium',
-    validator: value => ['small', 'medium', 'large'].includes(value),
-  },
-  fullScreen: {
-    type: Boolean,
-    default: false,
-  },
-  blur: {
-    type: Boolean,
-    default: true,
-  },
-  delay: {
-    type: Number,
-    default: 200,
-  },
+type SpinnerType = 'overlay' | 'inline' | 'spinner-only'
+type SpinnerSize = 'small' | 'medium' | 'large'
+
+const props = withDefaults(defineProps<{
+  type?: SpinnerType
+  message?: string
+  size?: SpinnerSize
+  fullScreen?: boolean
+  blur?: boolean
+  delay?: number
+}>(), {
+  type: 'inline',
+  message: 'Loading...',
+  size: 'medium',
+  fullScreen: false,
+  blur: true,
+  delay: 200,
 })
 
 const show = ref(props.delay === 0)
-let timeoutId = null
+let timeoutId: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
   if (props.delay > 0) {

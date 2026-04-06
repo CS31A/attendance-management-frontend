@@ -1,35 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { X } from 'lucide-vue-next'
 import { onUnmounted, watch } from 'vue'
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true,
-  },
-  title: {
-    type: String,
-    default: '',
-  },
-  size: {
-    type: String,
-    default: 'md',
-    validator: value => ['sm', 'md', 'lg', 'xl'].includes(value),
-  },
-  showClose: {
-    type: Boolean,
-    default: true,
-  },
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
+
+const props = withDefaults(defineProps<{
+  show: boolean
+  title?: string
+  size?: ModalSize
+  showClose?: boolean
+}>(), {
+  title: '',
+  size: 'md',
+  showClose: true,
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  close: []
+}>()
 
 function handleClose() {
   emit('close')
 }
 
 // Close modal on Escape key
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && props.show) {
     handleClose()
   }
@@ -71,7 +66,7 @@ onUnmounted(() => {
             <h3>{{ title }}</h3>
           </slot>
           <button v-if="showClose" class="app-btn-close" @click="handleClose">
-            <X size="24" />
+            <X :size="24" />
           </button>
         </div>
 

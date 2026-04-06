@@ -14,7 +14,9 @@ import {
   UserX,
 } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
-import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance.js'
+import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
+import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
+import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
 const props = defineProps({
   session: {
@@ -29,6 +31,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  onSubmit: {
+    type: Function,
+    required: true,
+  },
   stats: {
     type: Object,
     default: () => ({
@@ -42,7 +48,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['submit', 'back'])
+const emit = defineEmits(['back'])
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
@@ -54,11 +60,8 @@ const hasChanges = ref(false)
 
 // Initialize local attendance from props
 watch(() => props.attendance, (newAttendance) => {
-  localAttendance.value = newAttendance.map(record => ({
-    ...record,
-    originalStatus: record.status,
-  }))
-  hasChanges.value = false
+  localAttendance.value = mergeAttendanceWithLocalChanges(newAttendance, localAttendance.value)
+  hasChanges.value = localAttendance.value.some(hasUnsavedAttendanceChanges)
 }, { immediate: true, deep: true })
 
 // Computed
@@ -121,25 +124,29 @@ function markAllAs(status) {
 }
 
 function checkForChanges() {
-  hasChanges.value = localAttendance.value.some(
-    record => record.status !== record.originalStatus,
-  )
+  hasChanges.value = localAttendance.value.some(hasUnsavedAttendanceChanges)
 }
 
 async function handleSubmit() {
   submitting.value = true
   try {
     const attendanceData = localAttendance.value.map(record => ({
+      id: record.id,
       studentId: record.studentId,
       status: record.status,
-      notes: record.notes || '',
+      notes: record.notes,
+      checkInTime: record.checkInTime,
     }))
-    emit('submit', attendanceData)
-    // Update original status after successful submit
+    await props.onSubmit(attendanceData)
+
     localAttendance.value.forEach((record) => {
       record.originalStatus = record.status
+      record.originalNotes = record.notes || ''
     })
     hasChanges.value = false
+  }
+  catch {
+    // Parent view already surfaces the error; keep local unsaved edits intact.
   }
   finally {
     submitting.value = false
@@ -153,19 +160,6 @@ function handleBack() {
     }
   }
   emit('back')
-}
-
-function formatDate(dateString) {
-  if (!dateString)
-    return 'N/A'
-  // sessionDate is date-only (no time component), parse as local date
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
 }
 
 function formatTime(timeString) {
@@ -197,6 +191,7 @@ onMounted(() => {
       studentNumber: student.studentNumber,
       status: ATTENDANCE_STATUSES.ABSENT,
       originalStatus: null,
+      originalNotes: '',
       notes: '',
     }))
   }
@@ -209,7 +204,7 @@ onMounted(() => {
     <div class="session-info-card">
       <div class="session-header">
         <button class="btn-back" @click="handleBack">
-          <ArrowLeft size="20" />
+          <ArrowLeft :size="20" />
           <span>Back</span>
         </button>
         <div class="session-title">
@@ -221,19 +216,19 @@ onMounted(() => {
 
       <div class="session-meta">
         <div class="meta-item">
-          <Calendar size="18" />
+          <Calendar :size="18" />
           <span>{{ formatDate(session.sessionDate) }}</span>
         </div>
         <div class="meta-item">
-          <Clock size="18" />
+          <Clock :size="18" />
           <span>{{ formatTime(session.scheduledStartTime) }} - {{ formatTime(session.scheduledEndTime) }}</span>
         </div>
         <div v-if="session.roomName" class="meta-item">
-          <MapPin size="18" />
+          <MapPin :size="18" />
           <span>{{ session.roomName }}</span>
         </div>
         <div class="meta-item">
-          <Users size="18" />
+          <Users :size="18" />
           <span>{{ localStats.total }} Students</span>
         </div>
       </div>
@@ -242,35 +237,35 @@ onMounted(() => {
     <!-- Stats Summary -->
     <div class="stats-summary">
       <div class="stat-card present">
-        <UserCheck size="24" />
+        <UserCheck :size="24" />
         <div class="stat-content">
           <span class="stat-value">{{ localStats.presentCount }}</span>
           <span class="stat-label">Present</span>
         </div>
       </div>
       <div class="stat-card absent">
-        <UserX size="24" />
+        <UserX :size="24" />
         <div class="stat-content">
           <span class="stat-value">{{ localStats.absentCount }}</span>
           <span class="stat-label">Absent</span>
         </div>
       </div>
       <div class="stat-card late">
-        <Clock size="24" />
+        <Clock :size="24" />
         <div class="stat-content">
           <span class="stat-value">{{ localStats.lateCount }}</span>
           <span class="stat-label">Late</span>
         </div>
       </div>
       <div class="stat-card excused">
-        <UserMinus size="24" />
+        <UserMinus :size="24" />
         <div class="stat-content">
           <span class="stat-value">{{ localStats.excusedCount }}</span>
           <span class="stat-label">Excused</span>
         </div>
       </div>
       <div class="stat-card percentage">
-        <Check size="24" />
+        <Check :size="24" />
         <div class="stat-content">
           <span class="stat-value">{{ localStats.presentPercentage }}%</span>
           <span class="stat-label">Attendance Rate</span>
@@ -281,7 +276,7 @@ onMounted(() => {
     <!-- Actions Bar -->
     <div class="actions-bar">
       <div class="search-wrapper">
-        <Search size="18" class="search-icon" />
+        <Search :size="18" class="search-icon" />
         <input
           v-model="searchQuery"
           type="text"
@@ -292,11 +287,11 @@ onMounted(() => {
 
       <div class="quick-actions">
         <button class="btn-quick present" @click="markAllAs(ATTENDANCE_STATUSES.PRESENT)">
-          <CheckCheck size="18" />
+          <CheckCheck :size="18" />
           <span>Mark All Present</span>
         </button>
         <button class="btn-quick absent" @click="markAllAs(ATTENDANCE_STATUSES.ABSENT)">
-          <UserX size="18" />
+          <UserX :size="18" />
           <span>Mark All Absent</span>
         </button>
       </div>
@@ -307,7 +302,7 @@ onMounted(() => {
         @click="handleSubmit"
       >
         <LoadingSpinner v-if="submitting" type="spinner-only" size="small" />
-        <Save v-else size="18" />
+        <Save v-else :size="18" />
         <span>{{ hasExistingAttendance ? 'Update Attendance' : 'Save Attendance' }}</span>
       </button>
     </div>
@@ -357,7 +352,7 @@ onMounted(() => {
                   :title="getStatusLabel(ATTENDANCE_STATUSES.PRESENT)"
                   @click="updateStatus(record.studentId, ATTENDANCE_STATUSES.PRESENT)"
                 >
-                  <UserCheck size="16" />
+                  <UserCheck :size="16" />
                   <span class="btn-label">Present</span>
                 </button>
                 <button
@@ -365,7 +360,7 @@ onMounted(() => {
                   :title="getStatusLabel(ATTENDANCE_STATUSES.ABSENT)"
                   @click="updateStatus(record.studentId, ATTENDANCE_STATUSES.ABSENT)"
                 >
-                  <UserX size="16" />
+                  <UserX :size="16" />
                   <span class="btn-label">Absent</span>
                 </button>
                 <button
@@ -373,7 +368,7 @@ onMounted(() => {
                   :title="getStatusLabel(ATTENDANCE_STATUSES.LATE)"
                   @click="updateStatus(record.studentId, ATTENDANCE_STATUSES.LATE)"
                 >
-                  <Clock size="16" />
+                  <Clock :size="16" />
                   <span class="btn-label">Late</span>
                 </button>
                 <button
@@ -381,7 +376,7 @@ onMounted(() => {
                   :title="getStatusLabel(ATTENDANCE_STATUSES.EXCUSED)"
                   @click="updateStatus(record.studentId, ATTENDANCE_STATUSES.EXCUSED)"
                 >
-                  <UserMinus size="16" />
+                  <UserMinus :size="16" />
                   <span class="btn-label">Excused</span>
                 </button>
               </div>
@@ -395,7 +390,7 @@ onMounted(() => {
         <p>No students match your search.</p>
       </div>
       <div v-else-if="!localAttendance.length" class="empty-students">
-        <Users size="48" class="empty-icon" />
+        <Users :size="48" class="empty-icon" />
         <h3>No Students Enrolled</h3>
         <p>There are no students enrolled in this section.</p>
       </div>

@@ -115,14 +115,14 @@ defineExpose({ handleError })
       <div class="modal-header">
         <h2>Edit User</h2>
         <button type="button" class="btn-close" @click="$emit('cancel')">
-          <X size="24" />
+          <X :size="24" />
         </button>
       </div>
 
       <!-- Error Message Display -->
       <div v-if="errorMessage" class="error-message">
         <div class="error-content">
-          <AlertTriangle class="error-icon" size="20" />
+          <AlertTriangle class="error-icon" :size="20" />
           <p>{{ errorMessage }}</p>
         </div>
       </div>
@@ -196,7 +196,7 @@ defineExpose({ handleError })
           <label>Role *</label>
           <div class="role-display">
             <div class="role-badge" :class="role.toLowerCase()">
-              <component :is="getRoleIcon(role)" class="role-icon" size="20" />
+              <component :is="getRoleIcon(role)" class="role-icon" :size="20" />
               <span class="role-name">{{ role }}</span>
             </div>
           </div>
@@ -218,7 +218,7 @@ defineExpose({ handleError })
         <!-- Actions -->
         <div class="actions">
           <button type="submit" class="btn-update" :disabled="!isFormValid || loading">
-            <Loader2 v-if="loading" class="loading-spinner-btn" size="18" />
+            <Loader2 v-if="loading" class="loading-spinner-btn" :size="18" />
             <span v-else>Update User</span>
           </button>
           <button type="button" class="btn-cancel" :disabled="loading" @click="$emit('cancel')">
