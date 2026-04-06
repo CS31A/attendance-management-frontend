@@ -40,7 +40,7 @@ export interface AttendanceSummaryDto {
   [key: string]: unknown
 }
 
-export interface AttendanceQueryParams extends PaginationParams {
+export type AttendanceQueryParams = PaginationParams & {
   date?: string
   startDate?: string
   endDate?: string

@@ -2,18 +2,21 @@ export type Id = number | string
 
 export type EntityId = Id
 
-export interface PaginationParams {
+interface PagePaginationParams {
   page?: number
   limit?: number
-  offset?: number
+  offset?: never
 }
 
-export interface PaginationMeta {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
+interface OffsetPaginationParams {
+  offset?: number
+  limit?: number
+  page?: never
 }
+
+export type PaginationParams = PagePaginationParams | OffsetPaginationParams
+
+export type PaginationMeta = { mode: 'page', page: number, limit: number, total: number, totalPages: number } | { mode: 'offset', offset: number, limit: number, total: number }
 
 export interface ApiError {
   message: string
@@ -22,9 +25,4 @@ export interface ApiError {
   status?: number
 }
 
-export interface ApiEnvelope<TData> {
-  success: boolean
-  data: TData
-  message?: string
-  error?: ApiError
-}
+export type ApiEnvelope<TData> = { success: true, data: TData, error?: never, message?: string } | { success: false, error: ApiError, data?: never, message?: string }

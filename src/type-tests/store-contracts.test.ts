@@ -1,5 +1,5 @@
-import type { EnrollmentDto } from '@/api/enrollments'
-import type { EntityId } from '@/types'
+import type { EnrollmentData, EnrollmentDto, EnrollmentStatusQuery } from '@/api/enrollments'
+import type { ApiEnvelope, ApiError, EntityId, PaginationMeta, PaginationParams } from '@/types'
 
 type IsAny<T> = 0 extends (1 & T) ? true : false
 type ExpectFalse<T extends false> = T
@@ -35,6 +35,24 @@ type _coursePayloadNotAny = ExpectFalse<IsAny<Parameters<CourseStore['createCour
 type _enrollmentItemNotAny = ExpectFalse<IsAny<EnrollmentStore['studentEnrollments'][number]>>
 type _enrollmentPayloadNotAny = ExpectFalse<IsAny<Parameters<EnrollmentStore['enrollStudent']>[0]>>
 type _enrollmentCheckStudentIdNotAny = ExpectFalse<IsAny<Parameters<EnrollmentStore['checkEnrollment']>[0]>>
+type _enrollmentCheckStudentIdUsesEntityId = ExpectTrue<Extends<Parameters<EnrollmentStore['checkEnrollment']>[0], EntityId>>
+type _enrollmentCheckSectionIdUsesEntityId = ExpectTrue<Extends<Parameters<EnrollmentStore['checkEnrollment']>[1], EntityId>>
+type _enrollmentCheckSubjectIdUsesEntityId = ExpectTrue<Extends<Parameters<EnrollmentStore['checkEnrollment']>[2], EntityId>>
+type _enrollmentCheckStudentIdAcceptsStringEntityId = ExpectTrue<Extends<string, Parameters<EnrollmentStore['checkEnrollment']>[0]>>
+type _enrollmentCheckSectionIdAcceptsStringEntityId = ExpectTrue<Extends<string, Parameters<EnrollmentStore['checkEnrollment']>[1]>>
+type _enrollmentCheckSubjectIdAcceptsStringEntityId = ExpectTrue<Extends<string, Parameters<EnrollmentStore['checkEnrollment']>[2]>>
+type _enrollmentDataStudentIdUsesEntityId = ExpectTrue<Extends<EnrollmentData['studentId'], EntityId>>
+type _enrollmentDataSectionIdUsesEntityId = ExpectTrue<Extends<EnrollmentData['sectionId'], EntityId>>
+type _enrollmentDataSubjectIdUsesEntityId = ExpectTrue<Extends<EnrollmentData['subjectId'], EntityId>>
+type _enrollmentDataStudentIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentData['studentId']>>
+type _enrollmentDataSectionIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentData['sectionId']>>
+type _enrollmentDataSubjectIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentData['subjectId']>>
+type _enrollmentStatusStudentIdUsesEntityId = ExpectTrue<Extends<EnrollmentStatusQuery['studentId'], EntityId>>
+type _enrollmentStatusSectionIdUsesEntityId = ExpectTrue<Extends<EnrollmentStatusQuery['sectionId'], EntityId>>
+type _enrollmentStatusSubjectIdUsesEntityId = ExpectTrue<Extends<EnrollmentStatusQuery['subjectId'], EntityId>>
+type _enrollmentStatusStudentIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentStatusQuery['studentId']>>
+type _enrollmentStatusSectionIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentStatusQuery['sectionId']>>
+type _enrollmentStatusSubjectIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentStatusQuery['subjectId']>>
 type _enrollmentTypeShape = ExpectTrue<Extends<EnrollmentDto['enrollmentType'], string | undefined>>
 type _enrollmentDateShape = ExpectTrue<Extends<EnrollmentDto['enrollmentDate'], string | null | undefined>>
 
@@ -50,5 +68,24 @@ type _subjectPayloadNotAny = ExpectFalse<IsAny<Parameters<SubjectStore['createSu
 
 type _entityIdNormalizerReturn = ExpectTrue<Extends<ReturnType<typeof import('@/utils/entityId').normalizeEntityId>, string | null>>
 type _entityIdMatcherReturn = ExpectTrue<Extends<ReturnType<typeof import('@/utils/entityId').entityIdsMatch>, boolean>>
+
+type _paginationParamsAcceptPage = ExpectTrue<Extends<{ page: number, limit: number }, PaginationParams>>
+type _paginationParamsAcceptOffset = ExpectTrue<Extends<{ offset: number, limit: number }, PaginationParams>>
+type _paginationParamsRejectMixed = ExpectFalse<Extends<{ page: number, offset: number, limit: number }, PaginationParams>>
+type _paginationMetaAcceptPage = ExpectTrue<
+  Extends<{ mode: 'page', page: number, limit: number, total: number, totalPages: number }, PaginationMeta>
+>
+type _paginationMetaAcceptOffset = ExpectTrue<
+  Extends<{ mode: 'offset', offset: number, limit: number, total: number }, PaginationMeta>
+>
+
+type _apiEnvelopeSuccess = ExpectTrue<Extends<{ success: true, data: { id: EntityId } }, ApiEnvelope<{ id: EntityId }>>>
+type _apiEnvelopeFailure = ExpectTrue<Extends<{ success: false, error: ApiError }, ApiEnvelope<{ id: EntityId }>>>
+type _apiEnvelopeRejectsFailureWithData = ExpectFalse<
+  Extends<{ success: false, data: { id: EntityId }, error: ApiError }, ApiEnvelope<{ id: EntityId }>>
+>
+type _apiEnvelopeRejectsSuccessWithoutData = ExpectFalse<
+  Extends<{ success: true, error: ApiError }, ApiEnvelope<{ id: EntityId }>>
+>
 
 export {}

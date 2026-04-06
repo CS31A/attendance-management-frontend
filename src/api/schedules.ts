@@ -58,7 +58,7 @@ export interface ScheduleDto {
 export type ScheduleCollectionDto = ScheduleDto[]
 export type SchedulePayload = Record<string, unknown>
 
-export interface ScheduleQueryParams extends PaginationParams {
+export type ScheduleQueryParams = PaginationParams & {
   [key: string]: unknown
 }
 

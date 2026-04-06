@@ -9,7 +9,8 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
   // State
   const sectionStudents = ref<EnrollmentDto[]>([])
   const studentEnrollments = ref<EnrollmentDto[]>([])
-  const loading = ref(false)
+  const pendingRequests = ref(0)
+  const loading = computed(() => pendingRequests.value > 0)
   const error = ref('')
 
   // Getters
@@ -18,9 +19,17 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
   const isLoading = computed(() => loading.value)
   const getError = computed(() => error.value)
 
+  function beginRequest() {
+    pendingRequests.value += 1
+  }
+
+  function endRequest() {
+    pendingRequests.value = Math.max(0, pendingRequests.value - 1)
+  }
+
   // Actions
   async function enrollStudent(enrollmentData: EnrollmentData) {
-    loading.value = true
+    beginRequest()
     error.value = ''
     try {
       const response = await enrollmentsApi.enrollStudent(enrollmentData)
@@ -37,12 +46,12 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endRequest()
     }
   }
 
   async function fetchSectionStudents(sectionId: EntityId) {
-    loading.value = true
+    beginRequest()
     error.value = ''
     try {
       const response = await enrollmentsApi.getSectionStudents(sectionId)
@@ -55,12 +64,12 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endRequest()
     }
   }
 
   async function fetchStudentEnrollments(studentId: EntityId) {
-    loading.value = true
+    beginRequest()
     error.value = ''
     try {
       const response = await enrollmentsApi.getStudentEnrollments(studentId)
@@ -73,12 +82,12 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endRequest()
     }
   }
 
   async function dropStudent(enrollmentId: EntityId, sectionId: EntityId | null = null) {
-    loading.value = true
+    beginRequest()
     error.value = ''
     try {
       await enrollmentsApi.dropStudent(enrollmentId)
@@ -86,10 +95,12 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       if (sectionId) {
         await fetchSectionStudents(sectionId)
       }
-      // Update local state
-      sectionStudents.value = sectionStudents.value.filter(
-        s => s.enrollmentId !== enrollmentId,
-      )
+      else {
+        // Update local state only when we are not refreshing from API.
+        sectionStudents.value = sectionStudents.value.filter(
+          s => s.enrollmentId !== enrollmentId,
+        )
+      }
     }
     catch (err) {
       console.error('Error dropping student:', err)
@@ -97,12 +108,12 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endRequest()
     }
   }
 
   async function reenrollStudent(enrollmentId: EntityId, sectionId: EntityId | null = null) {
-    loading.value = true
+    beginRequest()
     error.value = ''
     try {
       const response = await enrollmentsApi.reenrollStudent(enrollmentId)
@@ -118,12 +129,12 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endRequest()
     }
   }
 
-  async function checkEnrollment(studentId: number, sectionId: number, subjectId: number) {
-    loading.value = true
+  async function checkEnrollment(studentId: EntityId, sectionId: EntityId, subjectId: EntityId) {
+    beginRequest()
     error.value = ''
     try {
       const response = await enrollmentsApi.checkEnrollment({
@@ -139,7 +150,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       throw err
     }
     finally {
-      loading.value = false
+      endRequest()
     }
   }
 

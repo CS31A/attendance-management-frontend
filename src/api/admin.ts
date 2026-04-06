@@ -5,7 +5,7 @@ import api from '@/api'
  * Admin API service for dashboard data
  */
 
-export interface DashboardQueryParams extends PaginationParams {
+export type DashboardQueryParams = PaginationParams & {
   startDate?: string
   endDate?: string
   sectionId?: number

@@ -65,7 +65,7 @@ export interface QrCodeScanHistoryResponseDto {
   scans: QrCodeScanHistoryItemsDto | null
 }
 
-export interface QrCodePaginationParams extends PaginationParams {
+export type QrCodePaginationParams = PaginationParams & {
   [key: string]: unknown
 }
 
