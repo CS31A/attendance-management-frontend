@@ -300,11 +300,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
       // Client-side validation
-      if (originalSession && originalSession.status !== 'not_started') {
+      if (originalSessionSnapshot && originalSessionSnapshot.status !== 'not_started') {
         throw new Error('Only sessions in "not_started" status can be started')
       }
 
@@ -321,8 +322,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
       console.error('Failed to start session:', err)
 
       // Rollback optimistic update if any
-      if (sessionIndex !== -1 && originalSession) {
-        sessions.value[sessionIndex] = originalSession
+      if (sessionIndex !== -1 && originalSessionSnapshot) {
+        sessions.value[sessionIndex] = originalSessionSnapshot
       }
 
       throw err
@@ -345,11 +346,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
       // Client-side validation
-      if (originalSession && originalSession.status !== 'active') {
+      if (originalSessionSnapshot && originalSessionSnapshot.status !== 'active') {
         throw new Error('Only active sessions can be ended')
       }
 
@@ -366,8 +368,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
       console.error('Failed to end session:', err)
 
       // Rollback optimistic update if any
-      if (sessionIndex !== -1 && originalSession) {
-        sessions.value[sessionIndex] = originalSession
+      if (sessionIndex !== -1 && originalSessionSnapshot) {
+        sessions.value[sessionIndex] = originalSessionSnapshot
       }
 
       throw err
@@ -430,11 +432,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
       // Client-side validation
-      if (originalSession && originalSession.status !== 'active') {
+      if (originalSessionSnapshot && originalSessionSnapshot.status !== 'active') {
         throw new Error('Room can only be updated for active sessions')
       }
 
@@ -451,8 +454,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
       console.error('Failed to update session room:', err)
 
       // Rollback optimistic update if any
-      if (sessionIndex !== -1 && originalSession) {
-        sessions.value[sessionIndex] = originalSession
+      if (sessionIndex !== -1 && originalSessionSnapshot) {
+        sessions.value[sessionIndex] = originalSessionSnapshot
       }
 
       throw err
