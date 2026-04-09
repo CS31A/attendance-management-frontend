@@ -104,9 +104,6 @@ export async function previewAdminDataImport(entity: AdminDataEntity, file: File
   const response = await api.post<AdminDataPreviewResponseDto>(
     `/admin-data/${entity}/import-preview`,
     createFormData(file, params),
-    {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    },
   )
 
   return response.data
@@ -116,9 +113,6 @@ export async function importAdminData(entity: AdminDataEntity, file: File, param
   const response = await api.post<AdminDataImportResponseDto>(
     `/admin-data/${entity}/import`,
     createFormData(file, params),
-    {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    },
   )
 
   return response.data
