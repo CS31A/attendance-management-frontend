@@ -31,6 +31,15 @@ function triggerBrowserDownload(file: AdminDataDownloadResult) {
   URL.revokeObjectURL(objectUrl)
 }
 
+function createOperationError(caughtError: unknown, fallbackMessage: string) {
+  const message = getErrorMessage(caughtError, fallbackMessage)
+
+  if (caughtError instanceof Error && caughtError.message === message)
+    return caughtError
+
+  return new Error(message)
+}
+
 export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptions = {}) {
   const file = ref<File | null>(null)
   const preview = ref<AdminDataPreviewResponseDto | null>(null)
@@ -38,12 +47,26 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
   const error = ref('')
   const isPreviewing = ref(false)
   const isImporting = ref(false)
-  const isDownloading = ref(false)
+  const templateDownloadCount = ref(0)
+  const exportDownloadCounts = ref<Record<AdminDataFormat, number>>({ csv: 0, xlsx: 0 })
   const isImportModalOpen = ref(false)
   const getExportParams = options.getExportParams ?? options.exportFilters ?? (() => ({}))
   const getImportParams = options.getImportParams ?? options.importParams ?? (() => ({}))
 
   const canCommitImport = computed(() => !!preview.value?.canImport && !isImporting.value)
+  const isDownloading = computed(() => templateDownloadCount.value + exportDownloadCounts.value.csv + exportDownloadCounts.value.xlsx > 0)
+  const isDownloadingTemplate = computed(() => templateDownloadCount.value > 0)
+  const isExportingCsv = computed(() => exportDownloadCounts.value.csv > 0)
+  const isExportingXlsx = computed(() => exportDownloadCounts.value.xlsx > 0)
+
+  function decrementDownloadCounter(currentCount: number, applyNextCount: (nextCount: number) => void, label: string) {
+    if (currentCount === 0) {
+      console.warn(`[useAdminData] Attempted to decrement ${label} below zero.`)
+      return
+    }
+
+    applyNextCount(currentCount - 1)
+  }
 
   function setFile(nextFile: File | null) {
     file.value = nextFile
@@ -116,8 +139,7 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
   }
 
   async function downloadTemplate(format: AdminDataFormat) {
-    isDownloading.value = true
-    error.value = ''
+    templateDownloadCount.value += 1
 
     try {
       const response = await downloadAdminDataTemplate(entity, format)
@@ -125,17 +147,19 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
       return response
     }
     catch (caughtError) {
-      error.value = getErrorMessage(caughtError, 'Failed to download template')
-      throw caughtError
+      throw createOperationError(caughtError, 'Failed to download template')
     }
     finally {
-      isDownloading.value = false
+      decrementDownloadCounter(
+        templateDownloadCount.value,
+        nextCount => { templateDownloadCount.value = nextCount },
+        'template download counter',
+      )
     }
   }
 
   async function exportRows(format: AdminDataFormat) {
-    isDownloading.value = true
-    error.value = ''
+    exportDownloadCounts.value[format] += 1
 
     try {
       const response = await exportAdminData(entity, format, getExportParams())
@@ -143,11 +167,14 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
       return response
     }
     catch (caughtError) {
-      error.value = getErrorMessage(caughtError, 'Failed to export data')
-      throw caughtError
+      throw createOperationError(caughtError, 'Failed to export data')
     }
     finally {
-      isDownloading.value = false
+      decrementDownloadCounter(
+        exportDownloadCounts.value[format],
+        nextCount => { exportDownloadCounts.value[format] = nextCount },
+        `${format} export counter`,
+      )
     }
   }
 
@@ -160,6 +187,9 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
     isPreviewing,
     isImporting,
     isDownloading,
+    isDownloadingTemplate,
+    isExportingCsv,
+    isExportingXlsx,
     isImportModalOpen,
     canCommitImport,
     setFile,

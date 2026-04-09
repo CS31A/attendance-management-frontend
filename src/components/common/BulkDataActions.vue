@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useAdminData } from '@/composables/useAdminData'
+import { getErrorMessage } from '@/utils/httpError'
 
 const props = defineProps<{
   entity: AdminDataEntity
@@ -27,7 +28,9 @@ const {
   error,
   isPreviewing,
   isImporting,
-  isDownloading,
+  isDownloadingTemplate,
+  isExportingCsv,
+  isExportingXlsx,
   setFile,
   reset,
   previewImport,
@@ -99,8 +102,8 @@ async function handleTemplateDownload() {
     await downloadTemplate('xlsx')
     emit('success', `${props.title} template downloaded.`)
   }
-  catch {
-    emit('error', error.value || `Failed to download ${props.title.toLowerCase()} template`)
+  catch (caughtError) {
+    emit('error', getErrorMessage(caughtError, `Failed to download ${props.title.toLowerCase()} template`))
   }
 }
 
@@ -109,8 +112,8 @@ async function handleExport(format: 'csv' | 'xlsx') {
     await exportRows(format)
     emit('success', `${props.title} ${format.toUpperCase()} export downloaded.`)
   }
-  catch {
-    emit('error', error.value || `Failed to export ${props.title.toLowerCase()} data`)
+  catch (caughtError) {
+    emit('error', getErrorMessage(caughtError, `Failed to export ${props.title.toLowerCase()} data`))
   }
 }
 </script>
@@ -128,13 +131,13 @@ async function handleExport(format: 'csv' | 'xlsx') {
     <BaseButton variant="secondary" :icon="Upload" @click="openModal">
       Import
     </BaseButton>
-    <BaseButton variant="secondary" :icon="FileSpreadsheet" :loading="isDownloading" @click="handleTemplateDownload">
+    <BaseButton variant="secondary" :icon="FileSpreadsheet" :loading="isDownloadingTemplate" @click="handleTemplateDownload">
       Download Template
     </BaseButton>
-    <BaseButton variant="secondary" :icon="Download" :loading="isDownloading" @click="handleExport('csv')">
+    <BaseButton variant="secondary" :icon="Download" :loading="isExportingCsv" @click="handleExport('csv')">
       Export CSV
     </BaseButton>
-    <BaseButton variant="secondary" :icon="Download" :loading="isDownloading" @click="handleExport('xlsx')">
+    <BaseButton variant="secondary" :icon="Download" :loading="isExportingXlsx" @click="handleExport('xlsx')">
       Export Excel
     </BaseButton>
 

@@ -2,6 +2,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as adminDataApi from '@/api/adminData'
 import { useAdminData } from '@/composables/useAdminData'
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((innerResolve, innerReject) => {
+    resolve = innerResolve
+    reject = innerReject
+  })
+
+  return { promise, resolve, reject }
+}
+
 describe('useAdminData', () => {
   const createObjectURL = vi.fn(() => 'blob:url')
   const revokeObjectURL = vi.fn()
@@ -86,5 +97,108 @@ describe('useAdminData', () => {
     expect(createObjectURL).toHaveBeenCalled()
     expect(click).toHaveBeenCalledTimes(1)
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:url')
+  })
+
+  it('keeps download loading state true until all concurrent downloads finish', async () => {
+    const templateDownload = createDeferred<adminDataApi.AdminDataDownloadResult>()
+    const exportDownload = createDeferred<adminDataApi.AdminDataDownloadResult>()
+
+    vi.spyOn(adminDataApi, 'downloadAdminDataTemplate').mockReturnValue(templateDownload.promise)
+    vi.spyOn(adminDataApi, 'exportAdminData').mockReturnValue(exportDownload.promise)
+
+    const adminData = useAdminData('users')
+
+    const templatePromise = adminData.downloadTemplate('xlsx')
+    const exportPromise = adminData.exportRows('csv')
+
+    expect(adminData.isDownloading.value).toBe(true)
+    expect(adminData.isDownloadingTemplate.value).toBe(true)
+    expect(adminData.isExportingCsv.value).toBe(true)
+    expect(adminData.isExportingXlsx.value).toBe(false)
+
+    templateDownload.resolve({
+      blob: new Blob(['template']),
+      filename: 'users-template.xlsx',
+      contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    await templatePromise
+
+    expect(adminData.isDownloading.value).toBe(true)
+    expect(adminData.isDownloadingTemplate.value).toBe(false)
+    expect(adminData.isExportingCsv.value).toBe(true)
+
+    exportDownload.resolve({
+      blob: new Blob(['export']),
+      filename: 'users-export.csv',
+      contentType: 'text/csv',
+    })
+    await exportPromise
+
+    expect(adminData.isDownloading.value).toBe(false)
+    expect(adminData.isExportingCsv.value).toBe(false)
+  })
+
+  it('preserves active download state when another concurrent download fails', async () => {
+    const templateDownload = createDeferred<adminDataApi.AdminDataDownloadResult>()
+    const exportDownload = createDeferred<adminDataApi.AdminDataDownloadResult>()
+
+    vi.spyOn(adminDataApi, 'downloadAdminDataTemplate').mockReturnValue(templateDownload.promise)
+    vi.spyOn(adminDataApi, 'exportAdminData').mockReturnValue(exportDownload.promise)
+
+    const adminData = useAdminData('users')
+
+    const templatePromise = adminData.downloadTemplate('xlsx')
+    const exportPromise = adminData.exportRows('csv')
+
+    templateDownload.reject(new Error('Template download failed'))
+    await expect(templatePromise).rejects.toThrow('Template download failed')
+
+    expect(adminData.error.value).toBe('')
+    expect(adminData.isDownloading.value).toBe(true)
+    expect(adminData.isDownloadingTemplate.value).toBe(false)
+    expect(adminData.isExportingCsv.value).toBe(true)
+
+    exportDownload.resolve({
+      blob: new Blob(['export']),
+      filename: 'users-export.csv',
+      contentType: 'text/csv',
+    })
+    await exportPromise
+
+    expect(adminData.isDownloading.value).toBe(false)
+    expect(adminData.isExportingCsv.value).toBe(false)
+  })
+
+  it('clears all granular loading flags after concurrent export failures', async () => {
+    const csvExport = createDeferred<adminDataApi.AdminDataDownloadResult>()
+    const xlsxExport = createDeferred<adminDataApi.AdminDataDownloadResult>()
+
+    vi.spyOn(adminDataApi, 'exportAdminData')
+      .mockReturnValueOnce(csvExport.promise)
+      .mockReturnValueOnce(xlsxExport.promise)
+
+    const adminData = useAdminData('users')
+
+    const csvPromise = adminData.exportRows('csv')
+    const xlsxPromise = adminData.exportRows('xlsx')
+
+    expect(adminData.isExportingCsv.value).toBe(true)
+    expect(adminData.isExportingXlsx.value).toBe(true)
+
+    csvExport.reject(new Error('CSV export failed'))
+    await expect(csvPromise).rejects.toThrow('CSV export failed')
+
+    expect(adminData.error.value).toBe('')
+    expect(adminData.isDownloading.value).toBe(true)
+    expect(adminData.isExportingCsv.value).toBe(false)
+    expect(adminData.isExportingXlsx.value).toBe(true)
+
+    xlsxExport.reject(new Error('Excel export failed'))
+    await expect(xlsxPromise).rejects.toThrow('Excel export failed')
+
+    expect(adminData.isDownloading.value).toBe(false)
+    expect(adminData.isExportingCsv.value).toBe(false)
+    expect(adminData.isExportingXlsx.value).toBe(false)
+    expect(adminData.error.value).toBe('')
   })
 })
