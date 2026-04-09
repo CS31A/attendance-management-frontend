@@ -49,6 +49,8 @@ function openModal() {
 function closeModal() {
   showModal.value = false
   reset()
+  if (inputRef.value)
+    inputRef.value.value = ''
 }
 
 function chooseFile() {
@@ -123,7 +125,7 @@ async function handleExport(format: 'csv' | 'xlsx') {
       @change="handleFileChange"
     >
 
-    <BaseButton variant="secondary" :icon="Upload" :loading="isDownloading" @click="openModal">
+    <BaseButton variant="secondary" :icon="Upload" @click="openModal">
       Import
     </BaseButton>
     <BaseButton variant="secondary" :icon="FileSpreadsheet" :loading="isDownloading" @click="handleTemplateDownload">
@@ -187,7 +189,7 @@ async function handleExport(format: 'csv' | 'xlsx') {
                 <td>{{ row.status }}</td>
                 <td>
                   <ul>
-                    <li v-for="issue in row.issues" :key="`${row.rowNumber}-${issue.code}-${issue.field}`">
+                    <li v-for="(issue, i) in row.issues" :key="`${row.rowNumber}-${i}`">
                       {{ issue.message }}
                     </li>
                   </ul>
