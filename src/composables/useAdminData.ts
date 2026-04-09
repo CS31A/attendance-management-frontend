@@ -152,7 +152,7 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
     finally {
       decrementDownloadCounter(
         templateDownloadCount.value,
-        nextCount => { templateDownloadCount.value = nextCount },
+        (nextCount) => { templateDownloadCount.value = nextCount },
         'template download counter',
       )
     }
@@ -172,7 +172,7 @@ export function useAdminData(entity: AdminDataEntity, options: UseAdminDataOptio
     finally {
       decrementDownloadCounter(
         exportDownloadCounts.value[format],
-        nextCount => { exportDownloadCounts.value[format] = nextCount },
+        (nextCount) => { exportDownloadCounts.value[format] = nextCount },
         `${format} export counter`,
       )
     }

@@ -437,7 +437,6 @@ watch(() => props.section, () => {
   margin-bottom: 1.5rem;
 }
 
-
 .actions-controls {
   display: flex;
   flex-wrap: wrap;
