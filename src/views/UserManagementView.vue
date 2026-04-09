@@ -5,6 +5,7 @@ import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
@@ -92,6 +93,10 @@ const userToRestore = ref<ManagedUser | null>(null)
 const isRestoring = ref(false)
 
 const roleFilters = ['All Roles', 'Instructor', 'Student']
+
+async function refreshUsers() {
+  await userStore.fetchUsers(viewMode.value)
+}
 
 onMounted(async () => {
   try {
@@ -432,13 +437,27 @@ watch([debouncedSearchQuery, selectedRole], () => {
               Manage instructors and students
             </p>
           </div>
-          <BaseButton
-            variant="primary"
-            :icon="Plus"
-            @click="showAddUser = true"
-          >
-            Add User
-          </BaseButton>
+          <div class="header-actions">
+            <BulkDataActions
+              entity="users"
+              title="Users"
+              :export-params="{
+                status: viewMode,
+                role: selectedRole !== 'All Roles' ? selectedRole : undefined,
+                search: debouncedSearchQuery || undefined,
+              }"
+              @success="showToast($event, 'success')"
+              @error="showToast($event, 'error')"
+              @imported="refreshUsers"
+            />
+            <BaseButton
+              variant="primary"
+              :icon="Plus"
+              @click="showAddUser = true"
+            >
+              Add User
+            </BaseButton>
+          </div>
         </div>
       </div>
 
@@ -720,6 +739,13 @@ watch([debouncedSearchQuery, selectedRole], () => {
   z-index: 1;
 }
 /* Header */
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
 .page-header {
   margin-bottom: 1rem;
 }

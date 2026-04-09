@@ -5,6 +5,7 @@ import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
@@ -171,6 +172,10 @@ function cancelDelete() {
   sectionToDelete.value = null
 }
 
+async function refreshSections() {
+  await sectionsStore.fetchSections()
+}
+
 onMounted(async () => {
   try {
     await sectionsStore.fetchSections()
@@ -228,9 +233,12 @@ onMounted(async () => {
               Manage Sections
             </p>
           </div>
-          <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
-            Add Section
-          </BaseButton>
+          <div class="header-actions">
+            <BulkDataActions entity="sections" title="Sections" @imported="refreshSections" @success="showToast($event, 'success')" @error="showToast($event, 'error')" />
+            <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
+              Add Section
+            </BaseButton>
+          </div>
         </div>
       </div>
 
@@ -321,6 +329,13 @@ onMounted(async () => {
   z-index: 1;
 }
 /* Header */
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
 .page-header {
   margin-bottom: 1rem;
 }
