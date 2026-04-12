@@ -83,6 +83,22 @@ export async function getAllSchedules(): Promise<ScheduleCollectionDto> {
 }
 
 /**
+ * Get schedules for a specific section
+ * @param {number} sectionId - Section ID
+ * @returns {Promise<Array>} List of schedule objects for the section
+ */
+export async function getSchedulesBySection(sectionId: EntityId): Promise<ScheduleCollectionDto> {
+  try {
+    const response = await api.get(`${SCHEDULE_ENDPOINT}/by-section/${sectionId}`)
+    return response.data
+  }
+  catch (error) {
+    console.error(`Failed to fetch schedules for section ${sectionId}:`, error)
+    return Promise.reject(error)
+  }
+}
+
+/**
  * Get schedules for the current instructor
  * @returns {Promise<Array>} List of schedule objects for the current instructor
  */
@@ -168,4 +184,5 @@ export default {
   createSchedule,
   updateSchedule,
   deleteSchedule,
+  getSchedulesBySection,
 }

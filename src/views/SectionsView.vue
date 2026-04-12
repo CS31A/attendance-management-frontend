@@ -4,6 +4,7 @@ import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { getSchedulesBySection } from '@/api/schedules'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -136,12 +137,29 @@ async function handleSaveSection(sectionData: SectionPayload) {
   }
 }
 
-function handleDeleteSection(id: EntityId) {
+async function handleDeleteSection(id: EntityId) {
   const section = sectionsStore.sections.find(s => s.id === id)
-  if (section) {
-    sectionToDelete.value = section
-    showDeleteModal.value = true
+  if (!section)
+    return
+
+  // Check for dependent schedules before allowing delete
+  try {
+    const schedules = await getSchedulesBySection(id)
+    if (schedules.length > 0) {
+      showToast(
+        `Cannot delete: Section has ${schedules.length} schedule(s). Remove schedules first.`,
+        'error',
+        5000,
+      )
+      return
+    }
   }
+  catch {
+    // If schedule check fails, still allow delete attempt (backend will block if needed)
+  }
+
+  sectionToDelete.value = section
+  showDeleteModal.value = true
 }
 
 async function confirmDelete() {
