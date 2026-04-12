@@ -4,7 +4,7 @@ import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
-import { getSchedulesBySection } from '@/api/schedules'
+
 import sectionsApi from '@/api/sections'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
@@ -31,6 +31,7 @@ const modalRef = ref<HandleErrorableModal | null>(null)
 const showDeleteModal = ref(false)
 const sectionToDelete = ref<SectionDto | null>(null)
 const isDeleting = ref(false)
+const isDeletionChecking = ref(false)
 
 // Pagination state
 const currentPage = ref(1)
@@ -143,17 +144,19 @@ async function handleDeleteSection(id: EntityId) {
   if (!section)
     return
 
+  isDeletionChecking.value = true
+
   // Check for dependencies before allowing delete
   try {
-    const [schedules, hasStudents, hasEnrollments] = await Promise.all([
-      getSchedulesBySection(id),
+    const [hasSchedules, hasStudents, hasEnrollments] = await Promise.all([
+      sectionsApi.hasSchedulesInSection(id).then(r => r.data),
       sectionsApi.hasStudentsInSection(id).then(r => r.data),
       sectionsApi.hasEnrollmentsInSection(id).then(r => r.data),
     ])
 
-    if (schedules.length > 0) {
+    if (hasSchedules) {
       showToast(
-        `Cannot delete: Section has ${schedules.length} schedule(s). Remove schedules first.`,
+        'Cannot delete: Section has schedules assigned. Remove schedules first.',
         'error',
         5000,
       )
@@ -186,6 +189,9 @@ async function handleDeleteSection(id: EntityId) {
       'warning',
       4000,
     )
+  }
+  finally {
+    isDeletionChecking.value = false
   }
 
   sectionToDelete.value = section
@@ -293,6 +299,7 @@ onMounted(async () => {
       <SectionTableSection
         :sections="paginatedSections"
         title="All Sections"
+        :is-deletion-checking="isDeletionChecking"
         :pagination="{
           currentPage,
           totalPages,

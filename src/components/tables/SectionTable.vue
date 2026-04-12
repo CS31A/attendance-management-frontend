@@ -7,6 +7,10 @@ defineProps({
     type: Array,
     required: true,
   },
+  isDeletionChecking: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['edit', 'delete', 'manageEnrollments'])
@@ -76,7 +80,12 @@ function getSectionName(section) {
               <button class="btn-edit" title="Edit Section" @click="$emit('edit', section)">
                 <Edit class="btn-icon" :size="16" />
               </button>
-              <button class="btn-delete" title="Delete Section" @click="$emit('delete', section.id)">
+              <button
+                class="btn-delete"
+                title="Delete Section"
+                :disabled="isDeletionChecking"
+                @click="$emit('delete', section.id)"
+              >
                 <Trash2 class="btn-icon" :size="16" />
               </button>
             </div>
@@ -267,9 +276,14 @@ function getSectionName(section) {
   color: var(--color-error-dark);
 }
 
-.btn-delete:hover {
+.btn-delete:hover:not(:disabled) {
   background: var(--color-error-light);
   color: var(--color-error-darker);
+}
+
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-icon {

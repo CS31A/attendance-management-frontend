@@ -51,4 +51,8 @@ export default {
   hasEnrollmentsInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {
     return api.get<boolean>(`/sections/${sectionId}/has-enrollments`)
   },
+
+  hasSchedulesInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`/sections/${sectionId}/has-schedules`)
+  },
 }
