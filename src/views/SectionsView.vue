@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { SectionDto, SectionPayload } from '@/api/sections'
-import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 
 import sectionsApi from '@/api/sections'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -11,14 +10,13 @@ import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
+import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
 import { useSectionStore } from '@/stores/sectionStore'
-import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
+import { getErrorMessage } from '@/utils/httpError'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
-
-type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 const sectionsStore = useSectionStore()
 const showModal = ref(false)
@@ -26,12 +24,6 @@ const showEnrollmentModal = ref(false)
 const selectedSection = ref<SectionDto | null>(null)
 const selectedEnrollmentSection = ref<SectionDto | null>(null)
 const modalRef = ref<HandleErrorableModal | null>(null)
-
-// Delete modal state
-const showDeleteModal = ref(false)
-const sectionToDelete = ref<SectionDto | null>(null)
-const isDeleting = ref(false)
-const isDeletionChecking = ref(false)
 
 // Pagination state
 const currentPage = ref(1)
@@ -102,23 +94,26 @@ function closeEnrollmentModal() {
 }
 
 // Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
+const {
+  toast,
+  showToast,
+  closeToast,
+  showDeleteModal,
+  sectionToDelete,
+  isDeleting,
+  isDeletionChecking,
+  handleDeleteSection,
+  confirmDelete,
+  cancelDelete,
+} = createSectionDeleteFlow({
+  sectionsStore,
+  sectionsApi,
+  onDeleteSuccess: () => {
+    if (paginatedSections.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
+  },
 })
-
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
 
 async function handleSaveSection(sectionData: SectionPayload) {
   try {
@@ -137,103 +132,6 @@ async function handleSaveSection(sectionData: SectionPayload) {
   catch (error) {
     modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save section'))
   }
-}
-
-async function handleDeleteSection(id: EntityId) {
-  const section = sectionsStore.sections.find(s => s.id === id)
-  if (!section)
-    return
-
-  isDeletionChecking.value = true
-
-  // Check for dependencies before allowing delete
-  try {
-    const [hasSchedules, hasStudents, hasEnrollments] = await Promise.all([
-      sectionsApi.hasSchedulesInSection(id).then(r => r.data),
-      sectionsApi.hasStudentsInSection(id).then(r => r.data),
-      sectionsApi.hasEnrollmentsInSection(id).then(r => r.data),
-    ])
-
-    if (hasSchedules) {
-      showToast(
-        'Cannot delete: Section has schedules assigned. Remove schedules first.',
-        'error',
-        5000,
-      )
-      return
-    }
-
-    if (hasStudents) {
-      showToast(
-        'Cannot delete: Section has assigned students. Reassign students first.',
-        'error',
-        5000,
-      )
-      return
-    }
-
-    if (hasEnrollments) {
-      showToast(
-        'Cannot delete: Section has student enrollments. Remove enrollments first.',
-        'error',
-        5000,
-      )
-      return
-    }
-  }
-  catch (error) {
-    // Log error for debugging; server will validate the delete request authoritatively
-    console.error('Failed to check section dependencies:', error)
-    showToast(
-      'Warning: Could not verify section dependencies. Server will validate the delete request.',
-      'warning',
-      4000,
-    )
-  }
-  finally {
-    isDeletionChecking.value = false
-  }
-
-  sectionToDelete.value = section
-  showDeleteModal.value = true
-}
-
-async function confirmDelete() {
-  if (!sectionToDelete.value)
-    return
-
-  isDeleting.value = true
-  try {
-    await sectionsStore.deleteSection(sectionToDelete.value.id)
-    showToast('Section deleted successfully', 'success')
-    // Adjust pagination if needed
-    if (paginatedSections.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
-    }
-    showDeleteModal.value = false
-    sectionToDelete.value = null
-  }
-  catch (error) {
-    const status = getErrorStatus(error)
-    const message = getErrorMessage(error, 'Delete request failed')
-
-    if (status === 409) {
-      // Conflict: keep modal open and show server message
-      showToast(message, 'error', 5000)
-    }
-    else {
-      // Other errors: keep modal open for retry (consistent with sibling views)
-      showToast(`Failed to delete section: ${message}`, 'error')
-    }
-  }
-  finally {
-    isDeleting.value = false
-  }
-}
-
-function cancelDelete() {
-  showDeleteModal.value = false
-  sectionToDelete.value = null
 }
 
 async function refreshSections() {
