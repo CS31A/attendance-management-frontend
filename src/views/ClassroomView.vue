@@ -5,6 +5,7 @@ import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
@@ -173,6 +174,10 @@ function cancelDelete() {
   classroomToDelete.value = null
 }
 
+async function refreshClassrooms() {
+  await classroomStore.fetchClassrooms()
+}
+
 onMounted(async () => {
   try {
     await classroomStore.fetchClassrooms()
@@ -230,9 +235,12 @@ onMounted(async () => {
               Manage Classrooms
             </p>
           </div>
-          <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
-            Add Classroom
-          </BaseButton>
+          <div class="header-actions">
+            <BulkDataActions entity="classrooms" title="Classrooms" @imported="refreshClassrooms" @success="showToast($event, 'success')" @error="showToast($event, 'error')" />
+            <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
+              Add Classroom
+            </BaseButton>
+          </div>
         </div>
       </div>
 
@@ -317,6 +325,13 @@ onMounted(async () => {
   z-index: 1;
 }
 /* Header */
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
 .page-header {
   margin-bottom: 1rem;
 }

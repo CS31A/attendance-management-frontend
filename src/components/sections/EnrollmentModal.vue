@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, Check, Loader2, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
+import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useUserStore } from '@/stores/userStore'
 import { parseUtcDate } from '@/utils/qrcode'
@@ -180,10 +181,21 @@ watch(() => props.section, () => {
               class="search-input"
             >
           </div>
-          <button class="btn-primary" @click="showAddForm = !showAddForm">
-            <UserPlus :size="18" />
-            <span>{{ showAddForm ? 'Cancel Enrollment' : 'Enroll Student' }}</span>
-          </button>
+          <div class="actions-controls">
+            <BulkDataActions
+              entity="enrollments"
+              :title="`${section.name} Enrollments`"
+              :export-params="{ sectionName: section.name }"
+              :import-params="{ sectionName: section.name }"
+              @success="successMessage = $event"
+              @error="errorMessage = $event"
+              @imported="loadData"
+            />
+            <button class="btn-primary" @click="showAddForm = !showAddForm">
+              <UserPlus :size="18" />
+              <span>{{ showAddForm ? 'Cancel Enrollment' : 'Enroll Student' }}</span>
+            </button>
+          </div>
         </div>
 
         <!-- Add Enrollment Form -->
@@ -423,6 +435,13 @@ watch(() => props.section, () => {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.actions-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .search-wrapper {

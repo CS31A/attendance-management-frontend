@@ -15,6 +15,10 @@ defineProps({
     type: Object,
     default: null,
   },
+  isDeletionChecking: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage', 'manageEnrollments'])
@@ -32,6 +36,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
     <div class="table-container">
       <SectionTable
         :sections="sections"
+        :is-deletion-checking="isDeletionChecking"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
         @manage-enrollments="$emit('manageEnrollments', $event)"

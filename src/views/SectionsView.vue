@@ -4,7 +4,10 @@ import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+
+import sectionsApi from '@/api/sections'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
@@ -15,7 +18,7 @@ const SectionModal = defineAsyncComponent(() => import('@/components/SectionModa
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
-type ToastType = 'success' | 'error'
+type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 const sectionsStore = useSectionStore()
 const showModal = ref(false)
@@ -28,6 +31,7 @@ const modalRef = ref<HandleErrorableModal | null>(null)
 const showDeleteModal = ref(false)
 const sectionToDelete = ref<SectionDto | null>(null)
 const isDeleting = ref(false)
+const isDeletionChecking = ref(false)
 
 // Pagination state
 const currentPage = ref(1)
@@ -135,12 +139,63 @@ async function handleSaveSection(sectionData: SectionPayload) {
   }
 }
 
-function handleDeleteSection(id: EntityId) {
+async function handleDeleteSection(id: EntityId) {
   const section = sectionsStore.sections.find(s => s.id === id)
-  if (section) {
-    sectionToDelete.value = section
-    showDeleteModal.value = true
+  if (!section)
+    return
+
+  isDeletionChecking.value = true
+
+  // Check for dependencies before allowing delete
+  try {
+    const [hasSchedules, hasStudents, hasEnrollments] = await Promise.all([
+      sectionsApi.hasSchedulesInSection(id).then(r => r.data),
+      sectionsApi.hasStudentsInSection(id).then(r => r.data),
+      sectionsApi.hasEnrollmentsInSection(id).then(r => r.data),
+    ])
+
+    if (hasSchedules) {
+      showToast(
+        'Cannot delete: Section has schedules assigned. Remove schedules first.',
+        'error',
+        5000,
+      )
+      return
+    }
+
+    if (hasStudents) {
+      showToast(
+        'Cannot delete: Section has assigned students. Reassign students first.',
+        'error',
+        5000,
+      )
+      return
+    }
+
+    if (hasEnrollments) {
+      showToast(
+        'Cannot delete: Section has student enrollments. Remove enrollments first.',
+        'error',
+        5000,
+      )
+      return
+    }
   }
+  catch (error) {
+    // Log error for debugging; allow delete attempt as backend will enforce constraints
+    console.error('Failed to check section dependencies:', error)
+    showToast(
+      'Warning: Could not verify section dependencies. Proceed with caution.',
+      'warning',
+      4000,
+    )
+  }
+  finally {
+    isDeletionChecking.value = false
+  }
+
+  sectionToDelete.value = section
+  showDeleteModal.value = true
 }
 
 async function confirmDelete() {
@@ -169,6 +224,10 @@ async function confirmDelete() {
 function cancelDelete() {
   showDeleteModal.value = false
   sectionToDelete.value = null
+}
+
+async function refreshSections() {
+  await sectionsStore.fetchSections()
 }
 
 onMounted(async () => {
@@ -228,15 +287,19 @@ onMounted(async () => {
               Manage Sections
             </p>
           </div>
-          <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
-            Add Section
-          </BaseButton>
+          <div class="header-actions">
+            <BulkDataActions entity="sections" title="Sections" @imported="refreshSections" @success="showToast($event, 'success')" @error="showToast($event, 'error')" />
+            <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
+              Add Section
+            </BaseButton>
+          </div>
         </div>
       </div>
 
       <SectionTableSection
         :sections="paginatedSections"
         title="All Sections"
+        :is-deletion-checking="isDeletionChecking"
         :pagination="{
           currentPage,
           totalPages,
@@ -321,6 +384,13 @@ onMounted(async () => {
   z-index: 1;
 }
 /* Header */
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
 .page-header {
   margin-bottom: 1rem;
 }

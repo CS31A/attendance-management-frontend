@@ -5,6 +5,7 @@ import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
@@ -172,6 +173,10 @@ function cancelDelete() {
   courseToDelete.value = null
 }
 
+async function refreshCourses() {
+  await courseStore.fetchCourses()
+}
+
 onMounted(async () => {
   try {
     await courseStore.fetchCourses()
@@ -229,9 +234,12 @@ onMounted(async () => {
               Manage Courses
             </p>
           </div>
-          <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
-            Add Course
-          </BaseButton>
+          <div class="header-actions">
+            <BulkDataActions entity="courses" title="Courses" @imported="refreshCourses" @success="showToast($event, 'success')" @error="showToast($event, 'error')" />
+            <BaseButton variant="primary" :icon="Plus" @click="openAddModal">
+              Add Course
+            </BaseButton>
+          </div>
         </div>
       </div>
 
@@ -316,6 +324,13 @@ onMounted(async () => {
   z-index: 1;
 }
 /* Header */
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
 .page-header {
   margin-bottom: 1rem;
 }
