@@ -12,7 +12,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useSectionStore } from '@/stores/sectionStore'
-import { getErrorMessage } from '@/utils/httpError'
+import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
@@ -182,10 +182,10 @@ async function handleDeleteSection(id: EntityId) {
     }
   }
   catch (error) {
-    // Log error for debugging; allow delete attempt as backend will enforce constraints
+    // Log error for debugging; server will validate the delete request authoritatively
     console.error('Failed to check section dependencies:', error)
     showToast(
-      'Warning: Could not verify section dependencies. Proceed with caution.',
+      'Warning: Could not verify section dependencies. Server will validate the delete request.',
       'warning',
       4000,
     )
@@ -214,7 +214,17 @@ async function confirmDelete() {
     sectionToDelete.value = null
   }
   catch (error) {
-    showToast(`Failed to delete section: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
+    const status = getErrorStatus(error)
+    const message = getErrorMessage(error, 'Delete request failed')
+
+    if (status === 409) {
+      // Conflict: keep modal open and show server message
+      showToast(message, 'error', 5000)
+    }
+    else {
+      // Other errors: keep modal open for retry (consistent with sibling views)
+      showToast(`Failed to delete section: ${message}`, 'error')
+    }
   }
   finally {
     isDeleting.value = false
