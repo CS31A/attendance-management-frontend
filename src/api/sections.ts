@@ -43,4 +43,12 @@ export default {
   getAllStudents(sectionId: EntityId): Promise<AxiosResponse<StudentDto[]>> {
     return api.get<StudentDto[]>(`/sections/${sectionId}/all-students`)
   },
+
+  hasStudentsInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`/sections/${sectionId}/has-students`)
+  },
+
+  hasEnrollmentsInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`/sections/${sectionId}/has-enrollments`)
+  },
 }

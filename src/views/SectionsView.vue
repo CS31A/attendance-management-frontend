@@ -5,6 +5,7 @@ import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { getSchedulesBySection } from '@/api/schedules'
+import sectionsApi from '@/api/sections'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -17,7 +18,7 @@ const SectionModal = defineAsyncComponent(() => import('@/components/SectionModa
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
-type ToastType = 'success' | 'error'
+type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 const sectionsStore = useSectionStore()
 const showModal = ref(false)
@@ -142,9 +143,14 @@ async function handleDeleteSection(id: EntityId) {
   if (!section)
     return
 
-  // Check for dependent schedules before allowing delete
+  // Check for dependencies before allowing delete
   try {
-    const schedules = await getSchedulesBySection(id)
+    const [schedules, hasStudents, hasEnrollments] = await Promise.all([
+      getSchedulesBySection(id),
+      sectionsApi.hasStudentsInSection(id).then(r => r.data),
+      sectionsApi.hasEnrollmentsInSection(id).then(r => r.data),
+    ])
+
     if (schedules.length > 0) {
       showToast(
         `Cannot delete: Section has ${schedules.length} schedule(s). Remove schedules first.`,
@@ -153,9 +159,33 @@ async function handleDeleteSection(id: EntityId) {
       )
       return
     }
+
+    if (hasStudents) {
+      showToast(
+        'Cannot delete: Section has assigned students. Reassign students first.',
+        'error',
+        5000,
+      )
+      return
+    }
+
+    if (hasEnrollments) {
+      showToast(
+        'Cannot delete: Section has student enrollments. Remove enrollments first.',
+        'error',
+        5000,
+      )
+      return
+    }
   }
-  catch {
-    // If schedule check fails, still allow delete attempt (backend will block if needed)
+  catch (error) {
+    // Log error for debugging; allow delete attempt as backend will enforce constraints
+    console.error('Failed to check section dependencies:', error)
+    showToast(
+      'Warning: Could not verify section dependencies. Proceed with caution.',
+      'warning',
+      4000,
+    )
   }
 
   sectionToDelete.value = section
