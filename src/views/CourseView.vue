@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { CourseDto, CoursePayload } from '@/api/courses'
-import type { EntityId } from '@/types'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
@@ -9,13 +8,12 @@ import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { createCourseDeleteFlow } from '@/composables/useCourseDeleteFlow'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
-import { createCourseDeleteFlow } from '@/composables/useCourseDeleteFlow'
 import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))

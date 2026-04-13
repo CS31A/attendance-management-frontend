@@ -19,12 +19,11 @@ import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
-import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
 import { useModalState } from '@/composables/useModalState'
+import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))

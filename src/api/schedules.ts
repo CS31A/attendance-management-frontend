@@ -174,7 +174,7 @@ export async function deleteSchedule(id: EntityId): Promise<void> {
 /**
  * Check if schedule has sessions assigned
  * @param {number} id - Schedule ID
- * @returns {Promise<boolean>}
+ * @returns {Promise<boolean>} True if schedule has sessions
  */
 export async function hasSessionsInSchedule(id: EntityId): Promise<boolean> {
   try {

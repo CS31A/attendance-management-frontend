@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SubjectDto, SubjectPayload } from '@/api/subjects'
-import type { EntityId } from '@/types'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
@@ -11,11 +10,10 @@ import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
-import { createSubjectDeleteFlow } from '@/composables/useSubjectDeleteFlow'
 import { useModalState } from '@/composables/useModalState'
+import { createSubjectDeleteFlow } from '@/composables/useSubjectDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useSubjectStore } from '@/stores/subjectStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
