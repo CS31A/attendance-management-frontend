@@ -106,6 +106,7 @@ export function createDeleteFlow<T extends { id: EntityId }>({
     }
 
     if (!Array.isArray(itemsArray)) {
+      showToast(`Error: Could not find ${labels.entityName.toLowerCase()} items. Please refresh the page.`, 'error')
       return
     }
 
