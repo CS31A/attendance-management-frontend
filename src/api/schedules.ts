@@ -147,7 +147,7 @@ export async function createSchedule(data: SchedulePayload): Promise<ScheduleDto
  */
 export async function updateSchedule(id: EntityId, data: SchedulePayload): Promise<ScheduleDto> {
   try {
-    const response = await api.put(`${SCHEDULE_ENDPOINT}/${id}`, data)
+    const response = await api.patch(`${SCHEDULE_ENDPOINT}/${id}`, data)
     return response.data
   }
   catch (error) {
