@@ -36,17 +36,12 @@ const {
   totalPages,
   hasNextPage,
   hasPreviousPage,
+  paginatedItems: paginatedSections,
   nextPage: handleNextPage,
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ totalItems: totalSections })
-
-const paginatedSections = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return sections.value?.slice(start, end) || []
-})
+} = useLocalPagination({ items: sections, totalItems: totalSections })
 
 function openEnrollmentModal(section: SectionDto) {
   selectedEnrollmentSection.value = section

@@ -90,6 +90,64 @@ describe('useLocalPagination', () => {
       items.value = 60
       expect(pagination.totalPages.value).toBe(3)
     })
+
+    it('returns paginatedItems when an items array is provided', () => {
+      const items = ref(Array.from({ length: 12 }, (_, index) => `item-${index + 1}`))
+      const pagination = useLocalPagination({ items, itemsPerPage: 5 })
+
+      expect(pagination.paginatedItems.value).toEqual([
+        'item-1',
+        'item-2',
+        'item-3',
+        'item-4',
+        'item-5',
+      ])
+    })
+
+    it('recomputes paginatedItems when currentPage changes', () => {
+      const items = ref(Array.from({ length: 12 }, (_, index) => `item-${index + 1}`))
+      const pagination = useLocalPagination({ items, itemsPerPage: 5 })
+
+      pagination.goToPage(2)
+
+      expect(pagination.paginatedItems.value).toEqual([
+        'item-6',
+        'item-7',
+        'item-8',
+        'item-9',
+        'item-10',
+      ])
+    })
+
+    it('recomputes paginatedItems when itemsPerPage changes', () => {
+      const items = ref(Array.from({ length: 12 }, (_, index) => `item-${index + 1}`))
+      const pagination = useLocalPagination({ items, itemsPerPage: 5 })
+
+      pagination.goToPage(2)
+      pagination.setItemsPerPage(4)
+
+      expect(pagination.currentPage.value).toBe(1)
+      expect(pagination.paginatedItems.value).toEqual([
+        'item-1',
+        'item-2',
+        'item-3',
+        'item-4',
+      ])
+    })
+
+    it('recomputes paginatedItems when the items array changes', async () => {
+      const items = ref(Array.from({ length: 6 }, (_, index) => `item-${index + 1}`))
+      const pagination = useLocalPagination({ items, itemsPerPage: 3 })
+
+      pagination.goToPage(2)
+      expect(pagination.paginatedItems.value).toEqual(['item-4', 'item-5', 'item-6'])
+
+      items.value = ['new-1', 'new-2']
+      await nextTick()
+
+      expect(pagination.currentPage.value).toBe(1)
+      expect(pagination.paginatedItems.value).toEqual(['new-1', 'new-2'])
+    })
   })
 
   describe('nextPage', () => {
@@ -300,6 +358,13 @@ describe('useLocalPagination', () => {
       await nextTick()
       // currentPage should be clamped to the new totalPages
       expect(pagination.currentPage.value).toBe(5)
+    })
+
+    it('returns an empty paginatedItems array when items are not provided', () => {
+      const totalItems = ref(10)
+      const pagination = useLocalPagination({ totalItems })
+
+      expect(pagination.paginatedItems.value).toEqual([])
     })
   })
 })

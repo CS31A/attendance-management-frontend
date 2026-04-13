@@ -48,17 +48,12 @@ const {
   totalPages,
   hasNextPage,
   hasPreviousPage,
+  paginatedItems: paginatedClassrooms,
   nextPage: handleNextPage,
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ totalItems: totalClassrooms })
-
-const paginatedClassrooms = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return classrooms.value.slice(start, end)
-})
+} = useLocalPagination({ items: classrooms, totalItems: totalClassrooms })
 
 const { toast, showToast, closeToast } = useToast()
 
