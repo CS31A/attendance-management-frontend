@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
 import type { EntityId } from '@/types'
-import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
+import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -12,6 +12,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useClassroomStore } from '@/stores/classroomStore'
 import { getErrorMessage } from '@/utils/httpError'
@@ -35,9 +36,7 @@ const classroomFields: FormFieldConfig[] = [
 ]
 
 const classroomStore = useClassroomStore()
-const showModal = ref(false)
-const selectedClassroom = ref<ClassroomDto | null>(null)
-const modalRef = ref<HandleErrorableModal | null>(null)
+const { showModal, selectedEntity: selectedClassroom, modalRef } = useModalState<ClassroomDto>()
 
 const classrooms = computed(() => classroomStore.sortedClassrooms)
 const totalClassrooms = computed(() => classrooms.value.length)
