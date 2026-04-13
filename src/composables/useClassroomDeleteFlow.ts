@@ -1,8 +1,8 @@
+import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { ClassroomDto } from '@/api/classrooms'
 import type { EntityId } from '@/types'
 import classroomsApi from '@/api/classrooms'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -41,7 +41,7 @@ interface CreateClassroomDeleteFlowOptions {
 
 export function createClassroomDeleteFlow(options: CreateClassroomDeleteFlowOptions): ClassroomDeleteFlowState | ClassroomDeleteFlowInternalReturn {
   const { classroomsStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
-  
+
   const flow = createDeleteFlow<ClassroomDto>({
     store: {
       items: classroomsStore.classrooms,

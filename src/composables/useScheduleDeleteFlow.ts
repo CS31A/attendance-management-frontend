@@ -1,8 +1,8 @@
+import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { ScheduleDto } from '@/api/schedules'
 import type { EntityId } from '@/types'
 import schedulesApi from '@/api/schedules'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -41,7 +41,7 @@ interface CreateScheduleDeleteFlowOptions {
 
 export function createScheduleDeleteFlow(options: CreateScheduleDeleteFlowOptions): ScheduleDeleteFlowState | ScheduleDeleteFlowInternalReturn {
   const { schedulesStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
-  
+
   const flow = createDeleteFlow<ScheduleDto>({
     store: {
       items: schedulesStore.schedules,

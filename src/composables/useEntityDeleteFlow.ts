@@ -1,5 +1,5 @@
-import type { EntityId } from '@/types'
 import type { AxiosResponse } from 'axios'
+import type { EntityId } from '@/types'
 import { reactive, ref } from 'vue'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'

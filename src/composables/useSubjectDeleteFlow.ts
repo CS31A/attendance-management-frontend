@@ -1,8 +1,8 @@
+import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
 import subjectsApi from '@/api/subjects'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -41,7 +41,7 @@ interface CreateSubjectDeleteFlowOptions {
 
 export function createSubjectDeleteFlow(options: CreateSubjectDeleteFlowOptions): SubjectDeleteFlowState | SubjectDeleteFlowInternalReturn {
   const { subjectsStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
-  
+
   const flow = createDeleteFlow<SubjectDto>({
     store: {
       items: subjectsStore.subjects,

@@ -1,8 +1,8 @@
+import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { CourseDto } from '@/api/courses'
 import type { EntityId } from '@/types'
 import coursesApi from '@/api/courses'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -41,7 +41,7 @@ interface CreateCourseDeleteFlowOptions {
 
 export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): CourseDeleteFlowState | CourseDeleteFlowInternalReturn {
   const { coursesStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
-  
+
   const flow = createDeleteFlow<CourseDto>({
     store: {
       items: coursesStore.courses,

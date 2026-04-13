@@ -1,8 +1,8 @@
+import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { SectionDto } from '@/api/sections'
 import type { EntityId } from '@/types'
 import sectionsApi from '@/api/sections'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -48,9 +48,9 @@ interface CreateSectionDeleteFlowOptions {
 
 export function createSectionDeleteFlow(options: CreateSectionDeleteFlowOptions): SectionDeleteFlowState | SectionDeleteFlowInternalReturn {
   const { sectionsStore, sectionsApi: customSectionsApi, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
-  
+
   const api = customSectionsApi || sectionsApi
-  
+
   const flow = createDeleteFlow<SectionDto>({
     store: {
       items: sectionsStore.sections,
