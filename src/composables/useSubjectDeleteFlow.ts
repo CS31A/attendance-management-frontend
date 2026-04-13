@@ -32,15 +32,33 @@ export interface SubjectDeleteFlowInternalReturn extends SubjectDeleteFlowState 
   closeToast: () => void
 }
 
+interface SubjectApiLike {
+  hasSchedulesInSubject: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+  hasEnrollmentsInSubject: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+}
+
 interface CreateSubjectDeleteFlowOptions {
   subjectsStore: SubjectsStoreLike
+  subjectsApi?: SubjectApiLike
   onDeleteSuccess?: () => void
   logDependencyCheckError?: (error: unknown) => void
   showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
+export function createSubjectDeleteFlow(
+  options: Omit<CreateSubjectDeleteFlowOptions, 'showToast'>,
+): SubjectDeleteFlowInternalReturn
+
+export function createSubjectDeleteFlow(
+  options: CreateSubjectDeleteFlowOptions & {
+    showToast: (message: string, type?: ToastType, duration?: number) => void
+  },
+): SubjectDeleteFlowState
+
 export function createSubjectDeleteFlow(options: CreateSubjectDeleteFlowOptions): SubjectDeleteFlowState | SubjectDeleteFlowInternalReturn {
-  const { subjectsStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+  const { subjectsStore, subjectsApi: customSubjectsApi, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+
+  const api = customSubjectsApi ?? subjectsApi
 
   const flow = createDeleteFlow<SubjectDto>({
     store: {
@@ -49,11 +67,11 @@ export function createSubjectDeleteFlow(options: CreateSubjectDeleteFlowOptions)
     },
     dependencyChecks: [
       {
-        check: subjectsApi.hasSchedulesInSubject,
+        check: api.hasSchedulesInSubject,
         message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.',
       },
       {
-        check: subjectsApi.hasEnrollmentsInSubject,
+        check: api.hasEnrollmentsInSubject,
         message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.',
       },
     ],

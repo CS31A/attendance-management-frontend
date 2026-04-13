@@ -46,6 +46,16 @@ interface CreateSectionDeleteFlowOptions {
   showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
+export function createSectionDeleteFlow(
+  options: Omit<CreateSectionDeleteFlowOptions, 'showToast'>,
+): SectionDeleteFlowInternalReturn
+
+export function createSectionDeleteFlow(
+  options: CreateSectionDeleteFlowOptions & {
+    showToast: (message: string, type?: ToastType, duration?: number) => void
+  },
+): SectionDeleteFlowState
+
 export function createSectionDeleteFlow(options: CreateSectionDeleteFlowOptions): SectionDeleteFlowState | SectionDeleteFlowInternalReturn {
   const { sectionsStore, sectionsApi: customSectionsApi, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
 

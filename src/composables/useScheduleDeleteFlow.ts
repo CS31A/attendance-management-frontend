@@ -32,15 +32,32 @@ export interface ScheduleDeleteFlowInternalReturn extends ScheduleDeleteFlowStat
   closeToast: () => void
 }
 
+interface ScheduleApiLike {
+  hasSessionsInSchedule: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+}
+
 interface CreateScheduleDeleteFlowOptions {
   schedulesStore: SchedulesStoreLike
+  schedulesApi?: ScheduleApiLike
   onDeleteSuccess?: () => void
   logDependencyCheckError?: (error: unknown) => void
   showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
+export function createScheduleDeleteFlow(
+  options: Omit<CreateScheduleDeleteFlowOptions, 'showToast'>,
+): ScheduleDeleteFlowInternalReturn
+
+export function createScheduleDeleteFlow(
+  options: CreateScheduleDeleteFlowOptions & {
+    showToast: (message: string, type?: ToastType, duration?: number) => void
+  },
+): ScheduleDeleteFlowState
+
 export function createScheduleDeleteFlow(options: CreateScheduleDeleteFlowOptions): ScheduleDeleteFlowState | ScheduleDeleteFlowInternalReturn {
-  const { schedulesStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+  const { schedulesStore, schedulesApi: customSchedulesApi, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+
+  const api = customSchedulesApi ?? schedulesApi
 
   const flow = createDeleteFlow<ScheduleDto>({
     store: {
@@ -49,7 +66,7 @@ export function createScheduleDeleteFlow(options: CreateScheduleDeleteFlowOption
     },
     dependencyChecks: [
       {
-        check: schedulesApi.hasSessionsInSchedule,
+        check: api.hasSessionsInSchedule,
         message: 'Cannot delete: Schedule has sessions assigned. Remove sessions first.',
       },
     ],

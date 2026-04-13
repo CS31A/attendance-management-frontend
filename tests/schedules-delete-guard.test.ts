@@ -35,7 +35,7 @@ describe('schedules delete guard regression', () => {
         deleteSchedule: vi.fn(),
       },
       schedulesApi: {
-        hasSessionsInSchedule: vi.fn().mockResolvedValue(false),
+        hasSessionsInSchedule: vi.fn().mockResolvedValue({ data: false }),
       },
     })
 
@@ -54,7 +54,7 @@ describe('schedules delete guard regression', () => {
         deleteSchedule: vi.fn(),
       },
       schedulesApi: {
-        hasSessionsInSchedule: vi.fn().mockResolvedValue(true),
+        hasSessionsInSchedule: vi.fn().mockResolvedValue({ data: true }),
       },
     })
 
@@ -152,7 +152,7 @@ describe('schedules delete guard regression', () => {
           deleteSchedule: vi.fn(),
         },
         schedulesApi: {
-          hasSessionsInSchedule: vi.fn().mockResolvedValue(true),
+          hasSessionsInSchedule: vi.fn().mockResolvedValue({ data: true }),
         },
         showToast: externalShowToast,
       })

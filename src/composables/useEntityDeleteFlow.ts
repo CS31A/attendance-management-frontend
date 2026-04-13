@@ -117,7 +117,7 @@ export function createDeleteFlow<T extends { id: EntityId }>({
     catch (error) {
       logDependencyCheckError(error)
       showToast(
-        `Warning: Could not verify ${labels.entityName} dependencies. Server will validate the delete request.`,
+        `Warning: Could not verify ${labels.entityName.toLowerCase()} dependencies. Server will validate the delete request.`,
         'warning',
         4000,
       )

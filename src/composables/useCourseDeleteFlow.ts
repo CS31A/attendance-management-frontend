@@ -32,15 +32,32 @@ export interface CourseDeleteFlowInternalReturn extends CourseDeleteFlowState {
   closeToast: () => void
 }
 
+interface CourseApiLike {
+  hasSectionsInCourse: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+}
+
 interface CreateCourseDeleteFlowOptions {
   coursesStore: CoursesStoreLike
+  coursesApi?: CourseApiLike
   onDeleteSuccess?: () => void
   logDependencyCheckError?: (error: unknown) => void
   showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
+export function createCourseDeleteFlow(
+  options: Omit<CreateCourseDeleteFlowOptions, 'showToast'>,
+): CourseDeleteFlowInternalReturn
+
+export function createCourseDeleteFlow(
+  options: CreateCourseDeleteFlowOptions & {
+    showToast: (message: string, type?: ToastType, duration?: number) => void
+  },
+): CourseDeleteFlowState
+
 export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): CourseDeleteFlowState | CourseDeleteFlowInternalReturn {
-  const { coursesStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+  const { coursesStore, coursesApi: customCoursesApi, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+
+  const api = customCoursesApi ?? coursesApi
 
   const flow = createDeleteFlow<CourseDto>({
     store: {
@@ -49,7 +66,7 @@ export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): 
     },
     dependencyChecks: [
       {
-        check: coursesApi.hasSectionsInCourse,
+        check: api.hasSectionsInCourse,
         message: 'Cannot delete: Course has sections assigned. Remove sections first.',
       },
     ],

@@ -32,15 +32,33 @@ export interface ClassroomDeleteFlowInternalReturn extends ClassroomDeleteFlowSt
   closeToast: () => void
 }
 
+interface ClassroomApiLike {
+  hasSchedulesInClassroom: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+  hasSessionsInClassroom: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+}
+
 interface CreateClassroomDeleteFlowOptions {
   classroomsStore: ClassroomsStoreLike
+  classroomsApi?: ClassroomApiLike
   onDeleteSuccess?: () => void
   logDependencyCheckError?: (error: unknown) => void
   showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
+export function createClassroomDeleteFlow(
+  options: Omit<CreateClassroomDeleteFlowOptions, 'showToast'>,
+): ClassroomDeleteFlowInternalReturn
+
+export function createClassroomDeleteFlow(
+  options: CreateClassroomDeleteFlowOptions & {
+    showToast: (message: string, type?: ToastType, duration?: number) => void
+  },
+): ClassroomDeleteFlowState
+
 export function createClassroomDeleteFlow(options: CreateClassroomDeleteFlowOptions): ClassroomDeleteFlowState | ClassroomDeleteFlowInternalReturn {
-  const { classroomsStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+  const { classroomsStore, classroomsApi: customClassroomsApi, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+
+  const api = customClassroomsApi ?? classroomsApi
 
   const flow = createDeleteFlow<ClassroomDto>({
     store: {
@@ -49,11 +67,11 @@ export function createClassroomDeleteFlow(options: CreateClassroomDeleteFlowOpti
     },
     dependencyChecks: [
       {
-        check: classroomsApi.hasSchedulesInClassroom,
+        check: api.hasSchedulesInClassroom,
         message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.',
       },
       {
-        check: classroomsApi.hasSessionsInClassroom,
+        check: api.hasSessionsInClassroom,
         message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.',
       },
     ],
