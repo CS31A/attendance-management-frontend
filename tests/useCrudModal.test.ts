@@ -109,6 +109,83 @@ describe('useCrudModal', () => {
 
       expect(handleError).toHaveBeenCalledWith('Validation failed')
     })
+
+    it('extracts message from Axios HTTP response error with data.message', async () => {
+      const handleError = vi.fn()
+      const axiosError = Object.assign(
+        new Error('Request failed'),
+        {
+          isAxiosError: true,
+          response: {
+            status: 409,
+            data: { message: 'Email already exists' },
+          },
+        },
+      )
+      const options = createTestOptions({
+        modalRef: { value: { handleError } },
+        showModal: { value: true },
+        createFn: vi.fn(async () => {
+          throw axiosError
+        }),
+      })
+
+      const { handleSave } = useCrudModal<TestPayload, TestEntity>(options)
+      await handleSave({ name: 'Test' })
+
+      expect(handleError).toHaveBeenCalledWith('Email already exists')
+      expect(options.showModal.value).toBe(true)
+    })
+
+    it('uses fallback message for Axios HTTP errors without response data message', async () => {
+      const handleError = vi.fn()
+      const axiosError = Object.assign(
+        new Error('Request failed'),
+        {
+          isAxiosError: true,
+          response: {
+            status: 500,
+            data: {},
+          },
+        },
+      )
+      const options = createTestOptions({
+        modalRef: { value: { handleError } },
+        showModal: { value: true },
+        createFn: vi.fn(async () => {
+          throw axiosError
+        }),
+      })
+
+      const { handleSave } = useCrudModal<TestPayload, TestEntity>(options)
+      await handleSave({ name: 'Test' })
+
+      expect(handleError).toHaveBeenCalledWith('Failed to save testentity')
+      expect(options.showModal.value).toBe(true)
+    })
+
+    it('handles non-Axios HTTP-style response errors', async () => {
+      const handleError = vi.fn()
+      const httpStyleError = {
+        response: {
+          status: 422,
+          data: { message: 'Invalid input format' },
+        },
+      }
+      const options = createTestOptions({
+        modalRef: { value: { handleError } },
+        showModal: { value: true },
+        createFn: vi.fn(async () => {
+          throw httpStyleError
+        }),
+      })
+
+      const { handleSave } = useCrudModal<TestPayload, TestEntity>(options)
+      await handleSave({ name: 'Test' })
+
+      expect(handleError).toHaveBeenCalledWith('Invalid input format')
+      expect(options.showModal.value).toBe(true)
+    })
   })
 
   describe('openAddModal', () => {
