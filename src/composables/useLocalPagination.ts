@@ -1,5 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
-import { computed, ref, toValue } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
 
 export interface UseLocalPaginationOptions {
   totalItems: MaybeRefOrGetter<number>
@@ -13,6 +13,12 @@ export function useLocalPagination(options: UseLocalPaginationOptions) {
   const totalPages = computed(() => Math.ceil(toValue(options.totalItems) / itemsPerPage.value))
   const hasNextPage = computed(() => currentPage.value < totalPages.value)
   const hasPreviousPage = computed(() => currentPage.value > 1)
+
+  watch(totalPages, (newTotalPages) => {
+    if (currentPage.value > newTotalPages) {
+      currentPage.value = Math.max(1, newTotalPages)
+    }
+  })
 
   function nextPage() {
     if (hasNextPage.value) {

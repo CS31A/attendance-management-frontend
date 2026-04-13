@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 
 describe('useLocalPagination', () => {
@@ -288,7 +288,7 @@ describe('useLocalPagination', () => {
       expect(pagination.hasNextPage.value).toBe(true)
     })
 
-    it('handles dynamic totalItems updates that reduce current page validity', () => {
+    it('handles dynamic totalItems updates that reduce current page validity', async () => {
       const totalItems = ref(100)
       const pagination = useLocalPagination({ totalItems, itemsPerPage: 10 })
 
@@ -297,6 +297,9 @@ describe('useLocalPagination', () => {
 
       totalItems.value = 50
       expect(pagination.totalPages.value).toBe(5)
+      await nextTick()
+      // currentPage should be clamped to the new totalPages
+      expect(pagination.currentPage.value).toBe(5)
     })
   })
 })
