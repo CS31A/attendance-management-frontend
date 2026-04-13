@@ -11,9 +11,6 @@ function createTestEntity(id = 1, name = 'Test Entity'): TestEntity {
 }
 
 describe('useDeleteModalLifecycle', () => {
-  beforeEach(() => {
-  })
-
   it('initializes with closed modal and null entity', () => {
     const { showDeleteModal, entityToDelete, isDeleting } = useDeleteModalLifecycle<TestEntity>()
 

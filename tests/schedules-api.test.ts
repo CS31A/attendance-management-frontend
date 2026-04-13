@@ -28,12 +28,13 @@ describe('schedules API', () => {
   })
 
   it('requests the schedule sessions dependency endpoint', async () => {
-    getMock.mockResolvedValue({ data: true })
+    const response = { data: true }
+    getMock.mockResolvedValue(response)
 
     const schedulesApi = await import('@/api/schedules')
     const result = await schedulesApi.hasSessionsInSchedule(9)
 
     expect(getMock).toHaveBeenCalledWith('/schedules/9/has-sessions')
-    expect(result).toBe(true)
+    expect(result).toBe(response)
   })
 })

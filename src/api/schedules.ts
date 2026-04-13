@@ -1,3 +1,4 @@
+import type { AxiosResponse } from 'axios'
 import type { EntityId, PaginationParams } from '@/types'
 import api from './index'
 
@@ -174,12 +175,11 @@ export async function deleteSchedule(id: EntityId): Promise<void> {
 /**
  * Check if schedule has sessions assigned
  * @param {number} id - Schedule ID
- * @returns {Promise<boolean>} True if schedule has sessions
+ * @returns {Promise<AxiosResponse<boolean>>} True if schedule has sessions
  */
-export async function hasSessionsInSchedule(id: EntityId): Promise<boolean> {
+export async function hasSessionsInSchedule(id: EntityId): Promise<AxiosResponse<boolean>> {
   try {
-    const response = await api.get(`${SCHEDULE_ENDPOINT}/${id}/has-sessions`)
-    return response.data
+    return await api.get<boolean>(`${SCHEDULE_ENDPOINT}/${id}/has-sessions`)
   }
   catch (error) {
     console.error(`Failed to check sessions for schedule ${id}:`, error)

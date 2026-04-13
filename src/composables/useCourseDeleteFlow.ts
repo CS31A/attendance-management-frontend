@@ -1,10 +1,8 @@
 import type { CourseDto } from '@/api/courses'
 import type { EntityId } from '@/types'
-import { reactive, ref } from 'vue'
-
 import coursesApi from '@/api/courses'
-import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
-import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'
+import { createDeleteFlow } from './useEntityDeleteFlow'
+import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -13,19 +11,7 @@ interface CoursesStoreLike {
   deleteCourse: (id: EntityId) => Promise<unknown>
 }
 
-interface CourseApiLike {
-  hasSectionsInCourse: typeof coursesApi.hasSectionsInCourse
-}
-
-interface CreateCourseDeleteFlowOptions {
-  coursesStore: CoursesStoreLike
-  coursesApi?: CourseApiLike
-  onDeleteSuccess?: () => void
-  logDependencyCheckError?: (error: unknown) => void
-  showToast?: (message: string, type?: ToastType, duration?: number) => void
-}
-
-interface CourseDeleteFlowState {
+export interface CourseDeleteFlowState {
   showDeleteModal: import('vue').Ref<boolean>
   courseToDelete: import('vue').Ref<CourseDto | null>
   isDeleting: import('vue').Ref<boolean>
@@ -35,7 +21,7 @@ interface CourseDeleteFlowState {
   cancelDelete: () => void
 }
 
-interface CourseDeleteFlowInternalReturn extends CourseDeleteFlowState {
+export interface CourseDeleteFlowInternalReturn extends CourseDeleteFlowState {
   toast: {
     show: boolean
     message: string
@@ -46,146 +32,55 @@ interface CourseDeleteFlowInternalReturn extends CourseDeleteFlowState {
   closeToast: () => void
 }
 
-export function createCourseDeleteFlow(
-  options: Omit<CreateCourseDeleteFlowOptions, 'showToast'>,
-): CourseDeleteFlowInternalReturn
+interface CreateCourseDeleteFlowOptions {
+  coursesStore: CoursesStoreLike
+  onDeleteSuccess?: () => void
+  logDependencyCheckError?: (error: unknown) => void
+  showToast?: (message: string, type?: ToastType, duration?: number) => void
+}
 
-export function createCourseDeleteFlow(
-  options: CreateCourseDeleteFlowOptions & { showToast: (message: string, type?: ToastType, duration?: number) => void },
-): CourseDeleteFlowState
+export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): CourseDeleteFlowState | CourseDeleteFlowInternalReturn {
+  const { coursesStore, onDeleteSuccess, logDependencyCheckError, showToast: externalShowToast } = options
+  
+  const flow = createDeleteFlow<CourseDto>({
+    store: {
+      items: coursesStore.courses,
+      deleteItem: coursesStore.deleteCourse,
+    },
+    dependencyChecks: [
+      {
+        check: coursesApi.hasSectionsInCourse,
+        message: 'Cannot delete: Course has sections assigned. Remove sections first.',
+      },
+    ],
+    labels: {
+      entityName: 'Course',
+      entityNamePlural: 'Courses',
+    },
+    onDeleteSuccess,
+    logDependencyCheckError,
+    showToast: externalShowToast,
+  })
 
-export function createCourseDeleteFlow({
-  coursesStore,
-  coursesApi: courseApi = coursesApi,
-  onDeleteSuccess,
-  logDependencyCheckError = error => console.error('Failed to check course dependencies:', error),
-  showToast: externalShowToast,
-}: CreateCourseDeleteFlowOptions) {
-  const {
-    showDeleteModal,
-    entityToDelete: courseToDelete,
-    isDeleting,
-    openDeleteModal,
-    closeDeleteModal,
-    startDeleting,
-    finishDeleting,
-  } = useDeleteModalLifecycle<CourseDto>()
-
-  const isDeletionChecking = ref(false)
-
-  const toast = externalShowToast
-    ? null
-    : reactive({
-        show: false,
-        message: '',
-        type: 'success' as ToastType,
-        duration: 3000,
-      })
-
-  function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-    if (externalShowToast) {
-      externalShowToast(message, type, duration)
-    }
-    else if (toast) {
-      toast.message = message
-      toast.type = type
-      toast.duration = duration
-      toast.show = true
-    }
-  }
-
-  function closeToast() {
-    if (toast) {
-      toast.show = false
-    }
-  }
-
-  async function handleDeleteCourse(id: EntityId) {
-    const course = coursesStore.courses.find(current => current.id === id)
-    if (!course) {
-      return
-    }
-
-    isDeletionChecking.value = true
-
-    try {
-      const hasSections = await courseApi.hasSectionsInCourse(id).then(response => response.data)
-
-      if (hasSections) {
-        showToast('Cannot delete: Course has sections assigned. Remove sections first.', 'error', 5000)
-        return
-      }
-    }
-    catch (error) {
-      logDependencyCheckError(error)
-      showToast(
-        'Warning: Could not verify course dependencies. Server will validate the delete request.',
-        'warning',
-        4000,
-      )
-    }
-    finally {
-      isDeletionChecking.value = false
-    }
-
-    openDeleteModal(course)
-  }
-
-  async function confirmDelete() {
-    if (!courseToDelete.value) {
-      return
-    }
-
-    startDeleting()
-
-    try {
-      await coursesStore.deleteCourse(courseToDelete.value.id)
-      showToast('Course deleted successfully', 'success')
-      onDeleteSuccess?.()
-      closeDeleteModal()
-    }
-    catch (error) {
-      const status = getErrorStatus(error)
-      const message = getErrorMessage(error, 'Delete request failed')
-
-      if (status === 409) {
-        showToast(message, 'error', 5000)
-      }
-      else {
-        showToast(`Failed to delete course: ${message}`, 'error')
-      }
-    }
-    finally {
-      finishDeleting()
-    }
-  }
-
-  function cancelDelete() {
-    closeDeleteModal()
+  const baseReturn: CourseDeleteFlowState = {
+    showDeleteModal: flow.showDeleteModal,
+    courseToDelete: flow.itemToDelete,
+    isDeleting: flow.isDeleting,
+    isDeletionChecking: flow.isCheckingDependencies,
+    handleDeleteCourse: flow.handleDelete,
+    confirmDelete: flow.confirmDelete,
+    cancelDelete: flow.cancelDelete,
   }
 
   if (externalShowToast) {
-    return {
-      showDeleteModal,
-      courseToDelete,
-      isDeleting,
-      isDeletionChecking,
-      handleDeleteCourse,
-      confirmDelete,
-      cancelDelete,
-    }
+    return baseReturn
   }
 
+  const internalFlow = flow as DeleteFlowInternalReturn<CourseDto>
   return {
-    toast: toast!,
-    showToast,
-    closeToast,
-    showDeleteModal,
-    courseToDelete,
-    isDeleting,
-    isDeletionChecking,
-    handleDeleteCourse,
-    confirmDelete,
-    cancelDelete,
+    ...baseReturn,
+    toast: internalFlow.toast,
+    showToast: internalFlow.showToast,
+    closeToast: internalFlow.closeToast,
   }
 }
