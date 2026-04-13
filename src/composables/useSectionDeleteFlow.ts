@@ -1,3 +1,5 @@
+import type { AxiosResponse } from 'axios'
+import type { Ref } from 'vue'
 import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { SectionDto } from '@/api/sections'
 import type { EntityId } from '@/types'
@@ -7,15 +9,15 @@ import { createDeleteFlow } from './useEntityDeleteFlow'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface SectionsStoreLike {
-  sections: SectionDto[]
+  sections: SectionDto[] | Ref<SectionDto[]> | (() => SectionDto[])
   deleteSection: (id: EntityId) => Promise<unknown>
 }
 
 export interface SectionDeleteFlowState {
-  showDeleteModal: import('vue').Ref<boolean>
-  sectionToDelete: import('vue').Ref<SectionDto | null>
-  isDeleting: import('vue').Ref<boolean>
-  isDeletionChecking: import('vue').Ref<boolean>
+  showDeleteModal: Ref<boolean>
+  sectionToDelete: Ref<SectionDto | null>
+  isDeleting: Ref<boolean>
+  isDeletionChecking: Ref<boolean>
   handleDeleteSection: (id: EntityId) => Promise<void>
   confirmDelete: () => Promise<void>
   cancelDelete: () => void
@@ -33,9 +35,9 @@ export interface SectionDeleteFlowInternalReturn extends SectionDeleteFlowState 
 }
 
 interface SectionApiLike {
-  hasSchedulesInSection: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
-  hasStudentsInSection: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
-  hasEnrollmentsInSection: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+  hasSchedulesInSection: (id: EntityId) => Promise<AxiosResponse<boolean>>
+  hasStudentsInSection: (id: EntityId) => Promise<AxiosResponse<boolean>>
+  hasEnrollmentsInSection: (id: EntityId) => Promise<AxiosResponse<boolean>>
 }
 
 interface CreateSectionDeleteFlowOptions {
@@ -63,7 +65,7 @@ export function createSectionDeleteFlow(options: CreateSectionDeleteFlowOptions)
 
   const flow = createDeleteFlow<SectionDto>({
     store: {
-      items: sectionsStore.sections,
+      items: (() => sectionsStore.sections) as any,
       deleteItem: sectionsStore.deleteSection,
     },
     dependencyChecks: [

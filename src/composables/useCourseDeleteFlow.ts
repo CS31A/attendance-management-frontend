@@ -1,3 +1,5 @@
+import type { AxiosResponse } from 'axios'
+import type { Ref } from 'vue'
 import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { CourseDto } from '@/api/courses'
 import type { EntityId } from '@/types'
@@ -7,15 +9,15 @@ import { createDeleteFlow } from './useEntityDeleteFlow'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface CoursesStoreLike {
-  courses: CourseDto[]
+  courses: CourseDto[] | Ref<CourseDto[]> | (() => CourseDto[])
   deleteCourse: (id: EntityId) => Promise<unknown>
 }
 
 export interface CourseDeleteFlowState {
-  showDeleteModal: import('vue').Ref<boolean>
-  courseToDelete: import('vue').Ref<CourseDto | null>
-  isDeleting: import('vue').Ref<boolean>
-  isDeletionChecking: import('vue').Ref<boolean>
+  showDeleteModal: Ref<boolean>
+  courseToDelete: Ref<CourseDto | null>
+  isDeleting: Ref<boolean>
+  isDeletionChecking: Ref<boolean>
   handleDeleteCourse: (id: EntityId) => Promise<void>
   confirmDelete: () => Promise<void>
   cancelDelete: () => void
@@ -33,7 +35,7 @@ export interface CourseDeleteFlowInternalReturn extends CourseDeleteFlowState {
 }
 
 interface CourseApiLike {
-  hasSectionsInCourse: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+  hasSectionsInCourse: (id: EntityId) => Promise<AxiosResponse<boolean>>
 }
 
 interface CreateCourseDeleteFlowOptions {
@@ -61,7 +63,7 @@ export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): 
 
   const flow = createDeleteFlow<CourseDto>({
     store: {
-      items: coursesStore.courses,
+      items: (() => coursesStore.courses) as any,
       deleteItem: coursesStore.deleteCourse,
     },
     dependencyChecks: [

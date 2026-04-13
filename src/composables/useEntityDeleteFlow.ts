@@ -1,4 +1,5 @@
 import type { AxiosResponse } from 'axios'
+import type { Ref } from 'vue'
 import type { EntityId } from '@/types'
 import { reactive, ref } from 'vue'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
@@ -13,7 +14,7 @@ export interface DependencyCheckConfig {
 
 export interface CreateDeleteFlowOptions<T extends { id: EntityId }> {
   store: {
-    items: T[]
+    items: T[] | Ref<T[]>
     deleteItem: (id: EntityId) => Promise<unknown>
   }
   dependencyChecks: DependencyCheckConfig[]
@@ -27,10 +28,10 @@ export interface CreateDeleteFlowOptions<T extends { id: EntityId }> {
 }
 
 export interface DeleteFlowState<T> {
-  showDeleteModal: import('vue').Ref<boolean>
-  itemToDelete: import('vue').Ref<T | null>
-  isDeleting: import('vue').Ref<boolean>
-  isCheckingDependencies: import('vue').Ref<boolean>
+  showDeleteModal: Ref<boolean>
+  itemToDelete: Ref<T | null>
+  isDeleting: Ref<boolean>
+  isCheckingDependencies: Ref<boolean>
   handleDelete: (id: EntityId) => Promise<void>
   confirmDelete: () => Promise<void>
   cancelDelete: () => void
@@ -95,7 +96,20 @@ export function createDeleteFlow<T extends { id: EntityId }>({
   }
 
   async function handleDelete(id: EntityId) {
-    const item = store.items.find(current => current.id === id)
+    // Handle getter function, ref, or plain array
+    let itemsArray: T[]
+    if (typeof (store.items as any) === 'function') {
+      itemsArray = (store.items as any)()
+    }
+    else {
+      itemsArray = (store.items as any).value ?? store.items
+    }
+
+    if (!Array.isArray(itemsArray)) {
+      return
+    }
+
+    const item = itemsArray.find((current: T) => current.id === id)
     if (!item) {
       return
     }

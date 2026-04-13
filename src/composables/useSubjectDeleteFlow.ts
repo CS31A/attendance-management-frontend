@@ -1,3 +1,5 @@
+import type { AxiosResponse } from 'axios'
+import type { Ref } from 'vue'
 import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
@@ -7,15 +9,15 @@ import { createDeleteFlow } from './useEntityDeleteFlow'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface SubjectsStoreLike {
-  subjects: SubjectDto[]
+  subjects: SubjectDto[] | Ref<SubjectDto[]> | (() => SubjectDto[])
   deleteSubject: (id: EntityId) => Promise<unknown>
 }
 
 export interface SubjectDeleteFlowState {
-  showDeleteModal: import('vue').Ref<boolean>
-  subjectToDelete: import('vue').Ref<SubjectDto | null>
-  isDeleting: import('vue').Ref<boolean>
-  isDeletionChecking: import('vue').Ref<boolean>
+  showDeleteModal: Ref<boolean>
+  subjectToDelete: Ref<SubjectDto | null>
+  isDeleting: Ref<boolean>
+  isDeletionChecking: Ref<boolean>
   handleDeleteSubject: (id: EntityId) => Promise<void>
   confirmDelete: () => Promise<void>
   cancelDelete: () => void
@@ -33,8 +35,8 @@ export interface SubjectDeleteFlowInternalReturn extends SubjectDeleteFlowState 
 }
 
 interface SubjectApiLike {
-  hasSchedulesInSubject: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
-  hasEnrollmentsInSubject: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+  hasSchedulesInSubject: (id: EntityId) => Promise<AxiosResponse<boolean>>
+  hasEnrollmentsInSubject: (id: EntityId) => Promise<AxiosResponse<boolean>>
 }
 
 interface CreateSubjectDeleteFlowOptions {
@@ -62,7 +64,7 @@ export function createSubjectDeleteFlow(options: CreateSubjectDeleteFlowOptions)
 
   const flow = createDeleteFlow<SubjectDto>({
     store: {
-      items: subjectsStore.subjects,
+      items: (() => subjectsStore.subjects) as any,
       deleteItem: subjectsStore.deleteSubject,
     },
     dependencyChecks: [

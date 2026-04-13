@@ -1,3 +1,5 @@
+import type { AxiosResponse } from 'axios'
+import type { Ref } from 'vue'
 import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { ClassroomDto } from '@/api/classrooms'
 import type { EntityId } from '@/types'
@@ -7,15 +9,15 @@ import { createDeleteFlow } from './useEntityDeleteFlow'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface ClassroomsStoreLike {
-  classrooms: ClassroomDto[]
+  classrooms: ClassroomDto[] | Ref<ClassroomDto[]> | (() => ClassroomDto[])
   deleteClassroom: (id: EntityId) => Promise<unknown>
 }
 
 export interface ClassroomDeleteFlowState {
-  showDeleteModal: import('vue').Ref<boolean>
-  classroomToDelete: import('vue').Ref<ClassroomDto | null>
-  isDeleting: import('vue').Ref<boolean>
-  isDeletionChecking: import('vue').Ref<boolean>
+  showDeleteModal: Ref<boolean>
+  classroomToDelete: Ref<ClassroomDto | null>
+  isDeleting: Ref<boolean>
+  isDeletionChecking: Ref<boolean>
   handleDeleteClassroom: (id: EntityId) => Promise<void>
   confirmDelete: () => Promise<void>
   cancelDelete: () => void
@@ -33,8 +35,8 @@ export interface ClassroomDeleteFlowInternalReturn extends ClassroomDeleteFlowSt
 }
 
 interface ClassroomApiLike {
-  hasSchedulesInClassroom: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
-  hasSessionsInClassroom: (id: EntityId) => Promise<import('axios').AxiosResponse<boolean>>
+  hasSchedulesInClassroom: (id: EntityId) => Promise<AxiosResponse<boolean>>
+  hasSessionsInClassroom: (id: EntityId) => Promise<AxiosResponse<boolean>>
 }
 
 interface CreateClassroomDeleteFlowOptions {
@@ -62,7 +64,7 @@ export function createClassroomDeleteFlow(options: CreateClassroomDeleteFlowOpti
 
   const flow = createDeleteFlow<ClassroomDto>({
     store: {
-      items: classroomsStore.classrooms,
+      items: (() => classroomsStore.classrooms) as any,
       deleteItem: classroomsStore.deleteClassroom,
     },
     dependencyChecks: [
