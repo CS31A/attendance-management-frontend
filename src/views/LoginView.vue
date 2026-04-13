@@ -13,16 +13,16 @@ import {
   XCircle,
   Zap,
 } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/authStore'
 import { getErrorMessage } from '@/utils/httpError'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-type ToastType = 'success' | 'error'
 type LoginField = 'username' | 'password'
 
 // Redirect if already authenticated
@@ -47,25 +47,8 @@ const errors = reactive({
 const isLoading = ref(false)
 const hasAttemptedSubmit = ref(false)
 const showPassword = ref(false)
+const { toast, showToast, closeToast } = useToast()
 let navigationTimeout: ReturnType<typeof setTimeout> | null = null
-
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
-})
-
-function showToast(message: string, type: ToastType = 'success', duration = 1000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
 
 // Validation rules
 function validateUsername(username: string) {

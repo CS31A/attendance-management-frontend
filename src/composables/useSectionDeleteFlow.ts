@@ -23,6 +23,7 @@ interface CreateSectionDeleteFlowOptions {
   sectionsApi?: SectionApiLike
   onDeleteSuccess?: () => void
   logDependencyCheckError?: (error: unknown) => void
+  showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
 export function createSectionDeleteFlow({
@@ -30,6 +31,7 @@ export function createSectionDeleteFlow({
   sectionsApi: sectionApi = sectionsApi,
   onDeleteSuccess,
   logDependencyCheckError = error => console.error('Failed to check section dependencies:', error),
+  showToast: externalShowToast,
 }: CreateSectionDeleteFlowOptions) {
   const showDeleteModal = ref(false)
   const sectionToDelete = ref<SectionDto | null>(null)
@@ -43,10 +45,15 @@ export function createSectionDeleteFlow({
   })
 
   function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-    toast.message = message
-    toast.type = type
-    toast.duration = duration
-    toast.show = true
+    if (externalShowToast) {
+      externalShowToast(message, type, duration)
+    }
+    else {
+      toast.message = message
+      toast.type = type
+      toast.duration = duration
+      toast.show = true
+    }
   }
 
   function closeToast() {

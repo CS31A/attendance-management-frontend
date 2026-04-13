@@ -3,10 +3,11 @@ import type { CreateSessionPayload, EndSessionPayload, SessionResponseDto, Start
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { SESSION_STATUSES } from '@/utils/constants'
@@ -26,7 +27,6 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const qrCodeStore = useQrCodeStore()
 
-type ToastType = 'success' | 'error'
 type DisplayedQrCode = Awaited<ReturnType<ReturnType<typeof useQrCodeStore>['fetchQrCode']>>
 
 // State
@@ -94,23 +94,7 @@ const emptyStateMessage = computed(() => {
 })
 
 // Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
-})
-
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
+const { toast, showToast, closeToast } = useToast()
 
 // Methods
 async function loadSessions() {

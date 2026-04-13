@@ -3,9 +3,10 @@ import type { StudentAttendance } from '@/api/attendance'
 import type { SessionResponseDto } from '@/api/sessions'
 import type { EntityId } from '@/types'
 import { AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
 import { useAttendanceStore } from '@/stores/attendanceStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { getAttendanceSubmissionErrorMessage } from '@/utils/attendanceSubmission'
@@ -20,8 +21,10 @@ const router = useRouter()
 const attendanceStore = useAttendanceStore()
 const sessionStore = useSessionStore()
 
-type ToastType = 'success' | 'error'
 type AttendanceViewMode = 'list' | 'record'
+
+// Toast state and helpers (must be before watch that uses showToast)
+const { toast, showToast, closeToast } = useToast()
 
 function toNumericSessionId(id: EntityId): number | null {
   if (typeof id === 'number')
@@ -69,25 +72,6 @@ watch(syncWarning, (warning) => {
   showToast(warning, 'error', 6000)
   attendanceStore.clearSyncWarning()
 })
-
-// Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
-})
-
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
 
 // Methods
 async function loadSessions() {

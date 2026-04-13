@@ -6,7 +6,7 @@ import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
 import type { FormFieldConfig, FormOption, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
 import sectionsApi from '@/api/sections'
@@ -17,6 +17,9 @@ import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useCrudModal } from '@/composables/useCrudModal'
+import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
 import { getErrorMessage } from '@/utils/httpError'
@@ -27,8 +30,6 @@ const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/Sk
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-
-type ToastType = 'success' | 'error'
 
 function extractResponseData<T>(responseOrData: T | { data: T }): T {
   return (responseOrData && typeof responseOrData === 'object' && 'data' in responseOrData)
@@ -166,20 +167,15 @@ const alertModalConfig = ref({
   confirmText: '',
   cancelText: '',
 })
-// Pagination state
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
 
 // Instructor filter state
 const filteredInstructorId = ref<EntityId | null>(null)
 const filteredInstructorName = ref('')
 const isLoadingInstructorFilter = ref(false)
 
-// Computed values
 const schedules = computed(() => {
   const allSchedules = scheduleStore.sortedSchedules
 
-  // Apply instructor filter if active
   if (filteredInstructorId.value) {
     return allSchedules.filter(schedule =>
       schedule.instructorId === filteredInstructorId.value,
@@ -190,94 +186,36 @@ const schedules = computed(() => {
 })
 
 const totalSchedules = computed(() => schedules.value.length)
-const totalPages = computed(() => Math.ceil(totalSchedules.value / itemsPerPage.value))
-const hasNextPage = computed(() => currentPage.value < totalPages.value)
-const hasPreviousPage = computed(() => currentPage.value > 1)
 
-// Paginated schedules
+const {
+  currentPage,
+  itemsPerPage,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  nextPage: handleNextPage,
+  previousPage: handlePreviousPage,
+  goToPage: handleGoToPage,
+  setItemsPerPage: handleSetItemsPerPage,
+} = useLocalPagination({ totalItems: totalSchedules })
+
 const paginatedSchedules = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return schedules.value.slice(start, end)
 })
 
-// Pagination handlers
-function handleNextPage() {
-  if (hasNextPage.value) {
-    currentPage.value++
-  }
-}
+const { toast, showToast, closeToast } = useToast()
 
-function handlePreviousPage() {
-  if (hasPreviousPage.value) {
-    currentPage.value--
-  }
-}
-
-function handleGoToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
-function handleSetItemsPerPage(value: number) {
-  itemsPerPage.value = value
-  currentPage.value = 1 // Reset to first page
-}
-
-// Modal Handlers
-function openAddModal() {
-  selectedSchedule.value = null
-  showModal.value = true
-}
-
-function openEditModal(schedule: ScheduleDto) {
-  selectedSchedule.value = { ...schedule }
-  showModal.value = true
-}
-
-function closeModal() {
-  showModal.value = false
-  selectedSchedule.value = null
-}
-
-// Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
+const { handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal } = useCrudModal<SchedulePayload, ScheduleDto>({
+  entity: selectedSchedule,
+  showModal,
+  modalRef,
+  showToast,
+  createFn: data => scheduleStore.createSchedule(data),
+  updateFn: (id, data) => scheduleStore.updateSchedule(id, data),
+  entityLabel: 'Schedule',
 })
-
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
-
-async function handleSaveSchedule(scheduleData: SchedulePayload) {
-  try {
-    if (selectedSchedule.value) {
-      // Edit mode
-      await scheduleStore.updateSchedule(selectedSchedule.value.id, scheduleData)
-      showToast('Schedule updated successfully', 'success')
-    }
-    else {
-      // Create mode
-      await scheduleStore.createSchedule(scheduleData)
-      showToast('Schedule created successfully', 'success')
-    }
-    closeModal()
-  }
-  catch (error) {
-    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save schedule'))
-  }
-}
 
 function handleDeleteSchedule(id: EntityId) {
   const schedule = scheduleStore.schedules.find(s => s.id === id)
@@ -287,14 +225,12 @@ function handleDeleteSchedule(id: EntityId) {
   }
 }
 
-// Function to handle confirmation
 async function confirmDelete() {
   if (scheduleToDelete.value) {
     isDeleting.value = true
     try {
       await scheduleStore.deleteSchedule(scheduleToDelete.value.id)
       showToast('Schedule deleted successfully', 'success')
-      // Adjust pagination if needed
       if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
@@ -310,13 +246,11 @@ async function confirmDelete() {
   }
 }
 
-// Function to handle cancellation
 function cancelDelete() {
   scheduleToDelete.value = null
   showDeleteModal.value = false
 }
 
-// Function to apply instructor filter
 async function filterByInstructor(instructorId: string | null | undefined) {
   if (!instructorId)
     return
@@ -327,7 +261,6 @@ async function filterByInstructor(instructorId: string | null | undefined) {
 
   isLoadingInstructorFilter.value = true
   try {
-    // Fetch instructor details to show the name
     if (userStore.users.length === 0) {
       await userStore.fetchUsers()
     }
@@ -336,7 +269,7 @@ async function filterByInstructor(instructorId: string | null | undefined) {
     if (instructor) {
       filteredInstructorId.value = parsedInstructorId
       filteredInstructorName.value = `${instructor.firstName || instructor.firstname || ''} ${instructor.lastName || instructor.lastname || ''}`.trim() || 'Instructor'
-      currentPage.value = 1 // Reset to first page when filtering
+      currentPage.value = 1
     }
   }
   catch (error) {
@@ -348,13 +281,10 @@ async function filterByInstructor(instructorId: string | null | undefined) {
   }
 }
 
-// Function to clear instructor filter
 function clearInstructorFilter() {
   filteredInstructorId.value = null
   filteredInstructorName.value = ''
   currentPage.value = 1
-
-  // Remove query parameter from URL
   router.push({ path: '/schedules' })
 }
 
@@ -366,7 +296,6 @@ onMounted(async () => {
   try {
     await scheduleStore.fetchSchedules()
 
-    // Check for instructorId query parameter
     const instructorId = Array.isArray(route.query.instructorId)
       ? route.query.instructorId[0]
       : route.query.instructorId
