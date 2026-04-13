@@ -330,6 +330,57 @@ describe('useLocalPagination', () => {
     })
   })
 
+  describe('items vs totalItems precedence', () => {
+    it('prioritizes items.length over totalItems when both are provided', () => {
+      const items = ref(['a', 'b', 'c'])
+      const totalItems = ref(100) // Different from items.length
+      const pagination = useLocalPagination({ items, totalItems, itemsPerPage: 10 })
+
+      // Should use items.length (3), not totalItems (100)
+      expect(pagination.totalItems.value).toBe(3)
+      expect(pagination.totalPages.value).toBe(1)
+    })
+
+    it('ignores totalItems when items option is provided, even if null', () => {
+      const items = ref(null)
+      const totalItems = ref(50)
+      const pagination = useLocalPagination({ items, totalItems, itemsPerPage: 10 })
+
+      // items option is present, so totalItems is ignored; null becomes empty array
+      expect(pagination.totalItems.value).toBe(0)
+      expect(pagination.totalPages.value).toBe(0)
+    })
+
+    it('ignores totalItems when items option is provided, even if undefined', () => {
+      const items = ref(undefined)
+      const totalItems = ref(75)
+      const pagination = useLocalPagination({ items, totalItems, itemsPerPage: 10 })
+
+      // items option is present, so totalItems is ignored; undefined becomes empty array
+      expect(pagination.totalItems.value).toBe(0)
+      expect(pagination.totalPages.value).toBe(0)
+    })
+
+    it('uses totalItems only when items option is omitted', () => {
+      const totalItems = ref(100)
+      const pagination = useLocalPagination({ totalItems, itemsPerPage: 10 })
+
+      // items option not provided, so totalItems is used
+      expect(pagination.totalItems.value).toBe(100)
+      expect(pagination.totalPages.value).toBe(10)
+    })
+
+    it('uses items.length (0) when empty array provided, ignoring totalItems', () => {
+      const items = ref<string[]>([])
+      const totalItems = ref(25)
+      const pagination = useLocalPagination({ items, totalItems, itemsPerPage: 10 })
+
+      // items option is present (even as empty array), so totalItems is ignored
+      expect(pagination.totalItems.value).toBe(0)
+      expect(pagination.totalPages.value).toBe(0)
+    })
+  })
+
   describe('edge cases', () => {
     it('handles 0 totalItems correctly (server-side mode)', () => {
       const totalItems = ref(0)

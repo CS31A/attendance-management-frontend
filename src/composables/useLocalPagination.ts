@@ -58,6 +58,7 @@ export function useLocalPagination<T>(options: UseLocalPaginationOptions<T>) {
   return {
     currentPage,
     itemsPerPage,
+    totalItems,
     totalPages,
     hasNextPage,
     hasPreviousPage,
