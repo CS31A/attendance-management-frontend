@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { SubjectDto, SubjectPayload } from '@/api/subjects'
 import type { EntityId } from '@/types'
-import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
+import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -12,6 +12,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useSubjectStore } from '@/stores/subjectStore'
 import { getErrorMessage } from '@/utils/httpError'
@@ -44,30 +45,23 @@ const subjectFields: FormFieldConfig[] = [
 ]
 
 const subjectStore = useSubjectStore()
-const showModal = ref(false)
-const selectedSubject = ref<SubjectDto | null>(null)
-const modalRef = ref<HandleErrorableModal | null>(null)
+const { showModal, selectedEntity: selectedSubject, modalRef } = useModalState<SubjectDto>()
 
 const subjects = computed(() => subjectStore.sortedSubjects)
-const totalSubjects = computed(() => subjects.value.length)
 
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalSubjects,
   totalPages,
   hasNextPage,
   hasPreviousPage,
+  paginatedItems: paginatedSubjects,
   nextPage: handleNextPage,
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ totalItems: totalSubjects })
-
-const paginatedSubjects = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return subjects.value.slice(start, end)
-})
+} = useLocalPagination({ items: subjects })
 
 const { toast, showToast, closeToast } = useToast()
 

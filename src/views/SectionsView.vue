@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SectionDto, SectionPayload } from '@/api/sections'
-import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 
@@ -12,6 +11,7 @@ import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useModalState } from '@/composables/useModalState'
 import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useSectionStore } from '@/stores/sectionStore'
@@ -21,32 +21,25 @@ const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
 const sectionsStore = useSectionStore()
-const showModal = ref(false)
+const { showModal, selectedEntity: selectedSection, modalRef } = useModalState<SectionDto>()
 const showEnrollmentModal = ref(false)
-const selectedSection = ref<SectionDto | null>(null)
 const selectedEnrollmentSection = ref<SectionDto | null>(null)
-const modalRef = ref<HandleErrorableModal | null>(null)
 
 const sections = computed(() => sectionsStore.getSections)
-const totalSections = computed(() => sectionsStore.getNumberOfSections)
 
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalSections,
   totalPages,
   hasNextPage,
   hasPreviousPage,
+  paginatedItems: paginatedSections,
   nextPage: handleNextPage,
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ totalItems: totalSections })
-
-const paginatedSections = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return sections.value?.slice(start, end) || []
-})
+} = useLocalPagination({ items: sections })
 
 function openEnrollmentModal(section: SectionDto) {
   selectedEnrollmentSection.value = section

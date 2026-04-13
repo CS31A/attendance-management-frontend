@@ -4,7 +4,7 @@ import type { ScheduleDto, SchedulePayload } from '@/api/schedules'
 import type { SectionDto } from '@/api/sections'
 import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
-import type { FormFieldConfig, FormOption, HandleErrorableModal } from '@/types/ui'
+import type { FormFieldConfig, FormOption } from '@/types/ui'
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -20,6 +20,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
@@ -153,9 +154,7 @@ const scheduleFields: FormFieldConfig[] = [
 ]
 
 const scheduleStore = useScheduleStore()
-const showModal = ref(false)
-const selectedSchedule = ref<ScheduleDto | null>(null)
-const modalRef = ref<HandleErrorableModal | null>(null)
+const { showModal, selectedEntity: selectedSchedule, modalRef } = useModalState<ScheduleDto>()
 
 // Modal state for alerts
 const showAlertDialog = ref(false)
@@ -183,25 +182,19 @@ const schedules = computed(() => {
   return allSchedules
 })
 
-const totalSchedules = computed(() => schedules.value.length)
-
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalSchedules,
   totalPages,
   hasNextPage,
   hasPreviousPage,
+  paginatedItems: paginatedSchedules,
   nextPage: handleNextPage,
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ totalItems: totalSchedules })
-
-const paginatedSchedules = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return schedules.value.slice(start, end)
-})
+} = useLocalPagination({ items: schedules })
 
 const { toast, showToast, closeToast } = useToast()
 
