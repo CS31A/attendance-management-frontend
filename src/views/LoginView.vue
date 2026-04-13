@@ -13,7 +13,7 @@ import {
   XCircle,
   Zap,
 } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'

@@ -50,7 +50,7 @@ describe('admin data api', () => {
     expect(response.canImport).toBe(true)
     expect(capturedBody).toBeInstanceOf(FormData)
     expect(capturedBody?.get('file')).toBeInstanceOf(File)
-    expect(capturedHeaders).toEqual({ 'Content-Type': 'multipart/form-data' })
+    expect(capturedHeaders).toBeUndefined()
   })
 
   it('extracts filenames from download responses', async () => {
