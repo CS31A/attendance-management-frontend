@@ -18,6 +18,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
+import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
@@ -156,11 +157,8 @@ const showModal = ref(false)
 const selectedSchedule = ref<ScheduleDto | null>(null)
 const modalRef = ref<HandleErrorableModal | null>(null)
 
-// Modal state for confirmation and alerts
-const showDeleteModal = ref(false)
+// Modal state for alerts
 const showAlertDialog = ref(false)
-const scheduleToDelete = ref<ScheduleDto | null>(null)
-const isDeleting = ref(false)
 const alertModalConfig = ref({
   title: '',
   message: '',
@@ -217,38 +215,22 @@ const { handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal 
   entityLabel: 'Schedule',
 })
 
+const { showDeleteModal, entityToDelete: scheduleToDelete, isDeleting, openDelete: openDeleteSchedule, confirmDelete, cancelDelete } = useEntityDelete<ScheduleDto>({
+  findEntity: id => scheduleStore.schedules.find(s => s.id === id),
+  deleteEntity: id => scheduleStore.deleteSchedule(id),
+  getEntityId: entity => entity.id,
+  showToast,
+  getSuccessMessage: () => 'Schedule deleted successfully',
+  getErrorMessage: error => `Failed to delete schedule: ${getErrorMessage(error, 'Delete request failed')}`,
+  onDeleteSuccess: () => {
+    if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
+  },
+})
+
 function handleDeleteSchedule(id: EntityId) {
-  const schedule = scheduleStore.schedules.find(s => s.id === id)
-  if (schedule) {
-    scheduleToDelete.value = schedule
-    showDeleteModal.value = true
-  }
-}
-
-async function confirmDelete() {
-  if (scheduleToDelete.value) {
-    isDeleting.value = true
-    try {
-      await scheduleStore.deleteSchedule(scheduleToDelete.value.id)
-      showToast('Schedule deleted successfully', 'success')
-      if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
-      showDeleteModal.value = false
-      scheduleToDelete.value = null
-    }
-    catch (error) {
-      showToast(`Failed to delete schedule: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
-    }
-    finally {
-      isDeleting.value = false
-    }
-  }
-}
-
-function cancelDelete() {
-  scheduleToDelete.value = null
-  showDeleteModal.value = false
+  openDeleteSchedule(id)
 }
 
 async function filterByInstructor(instructorId: string | null | undefined) {

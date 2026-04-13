@@ -10,6 +10,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
+import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useToast } from '@/composables/useToast'
 import { useSubjectStore } from '@/stores/subjectStore'
@@ -47,11 +48,6 @@ const showModal = ref(false)
 const selectedSubject = ref<SubjectDto | null>(null)
 const modalRef = ref<HandleErrorableModal | null>(null)
 
-// Delete modal state
-const showDeleteModal = ref(false)
-const subjectToDelete = ref<SubjectDto | null>(null)
-const isDeleting = ref(false)
-
 const subjects = computed(() => subjectStore.sortedSubjects)
 const totalSubjects = computed(() => subjects.value.length)
 
@@ -85,39 +81,22 @@ const { handleSave: handleSaveSubject, openAddModal, openEditModal, closeModal }
   entityLabel: 'Subject',
 })
 
-function handleDeleteSubject(id: EntityId) {
-  const subject = subjectStore.subjects.find(s => s.id === id)
-  if (subject) {
-    subjectToDelete.value = subject
-    showDeleteModal.value = true
-  }
-}
-
-async function confirmDelete() {
-  if (!subjectToDelete.value)
-    return
-
-  isDeleting.value = true
-  try {
-    await subjectStore.deleteSubject(subjectToDelete.value.id)
-    showToast('Subject deleted successfully', 'success')
+const { showDeleteModal, entityToDelete: subjectToDelete, isDeleting, openDelete: openDeleteSubject, confirmDelete, cancelDelete } = useEntityDelete<SubjectDto>({
+  findEntity: id => subjectStore.subjects.find(s => s.id === id),
+  deleteEntity: id => subjectStore.deleteSubject(id),
+  getEntityId: entity => entity.id,
+  showToast,
+  getSuccessMessage: () => 'Subject deleted successfully',
+  getErrorMessage: error => `Failed to delete subject: ${getErrorMessage(error, 'Delete request failed')}`,
+  onDeleteSuccess: () => {
     if (paginatedSubjects.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
-    showDeleteModal.value = false
-    subjectToDelete.value = null
-  }
-  catch (error) {
-    showToast(`Failed to delete subject: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
-  }
-  finally {
-    isDeleting.value = false
-  }
-}
+  },
+})
 
-function cancelDelete() {
-  showDeleteModal.value = false
-  subjectToDelete.value = null
+function handleDeleteSubject(id: EntityId) {
+  openDeleteSubject(id)
 }
 
 async function refreshSubjects() {
