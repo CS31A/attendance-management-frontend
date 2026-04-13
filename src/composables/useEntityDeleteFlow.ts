@@ -100,6 +100,10 @@ export function createDeleteFlow<T extends { id: EntityId }>({
       return
     }
 
+    if (isCheckingDependencies.value) {
+      return
+    }
+
     isCheckingDependencies.value = true
 
     try {
