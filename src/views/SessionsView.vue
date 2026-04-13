@@ -3,10 +3,12 @@ import type { CreateSessionPayload, EndSessionPayload, SessionResponseDto, Start
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useEntityDelete } from '@/composables/useEntityDelete'
+import { useToast } from '@/composables/useToast'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { SESSION_STATUSES } from '@/utils/constants'
@@ -26,7 +28,6 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const qrCodeStore = useQrCodeStore()
 
-type ToastType = 'success' | 'error'
 type DisplayedQrCode = Awaited<ReturnType<ReturnType<typeof useQrCodeStore>['fetchQrCode']>>
 
 // State
@@ -41,11 +42,6 @@ const showQRListModal = ref(false)
 const selectedSession = ref<SessionResponseDto | null>(null)
 const currentQrCode = ref<DisplayedQrCode | null>(null)
 const errorMessage = ref('')
-
-// Delete modal state
-const showDeleteModal = ref(false)
-const sessionToDelete = ref<SessionResponseDto | null>(null)
-const isDeleting = ref(false)
 
 // Computed properties
 const sessions = computed(() => sessionStore.sessions)
@@ -94,23 +90,37 @@ const emptyStateMessage = computed(() => {
 })
 
 // Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
+const { toast, showToast, closeToast } = useToast()
+
+const { showDeleteModal, entityToDelete: sessionToDelete, isDeleting, openDelete: openDeleteSession, confirmDelete, cancelDelete } = useEntityDelete<SessionResponseDto>({
+  findEntity: id => sessionStore.sessions.find(s => s.id === id),
+  deleteEntity: id => sessionStore.deleteSession(id),
+  getEntityId: entity => entity.id,
+  showToast,
+  getSuccessMessage: () => 'Session deleted successfully!',
+  getErrorMessage: (error) => {
+    let message = 'Failed to delete session. Please try again.'
+    const status = getErrorStatus(error)
+    if (status === 403) {
+      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
+    }
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Cannot delete this session. Only sessions that have not started can be deleted.')
+    }
+    return message
+  },
+  onDeleteError: (error) => {
+    const status = getErrorStatus(error)
+    let message = 'Failed to delete session. Please try again.'
+    if (status === 403) {
+      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
+    }
+    else if (status === 400) {
+      message = getErrorMessage(error, 'Cannot delete this session. Only sessions that have not started can be deleted.')
+    }
+    errorMessage.value = message
+  },
 })
-
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
 
 // Methods
 async function loadSessions() {
@@ -204,46 +214,8 @@ async function handleConfirmEnd(payload: EndSessionPayload) {
 }
 
 function handleDeleteSession(id: EntityId) {
-  const session = sessionStore.sessions.find(s => s.id === id)
-  if (session) {
-    sessionToDelete.value = session
-    showDeleteModal.value = true
-  }
-}
-
-async function confirmDelete() {
-  if (!sessionToDelete.value)
-    return
-
-  isDeleting.value = true
   errorMessage.value = ''
-  try {
-    await sessionStore.deleteSession(sessionToDelete.value.id)
-    showToast('Session deleted successfully!', 'success')
-    showDeleteModal.value = false
-    sessionToDelete.value = null
-  }
-  catch (error) {
-    console.error('Failed to delete session:', error)
-    let message = 'Failed to delete session. Please try again.'
-    const status = getErrorStatus(error)
-    if (status === 403) {
-      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot delete this session. Only sessions that have not started can be deleted.')
-    }
-    showToast(message, 'error')
-    errorMessage.value = message
-  }
-  finally {
-    isDeleting.value = false
-  }
-}
-
-function cancelDelete() {
-  showDeleteModal.value = false
-  sessionToDelete.value = null
+  openDeleteSession(id)
 }
 
 function handleUpdateRoom(session: SessionResponseDto) {

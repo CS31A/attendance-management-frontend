@@ -23,34 +23,79 @@ interface CreateSectionDeleteFlowOptions {
   sectionsApi?: SectionApiLike
   onDeleteSuccess?: () => void
   logDependencyCheckError?: (error: unknown) => void
+  showToast?: (message: string, type?: ToastType, duration?: number) => void
 }
 
+interface SectionDeleteFlowState {
+  showDeleteModal: import('vue').Ref<boolean>
+  sectionToDelete: import('vue').Ref<SectionDto | null>
+  isDeleting: import('vue').Ref<boolean>
+  isDeletionChecking: import('vue').Ref<boolean>
+  handleDeleteSection: (id: EntityId) => Promise<void>
+  confirmDelete: () => Promise<void>
+  cancelDelete: () => void
+}
+
+interface SectionDeleteFlowInternalReturn extends SectionDeleteFlowState {
+  toast: {
+    show: boolean
+    message: string
+    type: ToastType
+    duration: number
+  }
+  showToast: (message: string, type?: ToastType, duration?: number) => void
+  closeToast: () => void
+}
+
+// Internal mode: no showToast provided - composable manages its own toast
+export function createSectionDeleteFlow(
+  options: Omit<CreateSectionDeleteFlowOptions, 'showToast'>,
+): SectionDeleteFlowInternalReturn
+
+// External mode: showToast provided - composable delegates toast, does not return toast state
+export function createSectionDeleteFlow(
+  options: CreateSectionDeleteFlowOptions & { showToast: (message: string, type?: ToastType, duration?: number) => void },
+): SectionDeleteFlowState
+
+// Implementation signature
 export function createSectionDeleteFlow({
   sectionsStore,
   sectionsApi: sectionApi = sectionsApi,
   onDeleteSuccess,
   logDependencyCheckError = error => console.error('Failed to check section dependencies:', error),
+  showToast: externalShowToast,
 }: CreateSectionDeleteFlowOptions) {
   const showDeleteModal = ref(false)
   const sectionToDelete = ref<SectionDto | null>(null)
   const isDeleting = ref(false)
   const isDeletionChecking = ref(false)
-  const toast = reactive({
-    show: false,
-    message: '',
-    type: 'success' as ToastType,
-    duration: 3000,
-  })
+
+  // Only create internal toast state in internal mode
+  const toast = externalShowToast
+    ? null
+    : reactive({
+        show: false,
+        message: '',
+        type: 'success' as ToastType,
+        duration: 3000,
+      })
 
   function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-    toast.message = message
-    toast.type = type
-    toast.duration = duration
-    toast.show = true
+    if (externalShowToast) {
+      externalShowToast(message, type, duration)
+    }
+    else if (toast) {
+      toast.message = message
+      toast.type = type
+      toast.duration = duration
+      toast.show = true
+    }
   }
 
   function closeToast() {
-    toast.show = false
+    if (toast) {
+      toast.show = false
+    }
   }
 
   async function handleDeleteSection(id: EntityId) {
@@ -134,8 +179,23 @@ export function createSectionDeleteFlow({
     sectionToDelete.value = null
   }
 
+  // Return different shapes based on mode
+  if (externalShowToast) {
+    // External mode: delegate toast, don't return toast state
+    return {
+      showDeleteModal,
+      sectionToDelete,
+      isDeleting,
+      isDeletionChecking,
+      handleDeleteSection,
+      confirmDelete,
+      cancelDelete,
+    }
+  }
+
+  // Internal mode: return full object with toast state
   return {
-    toast,
+    toast: toast!,
     showToast,
     closeToast,
     showDeleteModal,

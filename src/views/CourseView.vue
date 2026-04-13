@@ -3,19 +3,21 @@ import type { CourseDto, CoursePayload } from '@/api/courses'
 import type { EntityId } from '@/types'
 import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useCrudModal } from '@/composables/useCrudModal'
+import { useEntityDelete } from '@/composables/useEntityDelete'
+import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
 import { getErrorMessage } from '@/utils/httpError'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
-
-type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
 const courseFields: FormFieldConfig[] = [
@@ -36,141 +38,55 @@ const showModal = ref(false)
 const selectedCourse = ref<CourseDto | null>(null)
 const modalRef = ref<HandleErrorableModal | null>(null)
 
-// Delete modal state
-const showDeleteModal = ref(false)
-const courseToDelete = ref<CourseDto | null>(null)
-const isDeleting = ref(false)
-
-// Pagination state
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-
-// Computed values
 const courses = computed(() => courseStore.sortedCourses)
 const totalCourses = computed(() => courses.value.length)
-const totalPages = computed(() => Math.ceil(totalCourses.value / itemsPerPage.value))
-const hasNextPage = computed(() => currentPage.value < totalPages.value)
-const hasPreviousPage = computed(() => currentPage.value > 1)
 
-// Paginated courses
+const {
+  currentPage,
+  itemsPerPage,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  nextPage: handleNextPage,
+  previousPage: handlePreviousPage,
+  goToPage: handleGoToPage,
+  setItemsPerPage: handleSetItemsPerPage,
+} = useLocalPagination({ totalItems: totalCourses })
+
 const paginatedCourses = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return courses.value.slice(start, end)
 })
 
-// Pagination handlers
-function handleNextPage() {
-  if (hasNextPage.value) {
-    currentPage.value++
-  }
-}
+const { toast, showToast, closeToast } = useToast()
 
-function handlePreviousPage() {
-  if (hasPreviousPage.value) {
-    currentPage.value--
-  }
-}
-
-function handleGoToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
-function handleSetItemsPerPage(value: number) {
-  itemsPerPage.value = value
-  currentPage.value = 1 // Reset to first page
-}
-
-// Modal Handlers
-function openAddModal() {
-  selectedCourse.value = null
-  showModal.value = true
-}
-
-function openEditModal(course: CourseDto) {
-  selectedCourse.value = { ...course }
-  showModal.value = true
-}
-
-function closeModal() {
-  showModal.value = false
-  selectedCourse.value = null
-}
-
-// Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
+const { handleSave: handleSaveCourse, openAddModal, openEditModal, closeModal } = useCrudModal<CoursePayload, CourseDto>({
+  entity: selectedCourse,
+  showModal,
+  modalRef,
+  showToast,
+  createFn: data => courseStore.createCourse(data),
+  updateFn: (id, data) => courseStore.updateCourse(id, data),
+  entityLabel: 'Course',
 })
 
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
-
-async function handleSaveCourse(courseData: CoursePayload) {
-  try {
-    if (selectedCourse.value) {
-      // Edit mode
-      await courseStore.updateCourse(selectedCourse.value.id, courseData)
-      showToast('Course updated successfully', 'success')
-    }
-    else {
-      // Create mode
-      await courseStore.createCourse(courseData)
-      showToast('Course created successfully', 'success')
-    }
-    closeModal()
-  }
-  catch (error) {
-    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save course'))
-  }
-}
-
-function handleDeleteCourse(id: EntityId) {
-  const course = courseStore.courses.find(c => c.id === id)
-  if (course) {
-    courseToDelete.value = course
-    showDeleteModal.value = true
-  }
-}
-
-async function confirmDelete() {
-  if (!courseToDelete.value)
-    return
-
-  isDeleting.value = true
-  try {
-    await courseStore.deleteCourse(courseToDelete.value.id)
-    showToast('Course deleted successfully', 'success')
-    // Adjust pagination if needed
+const { showDeleteModal, entityToDelete: courseToDelete, isDeleting, openDelete: openDeleteCourse, confirmDelete, cancelDelete } = useEntityDelete<CourseDto>({
+  findEntity: id => courseStore.courses.find(c => c.id === id),
+  deleteEntity: id => courseStore.deleteCourse(id),
+  getEntityId: entity => entity.id,
+  showToast,
+  getSuccessMessage: () => 'Course deleted successfully',
+  getErrorMessage: error => `Failed to delete course: ${getErrorMessage(error, 'Delete request failed')}`,
+  onDeleteSuccess: () => {
     if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
-    showDeleteModal.value = false
-    courseToDelete.value = null
-  }
-  catch (error) {
-    showToast(`Failed to delete course: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
-  }
-  finally {
-    isDeleting.value = false
-  }
-}
+  },
+})
 
-function cancelDelete() {
-  showDeleteModal.value = false
-  courseToDelete.value = null
+function handleDeleteCourse(id: EntityId) {
+  openDeleteCourse(id)
 }
 
 async function refreshCourses() {

@@ -3,19 +3,21 @@ import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
 import type { EntityId } from '@/types'
 import type { FormFieldConfig, HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useCrudModal } from '@/composables/useCrudModal'
+import { useEntityDelete } from '@/composables/useEntityDelete'
+import { useLocalPagination } from '@/composables/useLocalPagination'
+import { useToast } from '@/composables/useToast'
 import { useClassroomStore } from '@/stores/classroomStore'
 import { getErrorMessage } from '@/utils/httpError'
 
 const ClassroomTableSection = defineAsyncComponent(() => import('@/components/tables/ClassroomTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
-
-type ToastType = 'success' | 'error'
 
 // Field configuration for FormModal
 const classroomFields: FormFieldConfig[] = [
@@ -37,141 +39,55 @@ const showModal = ref(false)
 const selectedClassroom = ref<ClassroomDto | null>(null)
 const modalRef = ref<HandleErrorableModal | null>(null)
 
-// Delete modal state
-const showDeleteModal = ref(false)
-const classroomToDelete = ref<ClassroomDto | null>(null)
-const isDeleting = ref(false)
-
-// Pagination state
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-
-// Computed values
 const classrooms = computed(() => classroomStore.sortedClassrooms)
 const totalClassrooms = computed(() => classrooms.value.length)
-const totalPages = computed(() => Math.ceil(totalClassrooms.value / itemsPerPage.value))
-const hasNextPage = computed(() => currentPage.value < totalPages.value)
-const hasPreviousPage = computed(() => currentPage.value > 1)
 
-// Paginated classrooms
+const {
+  currentPage,
+  itemsPerPage,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  nextPage: handleNextPage,
+  previousPage: handlePreviousPage,
+  goToPage: handleGoToPage,
+  setItemsPerPage: handleSetItemsPerPage,
+} = useLocalPagination({ totalItems: totalClassrooms })
+
 const paginatedClassrooms = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return classrooms.value.slice(start, end)
 })
 
-// Pagination handlers
-function handleNextPage() {
-  if (hasNextPage.value) {
-    currentPage.value++
-  }
-}
+const { toast, showToast, closeToast } = useToast()
 
-function handlePreviousPage() {
-  if (hasPreviousPage.value) {
-    currentPage.value--
-  }
-}
-
-function handleGoToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
-function handleSetItemsPerPage(value: number) {
-  itemsPerPage.value = value
-  currentPage.value = 1 // Reset to first page
-}
-
-// Modal Handlers
-function openAddModal() {
-  selectedClassroom.value = null
-  showModal.value = true
-}
-
-function openEditModal(classroom: ClassroomDto) {
-  selectedClassroom.value = { ...classroom }
-  showModal.value = true
-}
-
-function closeModal() {
-  showModal.value = false
-  selectedClassroom.value = null
-}
-
-// Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
+const { handleSave: handleSaveClassroom, openAddModal, openEditModal, closeModal } = useCrudModal<ClassroomPayload, ClassroomDto>({
+  entity: selectedClassroom,
+  showModal,
+  modalRef,
+  showToast,
+  createFn: data => classroomStore.createClassroom(data),
+  updateFn: (id, data) => classroomStore.updateClassroom(id, data),
+  entityLabel: 'Classroom',
 })
 
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
-
-async function handleSaveClassroom(classroomData: ClassroomPayload) {
-  try {
-    if (selectedClassroom.value) {
-      // Edit mode
-      await classroomStore.updateClassroom(selectedClassroom.value.id, classroomData)
-      showToast('Classroom updated successfully', 'success')
-    }
-    else {
-      // Create mode
-      await classroomStore.createClassroom(classroomData)
-      showToast('Classroom created successfully', 'success')
-    }
-    closeModal()
-  }
-  catch (error) {
-    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save classroom'))
-  }
-}
-
-function handleDeleteClassroom(id: EntityId) {
-  const classroom = classroomStore.classrooms.find(c => c.id === id)
-  if (classroom) {
-    classroomToDelete.value = classroom
-    showDeleteModal.value = true
-  }
-}
-
-async function confirmDelete() {
-  if (!classroomToDelete.value)
-    return
-
-  isDeleting.value = true
-  try {
-    await classroomStore.deleteClassroom(classroomToDelete.value.id)
-    showToast('Classroom deleted successfully', 'success')
-    // Adjust pagination if needed
+const { showDeleteModal, entityToDelete: classroomToDelete, isDeleting, openDelete: openDeleteClassroom, confirmDelete, cancelDelete } = useEntityDelete<ClassroomDto>({
+  findEntity: id => classroomStore.classrooms.find(c => c.id === id),
+  deleteEntity: id => classroomStore.deleteClassroom(id),
+  getEntityId: entity => entity.id,
+  showToast,
+  getSuccessMessage: () => 'Classroom deleted successfully',
+  getErrorMessage: error => `Failed to delete classroom: ${getErrorMessage(error, 'Delete request failed')}`,
+  onDeleteSuccess: () => {
     if (paginatedClassrooms.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
-    showDeleteModal.value = false
-    classroomToDelete.value = null
-  }
-  catch (error) {
-    showToast(`Failed to delete classroom: ${getErrorMessage(error, 'Delete request failed')}`, 'error')
-  }
-  finally {
-    isDeleting.value = false
-  }
-}
+  },
+})
 
-function cancelDelete() {
-  showDeleteModal.value = false
-  classroomToDelete.value = null
+function handleDeleteClassroom(id: EntityId) {
+  openDeleteClassroom(id)
 }
 
 async function refreshClassrooms() {

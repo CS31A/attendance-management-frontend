@@ -10,9 +10,11 @@ import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useCrudModal } from '@/composables/useCrudModal'
+import { useLocalPagination } from '@/composables/useLocalPagination'
 import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
+import { useToast } from '@/composables/useToast'
 import { useSectionStore } from '@/stores/sectionStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
@@ -25,63 +27,26 @@ const selectedSection = ref<SectionDto | null>(null)
 const selectedEnrollmentSection = ref<SectionDto | null>(null)
 const modalRef = ref<HandleErrorableModal | null>(null)
 
-// Pagination state
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-
-// Computed values
 const sections = computed(() => sectionsStore.getSections)
 const totalSections = computed(() => sectionsStore.getNumberOfSections)
-const totalPages = computed(() => Math.ceil(totalSections.value / itemsPerPage.value))
-const hasNextPage = computed(() => currentPage.value < totalPages.value)
-const hasPreviousPage = computed(() => currentPage.value > 1)
 
-// Paginated sections
+const {
+  currentPage,
+  itemsPerPage,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  nextPage: handleNextPage,
+  previousPage: handlePreviousPage,
+  goToPage: handleGoToPage,
+  setItemsPerPage: handleSetItemsPerPage,
+} = useLocalPagination({ totalItems: totalSections })
+
 const paginatedSections = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return sections.value?.slice(start, end) || []
 })
-
-// Pagination handlers
-function handleNextPage() {
-  if (hasNextPage.value) {
-    currentPage.value++
-  }
-}
-
-function handlePreviousPage() {
-  if (hasPreviousPage.value) {
-    currentPage.value--
-  }
-}
-
-function handleGoToPage(page: number) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
-function handleSetItemsPerPage(value: number) {
-  itemsPerPage.value = value
-  currentPage.value = 1 // Reset to first page
-}
-
-// Modal Handlers
-function openAddModal() {
-  selectedSection.value = null
-  showModal.value = true
-}
-
-function openEditModal(section: SectionDto) {
-  selectedSection.value = { ...section }
-  showModal.value = true
-}
-
-function closeModal() {
-  showModal.value = false
-  selectedSection.value = null
-}
 
 function openEnrollmentModal(section: SectionDto) {
   selectedEnrollmentSection.value = section
@@ -93,11 +58,19 @@ function closeEnrollmentModal() {
   selectedEnrollmentSection.value = null
 }
 
-// Toast state and helpers
-const {
-  toast,
+const { toast, showToast, closeToast } = useToast()
+
+const { handleSave: handleSaveSection, openAddModal, openEditModal, closeModal } = useCrudModal<SectionPayload, SectionDto>({
+  entity: selectedSection,
+  showModal,
+  modalRef,
   showToast,
-  closeToast,
+  createFn: data => sectionsStore.addSection(data),
+  updateFn: (id, data) => sectionsStore.updateSection(id, data),
+  entityLabel: 'Section',
+})
+
+const {
   showDeleteModal,
   sectionToDelete,
   isDeleting,
@@ -108,31 +81,13 @@ const {
 } = createSectionDeleteFlow({
   sectionsStore,
   sectionsApi,
+  showToast,
   onDeleteSuccess: () => {
     if (paginatedSections.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
 })
-
-async function handleSaveSection(sectionData: SectionPayload) {
-  try {
-    if (selectedSection.value) {
-      // Edit mode
-      await sectionsStore.updateSection(selectedSection.value.id, sectionData)
-      showToast('Section updated successfully', 'success')
-    }
-    else {
-      // Create mode
-      await sectionsStore.addSection(sectionData)
-      showToast('Section created successfully', 'success')
-    }
-    closeModal()
-  }
-  catch (error) {
-    modalRef.value?.handleError?.(getErrorMessage(error, 'Failed to save section'))
-  }
-}
 
 async function refreshSections() {
   await sectionsStore.fetchSections()

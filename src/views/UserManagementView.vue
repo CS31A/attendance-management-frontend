@@ -3,13 +3,14 @@ import type { CreateUserInput } from '@/stores/userStore'
 import type { Id } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
+import { useToast } from '@/composables/useToast'
 import { useUserStore } from '@/stores/userStore'
 
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
@@ -17,7 +18,6 @@ const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserMo
 const UserTableSection = defineAsyncComponent(() => import('@/components/tables/UserTableSection.vue'))
 const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))
 
-type ToastType = 'success' | 'error'
 type ManagedUser = ReturnType<typeof useUserStore>['users'][number]
 
 const userStore = useUserStore()
@@ -161,23 +161,7 @@ const hasActiveSearch = computed(() =>
 )
 
 // Toast state and helpers
-const toast = reactive({
-  show: false,
-  message: '',
-  type: 'success',
-  duration: 3000,
-})
-
-function showToast(message: string, type: ToastType = 'success', duration = 3000) {
-  toast.message = message
-  toast.type = type
-  toast.duration = duration
-  toast.show = true
-}
-
-function closeToast() {
-  toast.show = false
-}
+const { toast, showToast, closeToast } = useToast()
 
 async function handleCreateUser(userData: CreateUserInput) {
   const result = await userStore.createUser(userData)
