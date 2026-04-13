@@ -2,8 +2,25 @@ import { describe, expect, it } from 'vitest'
 import { computed, nextTick, ref } from 'vue'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 
+/**
+ * useLocalPagination supports two usage modes:
+ *
+ * 1. **Client-side pagination** (preferred for in-memory data):
+ *    Pass only `items`. The composable auto-derives totalItems, totalPages,
+ *    and paginatedItems from the array length and slice.
+ *    Example: useLocalPagination({ items: myArray })
+ *
+ * 2. **Server-side pagination** (for large datasets):
+ *    Pass only `totalItems` (and optionally `itemsPerPage`). The caller is
+ *    responsible for fetching the correct page of data externally.
+ *    paginatedItems will be an empty array in this mode.
+ *    Example: useLocalPagination({ totalItems: ref(100) })
+ *
+ * Do NOT pass both `items` and `totalItems` — the composable prioritizes
+ * items.length when items is provided, making totalItems redundant.
+ */
 describe('useLocalPagination', () => {
-  describe('default initialization', () => {
+  describe('server-side mode (totalItems only)', () => {
     it('uses page 1 and default page size 10', () => {
       const totalItems = ref(100)
       const pagination = useLocalPagination({ totalItems })
@@ -20,7 +37,7 @@ describe('useLocalPagination', () => {
     })
   })
 
-  describe('custom itemsPerPage', () => {
+  describe('custom itemsPerPage (server-side mode)', () => {
     it('respects custom page size', () => {
       const totalItems = ref(100)
       const pagination = useLocalPagination({ totalItems, itemsPerPage: 25 })
@@ -90,7 +107,9 @@ describe('useLocalPagination', () => {
       items.value = 60
       expect(pagination.totalPages.value).toBe(3)
     })
+  })
 
+  describe('client-side mode (items array)', () => {
     it('returns paginatedItems when an items array is provided', () => {
       const items = ref(Array.from({ length: 12 }, (_, index) => `item-${index + 1}`))
       const pagination = useLocalPagination({ items, itemsPerPage: 5 })
@@ -312,7 +331,7 @@ describe('useLocalPagination', () => {
   })
 
   describe('edge cases', () => {
-    it('handles 0 items correctly', () => {
+    it('handles 0 totalItems correctly (server-side mode)', () => {
       const totalItems = ref(0)
       const pagination = useLocalPagination({ totalItems })
 
@@ -321,7 +340,7 @@ describe('useLocalPagination', () => {
       expect(pagination.hasPreviousPage.value).toBe(false)
     })
 
-    it('handles total counts smaller than page size', () => {
+    it('handles total counts smaller than page size (server-side mode)', () => {
       const totalItems = ref(5)
       const pagination = useLocalPagination({ totalItems, itemsPerPage: 10 })
 
@@ -330,7 +349,7 @@ describe('useLocalPagination', () => {
       expect(pagination.hasPreviousPage.value).toBe(false)
     })
 
-    it('handles exactly 1 page worth of items', () => {
+    it('handles exactly 1 page worth of totalItems (server-side mode)', () => {
       const totalItems = ref(10)
       const pagination = useLocalPagination({ totalItems, itemsPerPage: 10 })
 
@@ -338,7 +357,7 @@ describe('useLocalPagination', () => {
       expect(pagination.hasNextPage.value).toBe(false)
     })
 
-    it('handles just over 1 page worth of items', () => {
+    it('handles just over 1 page worth of totalItems (server-side mode)', () => {
       const totalItems = ref(11)
       const pagination = useLocalPagination({ totalItems, itemsPerPage: 10 })
 
@@ -346,7 +365,7 @@ describe('useLocalPagination', () => {
       expect(pagination.hasNextPage.value).toBe(true)
     })
 
-    it('handles dynamic totalItems updates that reduce current page validity', async () => {
+    it('handles dynamic totalItems updates that reduce current page validity (server-side mode)', async () => {
       const totalItems = ref(100)
       const pagination = useLocalPagination({ totalItems, itemsPerPage: 10 })
 
@@ -360,7 +379,7 @@ describe('useLocalPagination', () => {
       expect(pagination.currentPage.value).toBe(5)
     })
 
-    it('returns an empty paginatedItems array when items are not provided', () => {
+    it('returns an empty paginatedItems array when using server-side mode (no items provided)', () => {
       const totalItems = ref(10)
       const pagination = useLocalPagination({ totalItems })
 

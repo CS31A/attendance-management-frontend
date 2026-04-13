@@ -195,7 +195,7 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: schedules, totalItems: totalSchedules })
+} = useLocalPagination({ items: schedules })
 
 const { toast, showToast, closeToast } = useToast()
 

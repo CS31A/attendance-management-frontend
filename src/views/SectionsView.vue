@@ -39,7 +39,7 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: sections, totalItems: totalSections })
+} = useLocalPagination({ items: sections })
 
 function openEnrollmentModal(section: SectionDto) {
   selectedEnrollmentSection.value = section

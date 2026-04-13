@@ -52,7 +52,7 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: classrooms, totalItems: totalClassrooms })
+} = useLocalPagination({ items: classrooms })
 
 const { toast, showToast, closeToast } = useToast()
 
