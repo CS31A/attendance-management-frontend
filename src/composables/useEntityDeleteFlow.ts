@@ -14,7 +14,7 @@ export interface DependencyCheckConfig {
 
 export interface CreateDeleteFlowOptions<T extends { id: EntityId }> {
   store: {
-    items: T[] | Ref<T[]>
+    items: T[] | Ref<T[]> | (() => T[])
     deleteItem: (id: EntityId) => Promise<unknown>
   }
   dependencyChecks: DependencyCheckConfig[]
@@ -98,11 +98,11 @@ export function createDeleteFlow<T extends { id: EntityId }>({
   async function handleDelete(id: EntityId) {
     // Handle getter function, ref, or plain array
     let itemsArray: T[]
-    if (typeof (store.items as any) === 'function') {
-      itemsArray = (store.items as any)()
+    if (typeof store.items === 'function') {
+      itemsArray = (store.items as () => T[])()
     }
     else {
-      itemsArray = (store.items as any).value ?? store.items
+      itemsArray = (store.items as Ref<T[]>).value ?? (store.items as T[])
     }
 
     if (!Array.isArray(itemsArray)) {

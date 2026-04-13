@@ -64,7 +64,7 @@ export function createSubjectDeleteFlow(options: CreateSubjectDeleteFlowOptions)
 
   const flow = createDeleteFlow<SubjectDto>({
     store: {
-      items: (() => subjectsStore.subjects) as any,
+      items: subjectsStore.subjects,
       deleteItem: subjectsStore.deleteSubject,
     },
     dependencyChecks: [

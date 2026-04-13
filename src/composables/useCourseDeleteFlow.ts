@@ -63,7 +63,7 @@ export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): 
 
   const flow = createDeleteFlow<CourseDto>({
     store: {
-      items: (() => coursesStore.courses) as any,
+      items: coursesStore.courses,
       deleteItem: coursesStore.deleteCourse,
     },
     dependencyChecks: [

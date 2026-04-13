@@ -65,7 +65,7 @@ export function createSectionDeleteFlow(options: CreateSectionDeleteFlowOptions)
 
   const flow = createDeleteFlow<SectionDto>({
     store: {
-      items: (() => sectionsStore.sections) as any,
+      items: sectionsStore.sections,
       deleteItem: sectionsStore.deleteSection,
     },
     dependencyChecks: [

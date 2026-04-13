@@ -64,7 +64,7 @@ export function createClassroomDeleteFlow(options: CreateClassroomDeleteFlowOpti
 
   const flow = createDeleteFlow<ClassroomDto>({
     store: {
-      items: (() => classroomsStore.classrooms) as any,
+      items: classroomsStore.classrooms,
       deleteItem: classroomsStore.deleteClassroom,
     },
     dependencyChecks: [
