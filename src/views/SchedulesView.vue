@@ -182,11 +182,10 @@ const schedules = computed(() => {
   return allSchedules
 })
 
-const totalSchedules = computed(() => schedules.value.length)
-
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalSchedules,
   totalPages,
   hasNextPage,
   hasPreviousPage,

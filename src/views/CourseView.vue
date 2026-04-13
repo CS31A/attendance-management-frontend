@@ -38,11 +38,11 @@ const courseStore = useCourseStore()
 const { showModal, selectedEntity: selectedCourse, modalRef } = useModalState<CourseDto>()
 
 const courses = computed(() => courseStore.sortedCourses)
-const totalCourses = computed(() => courses.value.length)
 
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalCourses,
   totalPages,
   hasNextPage,
   hasPreviousPage,

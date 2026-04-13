@@ -39,11 +39,11 @@ const classroomStore = useClassroomStore()
 const { showModal, selectedEntity: selectedClassroom, modalRef } = useModalState<ClassroomDto>()
 
 const classrooms = computed(() => classroomStore.sortedClassrooms)
-const totalClassrooms = computed(() => classrooms.value.length)
 
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalClassrooms,
   totalPages,
   hasNextPage,
   hasPreviousPage,

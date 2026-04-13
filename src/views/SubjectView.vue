@@ -48,11 +48,11 @@ const subjectStore = useSubjectStore()
 const { showModal, selectedEntity: selectedSubject, modalRef } = useModalState<SubjectDto>()
 
 const subjects = computed(() => subjectStore.sortedSubjects)
-const totalSubjects = computed(() => subjects.value.length)
 
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalSubjects,
   totalPages,
   hasNextPage,
   hasPreviousPage,

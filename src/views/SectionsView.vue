@@ -26,11 +26,11 @@ const showEnrollmentModal = ref(false)
 const selectedEnrollmentSection = ref<SectionDto | null>(null)
 
 const sections = computed(() => sectionsStore.getSections)
-const totalSections = computed(() => sectionsStore.getNumberOfSections)
 
 const {
   currentPage,
   itemsPerPage,
+  totalItems: totalSections,
   totalPages,
   hasNextPage,
   hasPreviousPage,
