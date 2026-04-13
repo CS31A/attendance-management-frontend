@@ -52,4 +52,20 @@ export default {
   deleteSubject(id: EntityId): Promise<AxiosResponse<unknown>> {
     return api.delete(`${SUBJECT_ENDPOINT}/${id}`)
   },
+
+  /**
+   * Check if subject has schedules assigned
+   * GET /api/subjects/{id}/has-schedules
+   */
+  hasSchedulesInSubject(id: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`${SUBJECT_ENDPOINT}/${id}/has-schedules`)
+  },
+
+  /**
+   * Check if subject has student enrollments
+   * GET /api/subjects/{id}/has-enrollments
+   */
+  hasEnrollmentsInSubject(id: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`${SUBJECT_ENDPOINT}/${id}/has-enrollments`)
+  },
 }

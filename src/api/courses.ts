@@ -52,4 +52,12 @@ export default {
   deleteCourse(id: EntityId): Promise<AxiosResponse<unknown>> {
     return api.delete(`${COURSE_ENDPOINT}/${id}`)
   },
+
+  /**
+   * Check if course has sections assigned
+   * GET /api/Course/{id}/has-sections
+   */
+  hasSectionsInCourse(id: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`${COURSE_ENDPOINT}/${id}/has-sections`)
+  },
 }

@@ -10,8 +10,8 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
+import { createSubjectDeleteFlow } from '@/composables/useSubjectDeleteFlow'
 import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useSubjectStore } from '@/stores/subjectStore'
@@ -75,23 +75,23 @@ const { handleSave: handleSaveSubject, openAddModal, openEditModal, closeModal }
   entityLabel: 'Subject',
 })
 
-const { showDeleteModal, entityToDelete: subjectToDelete, isDeleting, openDelete: openDeleteSubject, confirmDelete, cancelDelete } = useEntityDelete<SubjectDto>({
-  findEntity: id => subjectStore.subjects.find(s => s.id === id),
-  deleteEntity: id => subjectStore.deleteSubject(id),
-  getEntityId: entity => entity.id,
+const {
+  showDeleteModal,
+  subjectToDelete,
+  isDeleting,
+  isDeletionChecking,
+  handleDeleteSubject,
+  confirmDelete,
+  cancelDelete,
+} = createSubjectDeleteFlow({
+  subjectsStore: subjectStore,
   showToast,
-  getSuccessMessage: () => 'Subject deleted successfully',
-  getErrorMessage: error => `Failed to delete subject: ${getErrorMessage(error, 'Delete request failed')}`,
   onDeleteSuccess: () => {
     if (paginatedSubjects.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
 })
-
-function handleDeleteSubject(id: EntityId) {
-  openDeleteSubject(id)
-}
 
 async function refreshSubjects() {
   await subjectStore.fetchSubjects()
@@ -174,6 +174,7 @@ onMounted(async () => {
           totalSubjects,
           itemsPerPage,
         }"
+        :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
         @go-to-page="handleGoToPage"

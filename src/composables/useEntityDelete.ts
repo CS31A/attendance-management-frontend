@@ -1,7 +1,6 @@
-import type { Ref } from 'vue'
 import type { ToastType } from './useToast'
 import type { EntityId } from '@/types'
-import { ref } from 'vue'
+import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'
 
 export interface UseEntityDeleteOptions<T> {
   findEntity: (id: EntityId) => T | undefined
@@ -15,15 +14,20 @@ export interface UseEntityDeleteOptions<T> {
 }
 
 export function useEntityDelete<T>(options: UseEntityDeleteOptions<T>) {
-  const showDeleteModal: Ref<boolean> = ref(false)
-  const entityToDelete: Ref<T | null> = ref(null)
-  const isDeleting: Ref<boolean> = ref(false)
+  const {
+    showDeleteModal,
+    entityToDelete,
+    isDeleting,
+    openDeleteModal,
+    closeDeleteModal,
+    startDeleting,
+    finishDeleting,
+  } = useDeleteModalLifecycle<T>()
 
   function openDelete(id: EntityId) {
     const entity = options.findEntity(id)
     if (entity) {
-      entityToDelete.value = entity
-      showDeleteModal.value = true
+      openDeleteModal(entity)
     }
   }
 
@@ -31,13 +35,12 @@ export function useEntityDelete<T>(options: UseEntityDeleteOptions<T>) {
     if (!entityToDelete.value || isDeleting.value)
       return
 
-    isDeleting.value = true
+    startDeleting()
     try {
       const entity = entityToDelete.value
       await options.deleteEntity(options.getEntityId(entity))
       options.showToast(options.getSuccessMessage(entity), 'success')
-      showDeleteModal.value = false
-      entityToDelete.value = null
+      closeDeleteModal()
       options.onDeleteSuccess?.(entity)
     }
     catch (error) {
@@ -45,13 +48,12 @@ export function useEntityDelete<T>(options: UseEntityDeleteOptions<T>) {
       options.onDeleteError?.(error)
     }
     finally {
-      isDeleting.value = false
+      finishDeleting()
     }
   }
 
   function cancelDelete() {
-    showDeleteModal.value = false
-    entityToDelete.value = null
+    closeDeleteModal()
   }
 
   return { showDeleteModal, entityToDelete, isDeleting, openDelete, confirmDelete, cancelDelete }

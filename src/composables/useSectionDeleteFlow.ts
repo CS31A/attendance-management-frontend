@@ -4,6 +4,7 @@ import { reactive, ref } from 'vue'
 
 import sectionsApi from '@/api/sections'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
+import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -65,9 +66,17 @@ export function createSectionDeleteFlow({
   logDependencyCheckError = error => console.error('Failed to check section dependencies:', error),
   showToast: externalShowToast,
 }: CreateSectionDeleteFlowOptions) {
-  const showDeleteModal = ref(false)
-  const sectionToDelete = ref<SectionDto | null>(null)
-  const isDeleting = ref(false)
+  // Use shared modal lifecycle primitive
+  const {
+    showDeleteModal,
+    entityToDelete: sectionToDelete,
+    isDeleting,
+    openDeleteModal,
+    closeDeleteModal,
+    startDeleting,
+    finishDeleting,
+  } = useDeleteModalLifecycle<SectionDto>()
+
   const isDeletionChecking = ref(false)
 
   // Only create internal toast state in internal mode
@@ -140,8 +149,7 @@ export function createSectionDeleteFlow({
       isDeletionChecking.value = false
     }
 
-    sectionToDelete.value = section
-    showDeleteModal.value = true
+    openDeleteModal(section)
   }
 
   async function confirmDelete() {
@@ -149,14 +157,13 @@ export function createSectionDeleteFlow({
       return
     }
 
-    isDeleting.value = true
+    startDeleting()
 
     try {
       await sectionsStore.deleteSection(sectionToDelete.value.id)
       showToast('Section deleted successfully', 'success')
       onDeleteSuccess?.()
-      showDeleteModal.value = false
-      sectionToDelete.value = null
+      closeDeleteModal()
     }
     catch (error) {
       const status = getErrorStatus(error)
@@ -170,13 +177,12 @@ export function createSectionDeleteFlow({
       }
     }
     finally {
-      isDeleting.value = false
+      finishDeleting()
     }
   }
 
   function cancelDelete() {
-    showDeleteModal.value = false
-    sectionToDelete.value = null
+    closeDeleteModal()
   }
 
   // Return different shapes based on mode

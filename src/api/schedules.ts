@@ -17,7 +17,6 @@ export interface ScheduleRelationDto {
 
 export interface ScheduleInstructorDto {
   id?: EntityId
-  // Backend responses currently vary between lowercase and camelCase naming.
   firstname?: string
   lastname?: string
   firstName?: string
@@ -61,11 +60,6 @@ export type SchedulePayload = Record<string, unknown>
 export type ScheduleQueryParams = PaginationParams & {
   [key: string]: unknown
 }
-
-/**
- * Schedule API Service
- * Handles all schedule-related API requests
- */
 
 /**
  * Get all schedules
@@ -177,6 +171,22 @@ export async function deleteSchedule(id: EntityId): Promise<void> {
   }
 }
 
+/**
+ * Check if schedule has sessions assigned
+ * @param {number} id - Schedule ID
+ * @returns {Promise<boolean>}
+ */
+export async function hasSessionsInSchedule(id: EntityId): Promise<boolean> {
+  try {
+    const response = await api.get(`${SCHEDULE_ENDPOINT}/${id}/has-sessions`)
+    return response.data
+  }
+  catch (error) {
+    console.error(`Failed to check sessions for schedule ${id}:`, error)
+    return Promise.reject(error)
+  }
+}
+
 export default {
   getAllSchedules,
   getMySchedules,
@@ -185,4 +195,5 @@ export default {
   updateSchedule,
   deleteSchedule,
   getSchedulesBySection,
+  hasSessionsInSchedule,
 }
