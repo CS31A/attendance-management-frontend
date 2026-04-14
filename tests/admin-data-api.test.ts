@@ -21,7 +21,7 @@ describe('admin data api', () => {
   })
 
   it('posts preview import as multipart form data', async () => {
-    let capturedBody: FormData | null = null
+    let capturedBody!: FormData
     let capturedHeaders: Record<string, string> | undefined
 
     api.post = (async (_url: string, body: FormData, config?: { headers?: Record<string, string> }) => {
@@ -49,7 +49,7 @@ describe('admin data api', () => {
 
     expect(response.canImport).toBe(true)
     expect(capturedBody).toBeInstanceOf(FormData)
-    expect(capturedBody?.get('file')).toBeInstanceOf(File)
+    expect(capturedBody.get('file')).toBeInstanceOf(File)
     expect(capturedHeaders).toBeUndefined()
   })
 

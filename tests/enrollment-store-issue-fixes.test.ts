@@ -1,18 +1,21 @@
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import type { EnrollmentDto } from '@/api/enrollments'
 import type { EntityId } from '@/types'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import enrollmentsApi from '@/api/enrollments'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 
+vi.mock('@/api/enrollments')
+
 interface Deferred<T> {
   promise: Promise<T>
-  resolve: (value: T) => void
+  resolve: (value: T | PromiseLike<T>) => void
   reject: (reason?: unknown) => void
 }
 
 function createDeferred<T>(): Deferred<T> {
-  let resolve!: (value: T) => void
+  let resolve!: Deferred<T>['resolve']
   let reject!: (reason?: unknown) => void
   const promise = new Promise<T>((res, rej) => {
     resolve = res
@@ -21,19 +24,20 @@ function createDeferred<T>(): Deferred<T> {
   return { promise, resolve, reject }
 }
 
-describe('enrollment store issue fixes', () => {
-  const originalDropStudent = enrollmentsApi.dropStudent
-  const originalGetSectionStudents = enrollmentsApi.getSectionStudents
-  const originalGetStudentEnrollments = enrollmentsApi.getStudentEnrollments
+function createAxiosResponse<T>(data: T): AxiosResponse<T> {
+  return {
+    data,
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: { headers: {} } as InternalAxiosRequestConfig,
+  }
+}
 
+describe('enrollment store issue fixes', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-  })
-
-  afterEach(() => {
-    enrollmentsApi.dropStudent = originalDropStudent
-    enrollmentsApi.getSectionStudents = originalGetSectionStudents
-    enrollmentsApi.getStudentEnrollments = originalGetStudentEnrollments
+    vi.clearAllMocks()
   })
 
   it('dropStudent keeps API-refreshed section students when sectionId is provided', async () => {
@@ -49,10 +53,8 @@ describe('enrollment store issue fixes', () => {
       { id: 1, enrollmentId: 10, firstName: 'Stale', lastName: 'Student' },
     ]
 
-    enrollmentsApi.dropStudent = async () => ({ data: {} } as { data: Record<string, unknown> })
-    enrollmentsApi.getSectionStudents = async () => (
-      { data: refreshedStudents } as { data: EnrollmentDto[] }
-    )
+    vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue(createAxiosResponse({}))
+    vi.mocked(enrollmentsApi.getSectionStudents).mockResolvedValue(createAxiosResponse(refreshedStudents))
 
     await store.dropStudent(droppedEnrollmentId, sectionId)
 
@@ -68,7 +70,7 @@ describe('enrollment store issue fixes', () => {
       { id: 2, enrollmentId: 22, firstName: 'Katherine', lastName: 'Johnson' },
     ]
 
-    enrollmentsApi.dropStudent = async () => ({ data: {} } as { data: Record<string, unknown> })
+    vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue(createAxiosResponse({}))
 
     await store.dropStudent(droppedEnrollmentId)
 
@@ -79,26 +81,22 @@ describe('enrollment store issue fixes', () => {
 
   it('keeps loading state true while concurrent requests are still pending', async () => {
     const store = useEnrollmentStore()
-    const sectionDeferred = createDeferred<EnrollmentDto[]>()
-    const studentDeferred = createDeferred<EnrollmentDto[]>()
+    const sectionDeferred = createDeferred<Awaited<ReturnType<typeof enrollmentsApi.getSectionStudents>>>()
+    const studentDeferred = createDeferred<Awaited<ReturnType<typeof enrollmentsApi.getStudentEnrollments>>>()
 
-    enrollmentsApi.getSectionStudents = async () => (
-      { data: await sectionDeferred.promise } as { data: EnrollmentDto[] }
-    )
-    enrollmentsApi.getStudentEnrollments = async () => (
-      { data: await studentDeferred.promise } as { data: EnrollmentDto[] }
-    )
+    vi.mocked(enrollmentsApi.getSectionStudents).mockImplementation(() => sectionDeferred.promise)
+    vi.mocked(enrollmentsApi.getStudentEnrollments).mockImplementation(() => studentDeferred.promise)
 
     const sectionRequest = store.fetchSectionStudents(1)
     const studentRequest = store.fetchStudentEnrollments(2)
 
     expect(store.isLoading).toBe(true)
 
-    sectionDeferred.resolve([{ id: 101, enrollmentId: 901 }])
+    sectionDeferred.resolve(createAxiosResponse([{ id: 101, enrollmentId: 901 }]))
     await sectionRequest
     expect(store.isLoading).toBe(true)
 
-    studentDeferred.resolve([{ id: 102, enrollmentId: 902 }])
+    studentDeferred.resolve(createAxiosResponse([{ id: 102, enrollmentId: 902 }]))
     await studentRequest
     expect(store.isLoading).toBe(false)
   })

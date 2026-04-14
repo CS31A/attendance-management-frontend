@@ -17,7 +17,7 @@ describe('date format consolidation', () => {
     let dateUtils: DateUtilsModule | null = null
 
     try {
-      dateUtils = await import('../src/utils/date.ts') as DateUtilsModule
+      dateUtils = await import('@/utils/date') as DateUtilsModule
     }
     catch {
       dateUtils = null

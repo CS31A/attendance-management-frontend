@@ -1,11 +1,21 @@
+import type { EditableAttendanceRecord } from '@/utils/attendanceRecord'
 import { describe, expect, it } from 'vitest'
-
 import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
+
+function createEditableAttendanceRecord(
+  overrides: Partial<EditableAttendanceRecord> = {},
+): EditableAttendanceRecord {
+  return {
+    studentId: 1,
+    status: 'present',
+    ...overrides,
+  }
+}
 
 describe('attendance record helpers', () => {
   it('preserves unsaved local changes during background refresh', () => {
-    const previousRecords = [
-      {
+    const previousRecords: EditableAttendanceRecord[] = [
+      createEditableAttendanceRecord({
         id: 11,
         studentId: 1,
         sessionId: 9,
@@ -15,11 +25,11 @@ describe('attendance record helpers', () => {
         originalNotes: '',
         studentName: 'Alice',
         studentNumber: '2024-001',
-      },
+      }),
     ]
 
-    const incomingRecords = [
-      {
+    const incomingRecords: EditableAttendanceRecord[] = [
+      createEditableAttendanceRecord({
         id: 11,
         studentId: 1,
         sessionId: 9,
@@ -28,7 +38,7 @@ describe('attendance record helpers', () => {
         studentName: 'Alice Santos',
         studentNumber: '2024-001',
         checkInTime: '08:05:00',
-      },
+      }),
     ]
 
     const [merged] = mergeAttendanceWithLocalChanges(incomingRecords, previousRecords)
@@ -43,8 +53,8 @@ describe('attendance record helpers', () => {
   })
 
   it('accepts refreshed server data when there are no unsaved edits', () => {
-    const previousRecords = [
-      {
+    const previousRecords: EditableAttendanceRecord[] = [
+      createEditableAttendanceRecord({
         id: 22,
         studentId: 2,
         sessionId: 9,
@@ -54,18 +64,18 @@ describe('attendance record helpers', () => {
         originalNotes: '',
         studentName: 'Bob',
         studentNumber: '2024-002',
-      },
+      }),
     ]
 
-    const incomingRecords = [
-      {
+    const incomingRecords: EditableAttendanceRecord[] = [
+      createEditableAttendanceRecord({
         id: 22,
         studentId: 2,
         sessionId: 9,
         status: 'excused',
         notes: 'Clinic visit',
         checkInTime: '09:15:00',
-      },
+      }),
     ]
 
     const [merged] = mergeAttendanceWithLocalChanges(incomingRecords, previousRecords)

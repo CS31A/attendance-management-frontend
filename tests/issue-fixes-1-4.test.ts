@@ -1,3 +1,4 @@
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { readFileSync } from 'node:fs'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, expect, it, vi } from 'vitest'
@@ -8,9 +9,19 @@ import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
 import { ROLES } from '@/utils/constants'
 
-interface MockUser {
+interface MockUser extends Record<string, unknown> {
   userId: number
   role: 'Instructor'
+}
+
+function createAxiosResponse<T>(data: T): AxiosResponse<T> {
+  return {
+    data,
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: { headers: {} } as InternalAxiosRequestConfig,
+  }
 }
 
 describe('issue fixes 1-4', () => {
@@ -19,7 +30,7 @@ describe('issue fixes 1-4', () => {
     const userStore = useUserStore()
 
     const originalPost = api.post
-    api.post = async () => {
+    api.post = (async () => {
       const error = new Error('Unauthorized') as Error & {
         response?: {
           status: number
@@ -31,7 +42,7 @@ describe('issue fixes 1-4', () => {
         data: { message: 'Session expired' },
       }
       throw error
-    }
+    }) as typeof api.post
 
     try {
       const result = await userStore.createUser({
@@ -61,24 +72,22 @@ describe('issue fixes 1-4', () => {
     const originalPost = api.post
     const capturedPayloads: Array<Record<string, unknown>> = []
 
-    api.post = async (_url: string, payload?: unknown) => {
+    api.post = (async (_url: string, payload?: unknown, _config?: unknown) => {
       capturedPayloads.push(payload as Record<string, unknown>)
-      return {
-        data: {
-          userId: 77,
-          username: 'student.user',
-          email: 'student@example.com',
-          role: 'Student',
-          studentProfile: {
-            id: 88,
-            firstname: 'Section',
-            lastname: 'Student',
-            sectionId: 42,
-            isRegular: true,
-          },
+      return createAxiosResponse<Record<string, unknown>>({
+        userId: 77,
+        username: 'student.user',
+        email: 'student@example.com',
+        role: 'Student',
+        studentProfile: {
+          id: 88,
+          firstname: 'Section',
+          lastname: 'Student',
+          sectionId: 42,
+          isRegular: true,
         },
-      } as { data: Record<string, unknown> }
-    }
+      })
+    }) as typeof api.post
 
     try {
       const result = await userStore.createUser({
@@ -109,10 +118,10 @@ describe('issue fixes 1-4', () => {
 
     let endpoint = ''
     const originalPatch = api.patch
-    api.patch = async (url: string) => {
+    api.patch = (async (url: string, _data?: unknown, _config?: unknown) => {
       endpoint = url
-      return { data: {} } as { data: Record<string, unknown> }
-    }
+      return createAxiosResponse({})
+    }) as typeof api.patch
 
     try {
       await userStore.updateUser(1, { firstName: 'Updated' })
@@ -159,24 +168,22 @@ describe('issue fixes 1-4', () => {
     const userStore = useUserStore()
 
     const originalGet = api.get
-    api.get = async () => ({
-      data: [
-        {
-          userId: 1,
-          username: 'legacy.teacher',
-          email: 'legacy@example.com',
-          role: 'Teacher',
-          instructorProfile: { id: 10, firstname: 'Legacy', lastname: 'Teacher' },
-        },
-        {
-          userId: 2,
-          username: 'new.instructor',
-          email: 'new@example.com',
-          role: 'Instructor',
-          instructorProfile: { id: 20, firstname: 'New', lastname: 'Instructor' },
-        },
-      ],
-    } as { data: Array<Record<string, unknown>> })
+    api.get = (async (_url: string, _config?: unknown) => createAxiosResponse<Array<Record<string, unknown>>>([
+      {
+        userId: 1,
+        username: 'legacy.teacher',
+        email: 'legacy@example.com',
+        role: 'Teacher',
+        instructorProfile: { id: 10, firstname: 'Legacy', lastname: 'Teacher' },
+      },
+      {
+        userId: 2,
+        username: 'new.instructor',
+        email: 'new@example.com',
+        role: 'Instructor',
+        instructorProfile: { id: 20, firstname: 'New', lastname: 'Instructor' },
+      },
+    ])) as typeof api.get
 
     try {
       await userStore.fetchUsers()
@@ -220,21 +227,21 @@ describe('issue fixes 1-4', () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
 
-    let resolveGet!: (value: unknown) => void
-    let resolvePost!: (value: unknown) => void
+    let resolveGet!: (value: AxiosResponse<Array<Record<string, unknown>>>) => void
+    let resolvePost!: (value: AxiosResponse<Record<string, unknown>>) => void
 
-    const getPromise = new Promise((resolve) => {
+    const getPromise = new Promise<AxiosResponse<Array<Record<string, unknown>>>>((resolve) => {
       resolveGet = resolve
     })
-    const postPromise = new Promise((resolve) => {
+    const postPromise = new Promise<AxiosResponse<Record<string, unknown>>>((resolve) => {
       resolvePost = resolve
     })
 
     const originalGet = api.get
     const originalPost = api.post
 
-    api.get = async () => await getPromise as { data: Array<Record<string, unknown>> }
-    api.post = async () => await postPromise as { data: Record<string, unknown> }
+    api.get = (async (_url: string, _config?: unknown) => await getPromise) as typeof api.get
+    api.post = (async (_url: string, _data?: unknown, _config?: unknown) => await postPromise) as typeof api.post
 
     try {
       const fetchPromise = userStore.fetchUsers()
@@ -250,23 +257,21 @@ describe('issue fixes 1-4', () => {
 
       expect(userStore.loading).toBe(true)
 
-      resolveGet({ data: [] })
+      resolveGet(createAxiosResponse([]))
       await fetchPromise
       expect(userStore.loading).toBe(true)
 
-      resolvePost({
-        data: {
-          userId: 99,
-          username: 'pending.user',
-          email: 'pending@example.com',
-          role: 'Instructor',
-          instructorProfile: {
-            id: 55,
-            firstname: 'Pending',
-            lastname: 'User',
-          },
+      resolvePost(createAxiosResponse({
+        userId: 99,
+        username: 'pending.user',
+        email: 'pending@example.com',
+        role: 'Instructor',
+        instructorProfile: {
+          id: 55,
+          firstname: 'Pending',
+          lastname: 'User',
         },
-      })
+      }))
       await createPromise
       expect(userStore.loading).toBe(false)
     }
@@ -283,10 +288,12 @@ describe('issue fixes 1-4', () => {
     authStore.userProfile = null
     authStore.isLoading = false
     authStore.checkAuth = vi.fn().mockResolvedValue(false)
+    const runAdminGuard = adminGuard.bind(undefined)
 
-    const result = await adminGuard(
+    const result = await runAdminGuard(
       { fullPath: '/users' } as never,
       { fullPath: '/' } as never,
+      undefined as never,
     )
 
     expect(result).toEqual({ path: '/login', query: { redirect: '/users' } })
@@ -299,10 +306,12 @@ describe('issue fixes 1-4', () => {
     authStore.userProfile = null
     authStore.isLoading = false
     authStore.checkAuth = vi.fn().mockResolvedValue(false)
+    const runInstructorGuard = instructorGuard.bind(undefined)
 
-    const result = await instructorGuard(
+    const result = await runInstructorGuard(
       { fullPath: '/sessions' } as never,
       { fullPath: '/' } as never,
+      undefined as never,
     )
 
     expect(result).toEqual({ path: '/login', query: { redirect: '/sessions' } })

@@ -184,7 +184,7 @@ describe('sections delete guard regression', () => {
     const sectionId = 1
 
     sectionStore.sections = [{ id: sectionId, name: 'Test Section' }]
-    api.delete = async () => ({ status: 204, data: {} })
+    api.delete = async () => ({ status: 204, data: {} }) as never
 
     await sectionStore.deleteSection(sectionId)
 
