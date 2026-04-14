@@ -52,4 +52,20 @@ export default {
   deleteClassroom(id: EntityId): Promise<AxiosResponse<unknown>> {
     return api.delete(`${CLASSROOM_ENDPOINT}/${id}`)
   },
+
+  /**
+   * Check if classroom has schedules assigned
+   * GET /api/classrooms/{id}/has-schedules
+   */
+  hasSchedulesInClassroom(id: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`${CLASSROOM_ENDPOINT}/${id}/has-schedules`)
+  },
+
+  /**
+   * Check if classroom has sessions using ActualRoomId
+   * GET /api/classrooms/{id}/has-sessions
+   */
+  hasSessionsInClassroom(id: EntityId): Promise<AxiosResponse<boolean>> {
+    return api.get<boolean>(`${CLASSROOM_ENDPOINT}/${id}/has-sessions`)
+  },
 }

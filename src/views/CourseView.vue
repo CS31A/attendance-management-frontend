@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { CourseDto, CoursePayload } from '@/api/courses'
-import type { EntityId } from '@/types'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
@@ -9,13 +8,12 @@ import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { createCourseDeleteFlow } from '@/composables/useCourseDeleteFlow'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -65,23 +63,23 @@ const { handleSave: handleSaveCourse, openAddModal, openEditModal, closeModal } 
   entityLabel: 'Course',
 })
 
-const { showDeleteModal, entityToDelete: courseToDelete, isDeleting, openDelete: openDeleteCourse, confirmDelete, cancelDelete } = useEntityDelete<CourseDto>({
-  findEntity: id => courseStore.courses.find(c => c.id === id),
-  deleteEntity: id => courseStore.deleteCourse(id),
-  getEntityId: entity => entity.id,
+const {
+  showDeleteModal,
+  courseToDelete,
+  isDeleting,
+  isDeletionChecking,
+  handleDeleteCourse,
+  confirmDelete,
+  cancelDelete,
+} = createCourseDeleteFlow({
+  coursesStore: courseStore,
   showToast,
-  getSuccessMessage: () => 'Course deleted successfully',
-  getErrorMessage: error => `Failed to delete course: ${getErrorMessage(error, 'Delete request failed')}`,
   onDeleteSuccess: () => {
     if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
 })
-
-function handleDeleteCourse(id: EntityId) {
-  openDeleteCourse(id)
-}
 
 async function refreshCourses() {
   await courseStore.fetchCourses()
@@ -164,6 +162,7 @@ onMounted(async () => {
           totalCourses,
           itemsPerPage,
         }"
+        :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
         @go-to-page="handleGoToPage"

@@ -18,13 +18,12 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
+import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -208,23 +207,23 @@ const { handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal 
   entityLabel: 'Schedule',
 })
 
-const { showDeleteModal, entityToDelete: scheduleToDelete, isDeleting, openDelete: openDeleteSchedule, confirmDelete, cancelDelete } = useEntityDelete<ScheduleDto>({
-  findEntity: id => scheduleStore.schedules.find(s => s.id === id),
-  deleteEntity: id => scheduleStore.deleteSchedule(id),
-  getEntityId: entity => entity.id,
+const {
+  showDeleteModal,
+  scheduleToDelete,
+  isDeleting,
+  isDeletionChecking,
+  handleDeleteSchedule,
+  confirmDelete,
+  cancelDelete,
+} = createScheduleDeleteFlow({
+  schedulesStore: scheduleStore,
   showToast,
-  getSuccessMessage: () => 'Schedule deleted successfully',
-  getErrorMessage: error => `Failed to delete schedule: ${getErrorMessage(error, 'Delete request failed')}`,
   onDeleteSuccess: () => {
     if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
 })
-
-function handleDeleteSchedule(id: EntityId) {
-  openDeleteSchedule(id)
-}
 
 async function filterByInstructor(instructorId: string | null | undefined) {
   if (!instructorId)
@@ -372,6 +371,7 @@ onMounted(async () => {
           totalSchedules,
           itemsPerPage,
         }"
+        :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
         @go-to-page="handleGoToPage"

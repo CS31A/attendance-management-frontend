@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
-import type { EntityId } from '@/types'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
@@ -9,13 +8,12 @@ import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import Toast from '@/components/common/Toast.vue'
+import { createClassroomDeleteFlow } from '@/composables/useClassroomDeleteFlow'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useClassroomStore } from '@/stores/classroomStore'
-import { getErrorMessage } from '@/utils/httpError'
 
 const ClassroomTableSection = defineAsyncComponent(() => import('@/components/tables/ClassroomTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -66,23 +64,23 @@ const { handleSave: handleSaveClassroom, openAddModal, openEditModal, closeModal
   entityLabel: 'Classroom',
 })
 
-const { showDeleteModal, entityToDelete: classroomToDelete, isDeleting, openDelete: openDeleteClassroom, confirmDelete, cancelDelete } = useEntityDelete<ClassroomDto>({
-  findEntity: id => classroomStore.classrooms.find(c => c.id === id),
-  deleteEntity: id => classroomStore.deleteClassroom(id),
-  getEntityId: entity => entity.id,
+const {
+  showDeleteModal,
+  classroomToDelete,
+  isDeleting,
+  isDeletionChecking,
+  handleDeleteClassroom,
+  confirmDelete,
+  cancelDelete,
+} = createClassroomDeleteFlow({
+  classroomsStore: classroomStore,
   showToast,
-  getSuccessMessage: () => 'Classroom deleted successfully',
-  getErrorMessage: error => `Failed to delete classroom: ${getErrorMessage(error, 'Delete request failed')}`,
   onDeleteSuccess: () => {
     if (paginatedClassrooms.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
 })
-
-function handleDeleteClassroom(id: EntityId) {
-  openDeleteClassroom(id)
-}
 
 async function refreshClassrooms() {
   await classroomStore.fetchClassrooms()
@@ -165,6 +163,7 @@ onMounted(async () => {
           totalClassrooms,
           itemsPerPage,
         }"
+        :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
         @go-to-page="handleGoToPage"
