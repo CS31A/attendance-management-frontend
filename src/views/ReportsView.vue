@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TooltipItem } from 'chart.js'
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { BarChart3, CheckCircle, Download, FileSpreadsheet, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
+import { BarChart3, CheckCircle, Download, FileSpreadsheet, FileX, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { exportToCsv, fetchReportsSummary } from '@/api/reports'
 import { useSectionStore } from '@/stores/sectionStore'
@@ -109,6 +109,19 @@ const attendanceTrendOptions = {
 // Class Performance Chart Data
 const classPerformanceLabels = ref<string[]>([])
 const classPerformanceValues = ref<number[]>([])
+
+// Empty state checks
+const hasNoAttendanceData = computed(() => {
+  return !isLoading.value
+    && attendanceTrendValues.value.length > 0
+    && attendanceTrendValues.value.every(v => v === 0)
+})
+
+const hasNoClassPerformanceData = computed(() => {
+  return !isLoading.value
+    && classPerformanceValues.value.length > 0
+    && classPerformanceValues.value.every(v => v === 0)
+})
 
 const classPerformanceData = computed(() => ({
   labels: classPerformanceLabels.value,
@@ -467,6 +480,12 @@ onMounted(() => {
             <div v-if="isLoading" class="loading-chart">
               Loading...
             </div>
+            <div v-else-if="hasNoAttendanceData" class="chart-empty-state">
+              <FileX :size="48" />
+              <h3>No Attendance Data</h3>
+              <p>No attendance records found for the selected period.</p>
+              <p class="empty-state-hint">Create sessions and take attendance to see trends.</p>
+            </div>
             <Line v-else :data="attendanceTrendData" :options="attendanceTrendOptions" />
           </div>
         </div>
@@ -494,6 +513,12 @@ onMounted(() => {
           <div class="chart-wrapper">
             <div v-if="isLoading" class="loading-chart">
               Loading...
+            </div>
+            <div v-else-if="hasNoClassPerformanceData" class="chart-empty-state">
+              <FileX :size="48" />
+              <h3>No Section Data</h3>
+              <p>No attendance data available for any section.</p>
+              <p class="empty-state-hint">Attendance taken in sections will appear here.</p>
             </div>
             <Bar v-else :data="classPerformanceData" :options="classPerformanceOptions" />
           </div>
@@ -815,6 +840,44 @@ onMounted(() => {
 .loading-chart {
   color: var(--color-gray-500);
   font-weight: 500;
+}
+
+/* Chart Empty State */
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--color-gray-500);
+  height: 100%;
+  min-height: 250px;
+}
+
+.chart-empty-state svg {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  color: var(--color-gray-400);
+}
+
+.chart-empty-state h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-600);
+  margin: 0 0 0.5rem 0;
+}
+
+.chart-empty-state p {
+  font-size: 0.875rem;
+  margin: 0 0 0.25rem 0;
+  color: var(--color-gray-500);
+}
+
+.chart-empty-state .empty-state-hint {
+  font-size: 0.813rem;
+  color: var(--color-gray-400);
+  margin-top: 0.5rem;
 }
 
 /* Responsive */
