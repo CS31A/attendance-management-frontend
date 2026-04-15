@@ -100,4 +100,107 @@ describe('enrollment store issue fixes', () => {
     await studentRequest
     expect(store.isLoading).toBe(false)
   })
+
+  describe('error paths', () => {
+    it('dropStudent with sectionId preserves local state on API failure', async () => {
+      const store = useEnrollmentStore()
+      const droppedEnrollmentId: EntityId = 10
+      const sectionId: EntityId = 1
+      const apiError = new Error('Drop failed')
+
+      const originalStudents = [
+        { id: 1, enrollmentId: 10, firstName: 'Ada', lastName: 'Lovelace' },
+        { id: 2, enrollmentId: 11, firstName: 'Alan', lastName: 'Turing' },
+      ]
+      store.sectionStudents = [...originalStudents]
+
+      vi.mocked(enrollmentsApi.dropStudent).mockRejectedValue(apiError)
+
+      await expect(store.dropStudent(droppedEnrollmentId, sectionId)).rejects.toThrow('Drop failed')
+
+      expect(store.sectionStudents).toEqual(originalStudents)
+    })
+
+    it('dropStudent without sectionId preserves local state on API failure', async () => {
+      const store = useEnrollmentStore()
+      const droppedEnrollmentId: EntityId = 22
+      const apiError = new Error('Drop failed')
+
+      const originalStudents = [
+        { id: 1, enrollmentId: 21, firstName: 'Grace', lastName: 'Hopper' },
+        { id: 2, enrollmentId: 22, firstName: 'Katherine', lastName: 'Johnson' },
+      ]
+      store.sectionStudents = [...originalStudents]
+
+      vi.mocked(enrollmentsApi.dropStudent).mockRejectedValue(apiError)
+
+      await expect(store.dropStudent(droppedEnrollmentId)).rejects.toThrow('Drop failed')
+
+      expect(store.sectionStudents).toEqual(originalStudents)
+    })
+
+    it('dropStudent with sectionId preserves local state when refresh API fails', async () => {
+      const store = useEnrollmentStore()
+      const droppedEnrollmentId: EntityId = 10
+      const sectionId: EntityId = 1
+      const refreshError = new Error('Refresh failed')
+
+      const originalStudents = [
+        { id: 1, enrollmentId: 10, firstName: 'Ada', lastName: 'Lovelace' },
+      ]
+      store.sectionStudents = [...originalStudents]
+
+      vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue(createAxiosResponse({}))
+      vi.mocked(enrollmentsApi.getSectionStudents).mockRejectedValue(refreshError)
+
+      await expect(store.dropStudent(droppedEnrollmentId, sectionId)).rejects.toThrow('Refresh failed')
+
+      expect(store.sectionStudents).toEqual(originalStudents)
+    })
+
+    it('fetchSectionStudents resets loading and sets error on API failure', async () => {
+      const store = useEnrollmentStore()
+      const apiError = new Error('Fetch failed')
+
+      vi.mocked(enrollmentsApi.getSectionStudents).mockRejectedValue(apiError)
+
+      await expect(store.fetchSectionStudents(1)).rejects.toThrow('Fetch failed')
+
+      expect(store.loading).toBe(false)
+    })
+
+    it('fetchStudentEnrollments resets loading and sets error on API failure', async () => {
+      const store = useEnrollmentStore()
+      const apiError = new Error('Fetch failed')
+
+      vi.mocked(enrollmentsApi.getStudentEnrollments).mockRejectedValue(apiError)
+
+      await expect(store.fetchStudentEnrollments(1)).rejects.toThrow('Fetch failed')
+
+      expect(store.loading).toBe(false)
+    })
+
+    it('concurrent requests reset loading when one fails', async () => {
+      const store = useEnrollmentStore()
+      const sectionDeferred = createDeferred<Awaited<ReturnType<typeof enrollmentsApi.getSectionStudents>>>()
+      const studentDeferred = createDeferred<Awaited<ReturnType<typeof enrollmentsApi.getStudentEnrollments>>>()
+
+      vi.mocked(enrollmentsApi.getSectionStudents).mockImplementation(() => sectionDeferred.promise)
+      vi.mocked(enrollmentsApi.getStudentEnrollments).mockImplementation(() => studentDeferred.promise)
+
+      const sectionRequest = store.fetchSectionStudents(1)
+      const studentRequest = store.fetchStudentEnrollments(2)
+
+      expect(store.isLoading).toBe(true)
+
+      sectionDeferred.reject(new Error('Section fetch failed'))
+
+      await expect(sectionRequest).rejects.toThrow('Section fetch failed')
+      expect(store.isLoading).toBe(true)
+
+      studentDeferred.resolve(createAxiosResponse([{ id: 102, enrollmentId: 902 }]))
+      await studentRequest
+      expect(store.isLoading).toBe(false)
+    })
+  })
 })

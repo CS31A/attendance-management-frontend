@@ -55,6 +55,47 @@ describe('session store rollback snapshots', () => {
     vi.mocked(apiUpdateSessionRoom).mockReset()
   })
 
+  describe('success paths', () => {
+    it('startSession updates session status to active on successful API call', async () => {
+      const store = useSessionStore()
+      const updatedSession = createSession({ id: 11, status: 'active' })
+      vi.mocked(apiStartSession).mockResolvedValue(updatedSession)
+
+      store.sessions = [createSession({ id: 11, status: 'not_started' })]
+
+      const result = await store.startSession(11)
+
+      expect(result).toEqual(updatedSession)
+      expect(store.sessions[0]?.status).toBe('active')
+    })
+
+    it('endSession updates session status to ended on successful API call', async () => {
+      const store = useSessionStore()
+      const updatedSession = createSession({ id: 22, status: 'ended' })
+      vi.mocked(apiEndSession).mockResolvedValue(updatedSession)
+
+      store.sessions = [createSession({ id: 22, status: 'active' })]
+
+      const result = await store.endSession(22)
+
+      expect(result).toEqual(updatedSession)
+      expect(store.sessions[0]?.status).toBe('ended')
+    })
+
+    it('updateSessionRoom updates actualRoomId on successful API call', async () => {
+      const store = useSessionStore()
+      const updatedSession = createSession({ id: 33, status: 'active', actualRoomId: 202 })
+      vi.mocked(apiUpdateSessionRoom).mockResolvedValue(updatedSession)
+
+      store.sessions = [createSession({ id: 33, status: 'active', actualRoomId: 101 })]
+
+      const result = await store.updateSessionRoom(33, { actualRoomId: 202 })
+
+      expect(result).toEqual(updatedSession)
+      expect(store.sessions[0]?.actualRoomId).toBe(202)
+    })
+  })
+
   it('startSession restores the original status on API failure even after in-flight mutation', async () => {
     const store = useSessionStore()
     const deferred = createDeferred<SessionResponseDto>()
