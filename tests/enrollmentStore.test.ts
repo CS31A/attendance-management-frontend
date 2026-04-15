@@ -210,6 +210,17 @@ describe('enrollmentStore', () => {
       expect(store.sectionStudents[0].enrollmentId).toBe('200' as EntityId)
     })
 
+    it('dropStudent clears previous error on success', async () => {
+      vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue({} as never)
+
+      const store = useEnrollmentStore()
+      store.error = 'previous error'
+
+      await store.dropStudent('100' as EntityId)
+
+      expect(store.error).toBe('')
+    })
+
     it('reenrollStudent returns API data and refreshes when sectionId is passed', async () => {
       const reenrolledData = { success: true }
       const refreshedStudents = [createEnrollment({ id: '3' as EntityId })]
@@ -223,6 +234,30 @@ describe('enrollmentStore', () => {
       expect(enrollmentsApi.getSectionStudents).toHaveBeenCalledWith('1' as EntityId)
       expect(result).toEqual(reenrolledData)
       expect(store.sectionStudents).toEqual(refreshedStudents)
+    })
+
+    it('reenrollStudent success without sectionId does not trigger refresh', async () => {
+      const reenrolledData = { success: true }
+      vi.mocked(enrollmentsApi.reenrollStudent).mockResolvedValue({ data: reenrolledData } as never)
+
+      const store = useEnrollmentStore()
+
+      const result = await store.reenrollStudent('100' as EntityId)
+
+      expect(enrollmentsApi.getSectionStudents).not.toHaveBeenCalled()
+      expect(result).toEqual(reenrolledData)
+    })
+
+    it('reenrollStudent clears previous error on success', async () => {
+      const reenrolledData = { success: true }
+      vi.mocked(enrollmentsApi.reenrollStudent).mockResolvedValue({ data: reenrolledData } as never)
+
+      const store = useEnrollmentStore()
+      store.error = 'previous error'
+
+      await store.reenrollStudent('100' as EntityId)
+
+      expect(store.error).toBe('')
     })
 
     it('checkEnrollment forwards payload and returns API result', async () => {
@@ -239,6 +274,52 @@ describe('enrollmentStore', () => {
         subjectId: '3' as EntityId,
       })
       expect(result).toEqual(checkResult)
+    })
+
+    it('checkEnrollment clears previous error on success', async () => {
+      const checkResult = { enrolled: true }
+      vi.mocked(enrollmentsApi.checkEnrollment).mockResolvedValue({ data: checkResult } as never)
+
+      const store = useEnrollmentStore()
+      store.error = 'previous error'
+
+      await store.checkEnrollment('1' as EntityId, '2' as EntityId, '3' as EntityId)
+
+      expect(store.error).toBe('')
+    })
+
+    it('fetchSectionStudents loading assertion while request is pending', async () => {
+      const deferred = createDeferred<Awaited<ReturnType<typeof enrollmentsApi.getSectionStudents>>>()
+
+      vi.mocked(enrollmentsApi.getSectionStudents).mockImplementation(() => deferred.promise)
+
+      const store = useEnrollmentStore()
+
+      const request = store.fetchSectionStudents('1' as EntityId)
+
+      expect(store.isLoading).toBe(true)
+
+      deferred.resolve({ data: [createEnrollment()] } as never)
+      await request
+
+      expect(store.isLoading).toBe(false)
+    })
+
+    it('fetchStudentEnrollments loading assertion while request is pending', async () => {
+      const deferred = createDeferred<Awaited<ReturnType<typeof enrollmentsApi.getStudentEnrollments>>>()
+
+      vi.mocked(enrollmentsApi.getStudentEnrollments).mockImplementation(() => deferred.promise)
+
+      const store = useEnrollmentStore()
+
+      const request = store.fetchStudentEnrollments('1' as EntityId)
+
+      expect(store.isLoading).toBe(true)
+
+      deferred.resolve({ data: [createEnrollment()] } as never)
+      await request
+
+      expect(store.isLoading).toBe(false)
     })
 
     it('concurrent requests keep isLoading === true until all settle', async () => {

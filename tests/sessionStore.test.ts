@@ -524,5 +524,74 @@ describe('sessionStore', () => {
       expect(store.sessions[0].id).toBe(1 as EntityId)
       expect(store.loading).toBe(false)
     })
+
+    it('endSession absent-local-session edge case: success returns API result without corrupting sessions', async () => {
+      const updatedSession = createSession({ id: 99 as EntityId, status: 'ended' })
+      vi.mocked(apiEndSession).mockResolvedValue(updatedSession as never)
+
+      const store = useSessionStore()
+      store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
+
+      const payload: EndSessionPayload = {}
+      const result = await store.endSession(99 as EntityId, payload)
+
+      expect(result).toEqual(updatedSession)
+      expect(store.sessions).toHaveLength(1)
+      expect(store.sessions[0].id).toBe(1 as EntityId)
+      expect(store.loading).toBe(false)
+    })
+
+    it('updateSessionRoom absent-local-session edge case: success returns API result without corrupting sessions', async () => {
+      const updatedSession = createSession({ id: 99 as EntityId, status: 'active', actualRoomId: 202 })
+      vi.mocked(apiUpdateSessionRoom).mockResolvedValue(updatedSession as never)
+
+      const store = useSessionStore()
+      store.sessions = [createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })]
+
+      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
+      const result = await store.updateSessionRoom(99 as EntityId, payload)
+
+      expect(result).toEqual(updatedSession)
+      expect(store.sessions).toHaveLength(1)
+      expect(store.sessions[0].id).toBe(1 as EntityId)
+      expect(store.loading).toBe(false)
+    })
+
+    it('endSession loading assertion while mutation request is pending', async () => {
+      const deferred = createDeferred<SessionResponseDto>()
+
+      vi.mocked(apiEndSession).mockImplementation(() => deferred.promise)
+
+      const store = useSessionStore()
+      store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
+
+      const request = store.endSession(1 as EntityId)
+
+      expect(store.loading).toBe(true)
+
+      deferred.resolve(createSession({ id: 1 as EntityId, status: 'ended' }) as never)
+      await request
+
+      expect(store.loading).toBe(false)
+    })
+
+    it('updateSessionRoom loading assertion while mutation request is pending', async () => {
+      const deferred = createDeferred<SessionResponseDto>()
+
+      vi.mocked(apiUpdateSessionRoom).mockImplementation(() => deferred.promise)
+
+      const store = useSessionStore()
+      store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
+
+      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
+      const request = store.updateSessionRoom(1 as EntityId, payload)
+
+      expect(store.loading).toBe(true)
+
+      deferred.resolve(createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 202 }) as never)
+      await request
+
+      expect(store.loading).toBe(false)
+    })
   })
 })
