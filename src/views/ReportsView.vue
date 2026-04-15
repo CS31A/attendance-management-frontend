@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { TooltipItem } from 'chart.js'
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { BarChart3, CheckCircle, GraduationCap, MoreVertical, TrendingUp, Users, XCircle } from 'lucide-vue-next'
+import { BarChart3, CheckCircle, Download, FileSpreadsheet, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { useAttendanceStore } from '@/stores/attendanceStore'
-import { useSessionStore } from '@/stores/sessionStore'
-import { useSubjectStore } from '@/stores/subjectStore'
+import { exportToCsv, fetchReportsSummary } from '@/api/reports'
+import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
 
 const Bar = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Bar })))
@@ -15,9 +14,7 @@ const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
 
 const userStore = useUserStore()
-const attendanceStore = useAttendanceStore()
-const sessionStore = useSessionStore()
-const subjectStore = useSubjectStore()
+const sectionStore = useSectionStore()
 
 // Active tab
 const tabs = ['Today', 'Week', 'Month', 'Year'] as const
@@ -179,6 +176,20 @@ const classPerformanceOptions = {
   },
 }
 
+function getDateRange(tab: ReportsTab): { startDate: string, endDate: string } {
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  if (tab === 'Today')
+    return { startDate: todayStr, endDate: todayStr }
+  const past = new Date(today)
+  if (tab === 'Week')
+    past.setDate(today.getDate() - 6)
+  else if (tab === 'Month')
+    past.setMonth(today.getMonth() - 1)
+  else past.setFullYear(today.getFullYear() - 1)
+  return { startDate: past.toISOString().split('T')[0], endDate: todayStr }
+}
+
 function setActiveTab(tab: ReportsTab) {
   activeTab.value = tab
   fetchDashboardData()
@@ -187,84 +198,73 @@ function setActiveTab(tab: ReportsTab) {
 async function fetchDashboardData() {
   isLoading.value = true
   try {
-    // 1. Fetch Users for Total Students
-    if (userStore.users.length === 0) {
+    if (userStore.users.length === 0)
       await userStore.fetchUsers()
-    }
 
-    // 2. Fetch Today's Attendance Stats
-    const today = new Date().toISOString().split('T')[0]
-    const todaySessions = await sessionStore.fetchSessionsByDate(today)
+    const { startDate, endDate } = getDateRange(activeTab.value)
 
-    let todayPresent = 0
-    let todayAbsent = 0
+    // 1. Summary stats from reports endpoint
+    const summary = await fetchReportsSummary({ startDate, endDate })
+    presentToday.value = summary.totalPresent
+    absentToday.value = summary.totalAbsent
 
-    // Aggregate attendance from all sessions today
-    for (const session of todaySessions) {
-      const attendance = await attendanceStore.fetchSessionAttendance(session.id)
-      todayPresent += attendance.filter(r => r.status === 'present' || r.status === 'late').length
-      todayAbsent += attendance.filter(r => r.status === 'absent').length
-    }
-
-    presentToday.value = todayPresent
-    absentToday.value = todayAbsent
-
-    // 3. Fetch Attendance Trend (Last 7 days)
+    // 2. Attendance trend with per-period breakdown
     const trendLabels: string[] = []
     const trendValues: number[] = []
 
-    // Calculate dates for the last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const dateStr = d.toISOString().split('T')[0]
-      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+    if (activeTab.value === 'Today') {
+      trendLabels.push(new Date().toLocaleDateString('en-US', { weekday: 'short' }))
+      trendValues.push(Number(summary.attendanceRate))
+    }
+    else {
+      const points = activeTab.value === 'Year' ? 12 : activeTab.value === 'Month' ? 8 : 7
+      for (let i = points - 1; i >= 0; i--) {
+        const d = new Date()
+        if (activeTab.value === 'Year')
+          d.setMonth(d.getMonth() - i)
+        else if (activeTab.value === 'Month')
+          d.setDate(d.getDate() - i * 4)
+        else d.setDate(d.getDate() - i)
 
-      trendLabels.push(dayName)
+        const dateStr = d.toISOString().split('T')[0]
+        const label = activeTab.value === 'Year'
+          ? d.toLocaleDateString('en-US', { month: 'short' })
+          : d.toLocaleDateString('en-US', { weekday: 'short' })
 
-      // Fetch sessions for this date
-      const sessions = await sessionStore.fetchSessionsByDate(dateStr)
-      let dailyPresent = 0
-      let dailyTotal = 0
-
-      for (const session of sessions) {
-        // We might need a more optimized way to get stats without fetching full details for every session
-        // But for now, we'll use what we have
-        const attendance = await attendanceStore.fetchSessionAttendance(session.id)
-        if (attendance.length > 0) {
-          dailyPresent += attendance.filter(r => r.status === 'present' || r.status === 'late').length
-          dailyTotal += attendance.length
+        trendLabels.push(label)
+        try {
+          const dayStats = await fetchReportsSummary({ startDate: dateStr, endDate: dateStr })
+          trendValues.push(Number(dayStats.attendanceRate))
+        }
+        catch {
+          trendValues.push(0)
         }
       }
-
-      const rate = dailyTotal > 0 ? Math.round((dailyPresent / dailyTotal) * 100) : 0
-      trendValues.push(rate)
     }
 
     attendanceTrendLabels.value = trendLabels
     attendanceTrendValues.value = trendValues
 
-    // 4. Fetch Class Performance (Subject-wise attendance)
-    if (!subjectStore.hasSubjects) {
-      await subjectStore.fetchSubjects()
-    }
+    // 3. Class performance: section-wise attendance rates
+    if (!sectionStore.sections.length)
+      await sectionStore.fetchSections()
 
     const performanceLabels: string[] = []
     const performanceValues: number[] = []
 
-    // Get top 5 subjects
-    const subjects = subjectStore.subjects.slice(0, 5)
-
-    for (const subject of subjects) {
-      performanceLabels.push(subject.name || 'Unnamed Subject')
-      // This is a placeholder logic. Real implementation would need a backend endpoint for subject stats
-      // or we'd need to aggregate ALL sessions which is too heavy.
-      // For now, we'll generate some realistic looking data based on the subject ID to keep it consistent
-      // In a real app, we should add `fetchSubjectStats(subjectId)` to the API
-      const numericSubjectId = Number(subject.id)
-      const performanceSeed = Number.isFinite(numericSubjectId) ? numericSubjectId % 25 : 0
-      const randomPerformance = 70 + performanceSeed
-      performanceValues.push(randomPerformance)
+    for (const section of sectionStore.sections.slice(0, 5)) {
+      performanceLabels.push(section.name || 'Unnamed')
+      try {
+        const sectionStats = await fetchReportsSummary({
+          sectionId: Number(section.id),
+          startDate,
+          endDate,
+        })
+        performanceValues.push(Number(sectionStats.attendanceRate))
+      }
+      catch {
+        performanceValues.push(0)
+      }
     }
 
     classPerformanceLabels.value = performanceLabels
@@ -276,6 +276,55 @@ async function fetchDashboardData() {
   finally {
     isLoading.value = false
   }
+}
+
+async function handleExportCsv() {
+  const { startDate, endDate } = getDateRange(activeTab.value)
+  const rows: Record<string, unknown>[] = [
+    { Category: 'Summary', Label: 'Date Range', Value: `${startDate} to ${endDate}` },
+    { Category: 'Summary', Label: 'Present', Value: presentToday.value },
+    { Category: 'Summary', Label: 'Absent', Value: absentToday.value },
+    { Category: 'Summary', Label: 'Attendance Rate', Value: `${attendanceRate.value}%` },
+    ...attendanceTrendLabels.value.map((label, i) => ({
+      Category: 'Trend',
+      Label: label,
+      Value: `${attendanceTrendValues.value[i] ?? 0}%`,
+    })),
+    ...classPerformanceLabels.value.map((label, i) => ({
+      Category: 'Sections',
+      Label: label,
+      Value: `${classPerformanceValues.value[i] ?? 0}%`,
+    })),
+  ]
+  exportToCsv(rows, `attendance-report-${activeTab.value.toLowerCase()}.csv`)
+}
+
+async function handleExportXlsx() {
+  const { startDate, endDate } = getDateRange(activeTab.value)
+  const summaryRows = [
+    { Label: 'Date Range', Value: `${startDate} to ${endDate}` },
+    { Label: 'Present', Value: presentToday.value },
+    { Label: 'Absent', Value: absentToday.value },
+    { Label: 'Attendance Rate', Value: `${attendanceRate.value}%` },
+  ]
+  const trendRows = attendanceTrendLabels.value.map((label, i) => ({
+    'Period': label,
+    'Attendance Rate (%)': attendanceTrendValues.value[i] ?? 0,
+  }))
+  const sectionRows = classPerformanceLabels.value.map((label, i) => ({
+    'Section': label,
+    'Attendance Rate (%)': classPerformanceValues.value[i] ?? 0,
+  }))
+  const XLSX = await import('xlsx')
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'Summary')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(trendRows), 'Trend')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sectionRows), 'Sections')
+  XLSX.writeFile(wb, `attendance-report-${activeTab.value.toLowerCase()}.xlsx`)
+}
+
+function handlePrint() {
+  window.print()
 }
 
 onMounted(() => {
@@ -298,17 +347,33 @@ onMounted(() => {
             </p>
           </div>
 
-          <!-- Time Period Tabs -->
-          <div class="tabs-container">
-            <button
-              v-for="tab in tabs"
-              :key="tab"
-              class="tab"
-              :class="[{ active: activeTab === tab }]"
-              @click="setActiveTab(tab)"
-            >
-              {{ tab }}
-            </button>
+          <!-- Time Period Tabs and Export Actions -->
+          <div class="header-controls">
+            <div class="tabs-container">
+              <button
+                v-for="tab in tabs"
+                :key="tab"
+                class="tab"
+                :class="[{ active: activeTab === tab }]"
+                @click="setActiveTab(tab)"
+              >
+                {{ tab }}
+              </button>
+            </div>
+            <div class="export-actions no-print">
+              <button class="export-btn" :disabled="isLoading" title="Export CSV" @click="handleExportCsv">
+                <Download :size="16" />
+                CSV
+              </button>
+              <button class="export-btn" :disabled="isLoading" title="Export Excel" @click="handleExportXlsx">
+                <FileSpreadsheet :size="16" />
+                Excel
+              </button>
+              <button class="export-btn" :disabled="isLoading" title="Print Report" @click="handlePrint">
+                <Printer :size="16" />
+                Print
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -418,7 +483,7 @@ onMounted(() => {
                   Class Performance
                 </h2>
                 <p class="chart-subtitle">
-                  Subject-wise performance
+                  Section-wise attendance rate
                 </p>
               </div>
             </div>
@@ -481,6 +546,45 @@ onMounted(() => {
   color: var(--color-gray-500);
   margin: 0;
   font-weight: 300;
+}
+
+/* Header Controls */
+.header-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+/* Export Actions */
+.export-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  background: white;
+  color: var(--color-gray-600);
+  font-size: 0.813rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+}
+
+.export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Tabs */
@@ -738,9 +842,34 @@ onMounted(() => {
     align-items: stretch;
   }
 
+  .header-controls {
+    align-items: stretch;
+  }
+
   .tabs-container {
     width: 100%;
     overflow-x: auto;
+  }
+
+  .export-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .reports-dashboard {
+    padding: 0;
+    background: white;
+  }
+
+  .stat-card,
+  .chart-card {
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
   }
 }
 </style>
