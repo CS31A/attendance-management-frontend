@@ -545,6 +545,7 @@ const roleDisplayText = computed(() => {
                     class="form-input form-input-readonly"
                     :value="editForm.username"
                     readonly
+                    tabindex="-1"
                   >
                 </div>
                 <div class="form-group">
@@ -555,6 +556,7 @@ const roleDisplayText = computed(() => {
                     class="form-input form-input-readonly"
                     :value="roleDisplayText"
                     readonly
+                    tabindex="-1"
                   >
                 </div>
                 <div class="form-group">
@@ -565,6 +567,7 @@ const roleDisplayText = computed(() => {
                     class="form-input form-input-readonly"
                     :value="userProfile?.userId || ''"
                     readonly
+                    tabindex="-1"
                   >
                 </div>
               </div>
@@ -1245,6 +1248,13 @@ const roleDisplayText = computed(() => {
   background-color: var(--bg-tertiary);
   color: var(--text-tertiary);
   cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-input-readonly:focus {
+  outline: none;
+  border-color: var(--border-primary);
+  box-shadow: none;
 }
 
 .form-input-error {
