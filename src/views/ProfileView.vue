@@ -422,12 +422,12 @@ async function copyToClipboard(field: 'username' | 'role' | 'userId', value: str
         </div>
 
         <!-- Professional Details -->
-        <div class="details-card">
+        <div v-if="!isAdmin" class="details-card">
           <h2 class="details-card-title">
             Professional Details
           </h2>
           <div class="details-list">
-            <div v-if="!isAdmin" class="detail-item">
+            <div class="detail-item">
               <div class="detail-icon">
                 <Hash :size="20" />
               </div>
