@@ -87,6 +87,7 @@ export interface SessionAttendanceStatsDto {
   absentCount: number
   excusedCount: number
   totalRecords: number
+  totalEnrolled: number
   attendanceRate: number
 }
 
