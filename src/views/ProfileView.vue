@@ -86,6 +86,10 @@ function initEditForm() {
       editForm.firstname = userProfile.value.instructorProfile.firstname || ''
       editForm.lastname = userProfile.value.instructorProfile.lastname || ''
     }
+    else if (userProfile.value.adminProfile) {
+      editForm.firstname = userProfile.value.adminProfile.firstname || ''
+      editForm.lastname = userProfile.value.adminProfile.lastname || ''
+    }
   }
 }
 
@@ -101,6 +105,7 @@ function resetPasswordForm() {
 const userRole = computed(() => userProfile.value?.role || 'User')
 const isStudent = computed(() => userRole.value === 'Student')
 const isInstructor = computed(() => userRole.value === 'Instructor')
+const isAdmin = computed(() => userRole.value === 'Admin')
 
 // Helper to get initials for avatar
 function getInitials(name?: string | null) {
@@ -121,6 +126,9 @@ const displayName = computed(() => {
   else if (isInstructor.value && userProfile.value?.instructorProfile) {
     return `${userProfile.value.instructorProfile.firstname} ${userProfile.value.instructorProfile.lastname}`
   }
+  else if (isAdmin.value && userProfile.value?.adminProfile) {
+    return `${userProfile.value.adminProfile.firstname} ${userProfile.value.adminProfile.lastname}`
+  }
   return userProfile.value?.username || 'User'
 })
 
@@ -131,6 +139,9 @@ const profileId = computed(() => {
   }
   else if (isInstructor.value && userProfile.value?.instructorProfile) {
     return userProfile.value.instructorProfile.id
+  }
+  else if (isAdmin.value && userProfile.value?.adminProfile) {
+    return userProfile.value.adminProfile.id
   }
   return null
 })
@@ -376,7 +387,7 @@ const roleDisplayText = computed(() => {
                 <Hash :size="20" />
               </div>
               <div class="detail-content">
-                <span class="detail-label">{{ isInstructor ? 'INSTRUCTOR ID' : 'STUDENT ID' }}</span>
+                <span class="detail-label">{{ isAdmin ? 'ADMIN ID' : isInstructor ? 'INSTRUCTOR ID' : 'STUDENT ID' }}</span>
                 <span class="detail-value">{{ profileId || 'N/A' }}</span>
               </div>
             </div>
