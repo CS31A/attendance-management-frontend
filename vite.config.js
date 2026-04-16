@@ -6,21 +6,25 @@ import { defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
+  plugins: [vue(), vueDevTools()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // server: {
+  //   allowedHosts: ['reductions-valued-indirect-ken.trycloudflare.com'],
+  // },
   test: {
     include: ['tests/**/*.test.ts'],
     typecheck: {
       include: ['src/type-tests/**/*.test.ts'],
     },
-    environment: 'node',
+    environment: 'happy-dom',
+    environmentMatchGlobs: [
+      ['tests/**/*.test.ts', 'happy-dom'],
+      ['src/type-tests/**/*.test.ts', 'node'],
+    ],
   },
   build: {
     rollupOptions: {
@@ -38,7 +42,6 @@ export default defineConfig({
             './src/stores/courseStore.ts',
             './src/stores/sectionStore.ts',
             './src/stores/sessionStore.ts',
-
           ],
 
           // Component chunks - modals
