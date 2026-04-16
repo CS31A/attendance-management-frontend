@@ -45,6 +45,15 @@ const showConfirmPassword = ref(false)
 // Clipboard state
 const copiedField = ref<'username' | 'role' | 'userId' | null>(null)
 
+// Initial form state for change detection
+const initialFormState = ref<EditProfileForm>({
+  email: '',
+  username: '',
+  firstname: '',
+  lastname: '',
+  sectionId: null,
+})
+
 // Edit form data
 const editForm = reactive<EditProfileForm>({
   email: '',
@@ -153,6 +162,14 @@ const profileId = computed(() => {
 function startEditing() {
   initEditForm()
   resetPasswordForm()
+  // Capture initial state for change detection
+  initialFormState.value = {
+    email: editForm.email,
+    username: editForm.username,
+    firstname: editForm.firstname,
+    lastname: editForm.lastname,
+    sectionId: editForm.sectionId,
+  }
   activeTab.value = 'profile'
   isEditing.value = true
 }
@@ -205,6 +222,17 @@ function validatePasswordFields() {
 // Check if password is being changed
 const isChangingPassword = computed(() => {
   return passwordForm.currentPassword || passwordForm.newPassword || passwordForm.confirmNewPassword
+})
+
+// Check if any form fields have changed
+const hasChanges = computed(() => {
+  const profileChanged
+    = editForm.email !== initialFormState.value.email
+      || editForm.firstname !== initialFormState.value.firstname
+      || editForm.lastname !== initialFormState.value.lastname
+      || editForm.sectionId !== initialFormState.value.sectionId
+
+  return profileChanged || isChangingPassword.value
 })
 
 // Save profile changes
@@ -721,7 +749,7 @@ async function copyToClipboard(field: 'username' | 'role' | 'userId', value: str
             <button type="button" class="btn btn-secondary" @click="cancelEditing">
               Cancel
             </button>
-            <button type="submit" class="btn btn-primary" :disabled="isSaving">
+            <button type="submit" class="btn btn-primary" :disabled="isSaving || !hasChanges">
               <Save v-if="!isSaving" :size="16" />
               <span v-if="isSaving" class="btn-spinner" />
               {{ isSaving ? 'Saving...' : 'Save Changes' }}
