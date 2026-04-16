@@ -382,12 +382,12 @@ const roleDisplayText = computed(() => {
             Professional Details
           </h2>
           <div class="details-list">
-            <div class="detail-item">
+            <div v-if="!isAdmin" class="detail-item">
               <div class="detail-icon">
                 <Hash :size="20" />
               </div>
               <div class="detail-content">
-                <span class="detail-label">{{ isAdmin ? 'ADMIN ID' : isInstructor ? 'INSTRUCTOR ID' : 'STUDENT ID' }}</span>
+                <span class="detail-label">{{ isInstructor ? 'INSTRUCTOR ID' : 'STUDENT ID' }}</span>
                 <span class="detail-value">{{ profileId || 'N/A' }}</span>
               </div>
             </div>
