@@ -484,7 +484,9 @@ onMounted(() => {
               <FileX :size="48" />
               <h3>No Attendance Data</h3>
               <p>No attendance records found for the selected period.</p>
-              <p class="empty-state-hint">Create sessions and take attendance to see trends.</p>
+              <p class="empty-state-hint">
+                Create sessions and take attendance to see trends.
+              </p>
             </div>
             <Line v-else :data="attendanceTrendData" :options="attendanceTrendOptions" />
           </div>
@@ -518,7 +520,9 @@ onMounted(() => {
               <FileX :size="48" />
               <h3>No Section Data</h3>
               <p>No attendance data available for any section.</p>
-              <p class="empty-state-hint">Attendance taken in sections will appear here.</p>
+              <p class="empty-state-hint">
+                Attendance taken in sections will appear here.
+              </p>
             </div>
             <Bar v-else :data="classPerformanceData" :options="classPerformanceOptions" />
           </div>

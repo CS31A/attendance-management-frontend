@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Calendar, Clock, Eye, EyeOff, Hash, Lock, Mail, Pencil, Save, Shield, X } from 'lucide-vue-next'
+import { Calendar, Check, Clock, Copy, Eye, EyeOff, Hash, Lock, Mail, Pencil, Save, Shield, X } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/api'
@@ -41,6 +41,18 @@ const activeTab = ref('profile') // 'profile' or 'security'
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
+
+// Clipboard state
+const copiedField = ref<'username' | 'role' | 'userId' | null>(null)
+
+// Initial form state for change detection
+const initialFormState = ref<EditProfileForm>({
+  email: '',
+  username: '',
+  firstname: '',
+  lastname: '',
+  sectionId: null,
+})
 
 // Edit form data
 const editForm = reactive<EditProfileForm>({
@@ -86,6 +98,10 @@ function initEditForm() {
       editForm.firstname = userProfile.value.instructorProfile.firstname || ''
       editForm.lastname = userProfile.value.instructorProfile.lastname || ''
     }
+    else if (userProfile.value.adminProfile) {
+      editForm.firstname = userProfile.value.adminProfile.firstname || ''
+      editForm.lastname = userProfile.value.adminProfile.lastname || ''
+    }
   }
 }
 
@@ -101,6 +117,7 @@ function resetPasswordForm() {
 const userRole = computed(() => userProfile.value?.role || 'User')
 const isStudent = computed(() => userRole.value === 'Student')
 const isInstructor = computed(() => userRole.value === 'Instructor')
+const isAdmin = computed(() => userRole.value === 'Admin')
 
 // Helper to get initials for avatar
 function getInitials(name?: string | null) {
@@ -121,6 +138,9 @@ const displayName = computed(() => {
   else if (isInstructor.value && userProfile.value?.instructorProfile) {
     return `${userProfile.value.instructorProfile.firstname} ${userProfile.value.instructorProfile.lastname}`
   }
+  else if (isAdmin.value && userProfile.value?.adminProfile) {
+    return `${userProfile.value.adminProfile.firstname} ${userProfile.value.adminProfile.lastname}`
+  }
   return userProfile.value?.username || 'User'
 })
 
@@ -132,6 +152,9 @@ const profileId = computed(() => {
   else if (isInstructor.value && userProfile.value?.instructorProfile) {
     return userProfile.value.instructorProfile.id
   }
+  else if (isAdmin.value && userProfile.value?.adminProfile) {
+    return userProfile.value.adminProfile.id
+  }
   return null
 })
 
@@ -139,6 +162,14 @@ const profileId = computed(() => {
 function startEditing() {
   initEditForm()
   resetPasswordForm()
+  // Capture initial state for change detection
+  initialFormState.value = {
+    email: editForm.email,
+    username: editForm.username,
+    firstname: editForm.firstname,
+    lastname: editForm.lastname,
+    sectionId: editForm.sectionId,
+  }
   activeTab.value = 'profile'
   isEditing.value = true
 }
@@ -191,6 +222,17 @@ function validatePasswordFields() {
 // Check if password is being changed
 const isChangingPassword = computed(() => {
   return passwordForm.currentPassword || passwordForm.newPassword || passwordForm.confirmNewPassword
+})
+
+// Check if any form fields have changed
+const hasChanges = computed(() => {
+  const profileChanged
+    = editForm.email !== initialFormState.value.email
+      || editForm.firstname !== initialFormState.value.firstname
+      || editForm.lastname !== initialFormState.value.lastname
+      || editForm.sectionId !== initialFormState.value.sectionId
+
+  return profileChanged || isChangingPassword.value
 })
 
 // Save profile changes
@@ -271,6 +313,20 @@ const roleDisplayText = computed(() => {
     return 'Instructor'
   return userRole.value
 })
+
+// Copy to clipboard function
+async function copyToClipboard(field: 'username' | 'role' | 'userId', value: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+    copiedField.value = field
+    setTimeout(() => {
+      copiedField.value = null
+    }, 2000)
+  }
+  catch (error) {
+    console.error('Failed to copy to clipboard:', error)
+  }
+}
 </script>
 
 <template>
@@ -366,7 +422,7 @@ const roleDisplayText = computed(() => {
         </div>
 
         <!-- Professional Details -->
-        <div class="details-card">
+        <div v-if="!isAdmin" class="details-card">
           <h2 class="details-card-title">
             Professional Details
           </h2>
@@ -528,33 +584,66 @@ const roleDisplayText = computed(() => {
               <div class="form-grid">
                 <div class="form-group">
                   <label for="username" class="form-label">Username</label>
-                  <input
-                    id="username"
-                    type="text"
-                    class="form-input form-input-readonly"
-                    :value="editForm.username"
-                    readonly
-                  >
+                  <div class="input-with-icon">
+                    <input
+                      id="username"
+                      type="text"
+                      class="form-input form-input-readonly"
+                      :value="editForm.username"
+                      readonly
+                      tabindex="-1"
+                    >
+                    <button
+                      type="button"
+                      class="input-icon-btn"
+                      @click="copyToClipboard('username', editForm.username)"
+                    >
+                      <Copy v-if="copiedField !== 'username'" :size="18" />
+                      <Check v-else :size="18" />
+                    </button>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="role" class="form-label">Role</label>
-                  <input
-                    id="role"
-                    type="text"
-                    class="form-input form-input-readonly"
-                    :value="roleDisplayText"
-                    readonly
-                  >
+                  <div class="input-with-icon">
+                    <input
+                      id="role"
+                      type="text"
+                      class="form-input form-input-readonly"
+                      :value="roleDisplayText"
+                      readonly
+                      tabindex="-1"
+                    >
+                    <button
+                      type="button"
+                      class="input-icon-btn"
+                      @click="copyToClipboard('role', roleDisplayText)"
+                    >
+                      <Copy v-if="copiedField !== 'role'" :size="18" />
+                      <Check v-else :size="18" />
+                    </button>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="userId" class="form-label">User ID</label>
-                  <input
-                    id="userId"
-                    type="text"
-                    class="form-input form-input-readonly"
-                    :value="userProfile?.userId || ''"
-                    readonly
-                  >
+                  <div class="input-with-icon">
+                    <input
+                      id="userId"
+                      type="text"
+                      class="form-input form-input-readonly"
+                      :value="userProfile?.userId || ''"
+                      readonly
+                      tabindex="-1"
+                    >
+                    <button
+                      type="button"
+                      class="input-icon-btn"
+                      @click="copyToClipboard('userId', String(userProfile?.userId || ''))"
+                    >
+                      <Copy v-if="copiedField !== 'userId'" :size="18" />
+                      <Check v-else :size="18" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -660,7 +749,7 @@ const roleDisplayText = computed(() => {
             <button type="button" class="btn btn-secondary" @click="cancelEditing">
               Cancel
             </button>
-            <button type="submit" class="btn btn-primary" :disabled="isSaving">
+            <button type="submit" class="btn btn-primary" :disabled="isSaving || !hasChanges">
               <Save v-if="!isSaving" :size="16" />
               <span v-if="isSaving" class="btn-spinner" />
               {{ isSaving ? 'Saving...' : 'Save Changes' }}
@@ -1234,6 +1323,12 @@ const roleDisplayText = computed(() => {
   background-color: var(--bg-tertiary);
   color: var(--text-tertiary);
   cursor: not-allowed;
+}
+
+.form-input-readonly:focus {
+  outline: none;
+  border-color: var(--border-primary);
+  box-shadow: none;
 }
 
 .form-input-error {

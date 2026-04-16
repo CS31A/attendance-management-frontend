@@ -11,7 +11,7 @@ function hasNoClassPerformanceData(isLoading: boolean, values: number[]): boolea
   return !isLoading && values.length > 0 && values.every(v => v === 0)
 }
 
-describe('ReportsView - Empty State Logic', () => {
+describe('reportsView - Empty State Logic', () => {
   describe('hasNoAttendanceData computed property logic', () => {
     it('returns true when not loading and all values are zero', () => {
       expect(hasNoAttendanceData(false, [0, 0, 0, 0, 0])).toBe(true)
