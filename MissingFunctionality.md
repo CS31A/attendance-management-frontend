@@ -131,9 +131,9 @@ DELETE /api/schedules/{id}
 
 ## 3. Medium Priority Features
 
-### 3.1 Subject Management
+### 3.1 Subject Management ✅ **FULLY IMPLEMENTED**
 
-Subjects are separate entities in the backend that are assigned to sections via the Schedule management system, and this functionality has been **partially implemented**.
+Subjects are separate entities in the backend that are assigned to sections via the Schedule management system, and this functionality has been **fully implemented**.
 
 **Implemented Components:**
 - ✅ `src/api/subjects.js` with full CRUD operations
@@ -145,11 +145,9 @@ Subjects are separate entities in the backend that are assigned to sections via 
 - ✅ View all subjects
 - ✅ Subject details view
 - ✅ Subject code and name management
-
-**Remaining Features:**
-- Assign subjects to sections via Schedule management interface
-- Subject-section relationships visibility view (showing all subjects assigned to a particular section/course)
-- Subject assignment to sections (interface needed via Schedule management)
+- ✅ Assign subjects to sections via Schedule management interface
+- ✅ Subject-section relationships visibility view (Schedule list shows subject-section pairings)
+- ✅ Subject assignment to sections (via Schedule creation form)
 
 **Backend Endpoints Available:**
 ```
@@ -161,7 +159,7 @@ PUT    /api/subjects/{id}
 DELETE /api/subjects/{id}
 ```
 
-**Impact:** Subject management is now available, but assignment to sections and relationship visibility need better UI integration via Schedule management.
+**Impact:** Subject management is fully available with complete UI integration for subject-section assignment and relationship visibility through the Schedule management system.
 
 ---
 
@@ -582,12 +580,12 @@ POST   /api/account/change-password
 | **Students** | 10 | 10 | 0 | 100% |
 | **Instructors** | 9 | 9 | 0 | 100% |
 | **Classrooms** | 7 | 7 | 0 | 100% |
-| **Subjects** | 6 | 4 | 2 | 67% |
+| **Subjects** | 6 | 6 | 0 | 100% |
 | **Reports** | 10 | 3 | 7 | 30% |
 | **QR Codes** | 7 | 7 | 0 | 100% |
 | **User Profile** | 8 | 2 | 6 | 25% |
 | **Token Mgmt** | 7 | 0 | 7 | 0% |
-| **TOTAL** | **90** | **62** | **28** | **69%** |
+| **TOTAL** | **90** | **64** | **26** | **71%** |
 
 ### Priority Breakdown
 
