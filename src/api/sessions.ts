@@ -247,15 +247,16 @@ export async function endSession(
  * only ended. Only the assigned instructor can delete a session.
  *
  * @param {number} sessionId - Session ID
+ * @param {string} reason - Reason for cancelling the session (required, 5-500 characters)
  * @returns {Promise<SessionResponseDto>} Cancelled session object with status 'cancelled'
- * @throws {Error} 403 if not assigned instructor, 400 if not in 'not_started' status
+ * @throws {Error} 403 if not assigned instructor, 400 if not in 'not_started' status or invalid reason
  *
  * @example
- * await deleteSession(123)
+ * await deleteSession(123, 'Room unavailable')
  * console.log('Session cancelled successfully')
  */
-export async function deleteSession(sessionId: EntityId): Promise<SessionResponseDto> {
-  const response = await api.delete(`/sessions/${sessionId}`)
+export async function deleteSession(sessionId: EntityId, reason: string): Promise<SessionResponseDto> {
+  const response = await api.delete(`/sessions/${sessionId}`, { data: { reason } })
   return response.data
 }
 

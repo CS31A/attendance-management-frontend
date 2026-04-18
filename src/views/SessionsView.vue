@@ -5,15 +5,14 @@ import type { SessionStatus } from '@/utils/constants'
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import DeleteModal from '@/components/common/DeleteModal.vue'
 import Toast from '@/components/common/Toast.vue'
-import { useEntityDelete } from '@/composables/useEntityDelete'
 import { useToast } from '@/composables/useToast'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { SESSION_STATUSES } from '@/utils/constants'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
+const CancelSessionModal = defineAsyncComponent(() => import('@/components/sessions/CancelSessionModal.vue'))
 const CreateSessionModal = defineAsyncComponent(() => import('@/components/sessions/CreateSessionModal.vue'))
 const EndSessionModal = defineAsyncComponent(() => import('@/components/sessions/EndSessionModal.vue'))
 const SessionTable = defineAsyncComponent(() => import('@/components/sessions/SessionTable.vue'))
@@ -39,6 +38,9 @@ const showUpdateRoomModal = ref(false)
 const showQRGenerateModal = ref(false)
 const showQRDisplayModal = ref(false)
 const showQRListModal = ref(false)
+const showCancelModal = ref(false)
+const sessionToCancel = ref<SessionResponseDto | null>(null)
+const isCancelling = ref(false)
 const selectedSession = ref<SessionResponseDto | null>(null)
 const currentQrCode = ref<DisplayedQrCode | null>(null)
 const errorMessage = ref('')
@@ -92,35 +94,48 @@ const emptyStateMessage = computed(() => {
 // Toast state and helpers
 const { toast, showToast, closeToast } = useToast()
 
-const { showDeleteModal, entityToDelete: sessionToDelete, isDeleting, openDelete: openDeleteSession, confirmDelete, cancelDelete } = useEntityDelete<SessionResponseDto>({
-  findEntity: id => sessionStore.sessions.find(s => s.id === id),
-  deleteEntity: id => sessionStore.deleteSession(id),
-  getEntityId: entity => entity.id,
-  showToast,
-  getSuccessMessage: () => 'Session deleted successfully!',
-  getErrorMessage: (error) => {
-    let message = 'Failed to delete session. Please try again.'
+// Session cancellation handlers
+function openCancelSession(sessionId: EntityId) {
+  const session = sessionStore.sessions.find(s => s.id === sessionId)
+  if (session) {
+    sessionToCancel.value = session
+    showCancelModal.value = true
+  }
+}
+
+function closeCancelSession() {
+  showCancelModal.value = false
+  sessionToCancel.value = null
+  isCancelling.value = false
+}
+
+async function handleConfirmCancel(reason: string) {
+  if (!sessionToCancel.value)
+    return
+
+  isCancelling.value = true
+  try {
+    const sessionId = sessionToCancel.value.id
+    await sessionStore.deleteSession(sessionId, reason)
+    showToast('Session cancelled successfully!', 'success')
+    closeCancelSession()
+  }
+  catch (error) {
+    let message = 'Failed to cancel session. Please try again.'
     const status = getErrorStatus(error)
     if (status === 403) {
-      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
+      message = 'You are not authorized to cancel this session. Only the assigned instructor can manage this session.'
     }
     else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot delete this session. Only sessions that have not started can be deleted.')
+      message = getErrorMessage(error, 'Cannot cancel this session. Only sessions that have not started can be cancelled.')
     }
-    return message
-  },
-  onDeleteError: (error) => {
-    const status = getErrorStatus(error)
-    let message = 'Failed to delete session. Please try again.'
-    if (status === 403) {
-      message = 'You are not authorized to delete this session. Only the assigned instructor can manage this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot delete this session. Only sessions that have not started can be deleted.')
-    }
+    showToast(message, 'error')
     errorMessage.value = message
-  },
-})
+  }
+  finally {
+    isCancelling.value = false
+  }
+}
 
 // Methods
 async function loadSessions() {
@@ -215,7 +230,7 @@ async function handleConfirmEnd(payload: EndSessionPayload) {
 
 function handleDeleteSession(id: EntityId) {
   errorMessage.value = ''
-  openDeleteSession(id)
+  openCancelSession(id)
 }
 
 function handleUpdateRoom(session: SessionResponseDto) {
@@ -436,15 +451,13 @@ onMounted(() => {
       @view-qr="handleViewQrFromList"
     />
 
-    <!-- Delete Modal -->
-    <DeleteModal
-      :show="showDeleteModal"
-      title="Delete Session"
-      message="Are you sure you want to delete this session? This action cannot be undone."
-      :item-name="sessionToDelete ? `${sessionToDelete.courseName || sessionToDelete.courseCode || 'Session'} - ${sessionToDelete.section || ''}` : ''"
-      :is-deleting="isDeleting"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
+    <!-- Cancel Session Modal -->
+    <CancelSessionModal
+      v-if="showCancelModal && sessionToCancel"
+      :session="sessionToCancel"
+      :is-deleting="isCancelling"
+      @confirm="handleConfirmCancel"
+      @cancel="closeCancelSession"
     />
 
     <!-- Toast Notification -->

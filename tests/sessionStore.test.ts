@@ -313,7 +313,7 @@ describe('sessionStore', () => {
         createSession({ id: 2 as EntityId, status: 'not_started' }),
       ]
 
-      await store.deleteSession(1 as EntityId)
+      await store.deleteSession(1 as EntityId, 'Test cancellation reason')
 
       expect(store.sessions).toHaveLength(1)
       expect(store.sessions[0].id).toBe(2 as EntityId)
@@ -435,7 +435,7 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
 
-      await expect(store.deleteSession(1 as EntityId)).rejects.toThrow('Only sessions in "not_started" status can be deleted')
+      await expect(store.deleteSession(1 as EntityId, 'Test reason')).rejects.toThrow('Only sessions in "not_started" status can be deleted')
 
       expect(apiDeleteSession).not.toHaveBeenCalled()
     })
@@ -489,7 +489,7 @@ describe('sessionStore', () => {
       ]
       store.sessions = [...originalSessions]
 
-      await expect(store.deleteSession(1 as EntityId)).rejects.toThrow(testError)
+      await expect(store.deleteSession(1 as EntityId, 'Test reason')).rejects.toThrow(testError)
 
       expect(store.sessions).toEqual(originalSessions)
       expect(store.loading).toBe(false)
