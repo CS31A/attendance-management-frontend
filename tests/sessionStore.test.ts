@@ -318,6 +318,18 @@ describe('sessionStore', () => {
       expect(store.sessions).toHaveLength(1)
       expect(store.sessions[0].id).toBe(2 as EntityId)
       expect(store.loading).toBe(false)
+      expect(apiDeleteSession).toHaveBeenCalledWith(1 as EntityId, 'Test cancellation reason')
+    })
+
+    it('deleteSession passes correct reason to API call', async () => {
+      vi.mocked(apiDeleteSession).mockResolvedValue({} as never)
+
+      const store = useSessionStore()
+      store.sessions = [createSession({ id: 5 as EntityId, status: 'not_started' })]
+
+      await store.deleteSession(5 as EntityId, 'Instructor sick')
+
+      expect(apiDeleteSession).toHaveBeenCalledWith(5 as EntityId, 'Instructor sick')
     })
 
     it('clearCurrentSession clears only current session', () => {
