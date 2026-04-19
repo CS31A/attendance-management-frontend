@@ -121,13 +121,10 @@ async function handleConfirmCancel(reason: string) {
     closeCancelSession()
   }
   catch (error) {
-    let message = 'Failed to cancel session. Please try again.'
+    let message = getErrorMessage(error, 'Failed to cancel session. Please try again.')
     const status = getErrorStatus(error)
     if (status === 403) {
       message = 'You are not authorized to cancel this session. Only the assigned instructor can manage this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot cancel this session. Only sessions that have not started can be cancelled.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -184,13 +181,10 @@ async function handleConfirmStart(payload: StartSessionPayload) {
   }
   catch (error) {
     console.error('Failed to start session:', error)
-    let message = 'Failed to start session. Please try again.'
+    let message = getErrorMessage(error, 'Failed to start session. Please try again.')
     const status = getErrorStatus(error)
     if (status === 403) {
       message = 'You are not authorized to start this session. Only the assigned instructor can manage this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot start this session. Check the session status.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -215,13 +209,10 @@ async function handleConfirmEnd(payload: EndSessionPayload) {
   }
   catch (error) {
     console.error('Failed to end session:', error)
-    let message = 'Failed to end session. Please try again.'
+    let message = getErrorMessage(error, 'Failed to end session. Please try again.')
     const status = getErrorStatus(error)
     if (status === 403) {
       message = 'You are not authorized to end this session. Only the assigned instructor can manage this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot end this session. Check the session status.')
     }
     showToast(message, 'error')
     errorMessage.value = message
@@ -251,13 +242,10 @@ async function handleConfirmUpdateRoom(payload: UpdateSessionRoomPayload) {
   }
   catch (error) {
     console.error('Failed to update room:', error)
-    let message = 'Failed to update room. Please try again.'
+    let message = getErrorMessage(error, 'Failed to update room. Please try again.')
     const status = getErrorStatus(error)
     if (status === 403) {
       message = 'You are not authorized to update this session. Only the assigned instructor can manage this session.'
-    }
-    else if (status === 400) {
-      message = getErrorMessage(error, 'Cannot update room. Check the session status.')
     }
     showToast(message, 'error')
     errorMessage.value = message
