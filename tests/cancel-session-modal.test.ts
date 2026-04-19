@@ -1,9 +1,8 @@
-import { flushPromises, mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
-import CancelSessionModal from '@/components/sessions/CancelSessionModal.vue'
 import type { SessionResponseDto } from '@/api/sessions'
 import type { SessionStatus } from '@/utils/constants'
+import { flushPromises, mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
+import CancelSessionModal from '@/components/sessions/CancelSessionModal.vue'
 
 vi.mock('@/api/sessions', () => ({
   getSessionDisplayName: vi.fn((session: SessionResponseDto) =>
@@ -47,7 +46,7 @@ function mountModal(props: {
   })
 }
 
-describe('CancelSessionModal', () => {
+describe('cancelSessionModal', () => {
   describe('props', () => {
     it('renders session info correctly', () => {
       const session = createSession({
