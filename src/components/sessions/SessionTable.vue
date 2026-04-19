@@ -1,5 +1,6 @@
 <script setup>
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
+import { canStartSession } from '@/api/sessions'
 import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
@@ -138,7 +139,8 @@ function formatTime(timeString) {
               <template v-if="session.status === 'not_started'">
                 <button
                   class="btn-action btn-start"
-                  title="Start Session"
+                  :title="canStartSession(session) ? 'Start Session' : 'Session can only be started on its scheduled date'"
+                  :disabled="!canStartSession(session)"
                   @click="$emit('start', session)"
                 >
                   <Play class="btn-icon" :size="16" />
@@ -213,6 +215,12 @@ function formatTime(timeString) {
   min-width: 800px; /* Prevents crushing */
   border-collapse: collapse;
   background: white;
+}
+
+.btn-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Table Header */

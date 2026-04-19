@@ -330,6 +330,49 @@ export function isValidStatus(status: string): status is SessionStatus {
   return ['not_started', 'active', 'ended', 'cancelled'].includes(status)
 }
 
+function toLocalDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getSessionDateKey(sessionDate: string | undefined): string | null {
+  if (!sessionDate) {
+    return null
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(sessionDate)) {
+    return sessionDate.slice(0, 10)
+  }
+
+  const parsed = new Date(sessionDate)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+
+  return toLocalDateKey(parsed)
+}
+
+/**
+ * Check whether a session is scheduled for the current local date.
+ *
+ * @param {SessionResponseDto|null|undefined} session - Session object
+ * @param {Date} [now] - Date override for deterministic tests
+ * @returns {boolean} Whether the session date matches today's date
+ */
+export function isSessionScheduledForToday(
+  session: SessionResponseDto | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  const sessionDateKey = getSessionDateKey(session?.sessionDate)
+  if (!sessionDateKey) {
+    return false
+  }
+
+  return sessionDateKey === toLocalDateKey(now)
+}
+
 /**
  * Check if session can be started
  *
@@ -343,8 +386,11 @@ export function isValidStatus(status: string): status is SessionStatus {
  *   await startSession(session.id)
  * }
  */
-export function canStartSession(session: SessionResponseDto | null | undefined): boolean {
-  return Boolean(session && session.status === 'not_started')
+export function canStartSession(
+  session: SessionResponseDto | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  return Boolean(session && session.status === 'not_started' && isSessionScheduledForToday(session, now))
 }
 
 /**

@@ -38,11 +38,20 @@ function createDeferred<T>(): Deferred<T> {
   return { promise, resolve, reject }
 }
 
+function toLocalDateStart(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}T00:00:00`
+}
+
+const todaySessionDate = toLocalDateStart(new Date())
+
 function createSession(overrides: Partial<SessionResponseDto>): SessionResponseDto {
   return {
     id: 1,
     status: 'not_started',
-    sessionDate: '2026-01-01T00:00:00',
+    sessionDate: todaySessionDate,
     ...overrides,
   }
 }

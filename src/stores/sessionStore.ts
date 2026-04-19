@@ -135,6 +135,39 @@ export const useSessionStore = defineStore('sessionStore', () => {
     loadingCount.value = Math.max(0, loadingCount.value - 1)
   }
 
+  function toLocalDateKey(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  function getSessionDateKey(sessionDate: string | undefined): string | null {
+    if (!sessionDate) {
+      return null
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}/.test(sessionDate)) {
+      return sessionDate.slice(0, 10)
+    }
+
+    const parsed = new Date(sessionDate)
+    if (Number.isNaN(parsed.getTime())) {
+      return null
+    }
+
+    return toLocalDateKey(parsed)
+  }
+
+  function isSessionScheduledForToday(session: SessionResponseDto): boolean {
+    const sessionDateKey = getSessionDateKey(session.sessionDate)
+    if (!sessionDateKey) {
+      return false
+    }
+
+    return sessionDateKey === toLocalDateKey(new Date())
+  }
+
   // ==================== ACTIONS ====================
 
   /**
@@ -307,6 +340,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
       // Client-side validation
       if (originalSessionSnapshot && originalSessionSnapshot.status !== 'not_started') {
         throw new Error('Only sessions in "not_started" status can be started')
+      }
+
+      if (originalSessionSnapshot && !isSessionScheduledForToday(originalSessionSnapshot)) {
+        throw new Error('Session can only be started on its scheduled date')
       }
 
       const updatedSession = await apiStartSession(sessionId, payload)
