@@ -1,14 +1,14 @@
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
 import { mount } from '@vue/test-utils'
-import ProfileView from '@/views/ProfileView.vue'
+import { createPinia, setActivePinia } from 'pinia'
 
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import api from '@/api'
+
 import { useAuthStore } from '@/stores/authStore'
 import { ROLES } from '@/utils/constants'
 import { getErrorMessage } from '@/utils/httpError'
+import ProfileView from '@/views/ProfileView.vue'
 
 vi.mock('@/api')
 vi.mock('@/utils/httpError')
@@ -81,13 +81,13 @@ function createMockUserProfile() {
   }
 }
 
-describe('ProfileView - Password Change', () => {
+describe('profileView - Password Change', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setActivePinia(createPinia())
   })
 
-  describe('Unit Tests - Validation Logic', () => {
+  describe('unit Tests - Validation Logic', () => {
     it('returns true when no password fields are filled (validation skipped)', () => {
       const passwordForm: PasswordForm = {
         currentPassword: '',
@@ -283,7 +283,7 @@ describe('ProfileView - Password Change', () => {
     })
   })
 
-  describe('Component Tests - UI Interactions', () => {
+  describe('component Tests - UI Interactions', () => {
     it('tab switching shows security tab when clicked', async () => {
       const authStore = useAuthStore()
       authStore.userProfile = createMockUserProfile()
@@ -438,7 +438,7 @@ describe('ProfileView - Password Change', () => {
     })
   })
 
-  describe('Integration Tests - Backend Response', () => {
+  describe('integration Tests - Backend Response', () => {
     it('successful password change shows success message', async () => {
       const authStore = useAuthStore()
       authStore.userProfile = createMockUserProfile()
@@ -599,7 +599,7 @@ describe('ProfileView - Password Change', () => {
     })
   })
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     it('whitespace-only password fails validation (too short)', () => {
       const passwordForm: PasswordForm = {
         currentPassword: 'oldpassword',

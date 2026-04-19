@@ -382,10 +382,11 @@ export const useSessionStore = defineStore('sessionStore', () => {
   /**
    * Delete/cancel a session
    * @param {number} sessionId - Session ID
+   * @param {string} reason - Reason for cancelling the session
    * @returns {Promise<void>}
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
-  const deleteSession = async (sessionId: EntityId) => {
+  const deleteSession = async (sessionId: EntityId, reason: string) => {
     beginLoading()
 
     // Store original state for rollback
@@ -398,7 +399,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
         throw new Error('Only sessions in "not_started" status can be deleted')
       }
 
-      await apiDeleteSession(sessionId)
+      await apiDeleteSession(sessionId, reason)
 
       // Remove from local state
       sessions.value = sessions.value.filter(s => s.id !== sessionId)
