@@ -24,7 +24,7 @@ const isValid = computed(() => {
   return trimmed.length >= 5 && trimmed.length <= 500
 })
 
-const characterCount = computed(() => reason.value.length)
+const characterCount = computed(() => reason.value.trim().length)
 
 // Methods
 function handleConfirm() {
