@@ -1,5 +1,6 @@
 <script setup>
 import { BookOpen, Clock, MapPin, User } from 'lucide-vue-next'
+import { LOCALE } from '@/utils/constants'
 
 defineProps({
   sessions: {
@@ -15,7 +16,7 @@ defineProps({
 function formatTime(isoString) {
   if (!isoString)
     return '-'
-  return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return new Date(isoString).toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT_SHORT)
 }
 </script>
 

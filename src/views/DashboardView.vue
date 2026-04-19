@@ -8,6 +8,7 @@ import { useRouter } from 'vue-router'
 import { calculateAttendanceStats, fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance'
 import { getInstructorSubjects, getMySchedules } from '@/api/instructors'
 import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
+import { LOCALE } from '@/utils/constants'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { formatLongDate } from '@/utils/date'
@@ -125,7 +126,7 @@ const fullName = computed(() => {
 
 // Formatted date and time
 const formattedDate = computed(() => {
-  return currentDateTime.value.toLocaleDateString('en-US', {
+  return currentDateTime.value.toLocaleDateString(LOCALE.DEFAULT, {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
@@ -133,11 +134,7 @@ const formattedDate = computed(() => {
 })
 
 const formattedTime = computed(() => {
-  return currentDateTime.value.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  })
+  return currentDateTime.value.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT)
 })
 
 // Attendance chart data
@@ -363,15 +360,11 @@ function closeModal() {
 }
 
 // Utility functions
-function formatTime(isoString?: string | null) {
+function formatTime(isoString: string | null | undefined) {
   if (!isoString)
     return '-'
   const date = new Date(isoString)
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  })
+  return date.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT)
 }
 
 function updateDateTime() {

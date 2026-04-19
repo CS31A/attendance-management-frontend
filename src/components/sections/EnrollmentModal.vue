@@ -2,6 +2,7 @@
 import { AlertTriangle, Check, Loader2, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
+import { LOCALE } from '@/utils/constants'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useUserStore } from '@/stores/userStore'
 import { parseUtcDate } from '@/utils/qrcode'
@@ -48,7 +49,7 @@ function asSearchableString(value) {
 
 function formatEnrollmentDate(value) {
   const parsed = parseUtcDate(value)
-  return parsed ? parsed.toLocaleDateString() : '-'
+  return parsed ? parsed.toLocaleDateString(LOCALE.DEFAULT) : '-'
 }
 
 const filteredEnrolledStudents = computed(() => {

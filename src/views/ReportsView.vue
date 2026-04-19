@@ -4,6 +4,7 @@ import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineE
 import { BarChart3, CheckCircle, Download, FileSpreadsheet, FileX, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { exportToCsv, fetchReportsSummary } from '@/api/reports'
+import { LOCALE } from '@/utils/constants'
 import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
 
@@ -226,7 +227,7 @@ async function fetchDashboardData() {
     const trendValues: number[] = []
 
     if (activeTab.value === 'Today') {
-      trendLabels.push(new Date().toLocaleDateString('en-US', { weekday: 'short' }))
+      trendLabels.push(new Date().toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT_SHORT))
       trendValues.push(Number(summary.attendanceRate))
     }
     else {
@@ -241,8 +242,8 @@ async function fetchDashboardData() {
 
         const dateStr = d.toISOString().split('T')[0]
         const label = activeTab.value === 'Year'
-          ? d.toLocaleDateString('en-US', { month: 'short' })
-          : d.toLocaleDateString('en-US', { weekday: 'short' })
+          ? d.toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT_MONTH)
+          : d.toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT_SHORT)
 
         trendLabels.push(label)
         try {

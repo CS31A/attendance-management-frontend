@@ -1,6 +1,7 @@
 <script setup>
 import { Activity, AlertCircle, CheckCircle, Database } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { LOCALE } from '@/utils/constants'
 
 const props = defineProps({
   health: {
@@ -20,7 +21,7 @@ const lastCheck = computed(() => {
   if (!props.health?.timestamp)
     return 'Never'
   const date = new Date(props.health.timestamp)
-  return date.toLocaleTimeString()
+  return date.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT)
 })
 </script>
 

@@ -7,6 +7,8 @@
  * @module utils/qrcode
  */
 
+import { LOCALE } from './constants'
+
 /**
  * Parse a date string as UTC if it doesn't have timezone information
  *
@@ -97,10 +99,7 @@ export function formatScanTime(timestamp: string | Date | null | undefined): str
   if (!parsed)
     return '-'
 
-  return parsed.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return parsed.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT_SHORT)
 }
 
 /**
@@ -117,7 +116,7 @@ export function formatDate(date: string | Date | null | undefined): string {
   if (!parsed)
     return '-'
 
-  return parsed.toLocaleDateString([], {
+  return parsed.toLocaleDateString(LOCALE.DEFAULT, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -132,7 +131,7 @@ export function formatDateTime(date: string | Date | null | undefined): string {
   if (!parsed)
     return '-'
 
-  return parsed.toLocaleString('en-US', {
+  return parsed.toLocaleString(LOCALE.DEFAULT, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

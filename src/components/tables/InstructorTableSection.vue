@@ -1,6 +1,7 @@
 <script setup>
 import { ArchiveX, Calendar, ChevronLeft, ChevronRight, Edit, Eye, RotateCcw, Trash2, Users } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
+import { LOCALE } from '@/utils/constants'
 import { parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({
@@ -77,7 +78,7 @@ function goToPage(page) {
 
 function formatCreatedAt(value) {
   const parsed = parseUtcDate(value)
-  return parsed ? parsed.toLocaleDateString() : '-'
+  return parsed ? parsed.toLocaleDateString(LOCALE.DEFAULT) : '-'
 }
 </script>
 

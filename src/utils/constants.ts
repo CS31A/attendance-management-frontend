@@ -27,3 +27,29 @@ export const ATTENDANCE_STATUSES = {
 } as const
 
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[keyof typeof ATTENDANCE_STATUSES]
+
+/**
+ * Locale Constants
+ * Standardized locale and formatting options for date/time display
+ */
+export const LOCALE = {
+  DEFAULT: 'en-US',
+  TIME_FORMAT: {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  },
+  TIME_FORMAT_SHORT: {
+    hour: '2-digit',
+    minute: '2-digit',
+  },
+  DATE_FORMAT: {
+    weekday: 'long',
+  },
+  DATE_FORMAT_SHORT: {
+    weekday: 'short',
+  },
+  DATE_FORMAT_MONTH: {
+    month: 'short',
+  },
+} as const

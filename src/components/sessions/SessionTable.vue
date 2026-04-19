@@ -2,6 +2,7 @@
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import { canStartSession } from '@/api/sessions'
 import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
+import { LOCALE } from '@/utils/constants'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 defineProps({
@@ -61,11 +62,7 @@ function formatTime(timeString) {
   // Prefer ISO/local datetime parsing when full timestamp values are provided.
   const parsedDate = new Date(timeString)
   if (!Number.isNaN(parsedDate.getTime())) {
-    return parsedDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    })
+    return parsedDate.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT)
   }
 
   // Fallback for plain time strings (HH:mm or HH:mm:ss).

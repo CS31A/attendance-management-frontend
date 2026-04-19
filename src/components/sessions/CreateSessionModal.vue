@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { getMySchedules } from '@/api/instructors'
+import { LOCALE } from '@/utils/constants'
 import { toLocalDateKey } from '@/utils/sessionDateHelpers'
 
 const emit = defineEmits(['create', 'cancel'])
@@ -38,7 +39,7 @@ function getWeekdayNameFromDate(dateValue) {
   if (Number.isNaN(parsed.getTime()))
     return null
 
-  return parsed.toLocaleDateString('en-US', { weekday: 'long' })
+  return parsed.toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT)
 }
 
 const isOffScheduleDate = computed(() => {

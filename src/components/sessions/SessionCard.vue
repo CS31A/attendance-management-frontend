@@ -1,6 +1,7 @@
 <script setup>
 import { Calendar, Clock, MapPin } from 'lucide-vue-next'
 import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
+import { LOCALE } from '@/utils/constants'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 /**
@@ -22,10 +23,7 @@ function formatTime(dateString) {
   if (!dateString)
     return 'N/A'
   const date = new Date(dateString)
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return date.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT_SHORT)
 }
 </script>
 
