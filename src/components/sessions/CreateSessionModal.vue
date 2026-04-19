@@ -10,6 +10,7 @@ const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/Lo
 // State
 const scheduleId = ref('')
 const sessionDate = ref('')
+const offScheduleReason = ref('')
 const description = ref('')
 const errorMessage = ref('')
 const schedules = ref([])
@@ -23,6 +24,36 @@ const todayDate = computed(() => {
 
 const isFormValid = computed(() => {
   return scheduleId.value !== '' && schedules.value.length > 0
+})
+
+const selectedSchedule = computed(() => {
+  return schedules.value.find(schedule => String(schedule.id) === String(scheduleId.value)) || null
+})
+
+function getWeekdayNameFromDate(dateValue) {
+  if (!dateValue)
+    return null
+
+  const parsed = new Date(`${dateValue}T00:00:00`)
+  if (Number.isNaN(parsed.getTime()))
+    return null
+
+  return parsed.toLocaleDateString('en-US', { weekday: 'long' })
+}
+
+const isOffScheduleDate = computed(() => {
+  if (!selectedSchedule.value || !sessionDate.value)
+    return false
+
+  const scheduleDay = selectedSchedule.value.dayOfWeek
+  if (!scheduleDay)
+    return false
+
+  const selectedDay = getWeekdayNameFromDate(sessionDate.value)
+  if (!selectedDay)
+    return false
+
+  return String(scheduleDay).toLowerCase() !== selectedDay.toLowerCase()
 })
 
 // Methods
@@ -130,6 +161,18 @@ function createSession() {
     payload.sessionDate = sessionDate.value
   }
 
+  // Allow off-schedule session creation only with explicit reason
+  if (isOffScheduleDate.value) {
+    const trimmedReason = offScheduleReason.value.trim()
+    if (!trimmedReason) {
+      errorMessage.value = 'Please provide a reason for creating this off-schedule session.'
+      return
+    }
+
+    payload.allowOffScheduleDate = true
+    payload.offScheduleReason = trimmedReason
+  }
+
   // Add optional description if provided
   if (description.value.trim()) {
     payload.description = description.value.trim()
@@ -210,6 +253,20 @@ onMounted(() => {
           >
           <small class="helper-text info">
             Defaults to today if not specified
+          </small>
+        </div>
+
+        <div v-if="isOffScheduleDate" class="form-group">
+          <label>Reason for Off-Schedule Session *</label>
+          <textarea
+            v-model="offScheduleReason"
+            name="offScheduleReason"
+            placeholder="Explain why this class is being held on a different day"
+            rows="3"
+            maxlength="500"
+          />
+          <small class="helper-text warning">
+            This session date does not match the schedule day. A reason is required.
           </small>
         </div>
 

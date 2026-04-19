@@ -22,6 +22,7 @@ import {
   updateSessionRoom as apiUpdateSessionRoom,
 
 } from '@/api/sessions'
+import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
 
 /**
  * Session Store
@@ -307,6 +308,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
       // Client-side validation
       if (originalSessionSnapshot && originalSessionSnapshot.status !== 'not_started') {
         throw new Error('Only sessions in "not_started" status can be started')
+      }
+
+      if (originalSessionSnapshot && !isSessionScheduledForToday(originalSessionSnapshot)) {
+        throw new Error('Session can only be started on its scheduled date')
       }
 
       const updatedSession = await apiStartSession(sessionId, payload)

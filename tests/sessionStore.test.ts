@@ -33,12 +33,21 @@ interface Deferred<T> {
   reject: (reason?: unknown) => void
 }
 
+function toLocalDateStart(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}T00:00:00`
+}
+
+const todaySessionDate = toLocalDateStart(new Date())
+
 // Helper factory
 function createSession(overrides: Partial<SessionResponseDto> = {}): SessionResponseDto {
   return {
     id: 1 as EntityId,
     status: 'not_started' as SessionStatus,
-    sessionDate: '2026-01-01T00:00:00',
+    sessionDate: todaySessionDate,
     ...overrides,
   }
 }
@@ -430,6 +439,15 @@ describe('sessionStore', () => {
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
 
       await expect(store.startSession(1 as EntityId)).rejects.toThrow('Only sessions in "not_started" status can be started')
+
+      expect(apiStartSession).not.toHaveBeenCalled()
+    })
+
+    it('startSession client-side validation blocks API call for future-dated sessions', async () => {
+      const store = useSessionStore()
+      store.sessions = [createSession({ id: 1 as EntityId, status: 'not_started', sessionDate: '2099-01-01T00:00:00' })]
+
+      await expect(store.startSession(1 as EntityId)).rejects.toThrow('Session can only be started on its scheduled date')
 
       expect(apiStartSession).not.toHaveBeenCalled()
     })

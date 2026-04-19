@@ -1,6 +1,7 @@
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
 import api from '@/api'
+import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
 
 export interface SessionResponseDto {
   id: EntityId
@@ -18,6 +19,8 @@ export interface CreateSessionPayload {
   scheduleId: number
   sessionDate?: string
   description?: string
+  allowOffScheduleDate?: boolean
+  offScheduleReason?: string
 }
 
 export interface StartSessionPayload {
@@ -343,8 +346,13 @@ export function isValidStatus(status: string): status is SessionStatus {
  *   await startSession(session.id)
  * }
  */
-export function canStartSession(session: SessionResponseDto | null | undefined): boolean {
-  return Boolean(session && session.status === 'not_started')
+export function canStartSession(
+  session: SessionResponseDto | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!session)
+    return false
+  return session.status === 'not_started' && isSessionScheduledForToday(session, now)
 }
 
 /**
