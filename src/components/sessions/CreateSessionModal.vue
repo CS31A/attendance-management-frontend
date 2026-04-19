@@ -2,6 +2,7 @@
 import { AlertTriangle, Plus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { getMySchedules } from '@/api/instructors'
+import { toLocalDateKey } from '@/utils/sessionDateHelpers'
 
 const emit = defineEmits(['create', 'cancel'])
 
@@ -18,8 +19,7 @@ const loadingSchedules = ref(false)
 
 // Computed
 const todayDate = computed(() => {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
+  return toLocalDateKey(new Date())
 })
 
 const isFormValid = computed(() => {
