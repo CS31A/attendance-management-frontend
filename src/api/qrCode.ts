@@ -10,7 +10,7 @@ export interface QrCodePayload {
 
 export interface QrCodeScanPayload {
   qrHash: string
-  studentId: number
+  studentId?: number
   deviceInfo?: Record<string, unknown>
 }
 
@@ -107,7 +107,7 @@ export async function generateQrCode(payload: QrCodePayload): Promise<QrCodeResp
  *
  * @param {object} payload - Scan data
  * @param {string} payload.qrHash - QR code hash
- * @param {number} payload.studentId - Student ID
+ * @param {number} [payload.studentId] - Optional legacy student ID; server derives student from auth token
  * @param {object} [payload.deviceInfo] - Optional device information
  * @returns {Promise<QrCodeValidationResponseDto>} Scan result
  */
