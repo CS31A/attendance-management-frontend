@@ -19,6 +19,8 @@ export interface CreateSessionPayload {
   scheduleId: number
   sessionDate?: string
   description?: string
+  allowOffScheduleDate?: boolean
+  offScheduleReason?: string
 }
 
 export interface StartSessionPayload {
