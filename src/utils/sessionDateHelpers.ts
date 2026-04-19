@@ -27,18 +27,25 @@ export function getSessionDateKey(sessionDate: string | undefined): string | nul
     return null
   }
 
-  // Already in YYYY-MM-DD format
-  if (/^\d{4}-\d{2}-\d{2}/.test(sessionDate)) {
-    return sessionDate.slice(0, 10)
-  }
-
-  // Parse as ISO date string
-  const parsed = new Date(sessionDate)
-  if (Number.isNaN(parsed.getTime())) {
+  const normalizedSessionDate = sessionDate.trim()
+  if (!normalizedSessionDate) {
     return null
   }
 
-  return toLocalDateKey(parsed)
+  // Keep exact YYYY-MM-DD values as-is to avoid UTC parsing shifts.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedSessionDate)) {
+    return normalizedSessionDate
+  }
+
+  // Parse datetime strings and convert to a local date key for comparisons.
+  const parsed = new Date(normalizedSessionDate)
+  if (!Number.isNaN(parsed.getTime())) {
+    return toLocalDateKey(parsed)
+  }
+
+  // Backward compatibility for legacy strings that begin with YYYY-MM-DD.
+  const legacyDatePrefix = normalizedSessionDate.match(/^(\d{4}-\d{2}-\d{2})/)
+  return legacyDatePrefix?.[1] ?? null
 }
 
 /**

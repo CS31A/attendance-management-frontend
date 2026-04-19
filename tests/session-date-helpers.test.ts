@@ -59,6 +59,40 @@ describe('sessionDateHelpers', () => {
     it('handles date with timezone offset', () => {
       expect(getSessionDateKey('2024-03-15T10:30:00+08:00')).toBe('2024-03-15')
     })
+
+    it('uses local date for UTC ISO strings near day boundaries', () => {
+      const originalTz = process.env.TZ
+
+      try {
+        process.env.TZ = 'America/New_York'
+        expect(getSessionDateKey('2024-03-16T01:00:00Z')).toBe('2024-03-15')
+      }
+      finally {
+        if (originalTz === undefined) {
+          delete process.env.TZ
+        }
+        else {
+          process.env.TZ = originalTz
+        }
+      }
+    })
+
+    it('keeps date-only strings unchanged across timezones', () => {
+      const originalTz = process.env.TZ
+
+      try {
+        process.env.TZ = 'America/New_York'
+        expect(getSessionDateKey('2024-03-15')).toBe('2024-03-15')
+      }
+      finally {
+        if (originalTz === undefined) {
+          delete process.env.TZ
+        }
+        else {
+          process.env.TZ = originalTz
+        }
+      }
+    })
   })
 
   describe('isSessionScheduledForToday', () => {
