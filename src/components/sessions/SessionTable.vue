@@ -58,9 +58,26 @@ function formatTime(timeString) {
   if (!timeString)
     return ''
 
-  // Handle HH:mm:ss format
-  const [hours, minutes] = timeString.split(':')
-  const hour = Number.parseInt(hours, 10)
+  // Prefer ISO/local datetime parsing when full timestamp values are provided.
+  const parsedDate = new Date(timeString)
+  if (!Number.isNaN(parsedDate.getTime())) {
+    return parsedDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+  }
+
+  // Fallback for plain time strings (HH:mm or HH:mm:ss).
+  const timeParts = timeString.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
+  if (!timeParts)
+    return ''
+
+  const hour = Number.parseInt(timeParts[1], 10)
+  const minutes = timeParts[2]
+  if (Number.isNaN(hour))
+    return ''
+
   const period = hour >= 12 ? 'PM' : 'AM'
   const displayHour = hour % 12 || 12
 

@@ -52,6 +52,14 @@ function mountTable(sessions: SessionResponseDto[]) {
   })
 }
 
+function formatExpectedLocalTime(value: string): string {
+  return new Date(value).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
 describe('session table', () => {
   describe('start button behavior', () => {
     it('disables Start button when session cannot be started (not scheduled for today)', () => {
@@ -203,6 +211,23 @@ describe('session table', () => {
 
       const startBtn = wrapper.find('.btn-start')
       expect(startBtn.attributes('title')).toBe('Session can only be started on its scheduled date')
+    })
+  })
+
+  describe('time rendering', () => {
+    it('renders ISO datetime values using local clock time for active sessions', () => {
+      const startIso = '2026-04-20T00:30:00Z'
+      const endIso = '2026-04-20T01:45:00Z'
+      const session = createSession({
+        status: 'active',
+        actualStartTime: startIso,
+        actualEndTime: endIso,
+      })
+
+      const wrapper = mountTable([session])
+      const timeText = wrapper.find('.time-text').text()
+
+      expect(timeText).toBe(`${formatExpectedLocalTime(startIso)} - ${formatExpectedLocalTime(endIso)}`)
     })
   })
 })

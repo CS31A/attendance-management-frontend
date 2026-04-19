@@ -73,4 +73,27 @@ describe('create session modal', () => {
       offScheduleReason: 'Campus activity moved this class',
     })
   })
+
+  it('uses local calendar date for min date near timezone boundaries', async () => {
+    const originalTz = process.env.TZ
+
+    vi.useFakeTimers()
+    try {
+      process.env.TZ = 'Asia/Manila'
+      vi.setSystemTime(new Date('2026-04-20T00:30:00+08:00'))
+
+      const wrapper = mountModal()
+      await flushPromises()
+
+      const sessionDateInput = wrapper.find('input[type="date"]')
+      expect(sessionDateInput.attributes('min')).toBe('2026-04-20')
+    }
+    finally {
+      vi.useRealTimers()
+      if (originalTz === undefined)
+        delete process.env.TZ
+      else
+        process.env.TZ = originalTz
+    }
+  })
 })

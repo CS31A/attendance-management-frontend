@@ -81,10 +81,13 @@ function createMockUserProfile() {
   }
 }
 
+let pinia = createPinia()
+
 describe('profileView - Password Change', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    setActivePinia(createPinia())
+    pinia = createPinia()
+    setActivePinia(pinia)
   })
 
   describe('unit Tests - Validation Logic', () => {
@@ -145,7 +148,7 @@ describe('profileView - Password Change', () => {
       expect(result).toBe(false)
       expect(passwordErrors.currentPassword).toBe('')
       expect(passwordErrors.newPassword).toBe('New password is required')
-      expect(passwordErrors.confirmNewPassword).toBe('')
+      expect(passwordErrors.confirmNewPassword).toBe('Please confirm your new password')
     })
 
     it('shows error when newPassword < 8 characters', () => {
@@ -291,7 +294,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -318,7 +321,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -353,7 +356,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -390,7 +393,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -412,7 +415,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -447,11 +450,11 @@ describe('profileView - Password Change', () => {
       vi.mocked(api.patch).mockResolvedValue(
         createAxiosResponse({ success: true, message: 'Profile updated successfully!' }),
       )
-      vi.mocked(authStore.fetchUserProfile).mockResolvedValue(createMockUserProfile())
+      vi.spyOn(authStore, 'fetchUserProfile').mockResolvedValue(createMockUserProfile())
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -507,7 +510,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
@@ -557,7 +560,7 @@ describe('profileView - Password Change', () => {
 
       const wrapper = mount(ProfileView, {
         global: {
-          plugins: [createPinia()],
+          plugins: [pinia],
           stubs: {
             RouterLink: true,
           },
