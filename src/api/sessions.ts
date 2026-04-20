@@ -201,20 +201,19 @@ export async function createSession(payload: CreateSessionPayload): Promise<Sess
  * start a session.
  *
  * @param {number} sessionId - Session ID
- * @param {StartSessionPayload} [payload] - Start session options
+ * @param {StartSessionPayload} payload - Start session options including rowVersion
  * @param {number} [payload.actualRoomId] - Actual room ID if different from scheduled
  * @param {number} [payload.attendanceCutoffMinutes] - Minutes after start for late cutoff (0-120)
+ * @param {string} payload.rowVersion - Base64 concurrency token from the latest session response
  * @returns {Promise<SessionResponseDto>} Updated session object with status 'active'
  * @throws {Error} 403 if not assigned instructor, 400 if not in 'not_started' status
  *
  * @example
- * // Start with default cutoff (15 minutes)
- * const started = await startSession(123)
- *
  * // Start in different room with custom cutoff
  * const started = await startSession(123, {
  *   actualRoomId: 505,
- *   attendanceCutoffMinutes: 20
+ *   attendanceCutoffMinutes: 20,
+ *   rowVersion: 'AQIDBA=='
  * })
  */
 export async function startSession(
@@ -233,14 +232,16 @@ export async function startSession(
  * a session.
  *
  * @param {number} sessionId - Session ID
- * @param {EndSessionPayload} [payload] - End session options
+ * @param {EndSessionPayload} payload - End session options including rowVersion
  * @param {string} [payload.description] - Completion notes (optional, max 500 chars)
+ * @param {string} payload.rowVersion - Base64 concurrency token from the latest session response
  * @returns {Promise<SessionResponseDto>} Updated session object with status 'ended'
  * @throws {Error} 403 if not assigned instructor, 400 if not in 'active' status
  *
  * @example
  * const ended = await endSession(123, {
- *   description: 'Covered chapters 1-3. Quiz next week.'
+ *   description: 'Covered chapters 1-3. Quiz next week.',
+ *   rowVersion: 'AQIDBA=='
  * })
  */
 export async function endSession(
@@ -282,12 +283,14 @@ export async function deleteSession(sessionId: EntityId, payload: DeleteSessionP
  * @param {number} sessionId - Session ID
  * @param {UpdateSessionRoomPayload} payload - Room update data
  * @param {number} payload.actualRoomId - New room ID (required)
+ * @param {string} payload.rowVersion - Base64 concurrency token from the latest session response
  * @returns {Promise<SessionResponseDto>} Updated session object
  * @throws {Error} 403 if not assigned instructor, 400 if not in 'active' status or invalid room
  *
  * @example
  * const updated = await updateSessionRoom(123, {
- *   actualRoomId: 606
+ *   actualRoomId: 606,
+ *   rowVersion: 'AQIDBA=='
  * })
  * console.log(`Room changed to ${updated.actualRoomName}`)
  */
