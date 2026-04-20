@@ -75,24 +75,32 @@ describe('create session modal', () => {
   })
 
   it('does not emit offScheduleReason for a normal on-schedule session', async () => {
-    const wrapper = mountModal()
-    await flushPromises()
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date('2026-04-20T09:00:00'))
 
-    await wrapper.find('select').setValue('1')
-    await wrapper.find('input[type="date"]').setValue('2026-04-21')
-    await wrapper.find('form').trigger('submit.prevent')
-    await flushPromises()
+      const wrapper = mountModal()
+      await flushPromises()
 
-    const createEvents = wrapper.emitted('create')
-    const payload = createEvents?.[0]?.[0] as Record<string, unknown>
+      await wrapper.find('select').setValue('1')
+      await wrapper.find('input[type="date"]').setValue('2026-04-21')
+      await wrapper.find('form').trigger('submit.prevent')
+      await flushPromises()
 
-    expect(createEvents).toBeDefined()
-    expect(payload).toMatchObject({
-      scheduleId: 1,
-      sessionDate: '2026-04-21',
-    })
-    expect(payload).not.toHaveProperty('offScheduleReason')
-    expect(payload).not.toHaveProperty('allowOffScheduleDate')
+      const createEvents = wrapper.emitted('create')
+      const payload = createEvents?.[0]?.[0] as Record<string, unknown>
+
+      expect(createEvents).toBeDefined()
+      expect(payload).toMatchObject({
+        scheduleId: 1,
+        sessionDate: '2026-04-21',
+      })
+      expect(payload).not.toHaveProperty('offScheduleReason')
+      expect(payload).not.toHaveProperty('allowOffScheduleDate')
+    }
+    finally {
+      vi.useRealTimers()
+    }
   })
 
   it('uses local calendar date for min date near timezone boundaries', async () => {
