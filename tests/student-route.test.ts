@@ -18,6 +18,21 @@ describe('studentRoute utilities', () => {
       })).toBe(42)
     })
 
+    it('rejects non-integer and non-positive profile ids', () => {
+      expect(resolveStudentProfileId({
+        role: 'Student',
+        profileId: 42.5,
+      })).toBeNull()
+      expect(resolveStudentProfileId({
+        role: 'Student',
+        profileId: '0',
+      })).toBeNull()
+      expect(resolveStudentProfileId({
+        role: 'Student',
+        profileId: -3,
+      })).toBeNull()
+    })
+
     it('does not fall back to auth user ids for student routes', () => {
       expect(resolveStudentProfileId({
         role: 'Student',
@@ -43,6 +58,12 @@ describe('studentRoute utilities', () => {
     it('rejects non-numeric route params', () => {
       expect(parseStudentRouteParam('student-user-id')).toBeNull()
       expect(parseStudentRouteParam(undefined)).toBeNull()
+    })
+
+    it('rejects non-integer and non-positive route params', () => {
+      expect(parseStudentRouteParam('42.5')).toBeNull()
+      expect(parseStudentRouteParam(0)).toBeNull()
+      expect(parseStudentRouteParam('-1')).toBeNull()
     })
   })
 })

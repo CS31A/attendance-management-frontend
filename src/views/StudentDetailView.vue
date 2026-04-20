@@ -2,7 +2,7 @@
 import type { EnrollmentDto } from '@/api/enrollments'
 import type { StudentAttendanceReportDto } from '@/api/reports'
 import { AlertTriangle, ArrowLeft, Calendar, Clock, GraduationCap, Mail, User } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getStatusClass, getStatusLabel } from '@/api/attendance'
 import { fetchStudentAttendanceReport } from '@/api/reports'
@@ -15,7 +15,7 @@ import { parseStudentRouteParam, resolveStudentProfileId } from '@/utils/student
 
 const route = useRoute()
 const router = useRouter()
-const studentId = parseStudentRouteParam(route.params.studentId as string | undefined)
+const studentId = computed(() => parseStudentRouteParam(route.params.studentId as string | undefined))
 
 const enrollmentStore = useEnrollmentStore()
 const userStore = useUserStore()
@@ -27,10 +27,10 @@ const enrollments = ref<EnrollmentDto[]>([])
 
 // Base student identity from user store context
 const studentUser = computed(() => {
-  if (studentId == null)
+  if (studentId.value == null)
     return undefined
 
-  return userStore.getUsers.find(u => resolveStudentProfileId(u) === studentId)
+  return userStore.getUsers.find(u => resolveStudentProfileId(u) === studentId.value)
 })
 
 // Derived display values
@@ -55,9 +55,11 @@ const displayJoinedDate = computed(() => {
 async function fetchData() {
   loading.value = true
   error.value = ''
+  report.value = null
+  enrollments.value = []
 
   try {
-    if (studentId == null) {
+    if (studentId.value == null) {
       error.value = 'Invalid student details link.'
       return
     }
@@ -68,8 +70,8 @@ async function fetchData() {
     }
 
     const [enrollmentData, reportData] = await Promise.all([
-      enrollmentStore.fetchStudentEnrollments(studentId),
-      fetchStudentAttendanceReport(studentId).catch((err) => {
+      enrollmentStore.fetchStudentEnrollments(studentId.value),
+      fetchStudentAttendanceReport(studentId.value).catch((err) => {
         // Attendance report might 404 if no records, handle gracefully
         if (err.response?.status === 404)
           return null
@@ -89,9 +91,9 @@ async function fetchData() {
   }
 }
 
-onMounted(() => {
+watch(studentId, () => {
   fetchData()
-})
+}, { immediate: true })
 
 function goBack() {
   router.push('/users')

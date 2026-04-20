@@ -12,6 +12,8 @@ interface ApiUserProfile {
   lastname?: string
   sectionId?: EntityId | null
   isRegular?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 interface ApiUser {
@@ -75,11 +77,15 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.firstName = user.adminProfile.firstname
     mappedUser.lastName = user.adminProfile.lastname
     mappedUser.profileId = user.adminProfile.id
+    mappedUser.createdAt = user.adminProfile.createdAt
+    mappedUser.updatedAt = user.adminProfile.updatedAt
   }
   else if (normalizedRole === 'Instructor' && user.instructorProfile) {
     mappedUser.firstName = user.instructorProfile.firstname
     mappedUser.lastName = user.instructorProfile.lastname
     mappedUser.profileId = user.instructorProfile.id
+    mappedUser.createdAt = user.instructorProfile.createdAt
+    mappedUser.updatedAt = user.instructorProfile.updatedAt
   }
   else if (normalizedRole === 'Student' && user.studentProfile) {
     mappedUser.firstName = user.studentProfile.firstname
@@ -87,6 +93,8 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.sectionId = user.studentProfile.sectionId
     mappedUser.isRegular = user.studentProfile.isRegular
     mappedUser.profileId = user.studentProfile.id
+    mappedUser.createdAt = user.studentProfile.createdAt
+    mappedUser.updatedAt = user.studentProfile.updatedAt
   }
 
   return mappedUser

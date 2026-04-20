@@ -7,30 +7,25 @@ interface StudentRouteUser {
   id?: EntityId
 }
 
-export function resolveStudentProfileId(user: StudentRouteUser): number | null {
-  if (user.role !== 'Student')
-    return null
-
-  const value = user.profileId
-  if (typeof value === 'number' && Number.isFinite(value))
-    return value
+function toPositiveInteger(value: EntityId | undefined): number | null {
+  if (typeof value === 'number')
+    return Number.isInteger(value) && value > 0 ? value : null
 
   if (typeof value === 'string' && value.trim() !== '') {
     const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : null
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null
   }
 
   return null
 }
 
+export function resolveStudentProfileId(user: StudentRouteUser): number | null {
+  if (user.role !== 'Student')
+    return null
+
+  return toPositiveInteger(user.profileId)
+}
+
 export function parseStudentRouteParam(value: EntityId | undefined): number | null {
-  if (typeof value === 'number' && Number.isFinite(value))
-    return value
-
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : null
-  }
-
-  return null
+  return toPositiveInteger(value)
 }
