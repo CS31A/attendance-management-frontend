@@ -278,7 +278,13 @@ export const useUserStore = defineStore('user', () => {
       const isInstructor = originalUser.role === ROLES.INSTRUCTOR || originalUser.role === 'Teacher'
       const endpoint = isInstructor ? '/instructors' : '/students'
 
-      const response = await api.patch(`${endpoint}/${userId}`, userData)
+      // Use profileId for the endpoint (backend expects profile ID, not user ID)
+      const profileId = originalUser.profileId
+      if (!profileId) {
+        throw new Error('Profile ID not found for user')
+      }
+
+      const response = await api.patch(`${endpoint}/${profileId}`, userData)
 
       // Update the user in the store with the original role (role cannot be changed)
       const index = users.value.findIndex(user => (user.userId || user.id) === userId)

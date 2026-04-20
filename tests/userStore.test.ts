@@ -342,7 +342,7 @@ describe('userStore', () => {
   describe('updateUser', () => {
     it('uses /instructors/:id for Instructor and legacy Teacher', async () => {
       const store = useUserStore()
-      store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.INSTRUCTOR }) as ApiUser]
+      store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.INSTRUCTOR, profileId: '101' as EntityId }) as ApiUser]
 
       const userData = {
         firstName: 'Updated',
@@ -352,19 +352,19 @@ describe('userStore', () => {
 
       await store.updateUser('1' as EntityId, userData)
 
-      expect(api.patch).toHaveBeenCalledWith('/instructors/1', userData)
+      expect(api.patch).toHaveBeenCalledWith('/instructors/101', userData)
     })
 
     it('uses /students/:id for students', async () => {
       const store = useUserStore()
-      store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.STUDENT }) as ApiUser]
+      store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.STUDENT, profileId: '102' as EntityId }) as ApiUser]
 
       const userData = { firstName: 'Updated' }
       vi.mocked(api.patch).mockResolvedValue({ data: { ...store.users[0], firstName: 'Updated' } } as never)
 
       await store.updateUser('1' as EntityId, userData)
 
-      expect(api.patch).toHaveBeenCalledWith('/students/1', userData)
+      expect(api.patch).toHaveBeenCalledWith('/students/102', userData)
     })
 
     it('preserves original role in local state', async () => {
