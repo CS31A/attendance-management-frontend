@@ -10,6 +10,7 @@ interface ApiUserProfile {
   id?: EntityId
   firstname?: string
   lastname?: string
+  department?: string | null
   sectionId?: EntityId | null
   isRegular?: boolean
   createdAt?: string
@@ -28,6 +29,7 @@ interface ApiUser {
   firstName?: string
   lastName?: string
   profileId?: EntityId
+  department?: string | null
   sectionId?: EntityId | null
   isRegular?: boolean
   adminProfile?: ApiUserProfile | null
@@ -83,6 +85,7 @@ function mapUserProfile(user: ApiUser): ApiUser {
   else if (normalizedRole === 'Instructor' && user.instructorProfile) {
     mappedUser.firstName = user.instructorProfile.firstname
     mappedUser.lastName = user.instructorProfile.lastname
+    mappedUser.department = user.instructorProfile.department ?? null
     mappedUser.profileId = user.instructorProfile.id
     mappedUser.createdAt = user.instructorProfile.createdAt
     mappedUser.updatedAt = user.instructorProfile.updatedAt
@@ -102,6 +105,10 @@ function mapUserProfile(user: ApiUser): ApiUser {
 
 function asLowerString(value: unknown): string {
   return typeof value === 'string' ? value.toLowerCase() : ''
+}
+
+function asOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
 }
 
 function normalizeRole(role: UiRole): UserRole {
@@ -276,10 +283,18 @@ export const useUserStore = defineStore('user', () => {
       // Update the user in the store with the original role (role cannot be changed)
       const index = users.value.findIndex(user => (user.userId || user.id) === userId)
       if (index !== -1) {
-        // Map profile data if present in response
-        const updatedUser = response.data.userId
-          ? mapUserProfile({ ...response.data, role: originalUser.role })
-          : { ...response.data, role: originalUser.role }
+        const responseData = response.data as ApiUser
+        const hasNestedProfile = Boolean(responseData.adminProfile || responseData.instructorProfile || responseData.studentProfile)
+        const updatedUser = hasNestedProfile
+          ? mapUserProfile({ ...responseData, role: originalUser.role })
+          : {
+              ...originalUser,
+              ...responseData,
+              role: originalUser.role,
+              firstName: asOptionalString(responseData.firstName) || asOptionalString(responseData.firstname) || originalUser.firstName,
+              lastName: asOptionalString(responseData.lastName) || asOptionalString(responseData.lastname) || originalUser.lastName,
+              department: responseData.department ?? originalUser.department ?? null,
+            }
         users.value[index] = updatedUser
       }
 

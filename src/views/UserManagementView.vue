@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { InstructorSessionsReportDto } from '@/api/reports'
 import type { CreateUserInput } from '@/stores/userStore'
 import type { Id } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { fetchInstructorSessionsReport } from '@/api/reports'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
@@ -40,6 +42,10 @@ const selectedRole = ref<'All Roles' | 'Instructor' | 'Student'>('All Roles')
 const viewMode = ref<'Active' | 'Archived' | 'All'>('Active')
 const createModal = ref<HandleErrorableModal | null>(null)
 const editModal = ref<HandleErrorableModal | null>(null)
+const selectedInstructorWorkloadId = ref('')
+const instructorWorkload = ref<InstructorSessionsReportDto | null>(null)
+const instructorWorkloadLoading = ref(false)
+const instructorWorkloadError = ref('')
 
 // Debounce timer reference
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -137,6 +143,33 @@ const filteredStudents = computed(() =>
   paginatedUsers.value.filter(u => u.role === 'Student'),
 )
 
+const allFilteredInstructors = computed(() =>
+  filteredUsers.value.filter(u => u.role === 'Instructor'),
+)
+
+const selectedInstructorWorkload = computed(() =>
+  allFilteredInstructors.value.find(user => String(user.profileId ?? '') === selectedInstructorWorkloadId.value) ?? null,
+)
+
+const instructorWorkloadSummary = computed(() => {
+  if (!instructorWorkload.value)
+    return null
+
+  const sessions = instructorWorkload.value.sessions || []
+  const averageAttendanceRate = sessions.length
+    ? sessions.reduce((sum, session) => sum + (Number(session.attendanceRate) || 0), 0) / sessions.length
+    : 0
+
+  return {
+    totalSessions: instructorWorkload.value.totalSessions,
+    averageAttendanceRate,
+    sectionsCovered: new Set(sessions.map(session => session.sectionName).filter(Boolean)).size,
+    mostRecentSession: sessions[0] ?? null,
+  }
+})
+
+const workloadSessions = computed(() => instructorWorkload.value?.sessions ?? [])
+
 // Pagination computed properties
 const totalPages = computed(() =>
   userStore.totalPages(debouncedSearchQuery.value, selectedRole.value),
@@ -165,6 +198,60 @@ const hasActiveSearch = computed(() =>
 
 // Toast state and helpers
 const { toast, showToast, closeToast } = useToast()
+
+function getInstructorDisplayName(user: ManagedUser): string {
+  return `${user.firstName || user.firstname || ''} ${user.lastName || user.lastname || ''}`.trim() || 'Unnamed Instructor'
+}
+
+function getWorkloadRange(): { startDate: string, endDate: string } {
+  const endDate = new Date()
+  const startDate = new Date(endDate)
+  startDate.setDate(endDate.getDate() - 29)
+
+  return {
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0],
+  }
+}
+
+function formatAttendanceRate(value: number | undefined): string {
+  return `${Number(value || 0).toFixed(1)}%`
+}
+
+function formatSessionDate(value: string | undefined): string {
+  if (!value)
+    return 'Unavailable'
+
+  return new Date(value).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+async function loadInstructorWorkload(instructorProfileId: string) {
+  if (!instructorProfileId) {
+    instructorWorkload.value = null
+    instructorWorkloadError.value = ''
+    return
+  }
+
+  instructorWorkloadLoading.value = true
+  instructorWorkloadError.value = ''
+
+  try {
+    const { startDate, endDate } = getWorkloadRange()
+    instructorWorkload.value = await fetchInstructorSessionsReport(Number(instructorProfileId), { startDate, endDate })
+  }
+  catch (error) {
+    console.error('Failed to load instructor workload:', error)
+    instructorWorkload.value = null
+    instructorWorkloadError.value = 'Unable to load workload data right now.'
+  }
+  finally {
+    instructorWorkloadLoading.value = false
+  }
+}
 
 async function handleCreateUser(userData: CreateUserInput) {
   const result = await userStore.createUser(userData)
@@ -363,6 +450,30 @@ function setItemsPerPage(itemsPerPage: number) {
 watch([debouncedSearchQuery, selectedRole], () => {
   userStore.setCurrentPage(1)
 })
+
+watch(allFilteredInstructors, (instructors) => {
+  if (selectedRole.value !== 'Instructor' || instructors.length === 0) {
+    selectedInstructorWorkloadId.value = ''
+    instructorWorkload.value = null
+    instructorWorkloadError.value = ''
+    return
+  }
+
+  const hasSelectedInstructor = instructors.some(user => String(user.profileId ?? '') === selectedInstructorWorkloadId.value)
+  if (!hasSelectedInstructor) {
+    selectedInstructorWorkloadId.value = String(instructors[0].profileId ?? '')
+  }
+}, { immediate: true })
+
+watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role]) => {
+  if (role !== 'Instructor' || !instructorId) {
+    instructorWorkload.value = null
+    instructorWorkloadError.value = ''
+    return
+  }
+
+  await loadInstructorWorkload(instructorId)
+}, { immediate: true })
 </script>
 
 <template>
@@ -563,6 +674,103 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @view="handleViewStudent"
       />
 
+      <section
+        v-if="selectedRole === 'Instructor' && allFilteredInstructors.length > 0"
+        class="workload-overview"
+      >
+        <div class="workload-header">
+          <div>
+            <h2 class="workload-title">
+              Instructor Workload
+            </h2>
+            <p class="workload-subtitle">
+              Session activity overview for the last 30 days.
+            </p>
+          </div>
+
+          <label class="workload-filter">
+            <span>Instructor</span>
+            <select v-model="selectedInstructorWorkloadId" class="workload-select">
+              <option
+                v-for="instructor in allFilteredInstructors"
+                :key="instructor.userId || instructor.id"
+                :value="String(instructor.profileId ?? '')"
+              >
+                {{ getInstructorDisplayName(instructor) }}
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <div v-if="instructorWorkloadLoading" class="workload-state">
+          Loading workload data...
+        </div>
+
+        <div v-else-if="instructorWorkloadError" class="workload-state workload-state-error">
+          {{ instructorWorkloadError }}
+        </div>
+
+        <template v-else-if="instructorWorkloadSummary">
+          <div class="workload-metrics">
+            <article class="workload-metric-card">
+              <span class="metric-label">Instructor</span>
+              <strong class="metric-value">{{ selectedInstructorWorkload ? getInstructorDisplayName(selectedInstructorWorkload) : 'Unavailable' }}</strong>
+            </article>
+            <article class="workload-metric-card">
+              <span class="metric-label">Total Sessions</span>
+              <strong class="metric-value">{{ instructorWorkloadSummary.totalSessions }}</strong>
+            </article>
+            <article class="workload-metric-card">
+              <span class="metric-label">Average Attendance</span>
+              <strong class="metric-value">{{ formatAttendanceRate(instructorWorkloadSummary.averageAttendanceRate) }}</strong>
+            </article>
+            <article class="workload-metric-card">
+              <span class="metric-label">Sections Covered</span>
+              <strong class="metric-value">{{ instructorWorkloadSummary.sectionsCovered }}</strong>
+            </article>
+          </div>
+
+          <div v-if="workloadSessions.length > 0" class="workload-session-panel">
+            <div class="session-panel-header">
+              <h3>Recent Sessions</h3>
+              <span class="session-panel-note">
+                Latest: {{ instructorWorkloadSummary.mostRecentSession ? formatSessionDate(instructorWorkloadSummary.mostRecentSession.sessionDate) : 'Unavailable' }}
+              </span>
+            </div>
+
+            <div class="session-table-wrapper">
+              <table class="workload-session-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Schedule</th>
+                    <th>Section</th>
+                    <th>Status</th>
+                    <th>Attendance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="session in workloadSessions.slice(0, 5)"
+                    :key="session.sessionId"
+                  >
+                    <td>{{ formatSessionDate(session.sessionDate) }}</td>
+                    <td>{{ session.scheduleTitle }}</td>
+                    <td>{{ session.sectionName }}</td>
+                    <td>{{ session.status }}</td>
+                    <td>{{ formatAttendanceRate(session.attendanceRate) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div v-else class="workload-state">
+            No sessions found for this instructor in the last 30 days.
+          </div>
+        </template>
+      </section>
+
       <!-- Students Table -->
       <UserTableSection
         v-if="selectedRole === 'Student' && filteredStudents.length > 0"
@@ -711,6 +919,157 @@ watch([debouncedSearchQuery, selectedRole], () => {
   margin: 0 auto;
   position: relative;
   z-index: 1;
+}
+
+.workload-overview {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--color-gray-200);
+}
+
+.workload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.workload-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 0.25rem;
+}
+
+.workload-subtitle {
+  margin: 0;
+  color: var(--color-gray-500);
+}
+
+.workload-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 240px;
+  color: var(--color-gray-500);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.workload-select {
+  border: 1px solid var(--color-gray-300);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.95rem;
+  color: var(--color-gray-700);
+  background: white;
+}
+
+.workload-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+}
+
+.workload-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.workload-metric-card {
+  background: linear-gradient(135deg, var(--color-slate-100) 0%, white 100%);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.metric-label {
+  color: var(--color-gray-500);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.workload-session-panel {
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.session-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-slate-100);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.session-panel-header h3 {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+
+.session-panel-note {
+  color: var(--color-gray-500);
+  font-size: 0.875rem;
+}
+
+.session-table-wrapper {
+  overflow-x: auto;
+}
+
+.workload-session-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.workload-session-table th,
+.workload-session-table td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.workload-session-table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gray-500);
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.workload-state {
+  padding: 1rem;
+  border: 1px dashed var(--color-gray-300);
+  border-radius: 16px;
+  color: var(--color-gray-500);
+  background: var(--color-slate-100);
+}
+
+.workload-state-error {
+  color: var(--color-error);
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(254, 242, 242, 0.9);
 }
 
 .skeleton-table {

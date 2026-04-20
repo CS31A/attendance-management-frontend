@@ -38,6 +38,7 @@ interface ApiUserProfile {
   id?: EntityId
   firstname?: string
   lastname?: string
+  department?: string | null
   sectionId?: EntityId | null
   isRegular?: boolean
 }
@@ -54,6 +55,7 @@ interface ApiUser {
   firstName?: string
   lastName?: string
   profileId?: EntityId
+  department?: string | null
   sectionId?: EntityId | null
   isRegular?: boolean
   adminProfile?: ApiUserProfile | null
@@ -144,10 +146,35 @@ describe('userStore', () => {
       expect(store.users[0].lastName).toBe('User')
       expect(store.users[1].firstName).toBe('Instructor')
       expect(store.users[1].lastName).toBe('User')
+      expect(store.users[1].department).toBeNull()
       expect(store.users[2].firstName).toBe('Student')
       expect(store.users[2].lastName).toBe('User')
       expect(store.users[2].sectionId).toBe('1' as EntityId)
       expect(store.users[2].isRegular).toBe(true)
+    })
+
+    it('maps instructor department from nested instructor profiles', async () => {
+      const mockUsers = [
+        {
+          userId: '2' as EntityId,
+          username: 'instructor',
+          email: 'instructor@example.com',
+          role: ROLES.INSTRUCTOR,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          instructorProfile: createMockApiUserProfile({
+            firstname: 'Instructor',
+            lastname: 'User',
+            department: 'Engineering',
+          }),
+        },
+      ]
+      vi.mocked(api.get).mockResolvedValue(createAxiosResponse(mockUsers) as never)
+
+      const store = useUserStore()
+      await store.fetchUsers()
+
+      expect(store.users[0].department).toBe('Engineering')
     })
 
     it('normalizes legacy Teacher to Instructor', async () => {
@@ -317,7 +344,10 @@ describe('userStore', () => {
       const store = useUserStore()
       store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.INSTRUCTOR }) as ApiUser]
 
-      const userData = { firstName: 'Updated' }
+      const userData = {
+        firstName: 'Updated',
+        department: 'Engineering',
+      }
       vi.mocked(api.patch).mockResolvedValue({ data: { ...store.users[0], firstName: 'Updated' } } as never)
 
       await store.updateUser('1' as EntityId, userData)
