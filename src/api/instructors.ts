@@ -30,7 +30,7 @@ export async function getMySchedules(): Promise<InstructorCollectionDto> {
  */
 export async function getMyProfile(): Promise<InstructorDto> {
   try {
-    const response = await api.get('/instructors/me')
+    const response = await api.get('/instructors/profile')
     return response.data
   }
   catch (error) {
