@@ -303,6 +303,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
+    const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
@@ -335,6 +336,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1 && originalSessionSnapshot) {
         sessions.value[sessionIndex] = originalSessionSnapshot
       }
+      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+        currentSession.value = originalCurrentSession
+      }
 
       throw err
     }
@@ -357,6 +361,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
+    const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
@@ -385,6 +390,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1 && originalSessionSnapshot) {
         sessions.value[sessionIndex] = originalSessionSnapshot
       }
+      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+        currentSession.value = originalCurrentSession
+      }
 
       throw err
     }
@@ -406,6 +414,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     // Store original state for rollback
     const originalSessions = [...sessions.value]
     const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
@@ -434,6 +443,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
       // Rollback optimistic update
       sessions.value = originalSessions
+      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+        currentSession.value = originalCurrentSession
+      }
 
       throw err
     }
@@ -459,6 +471,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
     // Store original state for rollback
     const originalSession = sessions.value.find(s => s.id === sessionId)
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
+    const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
@@ -486,6 +499,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
       // Rollback optimistic update if any
       if (sessionIndex !== -1 && originalSessionSnapshot) {
         sessions.value[sessionIndex] = originalSessionSnapshot
+      }
+      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+        currentSession.value = originalCurrentSession
       }
 
       throw err

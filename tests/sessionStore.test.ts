@@ -272,11 +272,13 @@ describe('sessionStore', () => {
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'not_started' })]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'not_started' })
 
       const payload = {}
       const result = await store.startSession(1 as EntityId, payload)
 
       expect(store.sessions[0]).toEqual(updatedSession)
+      expect(store.currentSession).toEqual(updatedSession)
       expect(result).toEqual(updatedSession)
       expect(store.loading).toBe(false)
       expect(apiStartSession).toHaveBeenCalledWith(1 as EntityId, { rowVersion: 'row-version-1' })
@@ -288,11 +290,13 @@ describe('sessionStore', () => {
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'active' })
 
       const payload = {}
       const result = await store.endSession(1 as EntityId, payload)
 
       expect(store.sessions[0]).toEqual(updatedSession)
+      expect(store.currentSession).toEqual(updatedSession)
       expect(result).toEqual(updatedSession)
       expect(store.loading).toBe(false)
       expect(apiEndSession).toHaveBeenCalledWith(1 as EntityId, { rowVersion: 'row-version-1' })
@@ -304,11 +308,13 @@ describe('sessionStore', () => {
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })
 
       const payload = { actualRoomId: 202 }
       const result = await store.updateSessionRoom(1 as EntityId, payload)
 
       expect(store.sessions[0]).toEqual(updatedSession)
+      expect(store.currentSession).toEqual(updatedSession)
       expect(result).toEqual(updatedSession)
       expect(store.loading).toBe(false)
       expect(apiUpdateSessionRoom).toHaveBeenCalledWith(1 as EntityId, { actualRoomId: 202, rowVersion: 'row-version-1' })
@@ -323,11 +329,13 @@ describe('sessionStore', () => {
         createSession({ id: 1 as EntityId, status: 'not_started' }),
         createSession({ id: 2 as EntityId, status: 'not_started' }),
       ]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'not_started' })
 
       await store.deleteSession(1 as EntityId, 'Test cancellation reason')
 
       expect(store.sessions).toHaveLength(2)
       expect(store.sessions[0]).toEqual(cancelledSession)
+      expect(store.currentSession).toEqual(cancelledSession)
       expect(store.loading).toBe(false)
       expect(apiDeleteSession).toHaveBeenCalledWith(1 as EntityId, { reason: 'Test cancellation reason', rowVersion: 'row-version-1' })
     })
@@ -489,10 +497,12 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       const originalSession = createSession({ id: 1 as EntityId, status: 'not_started' })
       store.sessions = [originalSession]
+      store.currentSession = originalSession
 
       await expect(store.startSession(1 as EntityId)).rejects.toThrow(testError)
 
       expect(store.sessions[0]).toEqual(originalSession)
+      expect(store.currentSession).toEqual(originalSession)
       expect(store.loading).toBe(false)
     })
 
@@ -503,10 +513,12 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       const originalSession = createSession({ id: 1 as EntityId, status: 'active' })
       store.sessions = [originalSession]
+      store.currentSession = originalSession
 
       await expect(store.endSession(1 as EntityId)).rejects.toThrow(testError)
 
       expect(store.sessions[0]).toEqual(originalSession)
+      expect(store.currentSession).toEqual(originalSession)
       expect(store.loading).toBe(false)
     })
 
@@ -520,10 +532,12 @@ describe('sessionStore', () => {
         createSession({ id: 2 as EntityId, status: 'not_started' }),
       ]
       store.sessions = [...originalSessions]
+      store.currentSession = originalSessions[0]
 
       await expect(store.deleteSession(1 as EntityId, 'Test reason')).rejects.toThrow(testError)
 
       expect(store.sessions).toEqual(originalSessions)
+      expect(store.currentSession).toEqual(originalSessions[0])
       expect(store.loading).toBe(false)
     })
 
@@ -534,11 +548,13 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       const originalSession = createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })
       store.sessions = [originalSession]
+      store.currentSession = originalSession
 
       const payload = { actualRoomId: 202 }
       await expect(store.updateSessionRoom(1 as EntityId, payload)).rejects.toThrow(testError)
 
       expect(store.sessions[0]).toEqual(originalSession)
+      expect(store.currentSession).toEqual(originalSession)
       expect(store.loading).toBe(false)
     })
 
