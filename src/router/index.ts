@@ -19,6 +19,11 @@ const routes: RouteRecordRaw[] = [
     beforeEnter: [authGuard, adminGuard],
   },
   {
+    path: '/users/students/:studentId',
+    component: () => import('../views/StudentDetailView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
+  {
     path: '/sessions',
     component: () => import('../views/SessionsView.vue'),
     beforeEnter: [authGuard, instructorGuard],

@@ -251,56 +251,51 @@ POST   /api/students/{id}/restore
 
 ---
 
-### 3.4 Instructor Management ✅ **FULLY IMPLEMENTED**
+### 3.4 Instructor Management 🟡 **IMPLEMENTED THROUGH USER MANAGEMENT**
 
-Complete instructor management functionality has been implemented with full CRUD operations and admin capabilities.
+Instructor administration is implemented through the consolidated user-management workflow rather than a standalone `InstructorManagementView`.
 
 **Implemented Components:**
-- ✅ `src/api/instructors.js` with full CRUD operations and profile/schedule access
-- ✅ `src/stores/instructorStore.js` for comprehensive state management
-- ✅ `src/views/InstructorManagementView.vue` - Dedicated instructor management view with tabs
-- ✅ `src/components/tables/InstructorTableSection.vue` - Instructor table with pagination
-- ✅ Instructor menu item added to sidebar navigation
+- ✅ `src/api/instructors.ts` with instructor profile and schedule access
+- ✅ `src/views/UserManagementView.vue` for admin-side instructor listing, editing, delete/restore, and workload overview
+- ✅ `src/components/EditUserModal.vue` for instructor-specific field updates
+- ✅ `src/views/DashboardView.vue` for the current instructor's personal schedule overview
 
 **Implemented Features:**
 - ✅ Instructor CRUD operations (Create via User Management, Read, Update, Delete)
-- ✅ Dedicated instructor management view matching app theme
-- ✅ Active/Deleted instructors tabs with separate views
-- ✅ Instructor list view with pagination
+- ✅ Active/Archived instructor filtering inside User Management
 - ✅ Search and filtering by name and email
 - ✅ Edit instructor-specific fields via modal
+- ✅ Department management
 - ✅ Soft delete instructors with confirmation
 - ✅ Restore deleted instructors functionality
-- ✅ Instructor profile information display
 - ✅ View instructor schedules
-- ✅ Real-time counts (active instructors, deleted instructors)
-- ✅ Theme consistency with other management views
-- ✅ Instructor schedule overview (for current user)
+- ✅ Admin workload overview using instructor session reports
+- ✅ Instructor schedule overview for the current authenticated instructor
 
 **Architecture Notes:**
 - Instructors are created through User Management (role assignment), not directly
-- Instructor-specific fields can be edited in Instructor Management
-- User-related fields (name, email) must be edited in User Management
-- Follows proper separation of concerns between user accounts and instructor records
+- Instructor-specific fields are edited in the shared user-management modal
+- Instructor-to-section assignment is handled through Schedule management (`sectionId` + `instructorId`)
+- User-related fields (name, email) remain managed through User Management
 
-**Remaining Features:**
-- Assign instructors to sections (UI needed)
-- Instructor workload overview
-- Department/specialization management
+**Remaining Gaps:**
+- Documentation and component naming still reflect an older planned dedicated instructor-management screen
 
 **Backend Endpoints Available:**
 ```
-POST   /api/instructors
 GET    /api/instructors
 GET    /api/instructors/{id}
-GET    /api/instructors/me
+GET    /api/instructors/{id}/subjects
+GET    /api/instructors/profile
 GET    /api/instructors/me/schedules
-PUT    /api/instructors/{id}
-DELETE /api/instructors/{id}
-POST   /api/instructors/{id}/restore
+PATCH  /api/instructors/{id}
+PATCH  /api/users/{userId}/soft-delete
+PATCH  /api/users/{userId}/restore
+GET    /api/reports/instructor-sessions/{instructorId}
 ```
 
-**Impact:** Instructor data management is now available with complete functionality..
+**Impact:** Instructor data, workload, and department details are manageable in the current admin UI, but the implementation is consolidated rather than split into a separate instructor-only screen.
 
 ---
 
@@ -497,10 +492,10 @@ POST   /api/account/change-password
    - 🔲 Subject-section assignment via Schedule management
    - 🔲 Subject-section relationships visibility view
 
-9. **Enhanced Instructor Management** (Week 5-6) ✅ **COMPLETED**
-   - ✅ Instructor CRUD operations (FULLY IMPLEMENTED)
-   - 🔲 Instructor assignment to sections (UI needed)
-   - 🔲 Workload overview
+9. **Enhanced Instructor Management** (Week 5-6) 🟡 **CONSOLIDATED**
+   - ✅ Instructor CRUD operations
+   - ✅ Instructor assignment to sections via Schedule management
+   - ✅ Workload overview
    - ✅ Instructor profile management
 
 **Deliverables:**
@@ -578,7 +573,7 @@ POST   /api/account/change-password
 | **Enrollment** | 7 | 6 | 1 | 86% |
 | **Schedules** | 9 | 8 | 1 | 89% |
 | **Students** | 10 | 10 | 0 | 100% |
-| **Instructors** | 9 | 9 | 0 | 100% |
+| **Instructors** | 9 | 8 | 1 | 89% |
 | **Classrooms** | 7 | 7 | 0 | 100% |
 | **Subjects** | 6 | 6 | 0 | 100% |
 | **Reports** | 10 | 3 | 7 | 30% |

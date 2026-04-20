@@ -17,6 +17,7 @@ const password = ref('')
 const confirmPassword = ref('')
 const role = ref('')
 const sectionId = ref('')
+const department = ref('')
 const errorMessage = ref('')
 const passwordMismatchError = ref('')
 
@@ -30,6 +31,7 @@ watch(() => props.user, (newUser) => {
     confirmPassword.value = ''
     role.value = newUser.role || ''
     sectionId.value = newUser.sectionId || ''
+    department.value = newUser.department || ''
   }
 }, { immediate: true })
 
@@ -88,6 +90,7 @@ function updateUser() {
     FirstName: firstName.value,
     LastName: lastName.value,
     SectionId: role.value === 'Student' ? String(sectionId.value || '').trim() : null,
+    Department: role.value === 'Instructor' ? department.value.trim() : null,
   }
 
   // Only include password if provided
@@ -213,6 +216,17 @@ defineExpose({ handleError })
             required
           >
           <small class="helper-text info">Required for students</small>
+        </div>
+
+        <div v-if="role === 'Instructor'" class="form-group">
+          <label>Department</label>
+          <input
+            v-model="department"
+            type="text"
+            placeholder="Enter department"
+            maxlength="150"
+          >
+          <small class="helper-text info">Optional instructor department</small>
         </div>
 
         <!-- Actions -->

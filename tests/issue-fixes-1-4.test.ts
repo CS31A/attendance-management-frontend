@@ -114,7 +114,7 @@ describe('issue fixes 1-4', () => {
   it('updateUser uses instructors endpoint for Instructor compatibility role', async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
-    userStore.users = [{ userId: 1, role: 'Instructor' }] as unknown as MockUser[]
+    userStore.users = [{ userId: 1, role: 'Instructor', profileId: 1 }] as unknown as MockUser[]
 
     let endpoint = ''
     const originalPatch = api.patch

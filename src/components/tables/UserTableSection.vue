@@ -25,7 +25,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'softDelete', 'delete', 'restore', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
 
 function getRoleIcon(role) {
   const icons = {
@@ -54,6 +54,7 @@ function getRoleIcon(role) {
         @soft-delete="$emit('softDelete', $event)"
         @delete="$emit('delete', $event)"
         @restore="$emit('restore', $event)"
+        @view="$emit('view', $event)"
       />
 
       <!-- Pagination Controls -->
