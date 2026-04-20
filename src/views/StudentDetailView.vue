@@ -428,7 +428,7 @@ function goBack() {
 
 .badge {
   padding: 0.25rem 0.625rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
   background: var(--bg-hover);

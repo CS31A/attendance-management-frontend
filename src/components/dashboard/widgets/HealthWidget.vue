@@ -124,8 +124,9 @@ h3 {
 
 .status-badge {
   padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
+  color: white;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -135,8 +136,7 @@ h3 {
 }
 
 .status-badge.healthy {
-  background: linear-gradient(135deg, var(--color-success-bg), var(--color-success-light));
-  color: var(--color-success);
+  background: var(--color-success);
   border: 1px solid var(--color-success);
 }
 
