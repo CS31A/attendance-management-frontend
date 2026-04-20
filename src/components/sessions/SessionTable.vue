@@ -38,10 +38,10 @@ function getCourseName(session) {
 
 function getScheduleInfo(session) {
   const parts = []
-  if (session.scheduleCode)
-    parts.push(session.scheduleCode)
-  if (session.section)
-    parts.push(`Section ${session.section}`)
+  if (session.subjectCode)
+    parts.push(session.subjectCode)
+  if (session.sectionName)
+    parts.push(`Section ${session.sectionName}`)
   return parts.join(' • ') || 'No schedule info'
 }
 
