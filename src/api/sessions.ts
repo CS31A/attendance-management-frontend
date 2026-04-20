@@ -6,6 +6,7 @@ import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
 export interface SessionResponseDto {
   id: EntityId
   status: SessionStatus
+  rowVersion?: string
   sessionDate?: string
   subjectCode?: string
   subjectName?: string
@@ -26,14 +27,22 @@ export interface CreateSessionPayload {
 export interface StartSessionPayload {
   actualRoomId?: number
   attendanceCutoffMinutes?: number
+  rowVersion: string
 }
 
 export interface EndSessionPayload {
   description?: string
+  rowVersion: string
 }
 
 export interface UpdateSessionRoomPayload {
   actualRoomId: number
+  rowVersion: string
+}
+
+export interface DeleteSessionPayload {
+  reason: string
+  rowVersion: string
 }
 
 /**
@@ -210,7 +219,7 @@ export async function createSession(payload: CreateSessionPayload): Promise<Sess
  */
 export async function startSession(
   sessionId: EntityId,
-  payload: StartSessionPayload = {},
+  payload: StartSessionPayload,
 ): Promise<SessionResponseDto> {
   const response = await api.patch(`/sessions/${sessionId}/start`, payload)
   return response.data
@@ -236,7 +245,7 @@ export async function startSession(
  */
 export async function endSession(
   sessionId: EntityId,
-  payload: EndSessionPayload = {},
+  payload: EndSessionPayload,
 ): Promise<SessionResponseDto> {
   const response = await api.patch(`/sessions/${sessionId}/end`, payload)
   return response.data
@@ -250,16 +259,16 @@ export async function endSession(
  * only ended. Only the assigned instructor can delete a session.
  *
  * @param {number} sessionId - Session ID
- * @param {string} reason - Reason for cancelling the session (required, 5-500 characters)
+ * @param {DeleteSessionPayload} payload - Cancellation reason and rowVersion token
  * @returns {Promise<SessionResponseDto>} Cancelled session object with status 'cancelled'
  * @throws {Error} 403 if not assigned instructor, 400 if not in 'not_started' status or invalid reason
  *
  * @example
- * await deleteSession(123, 'Room unavailable')
+ * await deleteSession(123, { reason: 'Room unavailable', rowVersion: 'base64-token' })
  * console.log('Session cancelled successfully')
  */
-export async function deleteSession(sessionId: EntityId, reason: string): Promise<SessionResponseDto> {
-  const response = await api.delete(`/sessions/${sessionId}`, { data: { reason } })
+export async function deleteSession(sessionId: EntityId, payload: DeleteSessionPayload): Promise<SessionResponseDto> {
+  const response = await api.delete(`/sessions/${sessionId}`, { data: payload })
   return response.data
 }
 

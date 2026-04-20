@@ -1,5 +1,6 @@
 import type {
   CreateSessionPayload,
+  DeleteSessionPayload,
   EndSessionPayload,
   SessionResponseDto,
   StartSessionPayload,
@@ -295,7 +296,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    */
   const startSession = async (
     sessionId: EntityId,
-    payload: StartSessionPayload = {},
+    payload: Omit<StartSessionPayload, 'rowVersion'> = {},
   ) => {
     beginLoading()
 
@@ -314,11 +315,15 @@ export const useSessionStore = defineStore('sessionStore', () => {
         throw new Error('Session can only be started on its scheduled date')
       }
 
-      const updatedSession = await apiStartSession(sessionId, payload)
+      const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'start')
+      const updatedSession = await apiStartSession(sessionId, { ...payload, rowVersion })
 
       // Update local state
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
+      }
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value = updatedSession
       }
 
       return updatedSession
@@ -346,7 +351,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Updated session object
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
-  const endSession = async (sessionId: EntityId, payload: EndSessionPayload = {}) => {
+  const endSession = async (sessionId: EntityId, payload: Omit<EndSessionPayload, 'rowVersion'> = {}) => {
     beginLoading()
 
     // Store original state for rollback
@@ -360,11 +365,15 @@ export const useSessionStore = defineStore('sessionStore', () => {
         throw new Error('Only active sessions can be ended')
       }
 
-      const updatedSession = await apiEndSession(sessionId, payload)
+      const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'end')
+      const updatedSession = await apiEndSession(sessionId, { ...payload, rowVersion })
 
       // Update local state
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
+      }
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value = updatedSession
       }
 
       return updatedSession
@@ -396,18 +405,29 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     // Store original state for rollback
     const originalSessions = [...sessions.value]
-    const session = sessions.value.find(s => s.id === sessionId)
+    const originalSession = sessions.value.find(s => s.id === sessionId)
+    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
 
     try {
       // Client-side validation
-      if (session && session.status !== 'not_started') {
+      if (originalSession && originalSession.status !== 'not_started') {
         throw new Error('Only sessions in "not_started" status can be deleted')
       }
 
-      await apiDeleteSession(sessionId, reason)
+      const payload: DeleteSessionPayload = {
+        reason,
+        rowVersion: requireSessionRowVersion(originalSession, 'cancel'),
+      }
+      const updatedSession = await apiDeleteSession(sessionId, payload)
 
-      // Remove from local state
-      sessions.value = sessions.value.filter(s => s.id !== sessionId)
+      if (sessionIndex !== -1) {
+        sessions.value[sessionIndex] = updatedSession
+      }
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value = updatedSession
+      }
+
+      return updatedSession
     }
     catch (err) {
       console.error('Failed to delete session:', err)
@@ -432,7 +452,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    */
   const updateSessionRoom = async (
     sessionId: EntityId,
-    payload: UpdateSessionRoomPayload,
+    payload: Omit<UpdateSessionRoomPayload, 'rowVersion'>,
   ) => {
     beginLoading()
 
@@ -447,11 +467,15 @@ export const useSessionStore = defineStore('sessionStore', () => {
         throw new Error('Room can only be updated for active sessions')
       }
 
-      const updatedSession = await apiUpdateSessionRoom(sessionId, payload)
+      const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'update the room for')
+      const updatedSession = await apiUpdateSessionRoom(sessionId, { ...payload, rowVersion })
 
       // Update local state
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
+      }
+      if (currentSession.value?.id === sessionId) {
+        currentSession.value = updatedSession
       }
 
       return updatedSession
@@ -485,6 +509,17 @@ export const useSessionStore = defineStore('sessionStore', () => {
     sessions.value = []
     loadingCount.value = 0
     currentSession.value = null
+  }
+
+  function requireSessionRowVersion(
+    session: SessionResponseDto | null | undefined,
+    action: string,
+  ): string {
+    if (!session?.rowVersion) {
+      throw new Error(`Cannot ${action} this session without a rowVersion token`)
+    }
+
+    return session.rowVersion
   }
 
   // ==================== RETURN ====================

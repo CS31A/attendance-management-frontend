@@ -1,8 +1,8 @@
 <script setup>
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import { canStartSession } from '@/api/sessions'
-import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import { LOCALE } from '@/utils/constants'
+import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 defineProps({

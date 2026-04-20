@@ -2,9 +2,9 @@
 import { AlertTriangle, Check, Loader2, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
-import { LOCALE } from '@/utils/constants'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useUserStore } from '@/stores/userStore'
+import { LOCALE } from '@/utils/constants'
 import { parseUtcDate } from '@/utils/qrcode'
 
 const props = defineProps({

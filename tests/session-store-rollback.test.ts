@@ -52,6 +52,7 @@ function createSession(overrides: Partial<SessionResponseDto>): SessionResponseD
     id: 1,
     status: 'not_started',
     sessionDate: todaySessionDate,
+    rowVersion: 'row-version-1',
     ...overrides,
   }
 }
@@ -76,6 +77,7 @@ describe('session store rollback snapshots', () => {
 
       expect(result).toEqual(updatedSession)
       expect(store.sessions[0]?.status).toBe('active')
+      expect(store.sessions[0]?.rowVersion).toBe(updatedSession.rowVersion)
     })
 
     it('endSession updates session status to ended on successful API call', async () => {
@@ -89,6 +91,7 @@ describe('session store rollback snapshots', () => {
 
       expect(result).toEqual(updatedSession)
       expect(store.sessions[0]?.status).toBe('ended')
+      expect(store.sessions[0]?.rowVersion).toBe(updatedSession.rowVersion)
     })
 
     it('updateSessionRoom updates actualRoomId on successful API call', async () => {
@@ -102,6 +105,7 @@ describe('session store rollback snapshots', () => {
 
       expect(result).toEqual(updatedSession)
       expect(store.sessions[0]?.actualRoomId).toBe(202)
+      expect(store.sessions[0]?.rowVersion).toBe(updatedSession.rowVersion)
     })
   })
 
