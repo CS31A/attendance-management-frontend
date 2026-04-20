@@ -1,5 +1,5 @@
 <script setup>
-import { ArchiveRestore, ArchiveX, Calendar, Edit, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
+import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
 
 defineProps({
@@ -13,7 +13,7 @@ defineProps({
   },
 })
 
-defineEmits(['edit', 'softDelete', 'delete', 'restore'])
+defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view'])
 
 // Get role icon component
 function _getRoleIcon(role) {
@@ -120,6 +120,9 @@ function _getUserSection(user) {
             <div class="app-cell-actions">
               <button class="app-btn-icon app-btn-edit" title="Edit User" @click="$emit('edit', user)">
                 <Edit :size="16" />
+              </button>
+              <button v-if="user.role === 'Student'" class="app-btn-icon app-btn-view" title="View Student Details" @click="$emit('view', user)">
+                <Eye :size="16" />
               </button>
               <button v-if="showRestore" class="app-btn-icon app-btn-restore" title="Restore User" @click="$emit('restore', user)">
                 <ArchiveRestore :size="16" />

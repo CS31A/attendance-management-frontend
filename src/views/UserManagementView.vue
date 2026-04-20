@@ -4,6 +4,7 @@ import type { Id } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
@@ -12,6 +13,7 @@ import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useUserStore } from '@/stores/userStore'
+import { resolveStudentProfileId } from '@/utils/studentRoute'
 
 const CreateUserModal = defineAsyncComponent(() => import('@/components/CreateUserModal.vue'))
 const EditUserModal = defineAsyncComponent(() => import('@/components/EditUserModal.vue'))
@@ -21,6 +23,7 @@ const CustomDropdown = defineAsyncComponent(() => import('@/components/common/Cu
 type ManagedUser = ReturnType<typeof useUserStore>['users'][number]
 
 const userStore = useUserStore()
+const router = useRouter()
 
 interface EditableUser {
   userId?: string | number
@@ -199,6 +202,16 @@ function handleCancel() {
   showAddUser.value = false
   showEditUser.value = false
   editingUser.value = null
+}
+
+function handleViewStudent(user: ManagedUser) {
+  const studentProfileId = resolveStudentProfileId(user)
+  if (studentProfileId != null) {
+    router.push(`/users/students/${studentProfileId}`)
+    return
+  }
+
+  showToast('Student details are unavailable for this record.', 'error')
 }
 
 function handleSoftDeleteUser(user: ManagedUser | null) {
@@ -529,6 +542,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
         @restore="handleRestoreUser"
+        @view="handleViewStudent"
         @next-page="nextPage"
         @previous-page="previousPage"
         @go-to-page="goToPage"
@@ -546,6 +560,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
         @restore="handleRestoreUser"
+        @view="handleViewStudent"
       />
 
       <!-- Students Table -->
@@ -559,6 +574,7 @@ watch([debouncedSearchQuery, selectedRole], () => {
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
         @restore="handleRestoreUser"
+        @view="handleViewStudent"
       />
 
       <!-- Empty State -->
