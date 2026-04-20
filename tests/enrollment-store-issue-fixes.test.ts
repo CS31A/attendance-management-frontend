@@ -96,7 +96,10 @@ describe('enrollment store issue fixes', () => {
     await sectionRequest
     expect(store.isLoading).toBe(true)
 
-    studentDeferred.resolve(createAxiosResponse([{ id: 102, enrollmentId: 902 }]))
+    studentDeferred.resolve(createAxiosResponse({
+      studentId: 2,
+      enrollments: [{ id: 102, enrollmentId: 902 }],
+    }))
     await studentRequest
     expect(store.isLoading).toBe(false)
   })
@@ -198,7 +201,10 @@ describe('enrollment store issue fixes', () => {
       await expect(sectionRequest).rejects.toThrow('Section fetch failed')
       expect(store.isLoading).toBe(true)
 
-      studentDeferred.resolve(createAxiosResponse([{ id: 102, enrollmentId: 902 }]))
+      studentDeferred.resolve(createAxiosResponse({
+        studentId: 2,
+        enrollments: [{ id: 102, enrollmentId: 902 }],
+      }))
       await studentRequest
       expect(store.isLoading).toBe(false)
     })

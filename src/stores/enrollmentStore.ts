@@ -73,8 +73,8 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     error.value = ''
     try {
       const response = await enrollmentsApi.getStudentEnrollments(studentId)
-      studentEnrollments.value = response.data
-      return response.data
+      studentEnrollments.value = response.data.enrollments
+      return response.data.enrollments
     }
     catch (err) {
       console.error('Error fetching student enrollments:', err)

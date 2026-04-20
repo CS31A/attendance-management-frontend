@@ -36,6 +36,15 @@ export interface EnrollmentDto {
   [key: string]: unknown
 }
 
+export interface StudentSectionsResponseDto {
+  studentId: EntityId
+  enrollments: EnrollmentDto[]
+}
+
+export interface CheckEnrollmentResponse {
+  isEnrolled: boolean
+}
+
 export default {
   /**
    * Enroll a student in a section-subject combination
@@ -59,8 +68,8 @@ export default {
    * @param {EntityId} studentId - Student ID
    * @returns {Promise} Response with array of student enrollments
    */
-  getStudentEnrollments(studentId: EntityId): Promise<AxiosResponse<EnrollmentDto[]>> {
-    return api.get<EnrollmentDto[]>(`${ENROLLMENT_ENDPOINT}/student/${studentId}`)
+  getStudentEnrollments(studentId: EntityId): Promise<AxiosResponse<StudentSectionsResponseDto>> {
+    return api.get<StudentSectionsResponseDto>(`${ENROLLMENT_ENDPOINT}/student/${studentId}`)
   },
 
   /**
@@ -102,7 +111,7 @@ export default {
    * @param {EntityId} params.subjectId - Subject ID
    * @returns {Promise} Response with enrollment status
    */
-  checkEnrollment(params: EnrollmentStatusQuery): Promise<AxiosResponse<unknown>> {
-    return api.get(`${ENROLLMENT_ENDPOINT}/check`, { params })
+  checkEnrollment(params: EnrollmentStatusQuery): Promise<AxiosResponse<CheckEnrollmentResponse>> {
+    return api.get<CheckEnrollmentResponse>(`${ENROLLMENT_ENDPOINT}/check`, { params })
   },
 }

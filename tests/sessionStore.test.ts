@@ -1,9 +1,6 @@
 import type {
   CreateSessionPayload,
-  EndSessionPayload,
   SessionResponseDto,
-  StartSessionPayload,
-  UpdateSessionRoomPayload,
 } from '@/api/sessions'
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
@@ -48,6 +45,7 @@ function createSession(overrides: Partial<SessionResponseDto> = {}): SessionResp
     id: 1 as EntityId,
     status: 'not_started' as SessionStatus,
     sessionDate: todaySessionDate,
+    rowVersion: 'row-version-1',
     ...overrides,
   }
 }
@@ -269,76 +267,88 @@ describe('sessionStore', () => {
     })
 
     it('startSession replaces matching session on success', async () => {
-      const updatedSession = createSession({ id: 1 as EntityId, status: 'active' })
+      const updatedSession = createSession({ id: 1 as EntityId, status: 'active', rowVersion: 'row-version-2' })
       vi.mocked(apiStartSession).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'not_started' })]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'not_started' })
 
-      const payload: StartSessionPayload = {}
+      const payload = {}
       const result = await store.startSession(1 as EntityId, payload)
 
       expect(store.sessions[0]).toEqual(updatedSession)
+      expect(store.currentSession).toEqual(updatedSession)
       expect(result).toEqual(updatedSession)
       expect(store.loading).toBe(false)
+      expect(apiStartSession).toHaveBeenCalledWith(1 as EntityId, { rowVersion: 'row-version-1' })
     })
 
     it('endSession replaces matching session on success', async () => {
-      const updatedSession = createSession({ id: 1 as EntityId, status: 'ended' })
+      const updatedSession = createSession({ id: 1 as EntityId, status: 'ended', rowVersion: 'row-version-3' })
       vi.mocked(apiEndSession).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'active' })
 
-      const payload: EndSessionPayload = {}
+      const payload = {}
       const result = await store.endSession(1 as EntityId, payload)
 
       expect(store.sessions[0]).toEqual(updatedSession)
+      expect(store.currentSession).toEqual(updatedSession)
       expect(result).toEqual(updatedSession)
       expect(store.loading).toBe(false)
+      expect(apiEndSession).toHaveBeenCalledWith(1 as EntityId, { rowVersion: 'row-version-1' })
     })
 
     it('updateSessionRoom replaces matching session on success', async () => {
-      const updatedSession = createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 202 })
+      const updatedSession = createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 202, rowVersion: 'row-version-4' })
       vi.mocked(apiUpdateSessionRoom).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })
 
-      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
+      const payload = { actualRoomId: 202 }
       const result = await store.updateSessionRoom(1 as EntityId, payload)
 
       expect(store.sessions[0]).toEqual(updatedSession)
+      expect(store.currentSession).toEqual(updatedSession)
       expect(result).toEqual(updatedSession)
       expect(store.loading).toBe(false)
+      expect(apiUpdateSessionRoom).toHaveBeenCalledWith(1 as EntityId, { actualRoomId: 202, rowVersion: 'row-version-1' })
     })
 
-    it('deleteSession removes matching session', async () => {
-      vi.mocked(apiDeleteSession).mockResolvedValue({} as never)
+    it('deleteSession replaces matching session with cancelled response', async () => {
+      const cancelledSession = createSession({ id: 1 as EntityId, status: 'cancelled', rowVersion: 'row-version-5' })
+      vi.mocked(apiDeleteSession).mockResolvedValue(cancelledSession as never)
 
       const store = useSessionStore()
       store.sessions = [
         createSession({ id: 1 as EntityId, status: 'not_started' }),
         createSession({ id: 2 as EntityId, status: 'not_started' }),
       ]
+      store.currentSession = createSession({ id: 1 as EntityId, status: 'not_started' })
 
       await store.deleteSession(1 as EntityId, 'Test cancellation reason')
 
-      expect(store.sessions).toHaveLength(1)
-      expect(store.sessions[0].id).toBe(2 as EntityId)
+      expect(store.sessions).toHaveLength(2)
+      expect(store.sessions[0]).toEqual(cancelledSession)
+      expect(store.currentSession).toEqual(cancelledSession)
       expect(store.loading).toBe(false)
-      expect(apiDeleteSession).toHaveBeenCalledWith(1 as EntityId, 'Test cancellation reason')
+      expect(apiDeleteSession).toHaveBeenCalledWith(1 as EntityId, { reason: 'Test cancellation reason', rowVersion: 'row-version-1' })
     })
 
     it('deleteSession passes correct reason to API call', async () => {
-      vi.mocked(apiDeleteSession).mockResolvedValue({} as never)
+      vi.mocked(apiDeleteSession).mockResolvedValue(createSession({ id: 5 as EntityId, status: 'cancelled', rowVersion: 'row-version-6' }) as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 5 as EntityId, status: 'not_started' })]
 
       await store.deleteSession(5 as EntityId, 'Instructor sick')
 
-      expect(apiDeleteSession).toHaveBeenCalledWith(5 as EntityId, 'Instructor sick')
+      expect(apiDeleteSession).toHaveBeenCalledWith(5 as EntityId, { reason: 'Instructor sick', rowVersion: 'row-version-1' })
     })
 
     it('clearCurrentSession clears only current session', () => {
@@ -474,7 +484,7 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'not_started' })]
 
-      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
+      const payload = { actualRoomId: 202 }
       await expect(store.updateSessionRoom(1 as EntityId, payload)).rejects.toThrow('Room can only be updated for active sessions')
 
       expect(apiUpdateSessionRoom).not.toHaveBeenCalled()
@@ -487,10 +497,12 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       const originalSession = createSession({ id: 1 as EntityId, status: 'not_started' })
       store.sessions = [originalSession]
+      store.currentSession = originalSession
 
       await expect(store.startSession(1 as EntityId)).rejects.toThrow(testError)
 
       expect(store.sessions[0]).toEqual(originalSession)
+      expect(store.currentSession).toEqual(originalSession)
       expect(store.loading).toBe(false)
     })
 
@@ -501,10 +513,12 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       const originalSession = createSession({ id: 1 as EntityId, status: 'active' })
       store.sessions = [originalSession]
+      store.currentSession = originalSession
 
       await expect(store.endSession(1 as EntityId)).rejects.toThrow(testError)
 
       expect(store.sessions[0]).toEqual(originalSession)
+      expect(store.currentSession).toEqual(originalSession)
       expect(store.loading).toBe(false)
     })
 
@@ -518,10 +532,12 @@ describe('sessionStore', () => {
         createSession({ id: 2 as EntityId, status: 'not_started' }),
       ]
       store.sessions = [...originalSessions]
+      store.currentSession = originalSessions[0]
 
       await expect(store.deleteSession(1 as EntityId, 'Test reason')).rejects.toThrow(testError)
 
       expect(store.sessions).toEqual(originalSessions)
+      expect(store.currentSession).toEqual(originalSessions[0])
       expect(store.loading).toBe(false)
     })
 
@@ -532,59 +548,58 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       const originalSession = createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })
       store.sessions = [originalSession]
+      store.currentSession = originalSession
 
-      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
+      const payload = { actualRoomId: 202 }
       await expect(store.updateSessionRoom(1 as EntityId, payload)).rejects.toThrow(testError)
 
       expect(store.sessions[0]).toEqual(originalSession)
+      expect(store.currentSession).toEqual(originalSession)
       expect(store.loading).toBe(false)
     })
 
-    it('absent-local-session edge case: success returns API result without corrupting sessions', async () => {
+    it('absent-local-session edge case: startSession rejects when no rowVersion token is available', async () => {
       const updatedSession = createSession({ id: 99 as EntityId, status: 'active' })
       vi.mocked(apiStartSession).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'not_started' })]
 
-      const result = await store.startSession(99 as EntityId)
-
-      expect(result).toEqual(updatedSession)
+      await expect(store.startSession(99 as EntityId)).rejects.toThrow('rowVersion token')
       expect(store.sessions).toHaveLength(1)
       expect(store.sessions[0].id).toBe(1 as EntityId)
       expect(store.loading).toBe(false)
+      expect(apiStartSession).not.toHaveBeenCalled()
     })
 
-    it('endSession absent-local-session edge case: success returns API result without corrupting sessions', async () => {
+    it('endSession absent-local-session edge case: rejects when no rowVersion token is available', async () => {
       const updatedSession = createSession({ id: 99 as EntityId, status: 'ended' })
       vi.mocked(apiEndSession).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
 
-      const payload: EndSessionPayload = {}
-      const result = await store.endSession(99 as EntityId, payload)
-
-      expect(result).toEqual(updatedSession)
+      const payload = {}
+      await expect(store.endSession(99 as EntityId, payload)).rejects.toThrow('rowVersion token')
       expect(store.sessions).toHaveLength(1)
       expect(store.sessions[0].id).toBe(1 as EntityId)
       expect(store.loading).toBe(false)
+      expect(apiEndSession).not.toHaveBeenCalled()
     })
 
-    it('updateSessionRoom absent-local-session edge case: success returns API result without corrupting sessions', async () => {
+    it('updateSessionRoom absent-local-session edge case: rejects when no rowVersion token is available', async () => {
       const updatedSession = createSession({ id: 99 as EntityId, status: 'active', actualRoomId: 202 })
       vi.mocked(apiUpdateSessionRoom).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active', actualRoomId: 101 })]
 
-      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
-      const result = await store.updateSessionRoom(99 as EntityId, payload)
-
-      expect(result).toEqual(updatedSession)
+      const payload = { actualRoomId: 202 }
+      await expect(store.updateSessionRoom(99 as EntityId, payload)).rejects.toThrow('rowVersion token')
       expect(store.sessions).toHaveLength(1)
       expect(store.sessions[0].id).toBe(1 as EntityId)
       expect(store.loading).toBe(false)
+      expect(apiUpdateSessionRoom).not.toHaveBeenCalled()
     })
 
     it('endSession loading assertion while mutation request is pending', async () => {
@@ -613,7 +628,7 @@ describe('sessionStore', () => {
       const store = useSessionStore()
       store.sessions = [createSession({ id: 1 as EntityId, status: 'active' })]
 
-      const payload: UpdateSessionRoomPayload = { actualRoomId: 202 }
+      const payload = { actualRoomId: 202 }
       const request = store.updateSessionRoom(1 as EntityId, payload)
 
       expect(store.loading).toBe(true)

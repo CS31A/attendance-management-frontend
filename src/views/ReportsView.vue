@@ -4,9 +4,9 @@ import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineE
 import { BarChart3, CheckCircle, Download, FileSpreadsheet, FileX, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { exportToCsv, fetchReportsSummary } from '@/api/reports'
-import { LOCALE } from '@/utils/constants'
 import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
+import { LOCALE } from '@/utils/constants'
 
 const Bar = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Bar })))
 const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))

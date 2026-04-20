@@ -106,9 +106,14 @@ describe('enrollmentStore', () => {
       expect(store.loading).toBe(false)
     })
 
-    it('fetchStudentEnrollments stores API data and returns it', async () => {
+    it('fetchStudentEnrollments unwraps backend response and returns enrollments array', async () => {
       const mockEnrollments = [createEnrollment(), createEnrollment({ id: '2' as EntityId })]
-      vi.mocked(enrollmentsApi.getStudentEnrollments).mockResolvedValue({ data: mockEnrollments } as never)
+      vi.mocked(enrollmentsApi.getStudentEnrollments).mockResolvedValue({
+        data: {
+          studentId: '1' as EntityId,
+          enrollments: mockEnrollments,
+        },
+      } as never)
 
       const store = useEnrollmentStore()
       store.error = 'previous error'
@@ -261,7 +266,7 @@ describe('enrollmentStore', () => {
     })
 
     it('checkEnrollment forwards payload and returns API result', async () => {
-      const checkResult = { enrolled: true }
+      const checkResult = { isEnrolled: true }
       vi.mocked(enrollmentsApi.checkEnrollment).mockResolvedValue({ data: checkResult } as never)
 
       const store = useEnrollmentStore()
@@ -277,7 +282,7 @@ describe('enrollmentStore', () => {
     })
 
     it('checkEnrollment clears previous error on success', async () => {
-      const checkResult = { enrolled: true }
+      const checkResult = { isEnrolled: true }
       vi.mocked(enrollmentsApi.checkEnrollment).mockResolvedValue({ data: checkResult } as never)
 
       const store = useEnrollmentStore()

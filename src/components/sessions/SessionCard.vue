@@ -1,7 +1,7 @@
 <script setup>
 import { Calendar, Clock, MapPin } from 'lucide-vue-next'
-import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import { LOCALE } from '@/utils/constants'
+import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 /**

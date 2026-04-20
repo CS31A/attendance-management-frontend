@@ -168,7 +168,7 @@ function handleStartSession(session: SessionResponseDto) {
   showStartModal.value = true
 }
 
-async function handleConfirmStart(payload: StartSessionPayload) {
+async function handleConfirmStart(payload: Omit<StartSessionPayload, 'rowVersion'>) {
   errorMessage.value = ''
   if (!selectedSession.value)
     return
@@ -196,7 +196,7 @@ function handleEndSession(session: SessionResponseDto) {
   showEndModal.value = true
 }
 
-async function handleConfirmEnd(payload: EndSessionPayload) {
+async function handleConfirmEnd(payload: Omit<EndSessionPayload, 'rowVersion'>) {
   errorMessage.value = ''
   if (!selectedSession.value)
     return
@@ -229,7 +229,7 @@ function handleUpdateRoom(session: SessionResponseDto) {
   showUpdateRoomModal.value = true
 }
 
-async function handleConfirmUpdateRoom(payload: UpdateSessionRoomPayload) {
+async function handleConfirmUpdateRoom(payload: Omit<UpdateSessionRoomPayload, 'rowVersion'>) {
   errorMessage.value = ''
   if (!selectedSession.value)
     return

@@ -1,8 +1,8 @@
 <script setup>
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import { canStartSession } from '@/api/sessions'
-import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import { LOCALE } from '@/utils/constants'
+import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 defineProps({
@@ -38,10 +38,10 @@ function getCourseName(session) {
 
 function getScheduleInfo(session) {
   const parts = []
-  if (session.scheduleCode)
-    parts.push(session.scheduleCode)
-  if (session.section)
-    parts.push(`Section ${session.section}`)
+  if (session.subjectCode)
+    parts.push(session.subjectCode)
+  if (session.sectionName)
+    parts.push(`Section ${session.sectionName}`)
   return parts.join(' • ') || 'No schedule info'
 }
 
