@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { SectionDto, SectionPayload } from '@/api/sections'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 import sectionsApi from '@/api/sections'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -17,13 +18,11 @@ import { useToast } from '@/composables/useToast'
 import { useSectionStore } from '@/stores/sectionStore'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
-const EnrollmentModal = defineAsyncComponent(() => import('@/components/sections/EnrollmentModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
 
 const sectionsStore = useSectionStore()
 const { showModal, selectedEntity: selectedSection, modalRef } = useModalState<SectionDto>()
-const showEnrollmentModal = ref(false)
-const selectedEnrollmentSection = ref<SectionDto | null>(null)
+const router = useRouter()
 
 const sections = computed(() => sectionsStore.getSections)
 
@@ -42,13 +41,7 @@ const {
 } = useLocalPagination({ items: sections })
 
 function openEnrollmentModal(section: SectionDto) {
-  selectedEnrollmentSection.value = section
-  showEnrollmentModal.value = true
-}
-
-function closeEnrollmentModal() {
-  showEnrollmentModal.value = false
-  selectedEnrollmentSection.value = null
+  router.push(`/sections/${section.id}/enrollments`)
 }
 
 const { toast, showToast, closeToast } = useToast()
@@ -182,13 +175,6 @@ onMounted(async () => {
       :loading="sectionsStore.loading"
       @save="handleSaveSection"
       @cancel="closeModal"
-    />
-
-    <!-- Enrollment Modal -->
-    <EnrollmentModal
-      v-if="showEnrollmentModal && selectedEnrollmentSection"
-      :section="selectedEnrollmentSection"
-      @close="closeEnrollmentModal"
     />
 
     <!-- Delete Modal -->

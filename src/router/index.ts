@@ -58,6 +58,11 @@ const routes: RouteRecordRaw[] = [
     beforeEnter: [authGuard, adminGuard],
   },
   {
+    path: '/sections/:sectionId/enrollments',
+    component: () => import('../views/SectionEnrollmentsView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
+  {
     path: '/courses',
     component: () => import('../views/CourseView.vue'),
     beforeEnter: [authGuard, adminGuard],
