@@ -890,7 +890,7 @@ async function copyToClipboard(field: 'username' | 'role' | 'userId', value: str
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
