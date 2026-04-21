@@ -295,11 +295,6 @@ defineExpose({ handleError })
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.375rem;
-  transition: background-color 0.2s ease;
-}
-
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .btn-close svg {

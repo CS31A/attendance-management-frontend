@@ -6,7 +6,7 @@ import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
 import type { FormFieldConfig, FormOption } from '@/types/ui'
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
 import sectionsApi from '@/api/sections'
@@ -16,6 +16,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
+import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
@@ -24,6 +25,7 @@ import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
+import { matchesSearchQuery } from '@/utils/search'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -168,6 +170,7 @@ const alertModalConfig = ref({
 const filteredInstructorId = ref<EntityId | null>(null)
 const filteredInstructorName = ref('')
 const isLoadingInstructorFilter = ref(false)
+const searchQuery = ref('')
 
 const schedules = computed(() => {
   const allSchedules = scheduleStore.sortedSchedules
@@ -181,6 +184,32 @@ const schedules = computed(() => {
   return allSchedules
 })
 
+const filteredSchedules = computed(() =>
+  schedules.value.filter(schedule =>
+    matchesSearchQuery(searchQuery.value, [
+      schedule.id,
+      schedule.dayOfWeek,
+      schedule.timeIn,
+      schedule.timeOut,
+      schedule.subject?.name,
+      schedule.subjectName,
+      schedule.subject?.code,
+      schedule.subjectCode,
+      schedule.section?.name,
+      schedule.sectionName,
+      schedule.classroom?.name,
+      schedule.classroomName,
+      schedule.instructor?.firstName,
+      schedule.instructor?.firstname,
+      schedule.instructor?.lastName,
+      schedule.instructor?.lastname,
+      schedule.instructorFirstName,
+      schedule.instructorLastName,
+      `${schedule.instructor?.firstName || schedule.instructor?.firstname || schedule.instructorFirstName || ''} ${schedule.instructor?.lastName || schedule.instructor?.lastname || schedule.instructorLastName || ''}`.trim(),
+    ]),
+  ),
+)
+
 const {
   currentPage,
   itemsPerPage,
@@ -193,7 +222,8 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: schedules })
+  resetToFirstPage,
+} = useLocalPagination({ items: filteredSchedules })
 
 const { toast, showToast, closeToast } = useToast()
 
@@ -283,6 +313,10 @@ onMounted(async () => {
     showToast('Failed to load schedules. Please try again.', 'error')
   }
 })
+
+watch(searchQuery, () => {
+  resetToFirstPage()
+})
 </script>
 
 <template>
@@ -360,17 +394,25 @@ onMounted(async () => {
         </div>
       </div>
 
+      <div class="management-toolbar">
+        <ManagementSearchBar
+          v-model="searchQuery"
+          placeholder="Search schedules by subject, section, classroom, or instructor..."
+          :result-count="totalSchedules"
+        />
+      </div>
+
       <ScheduleList
         :schedules="paginatedSchedules"
         title="All Schedules"
-        :pagination="{
+        :pagination="totalSchedules > 0 ? {
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
           totalSchedules,
           itemsPerPage,
-        }"
+        } : null"
         :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
@@ -513,6 +555,11 @@ onMounted(async () => {
 /* Filter Badge */
 .filter-badge-container {
   margin-bottom: 1rem;
+}
+
+.management-toolbar {
+  margin-bottom: 1rem;
+  max-width: 36rem;
 }
 
 .filter-badge {

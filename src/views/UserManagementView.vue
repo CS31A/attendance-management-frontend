@@ -3,14 +3,15 @@ import type { InstructorSessionsReportDto } from '@/api/reports'
 import type { CreateUserInput } from '@/stores/userStore'
 import type { Id } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
-import { AlertTriangle, Plus, Users, X } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchInstructorSessionsReport } from '@/api/reports'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
@@ -36,8 +37,6 @@ const showAddUser = ref(false)
 const showEditUser = ref(false)
 const editingUser = ref<EditableUser | null>(null)
 const searchQuery = ref('')
-const debouncedSearchQuery = ref('')
-const isSearching = ref(false)
 const selectedRole = ref<'All Roles' | 'Instructor' | 'Student'>('All Roles')
 const viewMode = ref<'Active' | 'Archived' | 'All'>('Active')
 const createModal = ref<HandleErrorableModal | null>(null)
@@ -47,48 +46,10 @@ const instructorWorkload = ref<InstructorSessionsReportDto | null>(null)
 const instructorWorkloadLoading = ref(false)
 const instructorWorkloadError = ref('')
 
-// Debounce timer reference
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
-const DEBOUNCE_DELAY = 300 // milliseconds
-
-// Debounced search handler
-function handleSearchInput(value: string) {
-  searchQuery.value = value
-  isSearching.value = true
-
-  // Clear previous timer
-  if (debounceTimer) {
-    clearTimeout(debounceTimer)
-  }
-
-  // Set new timer
-  debounceTimer = setTimeout(() => {
-    debouncedSearchQuery.value = value
-    isSearching.value = false
-  }, DEBOUNCE_DELAY)
-}
-
-function handleSearchInputEvent(event: Event) {
-  const target = event.target as HTMLInputElement | null
-  handleSearchInput(target?.value ?? '')
-}
-
 // Clear search
 function clearSearch() {
   searchQuery.value = ''
-  debouncedSearchQuery.value = ''
-  isSearching.value = false
-  if (debounceTimer) {
-    clearTimeout(debounceTimer)
-  }
 }
-
-// Cleanup on unmount
-onUnmounted(() => {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer)
-  }
-})
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -128,11 +89,11 @@ watch(viewMode, async (newMode) => {
 })
 
 const filteredUsers = computed(() =>
-  userStore.filteredUsers(debouncedSearchQuery.value, selectedRole.value),
+  userStore.filteredUsers(searchQuery.value, selectedRole.value),
 )
 
 const paginatedUsers = computed(() =>
-  userStore.paginatedUsers(debouncedSearchQuery.value, selectedRole.value),
+  userStore.paginatedUsers(searchQuery.value, selectedRole.value),
 )
 
 const filteredInstructors = computed(() =>
@@ -172,11 +133,11 @@ const workloadSessions = computed(() => instructorWorkload.value?.sessions ?? []
 
 // Pagination computed properties
 const totalPages = computed(() =>
-  userStore.totalPages(debouncedSearchQuery.value, selectedRole.value),
+  userStore.totalPages(searchQuery.value, selectedRole.value),
 )
 
 const hasNextPage = computed(() =>
-  userStore.hasNextPage(debouncedSearchQuery.value, selectedRole.value),
+  userStore.hasNextPage(searchQuery.value, selectedRole.value),
 )
 
 const hasPreviousPage = computed(() =>
@@ -193,7 +154,7 @@ const totalUsers = computed(() =>
 
 // Check if there's an active search
 const hasActiveSearch = computed(() =>
-  searchQuery.value.length > 0,
+  searchQuery.value.trim().length > 0,
 )
 
 // Toast state and helpers
@@ -431,7 +392,7 @@ function handleEditUser(user: ManagedUser) {
 
 // Pagination methods
 function nextPage() {
-  userStore.nextPage(debouncedSearchQuery.value, selectedRole.value)
+  userStore.nextPage(searchQuery.value, selectedRole.value)
 }
 
 function previousPage() {
@@ -439,15 +400,15 @@ function previousPage() {
 }
 
 function goToPage(page: number) {
-  userStore.goToPage(page, debouncedSearchQuery.value, selectedRole.value)
+  userStore.goToPage(page, searchQuery.value, selectedRole.value)
 }
 
 function setItemsPerPage(itemsPerPage: number) {
   userStore.setItemsPerPage(itemsPerPage)
 }
 
-// Reset pagination when debounced search or filter changes
-watch([debouncedSearchQuery, selectedRole], () => {
+// Reset pagination when search or filter changes
+watch([searchQuery, selectedRole], () => {
   userStore.setCurrentPage(1)
 })
 
@@ -552,7 +513,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
               :export-params="{
                 status: viewMode,
                 role: selectedRole !== 'All Roles' ? selectedRole : undefined,
-                search: debouncedSearchQuery || undefined,
+                search: searchQuery || undefined,
               }"
               @success="showToast($event, 'success')"
               @error="showToast($event, 'error')"
@@ -571,36 +532,11 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
 
       <!-- Filters Section -->
       <div class="filters-section">
-        <div class="live-search-container">
-          <div class="search-input-wrapper" :class="{ 'is-searching': isSearching, 'has-value': hasActiveSearch }">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input
-              :value="searchQuery"
-              type="text"
-              placeholder="Search by name or email..."
-              class="live-search-input"
-              @input="handleSearchInputEvent"
-            >
-            <div v-if="isSearching" class="search-spinner">
-              <div class="spinner" />
-            </div>
-            <button
-              v-else-if="hasActiveSearch"
-              type="button"
-              class="clear-search-btn"
-              title="Clear search"
-              @click="clearSearch"
-            >
-              <X :size="16" />
-            </button>
-          </div>
-          <div v-if="hasActiveSearch && !isSearching" class="search-results-info">
-            <span class="results-count">{{ totalUsers }} result{{ totalUsers !== 1 ? 's' : '' }} found</span>
-          </div>
-        </div>
+        <ManagementSearchBar
+          v-model="searchQuery"
+          placeholder="Search by name or email..."
+          :result-count="totalUsers"
+        />
 
         <div class="role-filter">
           <CustomDropdown
@@ -1144,115 +1080,6 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
   margin-bottom: 1rem;
 }
 
-/* Live Search Styles */
-.live-search-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.search-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.125rem;
-  height: 1.125rem;
-  color: var(--color-gray-400);
-  pointer-events: none;
-  transition: color 0.2s ease;
-}
-
-.search-input-wrapper.is-searching .search-icon,
-.search-input-wrapper.has-value .search-icon {
-  color: var(--color-primary);
-}
-
-.live-search-input {
-  width: 100%;
-  padding: 0.625rem 2.5rem 0.625rem 2.75rem;
-  border: 2px solid var(--color-gray-200);
-  border-radius: 12px;
-  font-size: 0.875rem;
-  background: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.live-search-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 8px 25px rgba(30, 58, 138, 0.2);
-  transform: translateY(-2px);
-}
-
-.search-input-wrapper.is-searching .live-search-input {
-  border-color: var(--color-primary-light);
-}
-
-.search-spinner {
-  position: absolute;
-  right: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--color-gray-200);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.clear-search-btn {
-  position: absolute;
-  right: 0.625rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--color-gray-100);
-  border: none;
-  border-radius: 50%;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-gray-500);
-  transition: all 0.2s ease;
-}
-
-.clear-search-btn:hover {
-  background: var(--color-gray-200);
-  color: var(--color-gray-700);
-}
-
-.search-results-info {
-  padding-left: 0.25rem;
-}
-
-.results-count {
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-  font-weight: 500;
-}
-
 .role-filter {
   min-width: 180px;
 }
@@ -1507,12 +1334,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
     gap: 1rem;
   }
 
-  .live-search-container {
-    order: 1;
-  }
-
   .role-filter {
-    order: 2;
     min-width: 100%;
   }
 }
@@ -1528,16 +1350,6 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
 
   .page-subtitle {
     font-size: 0.95rem;
-  }
-
-  .search-input {
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    font-size: 0.9rem;
-  }
-
-  .filter-select {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
   }
 
   .empty-state {
@@ -1582,22 +1394,6 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
 
   .filters-section {
     margin-bottom: 1.5rem;
-  }
-
-  .search-input {
-    padding: 0.625rem 0.875rem 0.625rem 2.25rem;
-    font-size: 0.85rem;
-  }
-
-  .search-icon {
-    width: 1rem;
-    height: 1rem;
-    left: 0.75rem;
-  }
-
-  .filter-select {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.85rem;
   }
 
   .empty-state {
@@ -1648,22 +1444,6 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
 
   .filters-section {
     margin-bottom: 1rem;
-  }
-
-  .search-input {
-    padding: 0.5rem 0.75rem 0.5rem 2rem;
-    font-size: 0.8rem;
-  }
-
-  .search-icon {
-    width: 0.875rem;
-    height: 0.875rem;
-    left: 0.625rem;
-  }
-
-  .filter-select {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
   }
 
   .empty-state {

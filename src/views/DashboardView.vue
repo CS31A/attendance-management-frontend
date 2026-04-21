@@ -1235,8 +1235,8 @@ onBeforeUnmount(() => {
 }
 
 .session-status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;

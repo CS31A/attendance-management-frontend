@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, BookOpen, Loader2, X } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useCourseStore } from '@/stores/courseStore'
 
 const props = defineProps({
   section: {
@@ -14,6 +15,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel'])
+
+const courseStore = useCourseStore()
 
 // Form data
 const name = ref('')
@@ -31,6 +34,13 @@ watch(() => props.section, (newSection) => {
     courseId.value = ''
   }
 }, { immediate: true })
+
+// Fetch courses on mount
+onMounted(async () => {
+  if (!courseStore.hasCourses) {
+    await courseStore.fetchCourses()
+  }
+})
 
 // Computed properties
 const isEditMode = computed(() => !!props.section)
@@ -110,17 +120,25 @@ defineExpose({ handleError })
           <small class="helper-text info">Must be at least 4 characters</small>
         </div>
 
-        <!-- Course ID Field -->
+        <!-- Course Field -->
         <div class="form-group">
-          <label>Course ID *</label>
-          <input
+          <label>Course *</label>
+          <select
             v-model="courseId"
-            type="number"
-            placeholder="Enter course ID"
+            class="form-select"
             required
-            min="1"
+            :disabled="courseStore.loading"
           >
-          <small class="helper-text info">The ID of the course this section belongs to</small>
+            <option value="" disabled>
+              Select a course
+            </option>
+            <option v-for="course in courseStore.sortedCourses" :key="course.id" :value="course.id">
+              {{ course.name }}
+            </option>
+          </select>
+          <small v-if="courseStore.loading" class="helper-text info">Loading courses...</small>
+          <small v-else-if="!courseStore.hasCourses" class="helper-text error">No courses available</small>
+          <small v-else class="helper-text info">Select the course this section belongs to</small>
         </div>
 
         <!-- Actions -->
@@ -187,15 +205,9 @@ defineExpose({ handleError })
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
 }
 
 .modal-body {
@@ -227,7 +239,8 @@ defineExpose({ handleError })
   pointer-events: none;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   display: block;
   width: 100%;
   padding: 0.75rem 1rem;
@@ -240,15 +253,22 @@ defineExpose({ handleError })
   background-color: var(--color-gray-50);
 }
 
-/* Adjust padding for inputs without icons */
-.form-group input[type="number"] {
+/* Adjust padding for inputs/selects without icons */
+.form-group input[type="number"],
+.form-group select {
   padding-left: 1rem;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   border-color: var(--color-primary);
   background-color: white;
   box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
+}
+
+.form-group select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .helper-text {
@@ -259,6 +279,10 @@ defineExpose({ handleError })
 
 .helper-text.info {
   color: var(--color-gray-500);
+}
+
+.helper-text.error {
+  color: var(--color-error);
 }
 
 .actions {

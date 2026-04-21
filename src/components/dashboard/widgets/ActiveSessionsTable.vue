@@ -143,10 +143,10 @@ h3 {
 }
 
 .badge {
-  background: linear-gradient(135deg, var(--color-success-bg), var(--color-success-light));
-  color: var(--color-success);
+  background: var(--color-success);
+  color: white;
   padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
   border: 1px solid var(--color-success);

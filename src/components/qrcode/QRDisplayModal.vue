@@ -264,13 +264,7 @@ onUnmounted(() => {
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 0.25rem;
-  transition: all 0.2s;
   display: flex;
-}
-
-.btn-close:hover {
-  background: var(--color-gray-100);
-  color: var(--color-gray-600);
 }
 
 .modal-body {
