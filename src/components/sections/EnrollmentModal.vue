@@ -347,8 +347,8 @@ watch(() => props.section, () => {
   background: white;
   border-radius: 16px;
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
+  max-width: 1200px;
+  max-height: 95vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -433,22 +433,23 @@ watch(() => props.section, () => {
 /* Actions Bar */
 .actions-bar {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .actions-controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .search-wrapper {
   position: relative;
-  flex: 1;
-  max-width: 300px;
+  width: 100%;
+  max-width: 400px;
 }
 
 .search-icon {
@@ -461,10 +462,17 @@ watch(() => props.section, () => {
 
 .search-input {
   width: 100%;
-  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
   border: 1px solid var(--color-gray-200);
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .btn-primary {
@@ -672,9 +680,9 @@ watch(() => props.section, () => {
     padding: 1.25rem;
   }
 
-  .actions-bar {
+  .actions-controls {
     flex-direction: column;
-    gap: 0.75rem;
+    align-items: stretch;
   }
 
   .search-wrapper {
@@ -771,6 +779,11 @@ watch(() => props.section, () => {
     padding: 0.75rem;
   }
 
+  .actions-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   /* Make table horizontally scrollable */
   .students-list {
     overflow-x: auto;
@@ -856,6 +869,11 @@ watch(() => props.section, () => {
   .form-input {
     padding: 0.375rem 0.5rem;
     font-size: 0.85rem;
+  }
+
+  .actions-controls {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .data-table {
