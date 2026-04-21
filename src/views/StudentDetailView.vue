@@ -15,8 +15,10 @@ import { parseStudentRouteParam, resolveStudentProfileId } from '@/utils/student
 
 const route = useRoute()
 const router = useRouter()
-const studentIdParam = Array.isArray(route.params.studentId) ? route.params.studentId[0] : route.params.studentId
-const studentId = computed(() => parseStudentRouteParam(studentIdParam as string | undefined))
+const studentId = computed(() => {
+  const rawStudentId = Array.isArray(route.params.studentId) ? route.params.studentId[0] : route.params.studentId
+  return parseStudentRouteParam(rawStudentId as string | undefined)
+})
 
 const enrollmentStore = useEnrollmentStore()
 const userStore = useUserStore()

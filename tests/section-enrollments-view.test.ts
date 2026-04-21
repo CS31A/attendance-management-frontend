@@ -1,7 +1,7 @@
+import type { EnrollmentDto } from '@/api/enrollments'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { reactive } from 'vue'
-import type { EnrollmentDto } from '@/api/enrollments'
 import SectionEnrollmentsView from '@/views/SectionEnrollmentsView.vue'
 
 const route = reactive({

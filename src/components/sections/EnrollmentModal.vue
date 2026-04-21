@@ -85,7 +85,7 @@ async function handleEnroll() {
   try {
     errorMessage.value = ''
     await enrollmentStore.enrollStudent({
-      studentId: selectedStudentId.value,
+      studentId: Number(selectedStudentId.value),
       sectionId: props.section.id,
       subjectId: Number(subjectId.value),
       enrollmentType: enrollmentType.value,
