@@ -48,6 +48,13 @@ async function loadDropdownData() {
       userStore.fetchUsers(),
       subjectStore.fetchSubjects(),
     ])
+
+    const dropdownErrors = [userStore.error, subjectStore.error].filter(
+      message => typeof message === 'string' && message.trim().length > 0,
+    )
+    if (dropdownErrors.length > 0) {
+      emit('error', dropdownErrors.join(' '))
+    }
   }
   catch {
     emit('error', 'Failed to load dropdown data')
@@ -100,8 +107,8 @@ function handleClose() {
 }
 
 // Watch for modal open to lazy-load dropdown data
-watch(() => props.section, () => {
-  loadDropdownData()
+watch(() => props.section.id, () => {
+  void loadDropdownData()
 }, { immediate: true })
 </script>
 

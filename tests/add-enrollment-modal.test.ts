@@ -17,6 +17,7 @@ const userStore = {
     { id: 11, firstName: 'Ada', lastName: 'Lovelace', studentId: '2026-0001' },
   ],
   loading: false,
+  error: '',
 }
 
 const subjectStore = {
@@ -26,6 +27,7 @@ const subjectStore = {
     { id: 9, name: 'Operating Systems' },
   ],
   loading: false,
+  error: '',
 }
 
 const mountedWrappers: Array<ReturnType<typeof mount>> = []
@@ -48,6 +50,8 @@ describe('addEnrollmentModal', () => {
     fetchUsers.mockResolvedValue([])
     fetchSubjects.mockResolvedValue([])
     enrollStudent.mockResolvedValue({})
+    userStore.error = ''
+    subjectStore.error = ''
   })
 
   afterEach(() => {
@@ -104,5 +108,17 @@ describe('addEnrollmentModal', () => {
       semester: '1st',
     })
     expect(wrapper.emitted('success')).toBeTruthy()
+  })
+
+  it('emits dropdown loading errors surfaced by stores', async () => {
+    userStore.error = 'Failed to fetch users'
+    subjectStore.error = 'Failed to fetch subjects'
+
+    const wrapper = mountModal()
+    await flushPromises()
+
+    expect(wrapper.emitted('error')).toEqual([[
+      'Failed to fetch users Failed to fetch subjects',
+    ]])
   })
 })

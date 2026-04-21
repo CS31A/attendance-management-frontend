@@ -41,6 +41,16 @@ const userStore = {
 
 const mountedWrappers: Array<ReturnType<typeof mount>> = []
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
 vi.mock('vue-router', () => ({
   useRoute: () => route,
   useRouter: () => ({ push }),
@@ -155,6 +165,44 @@ describe('sectionEnrollmentsView', () => {
     route.params.sectionId = '2'
     await flushPromises()
 
+    expect(getSection).toHaveBeenNthCalledWith(2, 2)
+    expect(fetchSectionStudents).toHaveBeenNthCalledWith(2, 2)
+    expect(wrapper.text()).toContain('Section Two')
+  })
+
+  it('queues rapid sectionId changes and resolves to the latest section data', async () => {
+    const firstSectionRequest = createDeferred<{ id: number, name: string }>()
+    const firstStudentsRequest = createDeferred<EnrollmentDto[]>()
+
+    getSection
+      .mockImplementationOnce(() => firstSectionRequest.promise)
+      .mockResolvedValueOnce({
+        id: 2,
+        name: 'Section Two',
+      })
+
+    fetchSectionStudents
+      .mockImplementationOnce(() => firstStudentsRequest.promise)
+      .mockResolvedValueOnce([])
+
+    const wrapper = mountView()
+    await flushPromises()
+    expect(getSection).toHaveBeenCalledTimes(1)
+
+    route.params.sectionId = '2'
+    await flushPromises()
+    expect(getSection).toHaveBeenCalledTimes(1)
+
+    firstSectionRequest.resolve({
+      id: 1,
+      name: 'Section One',
+    })
+    firstStudentsRequest.resolve([])
+
+    await flushPromises()
+    await flushPromises()
+
+    expect(getSection).toHaveBeenCalledTimes(2)
     expect(getSection).toHaveBeenNthCalledWith(2, 2)
     expect(fetchSectionStudents).toHaveBeenNthCalledWith(2, 2)
     expect(wrapper.text()).toContain('Section Two')

@@ -48,6 +48,8 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(true)
 const invalidLink = ref(false)
+let pendingSectionFetchId: number | null | undefined
+let isProcessingSectionFetch = false
 
 // Computed
 const enrolledStudents = computed(() => enrollmentStore.getSectionStudents)
@@ -77,22 +79,22 @@ const filteredEnrolledStudents = computed(() => {
   )
 })
 
-async function fetchData() {
+async function fetchDataForSection(currentSectionId: number | null) {
   loading.value = true
   errorMessage.value = ''
   invalidLink.value = false
   section.value = null
 
   try {
-    if (sectionId.value == null) {
+    if (currentSectionId == null) {
       invalidLink.value = true
       errorMessage.value = 'Invalid section details link.'
       return
     }
 
     const [sectionData] = await Promise.all([
-      sectionStore.getSection(sectionId.value),
-      enrollmentStore.fetchSectionStudents(sectionId.value),
+      sectionStore.getSection(currentSectionId),
+      enrollmentStore.fetchSectionStudents(currentSectionId),
     ])
 
     section.value = sectionData
@@ -104,6 +106,29 @@ async function fetchData() {
   finally {
     loading.value = false
   }
+}
+
+async function processSectionFetchQueue() {
+  if (isProcessingSectionFetch)
+    return
+
+  isProcessingSectionFetch = true
+
+  try {
+    while (pendingSectionFetchId !== undefined) {
+      const sectionIdToFetch = pendingSectionFetchId
+      pendingSectionFetchId = undefined
+      await fetchDataForSection(sectionIdToFetch)
+    }
+  }
+  finally {
+    isProcessingSectionFetch = false
+  }
+}
+
+function fetchData() {
+  pendingSectionFetchId = sectionId.value
+  void processSectionFetchQueue()
 }
 
 async function handleDrop(enrollmentId: EntityId) {
@@ -153,8 +178,9 @@ function goBack() {
   router.push('/sections')
 }
 
-watch(sectionId, () => {
-  fetchData()
+watch(sectionId, (nextSectionId) => {
+  pendingSectionFetchId = nextSectionId
+  void processSectionFetchQueue()
 }, { immediate: true })
 </script>
 
