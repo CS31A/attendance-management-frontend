@@ -2,11 +2,12 @@
 import type { SubjectDto, SubjectPayload } from '@/api/subjects'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
+import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
@@ -14,6 +15,7 @@ import { useModalState } from '@/composables/useModalState'
 import { createSubjectDeleteFlow } from '@/composables/useSubjectDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useSubjectStore } from '@/stores/subjectStore'
+import { matchesSearchQuery } from '@/utils/search'
 
 const SubjectTableSection = defineAsyncComponent(() => import('@/components/tables/SubjectTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -46,6 +48,12 @@ const subjectStore = useSubjectStore()
 const { showModal, selectedEntity: selectedSubject, modalRef } = useModalState<SubjectDto>()
 
 const subjects = computed(() => subjectStore.sortedSubjects)
+const searchQuery = ref('')
+const filteredSubjects = computed(() =>
+  subjects.value.filter(subject =>
+    matchesSearchQuery(searchQuery.value, [subject.id, subject.code, subject.name]),
+  ),
+)
 
 const {
   currentPage,
@@ -59,7 +67,8 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: subjects })
+  resetToFirstPage,
+} = useLocalPagination({ items: filteredSubjects })
 
 const { toast, showToast, closeToast } = useToast()
 
@@ -102,6 +111,10 @@ onMounted(async () => {
   catch {
     // Error handled silently
   }
+})
+
+watch(searchQuery, () => {
+  resetToFirstPage()
 })
 </script>
 
@@ -161,17 +174,25 @@ onMounted(async () => {
         </div>
       </div>
 
+      <div class="management-toolbar">
+        <ManagementSearchBar
+          v-model="searchQuery"
+          placeholder="Search subjects by code, name, or ID..."
+          :result-count="totalSubjects"
+        />
+      </div>
+
       <SubjectTableSection
         :subjects="paginatedSubjects"
         title="All Subjects"
-        :pagination="{
+        :pagination="totalSubjects > 0 ? {
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
           totalSubjects,
           itemsPerPage,
-        }"
+        } : null"
         :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
@@ -252,6 +273,11 @@ onMounted(async () => {
 }
 .page-header {
   margin-bottom: 1rem;
+}
+
+.management-toolbar {
+  margin-bottom: 1rem;
+  max-width: 28rem;
 }
 
 .header-content {

@@ -2,11 +2,12 @@
 import type { CourseDto, CoursePayload } from '@/api/courses'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
+import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
 import { createCourseDeleteFlow } from '@/composables/useCourseDeleteFlow'
 import { useCrudModal } from '@/composables/useCrudModal'
@@ -14,6 +15,7 @@ import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
+import { matchesSearchQuery } from '@/utils/search'
 
 const CourseTableSection = defineAsyncComponent(() => import('@/components/tables/CourseTableSection.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -36,6 +38,12 @@ const courseStore = useCourseStore()
 const { showModal, selectedEntity: selectedCourse, modalRef } = useModalState<CourseDto>()
 
 const courses = computed(() => courseStore.sortedCourses)
+const searchQuery = ref('')
+const filteredCourses = computed(() =>
+  courses.value.filter(course =>
+    matchesSearchQuery(searchQuery.value, [course.id, course.name]),
+  ),
+)
 
 const {
   currentPage,
@@ -49,7 +57,8 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: courses })
+  resetToFirstPage,
+} = useLocalPagination({ items: filteredCourses })
 
 const { toast, showToast, closeToast } = useToast()
 
@@ -92,6 +101,10 @@ onMounted(async () => {
   catch {
     // Error handled silently
   }
+})
+
+watch(searchQuery, () => {
+  resetToFirstPage()
 })
 </script>
 
@@ -151,17 +164,25 @@ onMounted(async () => {
         </div>
       </div>
 
+      <div class="management-toolbar">
+        <ManagementSearchBar
+          v-model="searchQuery"
+          placeholder="Search courses by name or ID..."
+          :result-count="totalCourses"
+        />
+      </div>
+
       <CourseTableSection
         :courses="paginatedCourses"
         title="All Courses"
-        :pagination="{
+        :pagination="totalCourses > 0 ? {
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
           totalCourses,
           itemsPerPage,
-        }"
+        } : null"
         :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
@@ -242,6 +263,11 @@ onMounted(async () => {
 }
 .page-header {
   margin-bottom: 1rem;
+}
+
+.management-toolbar {
+  margin-bottom: 1rem;
+  max-width: 28rem;
 }
 
 .header-content {

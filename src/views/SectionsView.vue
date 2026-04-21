@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import type { SectionDto, SectionPayload } from '@/api/sections'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import sectionsApi from '@/api/sections'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
@@ -16,6 +17,7 @@ import { useModalState } from '@/composables/useModalState'
 import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useSectionStore } from '@/stores/sectionStore'
+import { matchesSearchQuery } from '@/utils/search'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
@@ -25,6 +27,12 @@ const { showModal, selectedEntity: selectedSection, modalRef } = useModalState<S
 const router = useRouter()
 
 const sections = computed(() => sectionsStore.getSections)
+const searchQuery = ref('')
+const filteredSections = computed(() =>
+  sections.value.filter(section =>
+    matchesSearchQuery(searchQuery.value, [section.id, section.name, section.sectionName, section.code, section.courseId]),
+  ),
+)
 
 const {
   currentPage,
@@ -38,7 +46,8 @@ const {
   previousPage: handlePreviousPage,
   goToPage: handleGoToPage,
   setItemsPerPage: handleSetItemsPerPage,
-} = useLocalPagination({ items: sections })
+  resetToFirstPage,
+} = useLocalPagination({ items: filteredSections })
 
 function openEnrollmentModal(section: SectionDto) {
   router.push(`/sections/${section.id}/enrollments`)
@@ -86,6 +95,10 @@ onMounted(async () => {
   catch {
     // Error handled silently
   }
+})
+
+watch(searchQuery, () => {
+  resetToFirstPage()
 })
 </script>
 
@@ -145,18 +158,26 @@ onMounted(async () => {
         </div>
       </div>
 
+      <div class="management-toolbar">
+        <ManagementSearchBar
+          v-model="searchQuery"
+          placeholder="Search sections by name, course ID, or section ID..."
+          :result-count="totalSections"
+        />
+      </div>
+
       <SectionTableSection
         :sections="paginatedSections"
         title="All Sections"
         :is-deletion-checking="isDeletionChecking"
-        :pagination="{
+        :pagination="totalSections > 0 ? {
           currentPage,
           totalPages,
           hasNextPage,
           hasPreviousPage,
           totalSections,
           itemsPerPage,
-        }"
+        } : null"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"
         @go-to-page="handleGoToPage"
@@ -235,6 +256,11 @@ onMounted(async () => {
 }
 .page-header {
   margin-bottom: 1rem;
+}
+
+.management-toolbar {
+  margin-bottom: 1rem;
+  max-width: 32rem;
 }
 
 .header-content {
