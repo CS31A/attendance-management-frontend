@@ -259,15 +259,9 @@ async function handleSubmit() {
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
 }
 
 .modal-body {

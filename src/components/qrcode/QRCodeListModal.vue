@@ -301,12 +301,6 @@ watch(() => props.show, (newVal) => {
   border-radius: 8px;
   cursor: pointer;
   color: var(--color-gray-500);
-  transition: all 0.2s;
-}
-
-.btn-close:hover {
-  background: var(--color-gray-100);
-  color: var(--color-gray-700);
 }
 
 .modal-body {

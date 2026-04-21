@@ -238,11 +238,6 @@ watch(() => props.section, () => {
   padding: 0.5rem;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-close:hover {
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .modal-body {

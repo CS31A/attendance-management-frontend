@@ -200,12 +200,6 @@ function handleCancel() {
   border-radius: 6px;
   color: var(--color-gray-500);
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-close:hover:not(:disabled) {
-  background: var(--color-gray-100);
-  color: var(--color-gray-800);
 }
 
 .btn-close:disabled {

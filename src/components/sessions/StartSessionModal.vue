@@ -326,12 +326,6 @@ watch(() => props.session?.scheduleId, (newScheduleId) => {
   border-radius: 6px;
   color: var(--color-gray-500);
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-close:hover {
-  background: var(--color-gray-100);
-  color: var(--color-gray-800);
 }
 
 /* Session Info */
