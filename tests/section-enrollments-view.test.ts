@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { reactive } from 'vue'
+import type { EnrollmentDto } from '@/api/enrollments'
 import SectionEnrollmentsView from '@/views/SectionEnrollmentsView.vue'
 
 const route = reactive({
@@ -27,7 +28,7 @@ const enrollmentStore = {
   fetchSectionStudents,
   dropStudent,
   reenrollStudent,
-  getSectionStudents: [],
+  getSectionStudents: [] as EnrollmentDto[],
   isLoading: false,
   error: '',
 }
@@ -162,6 +163,7 @@ describe('sectionEnrollmentsView', () => {
   it('filters enrolled students by the search query', async () => {
     enrollmentStore.getSectionStudents = [
       {
+        id: 1,
         enrollmentId: 101,
         firstName: 'Ada',
         lastName: 'Lovelace',
@@ -170,6 +172,7 @@ describe('sectionEnrollmentsView', () => {
         status: 'Active',
       },
       {
+        id: 2,
         enrollmentId: 102,
         firstName: 'Grace',
         lastName: 'Hopper',
@@ -191,6 +194,7 @@ describe('sectionEnrollmentsView', () => {
   it('calls drop and re-enroll actions for the matching rows', async () => {
     enrollmentStore.getSectionStudents = [
       {
+        id: 3,
         enrollmentId: 201,
         firstName: 'Ada',
         lastName: 'Lovelace',
@@ -199,6 +203,7 @@ describe('sectionEnrollmentsView', () => {
         status: 'Active',
       },
       {
+        id: 4,
         enrollmentId: 202,
         firstName: 'Grace',
         lastName: 'Hopper',
