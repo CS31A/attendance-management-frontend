@@ -983,7 +983,7 @@ onBeforeUnmount(() => {
   color: white;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--radius-full);
+  border-radius: 0.375rem;
   width: fit-content;
   margin: 0;
 }
