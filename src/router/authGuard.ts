@@ -213,3 +213,58 @@ export const instructorGuard: NavigationGuardWithThis<undefined> = async (
     return { path: '/login', query: { redirect: to.fullPath } }
   }
 }
+
+/**
+ * Privileged guard for instructor and admin routes
+ *
+ * This guard checks if the user is authenticated AND has either instructor or admin privileges
+ * before allowing access to privileged routes. If the user is not authenticated
+ * or does not have instructor or admin privileges, they will be redirected to the dashboard.
+ *
+ * @param {import('vue-router').RouteLocationNormalized} to - The target route being navigated to
+ * @param {import('vue-router').RouteLocationNormalized} _from - The current route being navigated away from
+ * @returns {Promise<boolean | object>} Navigation result:
+ *   - true: Allow navigation to proceed
+ *   - Object: Redirect to specified route (e.g., dashboard)
+ *
+ * @example
+ * // In router configuration
+ * {
+ *   path: '/dashboard',
+ *   component: DashboardView,
+ *   beforeEnter: [authGuard, privilegedGuard]
+ * }
+ */
+export const privilegedGuard: NavigationGuardWithThis<undefined> = async (
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+) => {
+  const authStore = useAuthStore()
+
+  // If we're still initializing, wait for initialization
+  if (authStore.getIsLoading) {
+    await authStore.initializeAuth()
+  }
+
+  try {
+    // Check if user is authenticated and has either Instructor or Admin role
+    if (authStore.getIsAuthenticated && (authStore.isTeacher || authStore.isAdmin))
+      return true
+
+    // Verify session and check privileged status to avoid races while "loading"
+    const isAuthOk = await authStore.checkAuth(true)
+    if (isAuthOk && (authStore.isTeacher || authStore.isAdmin))
+      return true
+
+    if (!isAuthOk) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+
+    // Authenticated but not authorized
+    return { path: '/dashboard' }
+  }
+  catch {
+    // Fail closed on errors while preserving the original destination
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+}

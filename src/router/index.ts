@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
-import { adminGuard, authGuard, guestGuard, instructorGuard } from './authGuard'
+import { adminGuard, authGuard, guestGuard, instructorGuard, privilegedGuard } from './authGuard'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     component: () => import('../views/DashboardView.vue'),
-    beforeEnter: authGuard,
+    beforeEnter: [authGuard, privilegedGuard],
   },
   {
     path: '/users',
@@ -41,12 +41,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/reports',
     component: () => import('../views/ReportsView.vue'),
-    beforeEnter: authGuard,
+    beforeEnter: [authGuard, privilegedGuard],
   },
   {
     path: '/profile',
     component: () => import('../views/ProfileView.vue'),
-    beforeEnter: authGuard,
+    beforeEnter: [authGuard, privilegedGuard],
   },
   {
     path: '/',
