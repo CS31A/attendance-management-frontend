@@ -73,8 +73,8 @@ const filteredEnrolledStudents = computed(() => {
     return enrolledStudents.value
   const query = searchQuery.value.toLowerCase()
   return enrolledStudents.value.filter(s =>
-    (s.firstName && asSearchableString(s.firstName).includes(query))
-    || (s.lastName && asSearchableString(s.lastName).includes(query))
+    (s.studentFirstname && asSearchableString(s.studentFirstname).includes(query))
+    || (s.studentLastname && asSearchableString(s.studentLastname).includes(query))
     || (s.studentId && asSearchableString(s.studentId).includes(query)),
   )
 })
@@ -296,6 +296,7 @@ watch(sectionId, (nextSectionId) => {
         <table v-else class="data-table">
           <thead>
             <tr>
+              <th>Student ID</th>
               <th>Student</th>
               <th>Type</th>
               <th>Status</th>
@@ -305,15 +306,15 @@ watch(sectionId, (nextSectionId) => {
           </thead>
           <tbody>
             <tr v-if="enrolledStudents.length === 0">
-              <td colspan="5" class="empty-state">
+              <td colspan="6" class="empty-state">
                 No students enrolled in this section.
               </td>
             </tr>
             <tr v-for="student in filteredEnrolledStudents" :key="student.enrollmentId">
+              <td>{{ student.studentId }}</td>
               <td>
                 <div class="student-info">
-                  <span class="student-name">{{ student.lastName }}, {{ student.firstName }}</span>
-                  <span class="student-id">{{ student.studentId }}</span>
+                  <span class="student-name">{{ student.studentLastname }}, {{ student.studentFirstname }}</span>
                 </div>
               </td>
               <td>
@@ -324,7 +325,7 @@ watch(sectionId, (nextSectionId) => {
                   {{ student.status || 'Active' }}
                 </span>
               </td>
-              <td>{{ formatEnrollmentDate(student.enrollmentDate || '') }}</td>
+              <td>{{ formatEnrollmentDate(student.enrolledAt || '') }}</td>
               <td>
                 <div class="row-actions">
                   <button

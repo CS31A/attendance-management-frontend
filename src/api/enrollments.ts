@@ -28,10 +28,11 @@ export interface EnrollmentDto {
   id: EntityId
   enrollmentId?: EntityId
   studentId?: EntityId
-  firstName?: string
-  lastName?: string
+  studentFirstname?: string
+  studentLastname?: string
   enrollmentType?: string
-  enrollmentDate?: string | null
+  enrolledAt?: string | null
+  isActive?: boolean
   status?: string
   [key: string]: unknown
 }
