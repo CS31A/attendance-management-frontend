@@ -178,9 +178,6 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (index !== -1) {
         sessions.value[index] = data
       }
-      else {
-        sessions.value.push(data)
-      }
 
       return data
     }
