@@ -311,7 +311,7 @@ watch(sectionId, (nextSectionId) => {
               </td>
             </tr>
             <tr v-for="student in filteredEnrolledStudents" :key="student.enrollmentId">
-              <td>{{ student.studentId }}</td>
+              <td class="text-left">{{ student.studentId }}</td>
               <td>
                 <div class="student-info">
                   <span class="student-name">{{ student.studentLastname }}, {{ student.studentFirstname }}</span>
@@ -572,7 +572,7 @@ watch(sectionId, (nextSectionId) => {
 .data-table th {
   background: var(--color-slate-100);
   padding: 1rem;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   color: var(--color-gray-600);
   border-bottom: 1px solid var(--color-gray-200);
@@ -582,6 +582,11 @@ watch(sectionId, (nextSectionId) => {
   padding: 1rem;
   border-bottom: 1px solid var(--color-gray-200);
   vertical-align: middle;
+  text-align: center;
+}
+
+.data-table td.text-left {
+  text-align: left;
 }
 
 .student-info {
