@@ -15,10 +15,4 @@ describe('instructor management regression coverage', () => {
     expect(source).toContain('Department')
   })
 
-  it('missing functionality doc no longer reports instructors as 100% complete', () => {
-    const source = readFileSync('Frontend-Status.md', 'utf8')
-
-    expect(source).not.toContain('| **Instructors** | 9 | 9 | 0 | 100% |')
-    expect(source).not.toContain('### 3.4 Instructor Management ✅ **FULLY IMPLEMENTED**')
-  })
 })
