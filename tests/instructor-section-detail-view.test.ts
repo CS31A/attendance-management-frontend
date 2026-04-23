@@ -1,7 +1,8 @@
 import type { InstructorSectionDetail } from '@/types/instructor'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
 import * as instructorsApi from '@/api/instructors'
 import InstructorSectionDetailView from '@/views/instructor/InstructorSectionDetailView.vue'
 
@@ -22,10 +23,9 @@ vi.mock('@/utils/httpError', () => ({
 }))
 
 const mockPush = vi.fn()
+const mockRoute = reactive({ params: { sectionId: '10' } })
 vi.mock('vue-router', () => ({
-  useRoute: vi.fn(() => ({
-    params: { sectionId: '10' },
-  })),
+  useRoute: vi.fn(() => mockRoute),
   useRouter: vi.fn(() => ({
     push: mockPush,
   })),
@@ -103,8 +103,10 @@ const mockSectionDetail: InstructorSectionDetail = {
   ],
 }
 
+const mountedWrappers: ReturnType<typeof mount>[] = []
+
 function mountComponent() {
-  return mount(InstructorSectionDetailView, {
+  const wrapper = mount(InstructorSectionDetailView, {
     global: {
       plugins: [createPinia()],
       stubs: {
@@ -120,12 +122,22 @@ function mountComponent() {
       },
     },
   })
+
+  mountedWrappers.push(wrapper)
+  return wrapper
 }
 
 describe('instructorSectionDetailView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockRoute.params.sectionId = '10'
     setActivePinia(createPinia())
+  })
+
+  afterEach(() => {
+    while (mountedWrappers.length > 0) {
+      mountedWrappers.pop()?.unmount()
+    }
   })
 
   describe('loading state', () => {
@@ -187,6 +199,20 @@ describe('instructorSectionDetailView', () => {
 
       expect(instructorsApi.getMySectionDetail).toHaveBeenCalledTimes(2)
     })
+
+    it.each(['abc', '42.5', '0', '-1'])(
+      'shows invalid link state and skips API call for sectionId %s',
+      async (sectionId) => {
+        mockRoute.params.sectionId = sectionId
+        vi.mocked(instructorsApi.getMySectionDetail).mockResolvedValue(mockSectionDetail)
+
+        const wrapper = mountComponent()
+        await flushPromises()
+
+        expect(instructorsApi.getMySectionDetail).not.toHaveBeenCalled()
+        expect(wrapper.text()).toContain('Invalid section details link.')
+      },
+    )
   })
 
   describe('section rendering', () => {
@@ -254,6 +280,24 @@ describe('instructorSectionDetailView', () => {
 
       expect(wrapper.text()).toContain('Alice Smith')
       expect(wrapper.text()).not.toContain('Bob Johnson')
+    })
+
+    it('uses an accessible disclosure button for handled classes', async () => {
+      vi.mocked(instructorsApi.getMySectionDetail).mockResolvedValue(mockSectionDetail)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const toggleButton = wrapper.find('button.handled-class-header')
+      expect(toggleButton.exists()).toBe(true)
+      expect(toggleButton.attributes('aria-expanded')).toBe('false')
+
+      await toggleButton.trigger('click')
+      await flushPromises()
+
+      expect(toggleButton.attributes('aria-expanded')).toBe('true')
+      expect(toggleButton.attributes('aria-controls')).toBe('handled-class-100')
+      expect(wrapper.find('#handled-class-100').exists()).toBe(true)
     })
   })
 

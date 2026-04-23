@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { EntityId } from '@/types'
+
 import { AlertTriangle, ArrowLeft, BookOpen, ChevronDown, ChevronUp, RefreshCw, Users } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
@@ -22,8 +24,25 @@ const expandedClasses = ref<Set<number>>(new Set())
 
 const sectionDetail = computed(() => instructorStore.currentSectionDetail)
 const loading = computed(() => instructorStore.loading)
+const isInvalidSectionLink = ref(false)
 
-const sectionId = computed(() => Number(route.params.sectionId))
+function parseSectionRouteParam(value: EntityId | undefined): number | null {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) && value > 0 ? value : null
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+  }
+
+  return null
+}
+
+const sectionId = computed(() => {
+  const rawSectionId = Array.isArray(route.params.sectionId) ? route.params.sectionId[0] : route.params.sectionId
+  return parseSectionRouteParam(rawSectionId as EntityId | undefined)
+})
 
 const { toast, showToast, closeToast } = useToast()
 
@@ -50,6 +69,17 @@ function getFilteredStudents<T extends { isRegular: boolean, enrollmentType: str
   return students.filter(student => getEnrollmentType(student) === selectedEnrollmentFilter.value)
 }
 
+const filteredHandledClasses = computed(() => {
+  return sectionDetail.value?.handledClasses.map(handledClass => ({
+    ...handledClass,
+    filteredStudents: getFilteredStudents(handledClass.students),
+  })) ?? []
+})
+
+const filteredHomeSectionStudents = computed(() => {
+  return sectionDetail.value ? getFilteredStudents(sectionDetail.value.homeSectionStudents) : []
+})
+
 function toggleClassExpansion(scheduleId: number) {
   const newSet = new Set(expandedClasses.value)
   if (newSet.has(scheduleId)) {
@@ -75,6 +105,15 @@ function goBack() {
 
 async function loadSectionDetail() {
   errorMessage.value = ''
+  isInvalidSectionLink.value = false
+
+  if (sectionId.value == null) {
+    instructorStore.clearSectionDetail()
+    errorMessage.value = 'Invalid section details link.'
+    isInvalidSectionLink.value = true
+    return
+  }
+
   try {
     await instructorStore.fetchSectionDetail(sectionId.value)
   }
@@ -86,9 +125,7 @@ async function loadSectionDetail() {
   }
 }
 
-onMounted(() => {
-  loadSectionDetail()
-})
+watch(sectionId, loadSectionDetail, { immediate: true })
 
 onUnmounted(() => {
   instructorStore.clearSectionDetail()
@@ -119,7 +156,7 @@ onUnmounted(() => {
 
     <div v-else-if="errorMessage" class="error-state">
       <AlertTriangle :size="48" class="error-icon" />
-      <h3>Failed to Load Section</h3>
+      <h3>{{ isInvalidSectionLink ? 'Invalid Section Link' : 'Failed to Load Section' }}</h3>
       <p>{{ errorMessage }}</p>
       <button class="btn-retry" @click="loadSectionDetail">
         <RefreshCw :size="18" />
@@ -173,11 +210,17 @@ onUnmounted(() => {
         </div>
         <div v-else class="handled-classes-list">
           <div
-            v-for="handledClass in sectionDetail.handledClasses"
+            v-for="handledClass in filteredHandledClasses"
             :key="handledClass.scheduleId"
             class="handled-class-card"
           >
-            <div class="handled-class-header" @click="toggleClassExpansion(handledClass.scheduleId)">
+            <button
+              type="button"
+              class="handled-class-header"
+              :aria-expanded="isClassExpanded(handledClass.scheduleId)"
+              :aria-controls="`handled-class-${handledClass.scheduleId}`"
+              @click="toggleClassExpansion(handledClass.scheduleId)"
+            >
               <div class="handled-class-info">
                 <div class="subject-info">
                   <h3 class="subject-name">
@@ -199,10 +242,14 @@ onUnmounted(() => {
                   class="expand-icon"
                 />
               </div>
-            </div>
+            </button>
 
-            <div v-if="isClassExpanded(handledClass.scheduleId)" class="handled-class-students">
-              <div v-if="getFilteredStudents(handledClass.students).length > 0" class="students-table">
+            <div
+              v-if="isClassExpanded(handledClass.scheduleId)"
+              :id="`handled-class-${handledClass.scheduleId}`"
+              class="handled-class-students"
+            >
+              <div v-if="handledClass.filteredStudents.length > 0" class="students-table">
                 <table>
                   <thead>
                     <tr>
@@ -213,7 +260,7 @@ onUnmounted(() => {
                   </thead>
                   <tbody>
                     <tr
-                      v-for="student in getFilteredStudents(handledClass.students)"
+                      v-for="student in handledClass.filteredStudents"
                       :key="student.studentId"
                       class="student-row"
                       @click="navigateToStudent(student.studentId)"
@@ -245,7 +292,7 @@ onUnmounted(() => {
         <h2 class="area-title">
           Home Section Students
         </h2>
-        <div v-if="!getFilteredStudents(sectionDetail.homeSectionStudents).length" class="no-data">
+        <div v-if="!filteredHomeSectionStudents.length" class="no-data">
           <p>
             {{ selectedEnrollmentFilter === 'All'
               ? 'No home section students found.'
@@ -263,7 +310,7 @@ onUnmounted(() => {
             </thead>
             <tbody>
               <tr
-                v-for="student in getFilteredStudents(sectionDetail.homeSectionStudents)"
+                v-for="student in filteredHomeSectionStudents"
                 :key="student.studentId"
                 class="student-row"
                 @click="navigateToStudent(student.studentId)"
@@ -517,6 +564,10 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
+  width: 100%;
+  border: none;
+  background: white;
+  text-align: left;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -661,8 +712,8 @@ onUnmounted(() => {
 }
 
 .status-regular {
-  background: rgb(220, 252, 231);
-  color: rgb(20, 83, 45);
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .status-irregular {
