@@ -11,6 +11,8 @@ export default antfu({
     '**/*.md',
     '**/dist/**',
     '**/node_modules/**',
+    'graphify-out/**',
+    '**/graphify-out/**',
   ],
   rules: {
     'no-alert': 'off',

@@ -14,5 +14,4 @@ describe('instructor management regression coverage', () => {
 
     expect(source).toContain('Department')
   })
-
 })
