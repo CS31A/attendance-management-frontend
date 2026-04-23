@@ -181,6 +181,12 @@ onUnmounted(() => {
               <span v-show="!isCollapsed" class="nav-text">Attendance</span>
             </router-link>
           </li>
+          <li v-if="authStore.isTeacher">
+            <router-link to="/instructor/classes" class="nav-link" @click="closeSidebar">
+              <BookOpen class="nav-icon" :size="20" />
+              <span v-show="!isCollapsed" class="nav-text">My Classes</span>
+            </router-link>
+          </li>
           <li v-if="isAdmin">
             <router-link to="/users" class="nav-link" @click="closeSidebar">
               <Users class="nav-icon" :size="20" />

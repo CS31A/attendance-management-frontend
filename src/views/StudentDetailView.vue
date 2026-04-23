@@ -227,7 +227,7 @@ function goBack() {
                   <td>{{ enrollment.subjectName || enrollment.subject || '-' }}</td>
                   <td>{{ enrollment.sectionName || enrollment.section || enrollment.sectionId || '-' }}</td>
                   <td>{{ enrollment.enrollmentType || 'Regular' }}</td>
-                  <td>{{ formatShortTableDate(enrollment.enrollmentDate) }}</td>
+                  <td>{{ formatShortTableDate(enrollment.enrolledAt) }}</td>
                   <td>
                     <span class="status-badge" :class="enrollment.status === 'Active' ? 'badge-success' : 'badge-gray'">
                       {{ enrollment.status || 'Active' }}

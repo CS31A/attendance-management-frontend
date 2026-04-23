@@ -173,10 +173,13 @@ export const useSessionStore = defineStore('sessionStore', () => {
       const data = await apiFetchSessionById(sessionId)
       currentSession.value = data
 
-      // Update in sessions array if it exists
+      // Update in sessions array if it exists, otherwise push it
       const index = sessions.value.findIndex(s => s.id === sessionId)
       if (index !== -1) {
         sessions.value[index] = data
+      }
+      else {
+        sessions.value.push(data)
       }
 
       return data

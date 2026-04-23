@@ -159,6 +159,9 @@ watch(() => props.section.id, () => {
               <option value="Irregular">
                 Irregular
               </option>
+              <option value="Retake">
+                Retake
+              </option>
             </select>
           </div>
 

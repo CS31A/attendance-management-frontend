@@ -311,7 +311,9 @@ watch(sectionId, (nextSectionId) => {
               </td>
             </tr>
             <tr v-for="student in filteredEnrolledStudents" :key="student.enrollmentId">
-              <td class="text-left">{{ student.studentId }}</td>
+              <td class="text-left">
+                {{ student.studentId }}
+              </td>
               <td>
                 <div class="student-info">
                   <span class="student-name">{{ student.studentLastname }}, {{ student.studentFirstname }}</span>
