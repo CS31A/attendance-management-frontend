@@ -172,6 +172,62 @@ describe('instructorStore', () => {
 
       expect(store.totalStudents).toBe(3)
     })
+
+    it('totalStudents counts each student once when they appear in multiple subjects', () => {
+      const store = useInstructorStore()
+      store.instructorData = createInstructorData({
+        sections: [
+          {
+            sectionId: 1,
+            sectionName: 'CS21A',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [
+              {
+                subjectId: 1,
+                subjectName: 'Calculus Based Physics 2',
+                subjectCode: 'CBP101',
+                scheduleId: 1,
+                dayOfWeek: 'Sunday',
+                timeIn: '12:30:00',
+                timeOut: '13:30:00',
+                classroomName: 'Room 202',
+                students: [
+                  {
+                    studentId: 20,
+                    firstname: 'Test',
+                    lastname: 'User',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                ],
+              },
+              {
+                subjectId: 2,
+                subjectName: 'Readings in Philippine History',
+                subjectCode: 'FIL205',
+                scheduleId: 2,
+                dayOfWeek: 'Monday',
+                timeIn: '10:30:00',
+                timeOut: '12:00:00',
+                classroomName: 'Room 205',
+                students: [
+                  {
+                    studentId: 20,
+                    firstname: 'Test',
+                    lastname: 'User',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      })
+
+      expect(store.totalStudents).toBe(1)
+    })
   })
 
   describe('actions - success paths', () => {
