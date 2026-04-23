@@ -213,8 +213,8 @@ describe('sectionEnrollmentsView', () => {
       {
         id: 1,
         enrollmentId: 101,
-        firstName: 'Ada',
-        lastName: 'Lovelace',
+        studentFirstname: 'Ada',
+        studentLastname: 'Lovelace',
         studentId: '2026-0001',
         enrollmentType: 'Regular',
         status: 'Active',
@@ -222,8 +222,8 @@ describe('sectionEnrollmentsView', () => {
       {
         id: 2,
         enrollmentId: 102,
-        firstName: 'Grace',
-        lastName: 'Hopper',
+        studentFirstname: 'Grace',
+        studentLastname: 'Hopper',
         studentId: '2026-0002',
         enrollmentType: 'Regular',
         status: 'Active',
@@ -244,8 +244,8 @@ describe('sectionEnrollmentsView', () => {
       {
         id: 3,
         enrollmentId: 201,
-        firstName: 'Ada',
-        lastName: 'Lovelace',
+        studentFirstname: 'Ada',
+        studentLastname: 'Lovelace',
         studentId: '2026-0001',
         enrollmentType: 'Regular',
         status: 'Active',
@@ -253,8 +253,8 @@ describe('sectionEnrollmentsView', () => {
       {
         id: 4,
         enrollmentId: 202,
-        firstName: 'Grace',
-        lastName: 'Hopper',
+        studentFirstname: 'Grace',
+        studentLastname: 'Hopper',
         studentId: '2026-0002',
         enrollmentType: 'Regular',
         status: 'Dropped',
