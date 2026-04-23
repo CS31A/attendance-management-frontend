@@ -228,6 +228,107 @@ describe('instructorStore', () => {
 
       expect(store.totalStudents).toBe(1)
     })
+
+    it('totalUniqueStudents is globally deduped across sections', () => {
+      const store = useInstructorStore()
+      store.instructorData = createInstructorData({
+        sections: [
+          {
+            sectionId: 1,
+            sectionName: 'CS21A',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [
+              {
+                subjectId: 1,
+                subjectName: 'Data Structures',
+                subjectCode: 'CS301',
+                scheduleId: 1,
+                dayOfWeek: 'Monday',
+                timeIn: '08:00:00',
+                timeOut: '10:00:00',
+                classroomName: 'Room 101',
+                students: [
+                  {
+                    studentId: 100,
+                    firstname: 'Alice',
+                    lastname: 'Smith',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                  {
+                    studentId: 101,
+                    firstname: 'Bob',
+                    lastname: 'Johnson',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            sectionId: 2,
+            sectionName: 'CS21B',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [
+              {
+                subjectId: 2,
+                subjectName: 'Algorithms',
+                subjectCode: 'CS302',
+                scheduleId: 2,
+                dayOfWeek: 'Tuesday',
+                timeIn: '10:00:00',
+                timeOut: '12:00:00',
+                classroomName: 'Room 102',
+                students: [
+                  {
+                    studentId: 101,
+                    firstname: 'Bob',
+                    lastname: 'Johnson',
+                    isRegular: false,
+                    enrollmentType: 'Irregular',
+                  },
+                  {
+                    studentId: 102,
+                    firstname: 'Charlie',
+                    lastname: 'Brown',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      })
+      store.sectionsOverviewList = [
+        {
+          sectionId: 1,
+          sectionUuid: '00000000-0000-0000-0000-000000000001',
+          sectionName: 'CS21A',
+          courseId: 1,
+          courseUuid: '00000000-0000-0000-0000-000000000001',
+          courseName: 'Computer Science',
+          handledClassCount: 1,
+          uniqueStudentCount: 2,
+        },
+        {
+          sectionId: 2,
+          sectionUuid: '00000000-0000-0000-0000-000000000002',
+          sectionName: 'CS21B',
+          courseId: 1,
+          courseUuid: '00000000-0000-0000-0000-000000000001',
+          courseName: 'Computer Science',
+          handledClassCount: 1,
+          uniqueStudentCount: 2,
+        },
+      ]
+
+      expect(store.totalStudents).toBe(3)
+      expect(store.totalUniqueStudents).toBe(3)
+    })
   })
 
   describe('actions - success paths', () => {

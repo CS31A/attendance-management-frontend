@@ -44,23 +44,23 @@ export const useInstructorStore = defineStore('instructorStore', () => {
 
   const totalSections = computed(() => sections.value.length)
 
-  const totalStudents = computed(() => {
-    const uniqueStudentIds = new Set<number>()
+  const uniqueStudentIds = computed(() => {
+    const ids = new Set<number>()
 
     for (const section of sections.value) {
       for (const subject of section.subjects) {
         for (const student of subject.students) {
-          uniqueStudentIds.add(student.studentId)
+          ids.add(student.studentId)
         }
       }
     }
 
-    return uniqueStudentIds.size
+    return ids
   })
 
-  const totalUniqueStudents = computed(() =>
-    sectionsOverviewList.value.reduce((sum, s) => sum + s.uniqueStudentCount, 0),
-  )
+  const totalStudents = computed(() => uniqueStudentIds.value.size)
+
+  const totalUniqueStudents = computed(() => uniqueStudentIds.value.size)
 
   // ==================== HELPER FUNCTIONS ====================
 

@@ -280,7 +280,115 @@ describe('instructorClassesView', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('Total Unique Students')
-      expect(wrapper.text()).toContain('30')
+      expect(wrapper.text()).toContain('3')
+    })
+
+    it('uses globally deduped total while keeping per-section counts', async () => {
+      const overlapOverview: InstructorSectionOverviewItem[] = [
+        {
+          sectionId: 10,
+          sectionUuid: '00000000-0000-0000-0000-000000000010',
+          sectionName: 'BSCS 3A',
+          courseId: 5,
+          courseUuid: '00000000-0000-0000-0000-000000000005',
+          courseName: 'Bachelor of Science in Computer Science',
+          handledClassCount: 1,
+          uniqueStudentCount: 2,
+        },
+        {
+          sectionId: 11,
+          sectionUuid: '00000000-0000-0000-0000-000000000011',
+          sectionName: 'BSCS 3B',
+          courseId: 5,
+          courseUuid: '00000000-0000-0000-0000-000000000005',
+          courseName: 'Bachelor of Science in Computer Science',
+          handledClassCount: 1,
+          uniqueStudentCount: 2,
+        },
+      ]
+      const overlapSectionsWithStudents: InstructorSectionsWithStudentsResponseDto = {
+        ...mockSectionsWithStudents,
+        sections: [
+          {
+            sectionId: 10,
+            sectionName: 'BSCS 3A',
+            courseId: 5,
+            courseName: 'Bachelor of Science in Computer Science',
+            subjects: [
+              {
+                subjectId: 20,
+                subjectName: 'Data Structures',
+                subjectCode: 'CS301',
+                scheduleId: 100,
+                dayOfWeek: 'Monday',
+                timeIn: '08:00:00',
+                timeOut: '10:00:00',
+                classroomName: 'Room 101',
+                students: [
+                  {
+                    studentId: 50,
+                    firstname: 'Alice',
+                    lastname: 'Smith',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                  {
+                    studentId: 51,
+                    firstname: 'Bob',
+                    lastname: 'Johnson',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            sectionId: 11,
+            sectionName: 'BSCS 3B',
+            courseId: 5,
+            courseName: 'Bachelor of Science in Computer Science',
+            subjects: [
+              {
+                subjectId: 21,
+                subjectName: 'Algorithms',
+                subjectCode: 'CS302',
+                scheduleId: 101,
+                dayOfWeek: 'Tuesday',
+                timeIn: '10:00:00',
+                timeOut: '12:00:00',
+                classroomName: 'Room 102',
+                students: [
+                  {
+                    studentId: 51,
+                    firstname: 'Bob',
+                    lastname: 'Johnson',
+                    isRegular: false,
+                    enrollmentType: 'Irregular',
+                  },
+                  {
+                    studentId: 52,
+                    firstname: 'Cara',
+                    lastname: 'Davis',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
+
+      vi.mocked(instructorsApi.getMySectionsOverview).mockResolvedValue(overlapOverview)
+      vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(overlapSectionsWithStudents)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Total Unique Students')
+      expect(wrapper.text()).toContain('3')
+      expect(wrapper.text()).toContain('2 Students')
     })
   })
 

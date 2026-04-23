@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { AlertTriangle, ArrowLeft, RefreshCw, User } from 'lucide-vue-next'
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+import type { InstructorStudentEnrollment } from '@/types/instructor'
+import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useInstructorStore } from '@/stores/instructorStore'
 import { getErrorMessage } from '@/utils/httpError'
+import { parseStudentRouteParam } from '@/utils/studentRoute'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
@@ -18,8 +20,12 @@ const errorMessage = ref('')
 const studentDetail = computed(() => instructorStore.currentStudentDetail)
 const loading = computed(() => instructorStore.loading)
 
-const studentId = computed(() => Number(route.params.studentId))
+const studentId = computed(() => {
+  const rawStudentId = Array.isArray(route.params.studentId) ? route.params.studentId[0] : route.params.studentId
+  return parseStudentRouteParam(rawStudentId as string | undefined)
+})
 const fromSectionId = computed(() => route.query.fromSectionId as string | undefined)
+const isInvalidStudentLink = ref(false)
 
 const { toast, showToast, closeToast } = useToast()
 
@@ -42,6 +48,10 @@ function formatAttendanceRate(rate: number) {
   return `${rate.toFixed(1)}%`
 }
 
+function getEnrollmentKey(enrollment: InstructorStudentEnrollment, index: number) {
+  return `${enrollment.subjectId}-${enrollment.sectionId}-${index}`
+}
+
 function goBack() {
   if (fromSectionId.value) {
     router.push(`/instructor/classes/sections/${fromSectionId.value}`)
@@ -53,6 +63,15 @@ function goBack() {
 
 async function loadStudentDetail() {
   errorMessage.value = ''
+  isInvalidStudentLink.value = false
+
+  if (studentId.value == null) {
+    instructorStore.clearStudentDetail()
+    errorMessage.value = 'Invalid student details link.'
+    isInvalidStudentLink.value = true
+    return
+  }
+
   try {
     await instructorStore.fetchStudentDetail(studentId.value)
   }
@@ -64,9 +83,7 @@ async function loadStudentDetail() {
   }
 }
 
-onMounted(() => {
-  loadStudentDetail()
-})
+watch(studentId, loadStudentDetail, { immediate: true })
 
 onUnmounted(() => {
   instructorStore.clearStudentDetail()
@@ -92,7 +109,7 @@ onUnmounted(() => {
 
     <div v-else-if="errorMessage" class="error-state">
       <AlertTriangle :size="48" class="error-icon" />
-      <h3>Failed to Load Student</h3>
+      <h3>{{ isInvalidStudentLink ? 'Invalid Student Link' : 'Failed to Load Student' }}</h3>
       <p>{{ errorMessage }}</p>
       <button class="btn-retry" @click="loadStudentDetail">
         <RefreshCw :size="18" />
@@ -147,7 +164,7 @@ onUnmounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="enrollment in studentDetail.enrollments" :key="enrollment.subjectId">
+              <tr v-for="(enrollment, index) in studentDetail.enrollments" :key="getEnrollmentKey(enrollment, index)">
                 <td>
                   <div class="enrollment-subject">
                     <span class="subject-name">{{ enrollment.subjectName }}</span>

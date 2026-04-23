@@ -1,7 +1,8 @@
 import type { InstructorStudentDetail } from '@/types/instructor'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as instructorsApi from '@/api/instructors'
 import InstructorStudentDetailView from '@/views/instructor/InstructorStudentDetailView.vue'
 
@@ -22,7 +23,7 @@ vi.mock('@/utils/httpError', () => ({
 }))
 
 const mockPush = vi.fn()
-const mockRoute = { params: { studentId: '50' }, query: {} }
+const mockRoute = reactive({ params: { studentId: '50' }, query: {} as Record<string, string> })
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockRoute),
   useRouter: vi.fn(() => ({
@@ -68,8 +69,10 @@ const mockStudentDetail: InstructorStudentDetail = {
   },
 }
 
+const mountedWrappers: ReturnType<typeof mount>[] = []
+
 function mountComponent() {
-  return mount(InstructorStudentDetailView, {
+  const wrapper = mount(InstructorStudentDetailView, {
     global: {
       plugins: [createPinia()],
       stubs: {
@@ -82,13 +85,23 @@ function mountComponent() {
       },
     },
   })
+
+  mountedWrappers.push(wrapper)
+  return wrapper
 }
 
 describe('instructorStudentDetailView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockRoute.params.studentId = '50'
     mockRoute.query = {}
     setActivePinia(createPinia())
+  })
+
+  afterEach(() => {
+    while (mountedWrappers.length > 0) {
+      mountedWrappers.pop()?.unmount()
+    }
   })
 
   describe('loading state', () => {
@@ -135,6 +148,20 @@ describe('instructorStudentDetailView', () => {
       expect(retryButton.exists()).toBe(true)
       expect(retryButton.text()).toContain('Retry')
     })
+
+    it.each(['abc', '42.5', '0', '-1'])(
+      'shows invalid link state and skips API call for studentId %s',
+      async (studentId) => {
+        mockRoute.params.studentId = studentId
+        vi.mocked(instructorsApi.getMyStudentDetail).mockResolvedValue(mockStudentDetail)
+
+        const wrapper = mountComponent()
+        await flushPromises()
+
+        expect(instructorsApi.getMyStudentDetail).not.toHaveBeenCalled()
+        expect(wrapper.text()).toContain('Invalid student details link.')
+      },
+    )
   })
 
   describe('student rendering', () => {
@@ -188,6 +215,62 @@ describe('instructorStudentDetailView', () => {
 
       expect(wrapper.text()).toContain('Attendance Rate')
       expect(wrapper.text()).toContain('95.0%')
+    })
+
+    it('renders enrollment rows with duplicate subject IDs across sections', async () => {
+      vi.mocked(instructorsApi.getMyStudentDetail).mockResolvedValue({
+        ...mockStudentDetail,
+        enrollments: [
+          {
+            subjectId: 20,
+            subjectName: 'Data Structures',
+            subjectCode: 'CS301',
+            sectionId: 10,
+            sectionName: 'BSCS 3A',
+            enrollmentType: 'Regular',
+          },
+          {
+            subjectId: 20,
+            subjectName: 'Data Structures',
+            subjectCode: 'CS301',
+            sectionId: 11,
+            sectionName: 'BSCS 3B',
+            enrollmentType: 'Irregular',
+          },
+        ],
+      })
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      expect(wrapper.findAll('tbody tr')).toHaveLength(2)
+      expect(wrapper.text()).toContain('BSCS 3A')
+      expect(wrapper.text()).toContain('BSCS 3B')
+    })
+
+    it('reloads data when route param changes', async () => {
+      vi.mocked(instructorsApi.getMyStudentDetail)
+        .mockResolvedValueOnce(mockStudentDetail)
+        .mockResolvedValueOnce({
+          ...mockStudentDetail,
+          studentId: 51,
+          studentUuid: '00000000-0000-0000-0000-000000000051',
+          firstname: 'Bob',
+          lastname: 'Johnson',
+        })
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(1, 50)
+      expect(wrapper.text()).toContain('Alice Smith')
+
+      mockRoute.params.studentId = '51'
+      await flushPromises()
+      await flushPromises()
+
+      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(2, 51)
+      expect(wrapper.text()).toContain('Bob Johnson')
     })
   })
 
