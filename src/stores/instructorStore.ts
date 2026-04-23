@@ -38,7 +38,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
    * Get sections array
    * @returns {Array} Array of sections with students
    */
-  const sections = computed(() => instructorData.value?.Sections ?? [])
+  const sections = computed(() => instructorData.value?.sections ?? [])
 
   /**
    * Get instructor information
@@ -49,10 +49,10 @@ export const useInstructorStore = defineStore('instructorStore', () => {
       return null
 
     return {
-      id: instructorData.value.InstructorId,
-      firstname: instructorData.value.InstructorFirstname,
-      lastname: instructorData.value.InstructorLastname,
-      fullName: `${instructorData.value.InstructorFirstname} ${instructorData.value.InstructorLastname}`,
+      id: instructorData.value.instructorId,
+      firstname: instructorData.value.instructorFirstname,
+      lastname: instructorData.value.instructorLastname,
+      fullName: `${instructorData.value.instructorFirstname} ${instructorData.value.instructorLastname}`,
     }
   })
 
@@ -68,8 +68,8 @@ export const useInstructorStore = defineStore('instructorStore', () => {
    */
   const totalStudents = computed(() => {
     return sections.value.reduce((total, section) => {
-      const sectionStudentCount = section.Subjects.reduce((subjectTotal, subject) => {
-        return subjectTotal + subject.Students.length
+      const sectionStudentCount = section.subjects.reduce((subjectTotal, subject) => {
+        return subjectTotal + subject.students.length
       }, 0)
       return total + sectionStudentCount
     }, 0)

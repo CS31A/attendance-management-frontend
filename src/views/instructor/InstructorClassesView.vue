@@ -26,10 +26,10 @@ const instructorInfo = computed(() => instructorStore.instructorInfo)
 const { toast, showToast, closeToast } = useToast()
 
 function getEnrollmentType(student: StudentDto): Exclude<EnrollmentTypeFilter, 'All'> {
-  switch (student.EnrollmentType) {
+  switch (student.enrollmentType) {
     case 'Irregular':
     case 'Retake':
-      return student.EnrollmentType
+      return student.enrollmentType
     default:
       return 'Regular'
   }
@@ -37,10 +37,10 @@ function getEnrollmentType(student: StudentDto): Exclude<EnrollmentTypeFilter, '
 
 function getFilteredStudents(subject: SubjectScheduleDto) {
   if (selectedEnrollmentFilter.value === 'All') {
-    return subject.Students
+    return subject.students
   }
 
-  return subject.Students.filter(student => getEnrollmentType(student) === selectedEnrollmentFilter.value)
+  return subject.students.filter(student => getEnrollmentType(student) === selectedEnrollmentFilter.value)
 }
 
 function getStudentStatusClass(student: StudentDto) {
@@ -143,34 +143,34 @@ onMounted(() => {
         >
           {{ filter }}
         </button>
-      </div>
+        </div>
 
       <div class="sections-list">
-        <div v-for="section in sections" :key="section.SectionId" class="section-card">
+        <div v-for="section in sections" :key="section.sectionId" class="section-card">
           <div class="section-header">
             <div class="section-info">
               <h2 class="section-name">
-                {{ section.SectionName }}
+                {{ section.sectionName }}
               </h2>
               <p class="course-name">
-                {{ section.CourseName }}
+                {{ section.courseName }}
               </p>
             </div>
           </div>
 
           <div class="subjects-list">
-            <div v-for="subject in section.Subjects" :key="subject.SubjectId" class="subject-item">
+            <div v-for="subject in section.subjects" :key="subject.subjectId" class="subject-item">
               <div class="subject-header">
                 <div class="subject-info">
                   <h3 class="subject-name">
-                    {{ subject.SubjectName }}
+                    {{ subject.subjectName }}
                   </h3>
-                  <span class="subject-code">{{ subject.SubjectCode }}</span>
+                  <span class="subject-code">{{ subject.subjectCode }}</span>
                 </div>
                 <div class="schedule-info">
-                  <span class="schedule-day">{{ subject.DayOfWeek }}</span>
-                  <span class="schedule-time">{{ subject.TimeIn }} - {{ subject.TimeOut }}</span>
-                  <span class="classroom-name">{{ subject.ClassroomName }}</span>
+                  <span class="schedule-day">{{ subject.dayOfWeek }}</span>
+                  <span class="schedule-time">{{ subject.timeIn }} - {{ subject.timeOut }}</span>
+                  <span class="classroom-name">{{ subject.classroomName }}</span>
                 </div>
               </div>
 
@@ -188,9 +188,9 @@ onMounted(() => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="student in getFilteredStudents(subject)" :key="student.StudentId">
-                        <td>{{ student.StudentId }}</td>
-                        <td>{{ student.Firstname }} {{ student.Lastname }}</td>
+                      <tr v-for="student in getFilteredStudents(subject)" :key="student.studentId">
+                        <td>{{ student.studentId }}</td>
+                        <td>{{ student.firstname }} {{ student.lastname }}</td>
                         <td>
                           <span
                             class="status-badge"

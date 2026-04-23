@@ -63,11 +63,44 @@ export async function getInstructorSubjects(id: EntityId): Promise<InstructorCol
 export async function getMySectionsWithStudents(): Promise<InstructorSectionsWithStudentsResponseDto> {
   try {
     const response = await api.get('/instructors/me/sections-with-students')
-    return response.data
+    return normalizeInstructorSectionsResponse(response.data)
   }
   catch (error) {
     console.error('Failed to fetch instructor sections with students:', error)
     return Promise.reject(error)
+  }
+}
+
+function normalizeInstructorSectionsResponse(payload: Record<string, any>): InstructorSectionsWithStudentsResponseDto {
+  const sections = Array.isArray(payload.sections) ? payload.sections : payload.Sections ?? []
+
+  return {
+    instructorId: payload.instructorId ?? payload.InstructorId ?? 0,
+    instructorFirstname: payload.instructorFirstname ?? payload.InstructorFirstname ?? '',
+    instructorLastname: payload.instructorLastname ?? payload.InstructorLastname ?? '',
+    sections: sections.map((section: Record<string, any>) => ({
+      sectionId: section.sectionId ?? section.SectionId ?? 0,
+      sectionName: section.sectionName ?? section.SectionName ?? '',
+      courseId: section.courseId ?? section.CourseId ?? 0,
+      courseName: section.courseName ?? section.CourseName ?? '',
+      subjects: (section.subjects ?? section.Subjects ?? []).map((subject: Record<string, any>) => ({
+        subjectId: subject.subjectId ?? subject.SubjectId ?? 0,
+        subjectName: subject.subjectName ?? subject.SubjectName ?? '',
+        subjectCode: subject.subjectCode ?? subject.SubjectCode ?? '',
+        scheduleId: subject.scheduleId ?? subject.ScheduleId ?? 0,
+        dayOfWeek: subject.dayOfWeek ?? subject.DayOfWeek ?? '',
+        timeIn: subject.timeIn ?? subject.TimeIn ?? '',
+        timeOut: subject.timeOut ?? subject.TimeOut ?? '',
+        classroomName: subject.classroomName ?? subject.ClassroomName ?? '',
+        students: (subject.students ?? subject.Students ?? []).map((student: Record<string, any>) => ({
+          studentId: student.studentId ?? student.StudentId ?? 0,
+          firstname: student.firstname ?? student.Firstname ?? '',
+          lastname: student.lastname ?? student.Lastname ?? '',
+          isRegular: student.isRegular ?? student.IsRegular ?? false,
+          enrollmentType: student.enrollmentType ?? student.EnrollmentType ?? 'Regular',
+        })),
+      })),
+    })),
   }
 }
 

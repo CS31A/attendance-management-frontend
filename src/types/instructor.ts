@@ -1,7 +1,7 @@
 /**
  * TypeScript interfaces for Instructor Class Student View feature
- * These interfaces match the backend C# DTOs exactly (PascalCase properties)
- * to ensure proper serialization/deserialization
+ * These interfaces match the frontend JSON payload shape (camelCase properties)
+ * returned by the ASP.NET Core API.
  */
 
 /**
@@ -9,10 +9,10 @@
  * Matches: InstructorSectionsWithStudentsResponseDto.cs
  */
 export interface InstructorSectionsWithStudentsResponseDto {
-  InstructorId: number
-  InstructorFirstname: string
-  InstructorLastname: string
-  Sections: SectionWithStudentsDto[]
+  instructorId: number
+  instructorFirstname: string
+  instructorLastname: string
+  sections: SectionWithStudentsDto[]
 }
 
 /**
@@ -20,11 +20,11 @@ export interface InstructorSectionsWithStudentsResponseDto {
  * Matches: SectionWithStudentsDto.cs
  */
 export interface SectionWithStudentsDto {
-  SectionId: number
-  SectionName: string
-  CourseId: number
-  CourseName: string
-  Subjects: SubjectScheduleDto[]
+  sectionId: number
+  sectionName: string
+  courseId: number
+  courseName: string
+  subjects: SubjectScheduleDto[]
 }
 
 /**
@@ -32,15 +32,15 @@ export interface SectionWithStudentsDto {
  * Matches: SubjectScheduleDto.cs
  */
 export interface SubjectScheduleDto {
-  SubjectId: number
-  SubjectName: string
-  SubjectCode: string
-  ScheduleId: number
-  DayOfWeek: string
-  TimeIn: string // ISO time format (e.g., "08:00:00")
-  TimeOut: string // ISO time format (e.g., "10:00:00")
-  ClassroomName: string
-  Students: StudentDto[]
+  subjectId: number
+  subjectName: string
+  subjectCode: string
+  scheduleId: number
+  dayOfWeek: string
+  timeIn: string // ISO time format (e.g., "08:00:00")
+  timeOut: string // ISO time format (e.g., "10:00:00")
+  classroomName: string
+  students: StudentDto[]
 }
 
 /**
@@ -48,9 +48,9 @@ export interface SubjectScheduleDto {
  * Matches: StudentDto.cs
  */
 export interface StudentDto {
-  StudentId: number
-  Firstname: string
-  Lastname: string
-  IsRegular: boolean
-  EnrollmentType: string // "Regular", "Irregular", "Retake"
+  studentId: number
+  firstname: string
+  lastname: string
+  isRegular: boolean
+  enrollmentType: string // "Regular", "Irregular", "Retake"
 }
