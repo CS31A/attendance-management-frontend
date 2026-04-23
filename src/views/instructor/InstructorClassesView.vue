@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { StudentDto, SubjectScheduleDto } from '@/types/instructor'
 import { AlertTriangle, BookOpen, RefreshCw, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import Toast from '@/components/common/Toast.vue'
@@ -9,9 +10,12 @@ import { getErrorMessage } from '@/utils/httpError'
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
 const instructorStore = useInstructorStore()
+const enrollmentTypeFilters = ['All', 'Regular', 'Irregular', 'Retake'] as const
+type EnrollmentTypeFilter = typeof enrollmentTypeFilters[number]
 
 // State
 const errorMessage = ref('')
+const selectedEnrollmentFilter = ref<EnrollmentTypeFilter>('All')
 
 // Computed properties
 const sections = computed(() => instructorStore.sections)
@@ -20,6 +24,33 @@ const instructorInfo = computed(() => instructorStore.instructorInfo)
 
 // Toast state and helpers
 const { toast, showToast, closeToast } = useToast()
+
+function getEnrollmentType(student: StudentDto): Exclude<EnrollmentTypeFilter, 'All'> {
+  switch (student.EnrollmentType) {
+    case 'Irregular':
+    case 'Retake':
+      return student.EnrollmentType
+    default:
+      return 'Regular'
+  }
+}
+
+function getFilteredStudents(subject: SubjectScheduleDto) {
+  if (selectedEnrollmentFilter.value === 'All') {
+    return subject.Students
+  }
+
+  return subject.Students.filter(student => getEnrollmentType(student) === selectedEnrollmentFilter.value)
+}
+
+function getStudentStatusClass(student: StudentDto) {
+  const enrollmentType = getEnrollmentType(student)
+  return {
+    Regular: 'status-regular',
+    Irregular: 'status-irregular',
+    Retake: 'status-retake',
+  }[enrollmentType]
+}
 
 // Methods
 async function loadSections() {
@@ -101,6 +132,19 @@ onMounted(() => {
         </div>
       </div>
 
+      <div class="enrollment-filters" role="group" aria-label="Filter students by enrollment type">
+        <button
+          v-for="filter in enrollmentTypeFilters"
+          :key="filter"
+          type="button"
+          class="filter-button"
+          :class="{ active: selectedEnrollmentFilter === filter }"
+          @click="selectedEnrollmentFilter = filter"
+        >
+          {{ filter }}
+        </button>
+      </div>
+
       <div class="sections-list">
         <div v-for="section in sections" :key="section.SectionId" class="section-card">
           <div class="section-header">
@@ -130,9 +174,9 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div v-if="subject.Students.length > 0" class="students-list">
+              <div v-if="getFilteredStudents(subject).length > 0" class="students-list">
                 <div class="students-header">
-                  <span class="students-count">{{ subject.Students.length }} Student{{ subject.Students.length !== 1 ? 's' : '' }}</span>
+                  <span class="students-count">{{ getFilteredStudents(subject).length }} Student{{ getFilteredStudents(subject).length !== 1 ? 's' : '' }}</span>
                 </div>
                 <div class="students-table">
                   <table>
@@ -144,15 +188,15 @@ onMounted(() => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="student in subject.Students" :key="student.StudentId">
+                      <tr v-for="student in getFilteredStudents(subject)" :key="student.StudentId">
                         <td>{{ student.StudentId }}</td>
                         <td>{{ student.Firstname }} {{ student.Lastname }}</td>
                         <td>
                           <span
                             class="status-badge"
-                            :class="student.IsRegular ? 'status-regular' : 'status-irregular'"
+                            :class="getStudentStatusClass(student)"
                           >
-                            {{ student.IsRegular ? 'Regular' : 'Irregular' }}
+                            {{ getEnrollmentType(student) }}
                           </span>
                         </td>
                       </tr>
@@ -161,7 +205,11 @@ onMounted(() => {
                 </div>
               </div>
               <div v-else class="no-students">
-                <p>No students enrolled in this subject</p>
+                <p>
+                  {{ selectedEnrollmentFilter === 'All'
+                    ? 'No students enrolled in this subject'
+                    : `No ${selectedEnrollmentFilter.toLowerCase()} students enrolled in this subject` }}
+                </p>
               </div>
             </div>
           </div>
@@ -296,6 +344,35 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.enrollment-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-button {
+  border: 1px solid var(--color-gray-300);
+  background: white;
+  color: var(--color-gray-700);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.filter-button:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.filter-button.active {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: white;
 }
 
 /* Summary Cards */
@@ -522,6 +599,11 @@ onMounted(() => {
 .status-irregular {
   background: var(--color-warning-light);
   color: var(--color-warning);
+}
+
+.status-retake {
+  background: color-mix(in srgb, var(--color-secondary) 18%, white);
+  color: var(--color-secondary);
 }
 
 .no-students {

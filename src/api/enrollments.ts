@@ -54,7 +54,7 @@ export default {
    * @param {EntityId} enrollmentData.studentId - Student ID
    * @param {EntityId} enrollmentData.sectionId - Section ID
    * @param {EntityId} enrollmentData.subjectId - Subject ID
-   * @param {string} enrollmentData.enrollmentType - Enrollment type (e.g., "Regular", "Irregular")
+   * @param {string} enrollmentData.enrollmentType - Enrollment type ("Regular", "Irregular", or "Retake")
    * @param {string} [enrollmentData.academicYear] - Academic year (optional)
    * @param {string} [enrollmentData.semester] - Semester (optional)
    * @returns {Promise} Response with created enrollment
