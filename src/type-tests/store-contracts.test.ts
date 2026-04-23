@@ -54,7 +54,7 @@ type _enrollmentStatusStudentIdAcceptsStringEntityId = ExpectTrue<Extends<string
 type _enrollmentStatusSectionIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentStatusQuery['sectionId']>>
 type _enrollmentStatusSubjectIdAcceptsStringEntityId = ExpectTrue<Extends<string, EnrollmentStatusQuery['subjectId']>>
 type _enrollmentTypeShape = ExpectTrue<Extends<EnrollmentDto['enrollmentType'], string | undefined>>
-type _enrollmentDateShape = ExpectTrue<Extends<EnrollmentDto['enrollmentDate'], string | null | undefined>>
+type _enrolledAtShape = ExpectTrue<Extends<EnrollmentDto['enrolledAt'], string | null | undefined>>
 
 type _scheduleItemNotAny = ExpectFalse<IsAny<ScheduleStore['schedules'][number]>>
 type _scheduleCurrentNotAny = ExpectFalse<IsAny<ScheduleStore['currentSchedule']>>
