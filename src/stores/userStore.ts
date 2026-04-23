@@ -8,6 +8,7 @@ import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 interface ApiUserProfile {
   id?: EntityId
+  uuid?: string
   firstname?: string
   lastname?: string
   department?: string | null
@@ -29,6 +30,7 @@ interface ApiUser {
   firstName?: string
   lastName?: string
   profileId?: EntityId
+  uuid?: string
   department?: string | null
   sectionId?: EntityId | null
   isRegular?: boolean
@@ -79,6 +81,7 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.firstName = user.adminProfile.firstname
     mappedUser.lastName = user.adminProfile.lastname
     mappedUser.profileId = user.adminProfile.id
+    mappedUser.uuid = user.adminProfile.uuid
     mappedUser.createdAt = user.adminProfile.createdAt
     mappedUser.updatedAt = user.adminProfile.updatedAt
   }
@@ -87,6 +90,7 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.lastName = user.instructorProfile.lastname
     mappedUser.department = user.instructorProfile.department ?? null
     mappedUser.profileId = user.instructorProfile.id
+    mappedUser.uuid = user.instructorProfile.uuid
     mappedUser.createdAt = user.instructorProfile.createdAt
     mappedUser.updatedAt = user.instructorProfile.updatedAt
   }
@@ -96,6 +100,7 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.sectionId = user.studentProfile.sectionId
     mappedUser.isRegular = user.studentProfile.isRegular
     mappedUser.profileId = user.studentProfile.id
+    mappedUser.uuid = user.studentProfile.uuid
     mappedUser.createdAt = user.studentProfile.createdAt
     mappedUser.updatedAt = user.studentProfile.updatedAt
   }
