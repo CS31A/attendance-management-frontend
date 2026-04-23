@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { StudentDto, SubjectScheduleDto } from '@/types/instructor'
-import { AlertTriangle, BookOpen, RefreshCw, Users } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, ChevronRight, RefreshCw, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useInstructorStore } from '@/stores/instructorStore'
@@ -9,64 +9,35 @@ import { getErrorMessage } from '@/utils/httpError'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
+const router = useRouter()
 const instructorStore = useInstructorStore()
-const enrollmentTypeFilters = ['All', 'Regular', 'Irregular', 'Retake'] as const
-type EnrollmentTypeFilter = typeof enrollmentTypeFilters[number]
 
-// State
 const errorMessage = ref('')
-const selectedEnrollmentFilter = ref<EnrollmentTypeFilter>('All')
 
-// Computed properties
-const sections = computed(() => instructorStore.sections)
+const sectionsOverview = computed(() => instructorStore.sectionsOverviewList)
 const loading = computed(() => instructorStore.loading)
 const instructorInfo = computed(() => instructorStore.instructorInfo)
+const totalUniqueStudents = computed(() => instructorStore.totalUniqueStudents)
 
-// Toast state and helpers
 const { toast, showToast, closeToast } = useToast()
 
-function getEnrollmentType(student: StudentDto): Exclude<EnrollmentTypeFilter, 'All'> {
-  switch (student.enrollmentType) {
-    case 'Irregular':
-    case 'Retake':
-      return student.enrollmentType
-    default:
-      return 'Regular'
-  }
+function navigateToSection(sectionId: number) {
+  router.push(`/instructor/classes/sections/${sectionId}`)
 }
 
-function getFilteredStudents(subject: SubjectScheduleDto) {
-  if (selectedEnrollmentFilter.value === 'All') {
-    return subject.students
-  }
-
-  return subject.students.filter(student => getEnrollmentType(student) === selectedEnrollmentFilter.value)
-}
-
-function getStudentStatusClass(student: StudentDto) {
-  const enrollmentType = getEnrollmentType(student)
-  return {
-    Regular: 'status-regular',
-    Irregular: 'status-irregular',
-    Retake: 'status-retake',
-  }[enrollmentType]
-}
-
-// Methods
 async function loadSections() {
   errorMessage.value = ''
   try {
-    await instructorStore.fetchSectionsWithStudents()
+    await instructorStore.fetchSectionsOverview()
   }
   catch (error) {
-    console.error('Failed to load instructor sections:', error)
+    console.error('Failed to load sections overview:', error)
     const message = getErrorMessage(error, 'Failed to load your classes. Please try again.')
     showToast(message, 'error')
     errorMessage.value = message
   }
 }
 
-// Lifecycle
 onMounted(() => {
   loadSections()
 })
@@ -74,7 +45,6 @@ onMounted(() => {
 
 <template>
   <div class="instructor-classes-view">
-    <!-- Header Section -->
     <div class="classes-header">
       <div class="header-content">
         <h1 class="page-title">
@@ -89,13 +59,11 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading && !sections.length" class="loading-skeleton">
+    <div v-if="loading && !sectionsOverview.length" class="loading-skeleton">
       <SkeletonLoader type="rectangle" :height="60" style="margin-bottom: 1rem; width: 100%;" />
       <SkeletonLoader v-for="i in 3" :key="i" type="rectangle" :height="120" style="margin-bottom: 1rem; width: 100%;" />
     </div>
 
-    <!-- Error State -->
     <div v-else-if="errorMessage" class="error-state">
       <AlertTriangle :size="48" class="error-icon" />
       <h3>Failed to Load Classes</h3>
@@ -106,49 +74,39 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="!sections.length && !loading" class="empty-state">
+    <div v-else-if="!sectionsOverview.length && !loading" class="empty-state">
       <BookOpen :size="64" class="empty-icon" />
       <h3>No Sections Assigned</h3>
       <p>You currently have no assigned sections. Please contact your administrator if you believe this is an error.</p>
     </div>
 
-    <!-- Sections Content -->
     <div v-else class="sections-content">
       <div class="sections-summary">
         <div class="summary-card">
           <BookOpen :size="24" class="summary-icon" />
           <div class="summary-info">
             <span class="summary-label">Total Sections</span>
-            <span class="summary-value">{{ instructorStore.totalSections }}</span>
+            <span class="summary-value">{{ sectionsOverview.length }}</span>
           </div>
         </div>
         <div class="summary-card">
           <Users :size="24" class="summary-icon" />
           <div class="summary-info">
-            <span class="summary-label">Total Students</span>
-            <span class="summary-value">{{ instructorStore.totalStudents }}</span>
+            <span class="summary-label">Total Unique Students</span>
+            <span class="summary-value">{{ totalUniqueStudents }}</span>
           </div>
         </div>
       </div>
 
-      <div class="enrollment-filters" role="group" aria-label="Filter students by enrollment type">
-        <button
-          v-for="filter in enrollmentTypeFilters"
-          :key="filter"
-          type="button"
-          class="filter-button"
-          :class="{ active: selectedEnrollmentFilter === filter }"
-          @click="selectedEnrollmentFilter = filter"
+      <div class="sections-grid">
+        <div
+          v-for="section in sectionsOverview"
+          :key="section.sectionId"
+          class="section-card"
+          @click="navigateToSection(section.sectionId)"
         >
-          {{ filter }}
-        </button>
-        </div>
-
-      <div class="sections-list">
-        <div v-for="section in sections" :key="section.sectionId" class="section-card">
-          <div class="section-header">
-            <div class="section-info">
+          <div class="section-card-content">
+            <div class="section-card-info">
               <h2 class="section-name">
                 {{ section.sectionName }}
               </h2>
@@ -156,68 +114,25 @@ onMounted(() => {
                 {{ section.courseName }}
               </p>
             </div>
-          </div>
-
-          <div class="subjects-list">
-            <div v-for="subject in section.subjects" :key="subject.subjectId" class="subject-item">
-              <div class="subject-header">
-                <div class="subject-info">
-                  <h3 class="subject-name">
-                    {{ subject.subjectName }}
-                  </h3>
-                  <span class="subject-code">{{ subject.subjectCode }}</span>
-                </div>
-                <div class="schedule-info">
-                  <span class="schedule-day">{{ subject.dayOfWeek }}</span>
-                  <span class="schedule-time">{{ subject.timeIn }} - {{ subject.timeOut }}</span>
-                  <span class="classroom-name">{{ subject.classroomName }}</span>
-                </div>
+            <div class="section-card-stats">
+              <div class="stat-item">
+                <BookOpen :size="16" class="stat-icon" />
+                <span>{{ section.handledClassCount }} Class{{ section.handledClassCount !== 1 ? 'es' : '' }}</span>
               </div>
-
-              <div v-if="getFilteredStudents(subject).length > 0" class="students-list">
-                <div class="students-header">
-                  <span class="students-count">{{ getFilteredStudents(subject).length }} Student{{ getFilteredStudents(subject).length !== 1 ? 's' : '' }}</span>
-                </div>
-                <div class="students-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Student ID</th>
-                        <th>Name</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="student in getFilteredStudents(subject)" :key="student.studentId">
-                        <td>{{ student.studentId }}</td>
-                        <td>{{ student.firstname }} {{ student.lastname }}</td>
-                        <td>
-                          <span
-                            class="status-badge"
-                            :class="getStudentStatusClass(student)"
-                          >
-                            {{ getEnrollmentType(student) }}
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div v-else class="no-students">
-                <p>
-                  {{ selectedEnrollmentFilter === 'All'
-                    ? 'No students enrolled in this subject'
-                    : `No ${selectedEnrollmentFilter.toLowerCase()} students enrolled in this subject` }}
-                </p>
+              <div class="stat-item">
+                <Users :size="16" class="stat-icon" />
+                <span>{{ section.uniqueStudentCount }} Student{{ section.uniqueStudentCount !== 1 ? 's' : '' }}</span>
               </div>
             </div>
+          </div>
+          <div class="section-card-cta">
+            <span class="cta-text">View Section</span>
+            <ChevronRight :size="18" class="cta-icon" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Toast Notification -->
     <Toast
       :show="toast.show"
       :message="toast.message"
@@ -235,7 +150,6 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* Header Section */
 .classes-header {
   margin-bottom: 1.5rem;
 }
@@ -257,12 +171,10 @@ onMounted(() => {
   margin: 0;
 }
 
-/* Loading State */
 .loading-skeleton {
   padding: 1rem 0;
 }
 
-/* Error State */
 .error-state {
   display: flex;
   flex-direction: column;
@@ -310,7 +222,6 @@ onMounted(() => {
   background: var(--color-secondary-light);
 }
 
-/* Empty State */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -339,43 +250,12 @@ onMounted(() => {
   max-width: 500px;
 }
 
-/* Sections Content */
 .sections-content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.enrollment-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.filter-button {
-  border: 1px solid var(--color-gray-300);
-  background: white;
-  color: var(--color-gray-700);
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-
-.filter-button:hover {
-  border-color: var(--color-secondary);
-  color: var(--color-secondary);
-}
-
-.filter-button.active {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
-  color: white;
-}
-
-/* Summary Cards */
 .sections-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -415,37 +295,39 @@ onMounted(() => {
   color: var(--color-gray-900);
 }
 
-/* Sections List */
-.sections-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
 }
 
 .section-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
   overflow: hidden;
 }
 
-.section-header {
-  padding: 1.5rem;
-  background: var(--color-gray-50);
-  border-bottom: 1px solid var(--color-gray-200);
+.section-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
-.section-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.section-card-content {
+  padding: 1.25rem;
+}
+
+.section-card-info {
+  margin-bottom: 0.75rem;
 }
 
 .section-name {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-gray-900);
-  margin: 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .course-name {
@@ -454,181 +336,49 @@ onMounted(() => {
   margin: 0;
 }
 
-/* Subjects List */
-.subjects-list {
+.section-card-stats {
   display: flex;
-  flex-direction: column;
-}
-
-.subject-item {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--color-gray-200);
-}
-
-.subject-item:last-child {
-  border-bottom: none;
-}
-
-.subject-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
   gap: 1rem;
 }
 
-.subject-info {
+.stat-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.subject-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  margin: 0;
-}
-
-.subject-code {
-  font-size: 0.813rem;
-  color: var(--color-gray-500);
-  font-weight: 500;
-}
-
-.schedule-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
   align-items: center;
+  gap: 0.375rem;
   font-size: 0.813rem;
-}
-
-.schedule-day {
-  padding: 0.25rem 0.75rem;
-  background: var(--color-secondary);
-  color: white;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-.schedule-time {
   color: var(--color-gray-600);
   font-weight: 500;
 }
 
-.classroom-name {
-  padding: 0.25rem 0.75rem;
-  background: var(--color-gray-100);
-  color: var(--color-gray-700);
-  border-radius: 6px;
-  font-weight: 500;
+.stat-icon {
+  color: var(--color-gray-400);
 }
 
-/* Students List */
-.students-list {
+.section-card-cta {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.students-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-}
-
-.students-count {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-gray-700);
-}
-
-.students-table {
-  overflow-x: auto;
-}
-
-.students-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.students-table thead {
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.75rem;
   background: var(--color-gray-50);
-}
-
-.students-table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-size: 0.813rem;
-  font-weight: 600;
-  color: var(--color-gray-700);
-  border-bottom: 2px solid var(--color-gray-200);
-}
-
-.students-table td {
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: var(--color-gray-900);
-  border-bottom: 1px solid var(--color-gray-200);
-}
-
-.students-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.students-table tbody tr:hover {
-  background: var(--color-gray-50);
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.status-regular {
-  background: var(--color-success-light);
-  color: var(--color-success);
-}
-
-.status-irregular {
-  background: var(--color-warning-light);
-  color: var(--color-warning);
-}
-
-.status-retake {
-  background: color-mix(in srgb, var(--color-secondary) 18%, white);
+  border-top: 1px solid var(--color-gray-200);
   color: var(--color-secondary);
-}
-
-.no-students {
-  padding: 1rem;
-  text-align: center;
-  color: var(--color-gray-500);
   font-size: 0.875rem;
-  background: var(--color-gray-50);
-  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 
-.no-students p {
-  margin: 0;
+.section-card:hover .section-card-cta {
+  background: var(--color-secondary);
+  color: white;
 }
 
-/* Responsive Styles */
-@media (max-width: 1024px) {
-  .subject-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.cta-icon {
+  transition: transform 0.2s;
+}
 
-  .schedule-info {
-    width: 100%;
-  }
+.section-card:hover .cta-icon {
+  transform: translateX(2px);
 }
 
 @media (max-width: 768px) {
@@ -644,23 +394,8 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .section-header {
-    padding: 1rem;
-  }
-
-  .subject-item {
-    padding: 1rem;
-  }
-
-  .students-table th,
-  .students-table td {
-    padding: 0.625rem 0.75rem;
-    font-size: 0.813rem;
-  }
-
-  .students-table th:first-child,
-  .students-table td:first-child {
-    display: none;
+  .sections-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -686,26 +421,7 @@ onMounted(() => {
   }
 
   .section-name {
-    font-size: 1.125rem;
-  }
-
-  .subject-name {
-    font-size: 0.938rem;
-  }
-
-  .schedule-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .students-table {
-    font-size: 0.75rem;
-  }
-
-  .status-badge {
-    font-size: 0.688rem;
-    padding: 0.188rem 0.5rem;
+    font-size: 1rem;
   }
 }
 </style>

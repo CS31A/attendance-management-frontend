@@ -37,8 +37,8 @@ export interface SubjectScheduleDto {
   subjectCode: string
   scheduleId: number
   dayOfWeek: string
-  timeIn: string // ISO time format (e.g., "08:00:00")
-  timeOut: string // ISO time format (e.g., "10:00:00")
+  timeIn: string
+  timeOut: string
   classroomName: string
   students: StudentDto[]
 }
@@ -52,5 +52,98 @@ export interface StudentDto {
   firstname: string
   lastname: string
   isRegular: boolean
-  enrollmentType: string // "Regular", "Irregular", "Retake"
+  enrollmentType: string
+}
+
+// ==================== Section-First Drilldown Types ====================
+
+export interface InstructorSectionOverviewItem {
+  sectionId: number
+  sectionUuid: string
+  sectionName: string
+  courseId: number
+  courseUuid: string
+  courseName: string
+  handledClassCount: number
+  uniqueStudentCount: number
+}
+
+export interface InstructorHandledClassStudent {
+  studentId: number
+  studentUuid: string
+  firstname: string
+  lastname: string
+  isRegular: boolean
+  enrollmentType: string
+}
+
+export interface InstructorHandledClassDetail {
+  subjectId: number
+  subjectUuid: string
+  subjectName: string
+  subjectCode: string
+  scheduleId: number
+  scheduleUuid: string
+  dayOfWeek: string
+  timeIn: string
+  timeOut: string
+  classroomId: number
+  classroomUuid: string
+  classroomName: string
+  studentCount: number
+  students: InstructorHandledClassStudent[]
+}
+
+export interface InstructorHomeSectionStudent {
+  studentId: number
+  studentUuid: string
+  firstname: string
+  lastname: string
+  isRegular: boolean
+  enrollmentType: string
+}
+
+export interface InstructorSectionDetail {
+  sectionId: number
+  sectionUuid: string
+  sectionName: string
+  courseId: number
+  courseUuid: string
+  courseName: string
+  handledClassCount: number
+  homeSectionStudentCount: number
+  handledClasses: InstructorHandledClassDetail[]
+  homeSectionStudents: InstructorHomeSectionStudent[]
+}
+
+export interface InstructorStudentEnrollment {
+  subjectId: number
+  subjectName: string
+  subjectCode: string
+  sectionId: number
+  sectionName: string
+  enrollmentType: string
+}
+
+export interface InstructorStudentAttendanceSummary {
+  totalSessions: number
+  presentCount: number
+  absentCount: number
+  lateCount: number
+  attendanceRate: number
+}
+
+export interface InstructorStudentDetail {
+  studentId: number
+  studentUuid: string
+  firstname: string
+  lastname: string
+  sectionId: number | null
+  sectionName: string | null
+  courseId: number | null
+  courseName: string | null
+  isRegular: boolean
+  enrollmentType: string
+  enrollments: InstructorStudentEnrollment[]
+  attendanceSummary: InstructorStudentAttendanceSummary
 }

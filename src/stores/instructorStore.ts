@@ -1,49 +1,35 @@
-import type { InstructorSectionsWithStudentsResponseDto } from '@/types/instructor'
+import type {
+  InstructorSectionDetail,
+  InstructorSectionOverviewItem,
+  InstructorSectionsWithStudentsResponseDto,
+  InstructorStudentDetail,
+} from '@/types/instructor'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { getMySectionsWithStudents } from '@/api/instructors'
+import {
+  getMySectionDetail,
+  getMySectionsOverview,
+  getMySectionsWithStudents,
+  getMyStudentDetail,
+} from '@/api/instructors'
 
-/**
- * Instructor Store
- *
- * Manages instructor-specific data including sections with enrolled students.
- * Provides centralized state management for instructor class views.
- *
- * @typedef {object} InstructorState
- * @property {Array} sections - Array of sections with students
- * @property {boolean} loading - Whether data is being fetched
- * @property {string | null} error - Error message if fetch fails
- */
 export const useInstructorStore = defineStore('instructorStore', () => {
   // ==================== STATE ====================
 
-  /** @type {import('vue').Ref<InstructorSectionsWithStudentsResponseDto | null>} */
   const instructorData = ref<InstructorSectionsWithStudentsResponseDto | null>(null)
-
-  /** @type {import('vue').Ref<number>} */
   const loadingCount = ref(0)
-
-  /** @type {import('vue').Ref<string | null>} */
   const error = ref<string | null>(null)
+
+  const sectionsOverviewList = ref<InstructorSectionOverviewItem[]>([])
+  const currentSectionDetail = ref<InstructorSectionDetail | null>(null)
+  const currentStudentDetail = ref<InstructorStudentDetail | null>(null)
 
   // ==================== GETTERS ====================
 
-  /**
-   * Get loading state
-   * @returns {boolean} True if any operation is in progress
-   */
   const loading = computed(() => loadingCount.value > 0)
 
-  /**
-   * Get sections array
-   * @returns {Array} Array of sections with students
-   */
   const sections = computed(() => instructorData.value?.sections ?? [])
 
-  /**
-   * Get instructor information
-   * @returns {object | null} Instructor basic info
-   */
   const instructorInfo = computed(() => {
     if (!instructorData.value)
       return null
@@ -56,24 +42,25 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     }
   })
 
-  /**
-   * Get total number of sections
-   * @returns {number} Total sections count
-   */
   const totalSections = computed(() => sections.value.length)
 
-  /**
-   * Get total number of students across all sections
-   * @returns {number} Total students count
-   */
   const totalStudents = computed(() => {
-    return sections.value.reduce((total, section) => {
-      const sectionStudentCount = section.subjects.reduce((subjectTotal, subject) => {
-        return subjectTotal + subject.students.length
-      }, 0)
-      return total + sectionStudentCount
-    }, 0)
+    const uniqueStudentIds = new Set<number>()
+
+    for (const section of sections.value) {
+      for (const subject of section.subjects) {
+        for (const student of subject.students) {
+          uniqueStudentIds.add(student.studentId)
+        }
+      }
+    }
+
+    return uniqueStudentIds.size
   })
+
+  const totalUniqueStudents = computed(() =>
+    sectionsOverviewList.value.reduce((sum, s) => sum + s.uniqueStudentCount, 0),
+  )
 
   // ==================== HELPER FUNCTIONS ====================
 
@@ -87,11 +74,6 @@ export const useInstructorStore = defineStore('instructorStore', () => {
 
   // ==================== ACTIONS ====================
 
-  /**
-   * Fetch sections with enrolled students for the current instructor
-   * @returns {Promise<InstructorSectionsWithStudentsResponseDto>} Instructor data with sections
-   * @throws {Error} If fetch fails
-   */
   const fetchSectionsWithStudents = async () => {
     beginLoading()
     error.value = null
@@ -111,20 +93,86 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     }
   }
 
-  /**
-   * Clear error state
-   */
+  const fetchSectionsOverview = async () => {
+    beginLoading()
+    error.value = null
+
+    try {
+      const [overviewData, sectionsWithData] = await Promise.all([
+        getMySectionsOverview(),
+        getMySectionsWithStudents(),
+      ])
+      sectionsOverviewList.value = overviewData
+      instructorData.value = sectionsWithData
+      return overviewData
+    }
+    catch (err) {
+      console.error('Failed to fetch sections overview:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to load sections overview'
+      throw err
+    }
+    finally {
+      endLoading()
+    }
+  }
+
+  const fetchSectionDetail = async (sectionId: number) => {
+    beginLoading()
+    error.value = null
+
+    try {
+      const data = await getMySectionDetail(sectionId)
+      currentSectionDetail.value = data
+      return data
+    }
+    catch (err) {
+      console.error(`Failed to fetch section detail for section ${sectionId}:`, err)
+      error.value = err instanceof Error ? err.message : 'Failed to load section detail'
+      throw err
+    }
+    finally {
+      endLoading()
+    }
+  }
+
+  const fetchStudentDetail = async (studentId: number) => {
+    beginLoading()
+    error.value = null
+
+    try {
+      const data = await getMyStudentDetail(studentId)
+      currentStudentDetail.value = data
+      return data
+    }
+    catch (err) {
+      console.error(`Failed to fetch student detail for student ${studentId}:`, err)
+      error.value = err instanceof Error ? err.message : 'Failed to load student detail'
+      throw err
+    }
+    finally {
+      endLoading()
+    }
+  }
+
+  const clearSectionDetail = () => {
+    currentSectionDetail.value = null
+  }
+
+  const clearStudentDetail = () => {
+    currentStudentDetail.value = null
+  }
+
   const clearError = () => {
     error.value = null
   }
 
-  /**
-   * Reset store to initial state
-   */
   const resetStore = () => {
     instructorData.value = null
     loadingCount.value = 0
     error.value = null
+    sectionsOverviewList.value = []
+    currentSectionDetail.value = null
+    currentStudentDetail.value = null
   }
 
   // ==================== RETURN ====================
@@ -134,15 +182,24 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     instructorData,
     loading,
     error,
+    sectionsOverviewList,
+    currentSectionDetail,
+    currentStudentDetail,
 
     // Getters
     sections,
     instructorInfo,
     totalSections,
     totalStudents,
+    totalUniqueStudents,
 
     // Actions
     fetchSectionsWithStudents,
+    fetchSectionsOverview,
+    fetchSectionDetail,
+    fetchStudentDetail,
+    clearSectionDetail,
+    clearStudentDetail,
     clearError,
     resetStore,
   }

@@ -44,6 +44,16 @@ const routes: RouteRecordRaw[] = [
     beforeEnter: [authGuard, instructorGuard],
   },
   {
+    path: '/instructor/classes/sections/:sectionId',
+    component: () => import('../views/instructor/InstructorSectionDetailView.vue'),
+    beforeEnter: [authGuard, instructorGuard],
+  },
+  {
+    path: '/instructor/students/:studentId',
+    component: () => import('../views/instructor/InstructorStudentDetailView.vue'),
+    beforeEnter: [authGuard, instructorGuard],
+  },
+  {
     path: '/reports',
     component: () => import('../views/ReportsView.vue'),
     beforeEnter: [authGuard, privilegedGuard],
