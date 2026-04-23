@@ -1,4 +1,5 @@
 import type { EntityId } from '@/types'
+import type { InstructorSectionsWithStudentsResponseDto } from '@/types/instructor'
 import api from './index'
 
 export type InstructorDto = Record<string, unknown>
@@ -55,8 +56,24 @@ export async function getInstructorSubjects(id: EntityId): Promise<InstructorCol
   }
 }
 
+/**
+ * Get current instructor's sections with enrolled students
+ * @returns {Promise<InstructorSectionsWithStudentsResponseDto>} Instructor sections with students data
+ */
+export async function getMySectionsWithStudents(): Promise<InstructorSectionsWithStudentsResponseDto> {
+  try {
+    const response = await api.get('/instructors/me/sections-with-students')
+    return response.data
+  }
+  catch (error) {
+    console.error('Failed to fetch instructor sections with students:', error)
+    return Promise.reject(error)
+  }
+}
+
 export default {
   getMySchedules,
   getMyProfile,
   getInstructorSubjects,
+  getMySectionsWithStudents,
 }
