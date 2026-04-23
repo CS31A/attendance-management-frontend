@@ -661,8 +661,8 @@ onUnmounted(() => {
 }
 
 .status-regular {
-  background: var(--color-success-light);
-  color: var(--color-success);
+  background: rgb(220, 252, 231);
+  color: rgb(20, 83, 45);
 }
 
 .status-irregular {

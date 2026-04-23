@@ -1106,8 +1106,8 @@ async function copyToClipboard(field: 'username' | 'role' | 'userId', value: str
 }
 
 .status-regular {
-  background-color: var(--color-success-bg);
-  color: var(--color-success);
+  background: rgb(220, 252, 231);
+  color: rgb(20, 83, 45);
 }
 
 .status-irregular {
