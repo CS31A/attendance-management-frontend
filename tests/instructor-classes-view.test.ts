@@ -60,6 +60,13 @@ const mockInstructorData: InstructorSectionsWithStudentsResponseDto = {
               IsRegular: false,
               EnrollmentType: 'Irregular',
             },
+            {
+              StudentId: 52,
+              Firstname: 'Cara',
+              Lastname: 'Davis',
+              IsRegular: false,
+              EnrollmentType: 'Retake',
+            },
           ],
         },
       ],
@@ -230,6 +237,7 @@ describe('instructorClassesView', () => {
 
       expect(wrapper.text()).toContain('Alice Smith')
       expect(wrapper.text()).toContain('Bob Johnson')
+      expect(wrapper.text()).toContain('Cara Davis')
     })
 
     it('displays correct student count', async () => {
@@ -238,11 +246,11 @@ describe('instructorClassesView', () => {
       const wrapper = mountComponent()
       await flushPromises()
 
-      expect(wrapper.text()).toContain('2 Students')
+      expect(wrapper.text()).toContain('3 Students')
     })
   })
 
-  describe('regular/irregular badges', () => {
+  describe('enrollment badges', () => {
     it('displays regular badge for regular students', async () => {
       vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(mockInstructorData)
 
@@ -263,6 +271,17 @@ describe('instructorClassesView', () => {
       const irregularBadges = wrapper.findAll('.status-irregular')
       expect(irregularBadges.length).toBeGreaterThan(0)
       expect(irregularBadges[0].text()).toBe('Irregular')
+    })
+
+    it('displays retake badge for retake students', async () => {
+      vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(mockInstructorData)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const retakeBadges = wrapper.findAll('.status-retake')
+      expect(retakeBadges.length).toBeGreaterThan(0)
+      expect(retakeBadges[0].text()).toBe('Retake')
     })
 
     it('applies correct CSS classes to regular badges', async () => {
@@ -286,6 +305,17 @@ describe('instructorClassesView', () => {
       expect(irregularBadge.classes()).toContain('status-badge')
       expect(irregularBadge.classes()).toContain('status-irregular')
     })
+
+    it('applies correct CSS classes to retake badges', async () => {
+      vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(mockInstructorData)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const retakeBadge = wrapper.find('.status-retake')
+      expect(retakeBadge.classes()).toContain('status-badge')
+      expect(retakeBadge.classes()).toContain('status-retake')
+    })
   })
 
   describe('summary cards', () => {
@@ -308,7 +338,7 @@ describe('instructorClassesView', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('Total Students')
-      expect(wrapper.text()).toContain('2')
+      expect(wrapper.text()).toContain('3')
     })
   })
 
@@ -384,6 +414,51 @@ describe('instructorClassesView', () => {
 
       expect(wrapper.find('.no-students').exists()).toBe(true)
       expect(wrapper.text()).toContain('No students enrolled in this subject')
+    })
+  })
+
+  describe('enrollment filters', () => {
+    it('filters to regular students only', async () => {
+      vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(mockInstructorData)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const regularFilter = wrapper.findAll('.filter-button').find(button => button.text() === 'Regular')
+      await regularFilter!.trigger('click')
+
+      expect(wrapper.text()).toContain('Alice Smith')
+      expect(wrapper.text()).not.toContain('Bob Johnson')
+      expect(wrapper.text()).not.toContain('Cara Davis')
+    })
+
+    it('filters to irregular students only', async () => {
+      vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(mockInstructorData)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const irregularFilter = wrapper.findAll('.filter-button').find(button => button.text() === 'Irregular')
+      await irregularFilter!.trigger('click')
+
+      expect(wrapper.text()).not.toContain('Alice Smith')
+      expect(wrapper.text()).toContain('Bob Johnson')
+      expect(wrapper.text()).not.toContain('Cara Davis')
+    })
+
+    it('filters to retake students only', async () => {
+      vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(mockInstructorData)
+
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const retakeFilter = wrapper.findAll('.filter-button').find(button => button.text() === 'Retake')
+      await retakeFilter!.trigger('click')
+
+      expect(wrapper.text()).not.toContain('Alice Smith')
+      expect(wrapper.text()).not.toContain('Bob Johnson')
+      expect(wrapper.text()).toContain('Cara Davis')
+      expect(wrapper.text()).toContain('1 Student')
     })
   })
 })

@@ -110,6 +110,26 @@ describe('addEnrollmentModal', () => {
     expect(wrapper.emitted('success')).toBeTruthy()
   })
 
+  it('allows selecting retake as the enrollment type', async () => {
+    const wrapper = mountModal()
+    await flushPromises()
+
+    const selects = wrapper.findAll('select')
+    await selects[0].setValue('11')
+    await selects[1].setValue('7')
+    await selects[2].setValue('Retake')
+    await wrapper.find('.btn-submit').trigger('click')
+
+    expect(enrollStudent).toHaveBeenCalledWith({
+      studentId: 11,
+      sectionId: 3,
+      subjectId: 7,
+      enrollmentType: 'Retake',
+      academicYear: new Date().getFullYear().toString(),
+      semester: '1st',
+    })
+  })
+
   it('emits dropdown loading errors surfaced by stores', async () => {
     userStore.error = 'Failed to fetch users'
     subjectStore.error = 'Failed to fetch subjects'
