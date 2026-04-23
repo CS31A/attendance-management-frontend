@@ -11,10 +11,10 @@ function createInstructorData(
   overrides: Partial<InstructorSectionsWithStudentsResponseDto> = {},
 ): InstructorSectionsWithStudentsResponseDto {
   return {
-    InstructorId: 1,
-    InstructorFirstname: 'John',
-    InstructorLastname: 'Doe',
-    Sections: [],
+    instructorId: 1,
+    instructorFirstname: 'John',
+    instructorLastname: 'Doe',
+    sections: [],
     ...overrides,
   }
 }
@@ -44,20 +44,20 @@ describe('instructorStore', () => {
     it('sections getter returns sections from instructorData', () => {
       const store = useInstructorStore()
       const mockData = createInstructorData({
-        Sections: [
+        sections: [
           {
-            SectionId: 1,
-            SectionName: 'BSCS 3A',
-            CourseId: 1,
-            CourseName: 'Computer Science',
-            Subjects: [],
+            sectionId: 1,
+            sectionName: 'BSCS 3A',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [],
           },
         ],
       })
       store.instructorData = mockData
 
       expect(store.sections).toHaveLength(1)
-      expect(store.sections[0].SectionName).toBe('BSCS 3A')
+      expect(store.sections[0].sectionName).toBe('BSCS 3A')
     })
 
     it('instructorInfo getter returns null when no data', () => {
@@ -81,20 +81,20 @@ describe('instructorStore', () => {
     it('totalSections returns correct count', () => {
       const store = useInstructorStore()
       store.instructorData = createInstructorData({
-        Sections: [
+        sections: [
           {
-            SectionId: 1,
-            SectionName: 'BSCS 3A',
-            CourseId: 1,
-            CourseName: 'Computer Science',
-            Subjects: [],
+            sectionId: 1,
+            sectionName: 'BSCS 3A',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [],
           },
           {
-            SectionId: 2,
-            SectionName: 'BSCS 3B',
-            CourseId: 1,
-            CourseName: 'Computer Science',
-            Subjects: [],
+            sectionId: 2,
+            sectionName: 'BSCS 3B',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [],
           },
         ],
       })
@@ -105,63 +105,63 @@ describe('instructorStore', () => {
     it('totalStudents returns correct count across all sections and subjects', () => {
       const store = useInstructorStore()
       store.instructorData = createInstructorData({
-        Sections: [
+        sections: [
           {
-            SectionId: 1,
-            SectionName: 'BSCS 3A',
-            CourseId: 1,
-            CourseName: 'Computer Science',
-            Subjects: [
+            sectionId: 1,
+            sectionName: 'BSCS 3A',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [
               {
-                SubjectId: 1,
-                SubjectName: 'Data Structures',
-                SubjectCode: 'CS301',
-                ScheduleId: 1,
-                DayOfWeek: 'Monday',
-                TimeIn: '08:00:00',
-                TimeOut: '10:00:00',
-                ClassroomName: 'Room 101',
-                Students: [
+                subjectId: 1,
+                subjectName: 'Data Structures',
+                subjectCode: 'CS301',
+                scheduleId: 1,
+                dayOfWeek: 'Monday',
+                timeIn: '08:00:00',
+                timeOut: '10:00:00',
+                classroomName: 'Room 101',
+                students: [
                   {
-                    StudentId: 1,
-                    Firstname: 'Alice',
-                    Lastname: 'Smith',
-                    IsRegular: true,
-                    EnrollmentType: 'Regular',
+                    studentId: 1,
+                    firstname: 'Alice',
+                    lastname: 'Smith',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
                   },
                   {
-                    StudentId: 2,
-                    Firstname: 'Bob',
-                    Lastname: 'Johnson',
-                    IsRegular: false,
-                    EnrollmentType: 'Irregular',
+                    studentId: 2,
+                    firstname: 'Bob',
+                    lastname: 'Johnson',
+                    isRegular: false,
+                    enrollmentType: 'Irregular',
                   },
                 ],
               },
             ],
           },
           {
-            SectionId: 2,
-            SectionName: 'BSCS 3B',
-            CourseId: 1,
-            CourseName: 'Computer Science',
-            Subjects: [
+            sectionId: 2,
+            sectionName: 'BSCS 3B',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [
               {
-                SubjectId: 2,
-                SubjectName: 'Algorithms',
-                SubjectCode: 'CS302',
-                ScheduleId: 2,
-                DayOfWeek: 'Tuesday',
-                TimeIn: '10:00:00',
-                TimeOut: '12:00:00',
-                ClassroomName: 'Room 102',
-                Students: [
+                subjectId: 2,
+                subjectName: 'Algorithms',
+                subjectCode: 'CS302',
+                scheduleId: 2,
+                dayOfWeek: 'Tuesday',
+                timeIn: '10:00:00',
+                timeOut: '12:00:00',
+                classroomName: 'Room 102',
+                students: [
                   {
-                    StudentId: 3,
-                    Firstname: 'Charlie',
-                    Lastname: 'Brown',
-                    IsRegular: true,
-                    EnrollmentType: 'Regular',
+                    studentId: 3,
+                    firstname: 'Charlie',
+                    lastname: 'Brown',
+                    isRegular: true,
+                    enrollmentType: 'Regular',
                   },
                 ],
               },
@@ -177,13 +177,13 @@ describe('instructorStore', () => {
   describe('actions - success paths', () => {
     it('fetchSectionsWithStudents updates state on success', async () => {
       const mockData = createInstructorData({
-        Sections: [
+        sections: [
           {
-            SectionId: 1,
-            SectionName: 'BSCS 3A',
-            CourseId: 1,
-            CourseName: 'Computer Science',
-            Subjects: [],
+            sectionId: 1,
+            sectionName: 'BSCS 3A',
+            courseId: 1,
+            courseName: 'Computer Science',
+            subjects: [],
           },
         ],
       })

@@ -26,46 +26,46 @@ vi.mock('@/utils/httpError', () => ({
 
 // Sample test data
 const mockInstructorData: InstructorSectionsWithStudentsResponseDto = {
-  InstructorId: 1,
-  InstructorFirstname: 'John',
-  InstructorLastname: 'Doe',
-  Sections: [
+  instructorId: 1,
+  instructorFirstname: 'John',
+  instructorLastname: 'Doe',
+  sections: [
     {
-      SectionId: 10,
-      SectionName: 'BSCS 3A',
-      CourseId: 5,
-      CourseName: 'Bachelor of Science in Computer Science',
-      Subjects: [
+      sectionId: 10,
+      sectionName: 'BSCS 3A',
+      courseId: 5,
+      courseName: 'Bachelor of Science in Computer Science',
+      subjects: [
         {
-          SubjectId: 20,
-          SubjectName: 'Data Structures',
-          SubjectCode: 'CS301',
-          ScheduleId: 100,
-          DayOfWeek: 'Monday',
-          TimeIn: '08:00:00',
-          TimeOut: '10:00:00',
-          ClassroomName: 'Room 101',
-          Students: [
+          subjectId: 20,
+          subjectName: 'Data Structures',
+          subjectCode: 'CS301',
+          scheduleId: 100,
+          dayOfWeek: 'Monday',
+          timeIn: '08:00:00',
+          timeOut: '10:00:00',
+          classroomName: 'Room 101',
+          students: [
             {
-              StudentId: 50,
-              Firstname: 'Alice',
-              Lastname: 'Smith',
-              IsRegular: true,
-              EnrollmentType: 'Regular',
+              studentId: 50,
+              firstname: 'Alice',
+              lastname: 'Smith',
+              isRegular: true,
+              enrollmentType: 'Regular',
             },
             {
-              StudentId: 51,
-              Firstname: 'Bob',
-              Lastname: 'Johnson',
-              IsRegular: false,
-              EnrollmentType: 'Irregular',
+              studentId: 51,
+              firstname: 'Bob',
+              lastname: 'Johnson',
+              isRegular: false,
+              enrollmentType: 'Irregular',
             },
             {
-              StudentId: 52,
-              Firstname: 'Cara',
-              Lastname: 'Davis',
-              IsRegular: false,
-              EnrollmentType: 'Retake',
+              studentId: 52,
+              firstname: 'Cara',
+              lastname: 'Davis',
+              isRegular: false,
+              enrollmentType: 'Retake',
             },
           ],
         },
@@ -176,10 +176,10 @@ describe('instructorClassesView', () => {
   describe('empty state', () => {
     it('displays "no sections" message when sections array is empty', async () => {
       const emptyData: InstructorSectionsWithStudentsResponseDto = {
-        InstructorId: 1,
-        InstructorFirstname: 'John',
-        InstructorLastname: 'Doe',
-        Sections: [],
+        instructorId: 1,
+        instructorFirstname: 'John',
+        instructorLastname: 'Doe',
+        sections: [],
       }
       vi.mocked(instructorsApi.getMySectionsWithStudents).mockResolvedValue(emptyData)
 
@@ -368,14 +368,14 @@ describe('instructorClassesView', () => {
     it('renders multiple sections correctly', async () => {
       const multiSectionData: InstructorSectionsWithStudentsResponseDto = {
         ...mockInstructorData,
-        Sections: [
-          mockInstructorData.Sections[0],
+        sections: [
+          mockInstructorData.sections[0],
           {
-            SectionId: 11,
-            SectionName: 'BSCS 3B',
-            CourseId: 5,
-            CourseName: 'Bachelor of Science in Computer Science',
-            Subjects: [],
+            sectionId: 11,
+            sectionName: 'BSCS 3B',
+            courseId: 5,
+            courseName: 'Bachelor of Science in Computer Science',
+            subjects: [],
           },
         ],
       }
@@ -395,13 +395,13 @@ describe('instructorClassesView', () => {
     it('displays "no students" message when subject has no students', async () => {
       const noStudentsData: InstructorSectionsWithStudentsResponseDto = {
         ...mockInstructorData,
-        Sections: [
+        sections: [
           {
-            ...mockInstructorData.Sections[0],
-            Subjects: [
+            ...mockInstructorData.sections[0],
+            subjects: [
               {
-                ...mockInstructorData.Sections[0].Subjects[0],
-                Students: [],
+                ...mockInstructorData.sections[0].subjects[0],
+                students: [],
               },
             ],
           },
