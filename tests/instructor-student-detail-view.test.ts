@@ -1,8 +1,8 @@
 import type { InstructorStudentDetail } from '@/types/instructor'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { reactive } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
 import * as instructorsApi from '@/api/instructors'
 import InstructorStudentDetailView from '@/views/instructor/InstructorStudentDetailView.vue'
 
