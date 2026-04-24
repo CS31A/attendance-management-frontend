@@ -232,10 +232,10 @@ export async function reactivateQrCodeByHash(qrHash: string): Promise<QrCodeResp
 /**
  * Get all QR codes for a specific session
  *
- * @param {number} sessionId - Session ID
+ * @param {EntityId} sessionId - Session ID (number or string)
  * @returns {Promise<Array<QrCodeResponseDto>>} List of QR codes for the session
  */
-export async function getSessionQrCodes(sessionId: number): Promise<QrCodeResponseDto[]> {
+export async function getSessionQrCodes(sessionId: EntityId): Promise<QrCodeResponseDto[]> {
   const response = await api.get(`/QrCode/session/${sessionId}`)
   return response.data
 }
@@ -243,14 +243,14 @@ export async function getSessionQrCodes(sessionId: number): Promise<QrCodeRespon
 /**
  * Get scan history for a QR code by ID
  *
- * @param {number} id - QR code ID
+ * @param {EntityId} id - QR code ID (number or string)
  * @param {object} [params] - Pagination parameters
  * @param {number} [params.page] - Page number
  * @param {number} [params.limit] - Items per page
  * @returns {Promise<QrCodeScanHistoryResponseDto>} Scan history
  */
 export async function getScanHistoryById(
-  id: number,
+  id: EntityId,
   params: QrCodePaginationParams = {},
 ): Promise<QrCodeScanHistoryResponseDto> {
   const response = await api.get(`/QrCode/${id}/scan-history`, { params })

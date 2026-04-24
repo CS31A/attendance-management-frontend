@@ -1,20 +1,17 @@
-<script setup>
+<script setup lang="ts">
+import type { SessionResponseDto } from '@/api/sessions'
 import { Calendar, ChevronRight, Clock, Filter, MapPin, Search } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { formatShortWeekdayDate as formatDate } from '@/utils/date'
 
-const props = defineProps({
-  sessions: {
-    type: Array,
-    default: () => [],
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-})
+const props = defineProps<{
+  sessions: SessionResponseDto[]
+  loading?: boolean
+}>()
 
-const emit = defineEmits(['select'])
+const emit = defineEmits<{
+  select: [session: SessionResponseDto]
+}>()
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
@@ -36,11 +33,15 @@ const filteredSessions = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter((session) => {
+      const subjectName = session.subjectName as string | undefined
+      const subjectCode = session.subjectCode as string | undefined
+      const sectionName = session.sectionName as string | undefined
+      const startedByName = session.startedByName as string | undefined
       return (
-        session.subjectName?.toLowerCase().includes(query)
-        || session.subjectCode?.toLowerCase().includes(query)
-        || session.sectionName?.toLowerCase().includes(query)
-        || session.startedByName?.toLowerCase().includes(query)
+        subjectName?.toLowerCase().includes(query)
+        || subjectCode?.toLowerCase().includes(query)
+        || sectionName?.toLowerCase().includes(query)
+        || startedByName?.toLowerCase().includes(query)
       )
     })
   }
@@ -75,11 +76,11 @@ const sessionCounts = computed(() => ({
 }))
 
 // Methods
-function handleSelectSession(session) {
+function handleSelectSession(session: SessionResponseDto) {
   emit('select', session)
 }
 
-function formatTime(timeString) {
+function formatTime(timeString: string | undefined) {
   if (!timeString)
     return 'N/A'
   // Handle both time-only format (HH:MM:SS) and full datetime format
@@ -90,17 +91,17 @@ function formatTime(timeString) {
   return timeString.substring(0, 5) // HH:MM format
 }
 
-function getStatusLabel(status) {
+function getStatusLabel(status: string | undefined) {
   const labels = {
     not_started: 'Not Started',
     active: 'Active',
     ended: 'Ended',
     cancelled: 'Cancelled',
   }
-  return labels[status] || status
+  return (status && labels[status as keyof typeof labels]) || status
 }
 
-function getStatusClass(status) {
+function getStatusClass(status: string | undefined) {
   return `status-${status?.replace('_', '-')}`
 }
 
@@ -229,7 +230,7 @@ function clearFilters() {
           </div>
           <div v-if="session.attendanceCutOff" class="detail-item">
             <Clock :size="16" />
-            <span>Cut-off: {{ formatTime(session.attendanceCutOff) }}</span>
+            <span>Cut-off: {{ formatTime(session.attendanceCutOff as string | undefined) }}</span>
           </div>
           <div v-if="session.actualRoomName || session.scheduledRoomName" class="detail-item">
             <MapPin :size="16" />

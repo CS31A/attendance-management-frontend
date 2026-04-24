@@ -1,7 +1,8 @@
 import type { AttendanceStatus } from '@/api/attendance'
+import type { EntityId } from '@/types'
 
 export interface EditableAttendanceRecord {
-  studentId: number
+  studentId: EntityId
   status: AttendanceStatus
   notes?: string
   studentName?: string

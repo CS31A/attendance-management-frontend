@@ -14,14 +14,14 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  start: [payload: { attendanceCutoffMinutes: number, actualRoomId?: number }]
+  start: [payload: { attendanceCutoffMinutes: number, actualRoomId?: EntityId }]
   cancel: []
 }>()
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // State
-const actualRoomId = ref<number | null>(null)
+const actualRoomId = ref<EntityId | null>(null)
 const attendanceCutoffMinutes = ref(15)
 const errorMessage = ref('')
 const classrooms = ref<ClassroomDto[]>([])
@@ -110,7 +110,7 @@ function startSession() {
   }
 
   // Build payload
-  const payload: { attendanceCutoffMinutes: number, actualRoomId?: number } = {
+  const payload: { attendanceCutoffMinutes: number, actualRoomId?: EntityId } = {
     attendanceCutoffMinutes: attendanceCutoffMinutes.value,
   }
 

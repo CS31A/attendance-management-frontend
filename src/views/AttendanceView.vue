@@ -26,14 +26,6 @@ type AttendanceViewMode = 'list' | 'record'
 // Toast state and helpers (must be before watch that uses showToast)
 const { toast, showToast, closeToast } = useToast()
 
-function toNumericSessionId(id: EntityId): number | null {
-  if (typeof id === 'number')
-    return id
-
-  const parsed = Number(id)
-  return Number.isInteger(parsed) ? parsed : null
-}
-
 // State
 const errorMessage = ref('')
 const currentView = ref<AttendanceViewMode>('list')
@@ -126,17 +118,9 @@ async function handleSubmitAttendance(attendanceData: StudentAttendance[]) {
   if (!selectedSession.value)
     return
 
-  const normalizedSessionId = toNumericSessionId(selectedSession.value.id)
-  if (normalizedSessionId === null) {
-    const message = 'Invalid session ID.'
-    showToast(message, 'error')
-    errorMessage.value = message
-    throw new Error(message)
-  }
-
   try {
     await attendanceStore.submitAttendance({
-      sessionId: normalizedSessionId,
+      sessionId: selectedSession.value.id,
       records: attendanceData,
     })
     showToast('Attendance saved successfully!', 'success')

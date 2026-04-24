@@ -4,6 +4,7 @@ import type {
   InstructorSectionsWithStudentsResponseDto,
   InstructorStudentDetail,
 } from '@/types/instructor'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
@@ -116,7 +117,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     }
   }
 
-  const fetchSectionDetail = async (sectionId: number) => {
+  const fetchSectionDetail = async (sectionId: EntityId) => {
     beginLoading()
     error.value = null
 
@@ -135,7 +136,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     }
   }
 
-  const fetchStudentDetail = async (studentId: number) => {
+  const fetchStudentDetail = async (studentId: EntityId) => {
     beginLoading()
     error.value = null
 

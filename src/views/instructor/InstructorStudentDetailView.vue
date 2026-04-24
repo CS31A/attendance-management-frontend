@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { InstructorStudentEnrollment } from '@/types/instructor'
+import type { EntityId } from '@/types'
 import { AlertTriangle, ArrowLeft, RefreshCw, User } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -7,7 +8,6 @@ import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useInstructorStore } from '@/stores/instructorStore'
 import { getErrorMessage } from '@/utils/httpError'
-import { parseStudentRouteParam } from '@/utils/studentRoute'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
 
@@ -20,12 +20,21 @@ const errorMessage = ref('')
 const studentDetail = computed(() => instructorStore.currentStudentDetail)
 const loading = computed(() => instructorStore.loading)
 
+// Extract studentId from route params as EntityId (string from router)
 const studentId = computed(() => {
   const rawStudentId = Array.isArray(route.params.studentId) ? route.params.studentId[0] : route.params.studentId
-  return parseStudentRouteParam(rawStudentId as string | undefined)
+  // Route params are always strings, which is compatible with EntityId
+  return rawStudentId as EntityId | undefined
 })
-const fromSectionId = computed(() => route.query.fromSectionId as string | undefined)
+
+const fromSectionId = computed(() => route.query.fromSectionId as EntityId | undefined)
 const isInvalidStudentLink = ref(false)
+
+// Validate that studentId exists and is not empty
+const isValidStudentId = computed(() => {
+  const id = studentId.value
+  return id !== undefined && id !== null && id !== ''
+})
 
 const { toast, showToast, closeToast } = useToast()
 
@@ -65,7 +74,7 @@ async function loadStudentDetail() {
   errorMessage.value = ''
   isInvalidStudentLink.value = false
 
-  if (studentId.value == null) {
+  if (!isValidStudentId.value) {
     instructorStore.clearStudentDetail()
     errorMessage.value = 'Invalid student details link.'
     isInvalidStudentLink.value = true
@@ -73,7 +82,7 @@ async function loadStudentDetail() {
   }
 
   try {
-    await instructorStore.fetchStudentDetail(studentId.value)
+    await instructorStore.fetchStudentDetail(studentId.value!)
   }
   catch (error) {
     console.error('Failed to load student detail:', error)

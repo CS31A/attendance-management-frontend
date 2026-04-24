@@ -1,21 +1,25 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { AlertTriangle, Plus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { getMySchedules } from '@/api/instructors'
 import { LOCALE } from '@/utils/constants'
 import { toLocalDateKey } from '@/utils/sessionDateHelpers'
 
-const emit = defineEmits(['create', 'cancel'])
+const emit = defineEmits<{
+  create: [payload: { scheduleId: EntityId, sessionDate?: string, description?: string, allowOffScheduleDate?: boolean, offScheduleReason?: string }]
+  cancel: []
+}>()
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // State
-const scheduleId = ref('')
+const scheduleId = ref<EntityId | ''>('')
 const sessionDate = ref('')
 const offScheduleReason = ref('')
 const description = ref('')
 const errorMessage = ref('')
-const schedules = ref([])
+const schedules = ref<Array<{ id: EntityId, [key: string]: unknown }>>([])
 const loadingSchedules = ref(false)
 
 // Computed
@@ -153,8 +157,14 @@ function createSession() {
   }
 
   // Build payload
-  const payload = {
-    scheduleId: Number.parseInt(scheduleId.value, 10),
+  const payload: {
+    scheduleId: EntityId
+    sessionDate?: string
+    description?: string
+    allowOffScheduleDate?: boolean
+    offScheduleReason?: string
+  } = {
+    scheduleId: scheduleId.value as EntityId,
   }
 
   // Add optional date if provided

@@ -26,22 +26,17 @@ const sectionDetail = computed(() => instructorStore.currentSectionDetail)
 const loading = computed(() => instructorStore.loading)
 const isInvalidSectionLink = ref(false)
 
-function parseSectionRouteParam(value: EntityId | undefined): number | null {
-  if (typeof value === 'number') {
-    return Number.isInteger(value) && value > 0 ? value : null
-  }
-
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value)
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : null
-  }
-
-  return null
-}
-
+// Extract sectionId from route params as EntityId (string from router)
 const sectionId = computed(() => {
   const rawSectionId = Array.isArray(route.params.sectionId) ? route.params.sectionId[0] : route.params.sectionId
-  return parseSectionRouteParam(rawSectionId as EntityId | undefined)
+  // Route params are always strings, which is compatible with EntityId
+  return rawSectionId as EntityId | undefined
+})
+
+// Validate that sectionId exists and is not empty
+const isValidSectionId = computed(() => {
+  const id = sectionId.value
+  return id !== undefined && id !== null && id !== ''
 })
 
 const { toast, showToast, closeToast } = useToast()
@@ -107,7 +102,7 @@ async function loadSectionDetail() {
   errorMessage.value = ''
   isInvalidSectionLink.value = false
 
-  if (sectionId.value == null) {
+  if (!isValidSectionId.value) {
     instructorStore.clearSectionDetail()
     errorMessage.value = 'Invalid section details link.'
     isInvalidSectionLink.value = true
@@ -115,7 +110,7 @@ async function loadSectionDetail() {
   }
 
   try {
-    await instructorStore.fetchSectionDetail(sectionId.value)
+    await instructorStore.fetchSectionDetail(sectionId.value!)
   }
   catch (error) {
     console.error('Failed to load section detail:', error)
