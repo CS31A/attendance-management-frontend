@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SessionResponseDto } from '@/api/sessions'
 import type { ClassroomDto } from '@/api/classrooms'
 import type { ScheduleDto } from '@/api/schedules'
+import type { SessionResponseDto } from '@/api/sessions'
 import type { EntityId } from '@/types'
 import { AlertTriangle, Play, X } from 'lucide-vue-next'
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue'

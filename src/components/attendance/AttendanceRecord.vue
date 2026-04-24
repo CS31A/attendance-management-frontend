@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { SessionAttendanceResponseDto } from '@/api/attendance'
+import type { AttendanceStatus, SessionAttendanceResponseDto } from '@/api/attendance'
 import type { SessionResponseDto } from '@/api/sessions'
 import type { EntityId } from '@/types'
 import type { EditableAttendanceRecord } from '@/utils/attendanceRecord'
-import type { AttendanceStatus } from '@/api/attendance'
 import {
   ArrowLeft,
   Calendar,

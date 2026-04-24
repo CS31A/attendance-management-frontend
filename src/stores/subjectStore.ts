@@ -3,8 +3,8 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import subjectApi from '@/api/subjects'
-import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export const useSubjectStore = defineStore('subject', () => {
   // State

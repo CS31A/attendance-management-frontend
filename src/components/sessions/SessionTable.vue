@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { EntityId } from '@/types'
 import type { SessionResponseDto } from '@/api/sessions'
+import type { EntityId } from '@/types'
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import { canStartSession } from '@/api/sessions'
 import { LOCALE } from '@/utils/constants'
@@ -56,7 +56,7 @@ function getTimeRange(session: SessionResponseDto) {
   const actualEnd = session.actualEndTime as string | undefined
   const scheduledStart = (session.scheduledStartTime as string | undefined) || (session.startTime as string | undefined)
   const scheduledEnd = (session.scheduledEndTime as string | undefined) || (session.endTime as string | undefined)
-  
+
   if (actualStart && actualEnd) {
     return `${formatTime(actualStart)} - ${formatTime(actualEnd)}`
   }

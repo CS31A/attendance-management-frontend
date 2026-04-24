@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { EntityId } from '@/types'
 import type { SectionDto } from '@/api/sections'
+import type { EntityId } from '@/types'
 import { Loader2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'

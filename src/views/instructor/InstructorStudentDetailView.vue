@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { InstructorStudentEnrollment } from '@/types/instructor'
 import type { EntityId } from '@/types'
+import type { InstructorStudentEnrollment } from '@/types/instructor'
 import { AlertTriangle, ArrowLeft, RefreshCw, User } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

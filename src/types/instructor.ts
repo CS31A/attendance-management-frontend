@@ -8,6 +8,10 @@
  * Response DTO for instructor sections with students
  * Matches: InstructorSectionsWithStudentsResponseDto.cs
  */
+// ==================== Section-First Drilldown Types ====================
+
+import type { EntityId } from './index'
+
 export interface InstructorSectionsWithStudentsResponseDto {
   instructorId: number
   instructorFirstname: string
@@ -54,10 +58,6 @@ export interface StudentDto {
   isRegular: boolean
   enrollmentType: string
 }
-
-// ==================== Section-First Drilldown Types ====================
-
-import type { EntityId } from './index'
 
 export interface InstructorSectionOverviewItem {
   sectionId: EntityId

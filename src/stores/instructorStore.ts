@@ -1,10 +1,10 @@
+import type { EntityId } from '@/types'
 import type {
   InstructorSectionDetail,
   InstructorSectionOverviewItem,
   InstructorSectionsWithStudentsResponseDto,
   InstructorStudentDetail,
 } from '@/types/instructor'
-import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {

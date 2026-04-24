@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, ChevronRight, RefreshCw, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useInstructorStore } from '@/stores/instructorStore'
-import type { EntityId } from '@/types'
 import { getErrorMessage } from '@/utils/httpError'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))

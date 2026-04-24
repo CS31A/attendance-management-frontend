@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SessionResponseDto, EndSessionPayload } from '@/api/sessions'
+import type { EndSessionPayload, SessionResponseDto } from '@/api/sessions'
 import { AlertTriangle, StopCircle, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'

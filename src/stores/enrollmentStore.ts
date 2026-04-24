@@ -3,8 +3,8 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import enrollmentsApi from '@/api/enrollments'
-import { getErrorMessage } from '@/utils/httpError'
 import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorMessage } from '@/utils/httpError'
 
 export const useEnrollmentStore = defineStore('enrollments', () => {
   // State
