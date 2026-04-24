@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
 import { ROLES } from '@/utils/constants'
+import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 interface ApiUserProfile {
@@ -273,7 +274,7 @@ export const useUserStore = defineStore('user', () => {
 
     try {
       // Find the original user to get their current role/endpoint
-      const originalUser = users.value.find(user => (user.userId || user.id) === userId)
+      const originalUser = users.value.find(user => entityIdsMatch(user.userId || user.id, userId))
       if (!originalUser) {
         throw new Error('User not found')
       }
@@ -292,7 +293,7 @@ export const useUserStore = defineStore('user', () => {
       const response = await api.patch(`${endpoint}/${profileId}`, userData)
 
       // Update the user in the store with the original role (role cannot be changed)
-      const index = users.value.findIndex(user => (user.userId || user.id) === userId)
+      const index = users.value.findIndex(user => entityIdsMatch(user.userId || user.id, userId))
       if (index !== -1) {
         const responseData = response.data as ApiUser
         const hasNestedProfile = Boolean(responseData.adminProfile || responseData.instructorProfile || responseData.studentProfile)
@@ -336,7 +337,7 @@ export const useUserStore = defineStore('user', () => {
       await api.patch(`/users/${userId}/soft-delete`)
 
       // Mark user as deleted in local state
-      const index = users.value.findIndex(u => (u.userId || u.id) === userId)
+      const index = users.value.findIndex(u => entityIdsMatch(u.userId || u.id, userId))
       if (index !== -1) {
         users.value[index].deletedAt = new Date().toISOString()
         users.value[index].isDeleted = true
@@ -369,7 +370,7 @@ export const useUserStore = defineStore('user', () => {
       await api.delete(`/users/${userId}`)
 
       // Remove the user from the store
-      users.value = users.value.filter(user => (user.userId || user.id) !== userId)
+      users.value = users.value.filter(user => !entityIdsMatch(user.userId || user.id, userId))
 
       return { success: true }
     }
@@ -398,7 +399,7 @@ export const useUserStore = defineStore('user', () => {
       await api.patch(`/users/${userId}/restore`)
 
       // Mark user as not deleted in local state
-      const index = users.value.findIndex(u => (u.userId || u.id) === userId)
+      const index = users.value.findIndex(u => entityIdsMatch(u.userId || u.id, userId))
       if (index !== -1) {
         users.value[index].deletedAt = null
         users.value[index].isDeleted = false
