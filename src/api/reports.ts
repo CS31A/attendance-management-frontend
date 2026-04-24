@@ -6,10 +6,10 @@ import api from '@/api'
 export interface ReportsFilter {
   startDate?: string
   endDate?: string
-  sectionId?: number
-  studentId?: number
-  sessionId?: number
-  scheduleId?: number
+  sectionId?: EntityId
+  studentId?: EntityId
+  sessionId?: EntityId
+  scheduleId?: EntityId
 }
 
 // ==================== RESPONSE TYPES ====================
@@ -26,8 +26,8 @@ export interface AttendanceSummaryReportDto {
 }
 
 export interface AttendanceRecordItemDto {
-  id: number
-  sessionId: number
+  id: EntityId
+  sessionId: EntityId
   sessionDate: string
   status: string
   checkInTime?: string
@@ -39,7 +39,7 @@ export interface AttendanceRecordItemDto {
 }
 
 export interface StudentAttendanceReportDto {
-  studentId: number
+  studentId: EntityId
   studentName: string
   studentNumber: string
   totalSessions: number
@@ -52,9 +52,9 @@ export interface StudentAttendanceReportDto {
 }
 
 export interface SessionAttendanceReportDto {
-  sessionId: number
+  sessionId: EntityId
   sessionDate: string
-  scheduleId: number
+  scheduleId: EntityId
   scheduleTitle: string
   subjectName: string
   sectionName: string
@@ -67,17 +67,17 @@ export interface SessionAttendanceReportDto {
 }
 
 export interface SessionAttendanceRecordItemDto {
-  studentId: number
+  studentId: EntityId
   studentName: string
   studentNumber: string
-  attendanceRecordId?: number
+  attendanceRecordId?: EntityId
   status: string
   checkInTime?: string
   isManualEntry: boolean
 }
 
 export interface SessionAttendanceStatsDto {
-  sessionId: number
+  sessionId: EntityId
   sessionDate: string
   subjectName: string
   scheduleTitle: string
@@ -92,7 +92,7 @@ export interface SessionAttendanceStatsDto {
 }
 
 export interface ClassAttendanceSummaryReportDto {
-  sectionId: number
+  sectionId: EntityId
   sectionName: string
   totalSessions: number
   totalPresent: number
@@ -108,7 +108,7 @@ export interface InstructorSessionItemDto extends SessionAttendanceStatsDto {
 }
 
 export interface InstructorSessionsReportDto {
-  instructorId: number
+  instructorId: EntityId
   instructorName: string
   totalSessions: number
   sessions: InstructorSessionItemDto[]
@@ -116,21 +116,42 @@ export interface InstructorSessionsReportDto {
 
 // ==================== API CALLS ====================
 
+/**
+ * Fetch attendance summary report with optional filters
+ * @param {ReportsFilter} params - Optional filter parameters (date range, entity IDs)
+ * @returns {Promise<AttendanceSummaryReportDto>} Attendance summary statistics
+ */
 export async function fetchReportsSummary(params: ReportsFilter = {}): Promise<AttendanceSummaryReportDto> {
   const response = await api.get('/reports/attendance-summary', { params })
   return response.data
 }
 
+/**
+ * Fetch detailed attendance report for a specific student
+ * @param {EntityId} studentId - Student ID (number or string UUID)
+ * @returns {Promise<StudentAttendanceReportDto>} Student attendance report with records
+ */
 export async function fetchStudentAttendanceReport(studentId: EntityId): Promise<StudentAttendanceReportDto> {
   const response = await api.get(`/reports/student-attendance/${studentId}`)
   return response.data
 }
 
+/**
+ * Fetch attendance report for a specific session
+ * @param {EntityId} sessionId - Session ID (number or string UUID)
+ * @returns {Promise<SessionAttendanceReportDto>} Session attendance report with student records
+ */
 export async function fetchSessionAttendanceReport(sessionId: EntityId): Promise<SessionAttendanceReportDto> {
   const response = await api.get(`/reports/session-attendance/${sessionId}`)
   return response.data
 }
 
+/**
+ * Fetch attendance summary report for a class/section
+ * @param {EntityId} sectionId - Section ID (number or string UUID)
+ * @param {ReportsFilter} params - Optional filter parameters (date range)
+ * @returns {Promise<ClassAttendanceSummaryReportDto>} Class attendance summary with session stats
+ */
 export async function fetchClassAttendanceReport(
   sectionId: EntityId,
   params: ReportsFilter = {},
@@ -139,6 +160,12 @@ export async function fetchClassAttendanceReport(
   return response.data
 }
 
+/**
+ * Fetch sessions report for a specific instructor
+ * @param {EntityId} instructorId - Instructor ID (number or string UUID)
+ * @param {ReportsFilter} params - Optional filter parameters (date range)
+ * @returns {Promise<InstructorSessionsReportDto>} Instructor sessions report with attendance stats
+ */
 export async function fetchInstructorSessionsReport(
   instructorId: EntityId,
   params: ReportsFilter = {},
@@ -149,6 +176,11 @@ export async function fetchInstructorSessionsReport(
 
 // ==================== EXPORT HELPERS ====================
 
+/**
+ * Trigger a file download in the browser
+ * @param {Blob} blob - File blob to download
+ * @param {string} filename - Name for the downloaded file
+ */
 function triggerDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
@@ -158,6 +190,11 @@ function triggerDownload(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url)
 }
 
+/**
+ * Export data to CSV format and trigger download
+ * @param {Record<string, unknown>[]} rows - Array of data objects to export
+ * @param {string} filename - Name for the CSV file
+ */
 export function exportToCsv(rows: Record<string, unknown>[], filename: string): void {
   if (rows.length === 0)
     return
@@ -172,6 +209,12 @@ export function exportToCsv(rows: Record<string, unknown>[], filename: string): 
   triggerDownload(blob, filename)
 }
 
+/**
+ * Export data to XLSX format and trigger download
+ * @param {Record<string, unknown>[]} rows - Array of data objects to export
+ * @param {string} filename - Name for the XLSX file
+ * @returns {Promise<void>}
+ */
 export async function exportToXlsx(rows: Record<string, unknown>[], filename: string): Promise<void> {
   const XLSX = await import('xlsx')
   const ws = XLSX.utils.json_to_sheet(rows)

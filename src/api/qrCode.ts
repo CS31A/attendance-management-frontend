@@ -130,10 +130,11 @@ export async function validateQrCode(qrHash: string): Promise<QrCodeValidationRe
 // ==================== MANAGEMENT OPERATIONS ====================
 
 /**
- * Get a QR code by ID
+ * Fetch a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string)
- * @returns {Promise<QrCodeResponseDto>} QR code details
+ * @param {EntityId} id - QR code ID (number or string UUID)
+ * @returns {Promise<QrCodeResponseDto>} QR code details including hash, image, and metadata
+ * @throws {Error} If QR code not found or request fails
  */
 export async function getQrCodeById(id: EntityId): Promise<QrCodeResponseDto> {
   const response = await api.get(`/QrCode/${id}`)
@@ -141,10 +142,22 @@ export async function getQrCodeById(id: EntityId): Promise<QrCodeResponseDto> {
 }
 
 /**
+ * Fetch a QR code by ID (alias for getQrCodeById)
+ *
+ * @param {EntityId} id - QR code ID (number or string UUID)
+ * @returns {Promise<QrCodeResponseDto>} QR code details including hash, image, and metadata
+ * @throws {Error} If QR code not found or request fails
+ */
+export async function fetchQrCode(id: EntityId): Promise<QrCodeResponseDto> {
+  return getQrCodeById(id)
+}
+
+/**
  * Get QR code image by ID
  *
- * @param {EntityId} id - QR code ID (number or string)
- * @returns {Promise<string>} QR code image as data URL
+ * @param {EntityId} id - QR code ID (number or string UUID)
+ * @returns {Promise<string | ArrayBuffer | null>} QR code image as data URL for display
+ * @throws {Error} If QR code not found or image retrieval fails
  */
 export async function getQrCodeImage(id: EntityId): Promise<string | ArrayBuffer | null> {
   const response = await api.get(`/QrCode/${id}/image`, {
@@ -176,10 +189,11 @@ export async function getQrCodeByHash(qrHash: string): Promise<QrCodeResponseDto
 /**
  * Revoke a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string)
+ * @param {EntityId} id - QR code ID (number or string UUID)
  * @param {object} [payload] - Revocation details
  * @param {string} [payload.reason] - Reason for revocation
- * @returns {Promise<QrCodeResponseDto>} Updated QR code
+ * @returns {Promise<QrCodeResponseDto>} Updated QR code with isActive set to false
+ * @throws {Error} If QR code not found or revocation fails
  */
 export async function revokeQrCodeById(
   id: EntityId,
@@ -208,8 +222,9 @@ export async function revokeQrCodeByHash(
 /**
  * Reactivate a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string)
- * @returns {Promise<QrCodeResponseDto>} Updated QR code
+ * @param {EntityId} id - QR code ID (number or string UUID)
+ * @returns {Promise<QrCodeResponseDto>} Updated QR code with isActive set to true
+ * @throws {Error} If QR code not found or reactivation fails
  */
 export async function reactivateQrCodeById(id: EntityId): Promise<QrCodeResponseDto> {
   const response = await api.patch(`/QrCode/${id}/reactivate`)
@@ -232,8 +247,9 @@ export async function reactivateQrCodeByHash(qrHash: string): Promise<QrCodeResp
 /**
  * Get all QR codes for a specific session
  *
- * @param {EntityId} sessionId - Session ID (number or string)
- * @returns {Promise<Array<QrCodeResponseDto>>} List of QR codes for the session
+ * @param {EntityId} sessionId - Session ID (number or string UUID)
+ * @returns {Promise<Array<QrCodeResponseDto>>} List of QR codes generated for the session
+ * @throws {Error} If session not found or retrieval fails
  */
 export async function getSessionQrCodes(sessionId: EntityId): Promise<QrCodeResponseDto[]> {
   const response = await api.get(`/QrCode/session/${sessionId}`)
@@ -243,11 +259,12 @@ export async function getSessionQrCodes(sessionId: EntityId): Promise<QrCodeResp
 /**
  * Get scan history for a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string)
+ * @param {EntityId} id - QR code ID (number or string UUID)
  * @param {object} [params] - Pagination parameters
- * @param {number} [params.page] - Page number
- * @param {number} [params.limit] - Items per page
- * @returns {Promise<QrCodeScanHistoryResponseDto>} Scan history
+ * @param {number} [params.page] - Page number (default: 1)
+ * @param {number} [params.limit] - Items per page (default: 20)
+ * @returns {Promise<QrCodeScanHistoryResponseDto>} Scan history with QR info, statistics, and scan records
+ * @throws {Error} If QR code not found or history retrieval fails
  */
 export async function getScanHistoryById(
   id: EntityId,
@@ -278,6 +295,7 @@ export default {
   generateQrCode,
   scanQrCode,
   validateQrCode,
+  fetchQrCode,
   getQrCodeById,
   getQrCodeImage,
   getQrCodeByHash,
