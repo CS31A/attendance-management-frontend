@@ -24,7 +24,7 @@ export default {
   /**
    * Get course by ID
    * GET /api/Course/{id}
-   * @param {EntityId} id - Course ID (number or string UUID)
+   * @param {EntityId} id - Course ID (string UUID)
    * @returns {Promise<AxiosResponse<CourseDto>>} Course details
    */
   getCourseById(id: EntityId): Promise<AxiosResponse<CourseDto>> {
@@ -42,7 +42,7 @@ export default {
   /**
    * Update course (Admin only)
    * PUT /api/Course/{id}
-   * @param {EntityId} id - Course ID (number or string UUID)
+   * @param {EntityId} id - Course ID (string UUID)
    * @param {CoursePayload} data - Course data to update
    * @returns {Promise<AxiosResponse<CourseDto>>} Updated course
    */
@@ -53,7 +53,7 @@ export default {
   /**
    * Delete course (Admin only)
    * DELETE /api/Course/{id}
-   * @param {EntityId} id - Course ID (number or string UUID)
+   * @param {EntityId} id - Course ID (string UUID)
    * @returns {Promise<AxiosResponse<unknown>>} Deletion confirmation
    */
   deleteCourse(id: EntityId): Promise<AxiosResponse<unknown>> {
@@ -63,7 +63,7 @@ export default {
   /**
    * Check if course has sections assigned
    * GET /api/Course/{id}/has-sections
-   * @param {EntityId} id - Course ID (number or string UUID)
+   * @param {EntityId} id - Course ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if course has sections
    */
   hasSectionsInCourse(id: EntityId): Promise<AxiosResponse<boolean>> {

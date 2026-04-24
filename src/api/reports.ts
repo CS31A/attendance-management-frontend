@@ -128,7 +128,7 @@ export async function fetchReportsSummary(params: ReportsFilter = {}): Promise<A
 
 /**
  * Fetch detailed attendance report for a specific student
- * @param {EntityId} studentId - Student ID (number or string UUID)
+ * @param {EntityId} studentId - Student ID (string UUID)
  * @returns {Promise<StudentAttendanceReportDto>} Student attendance report with records
  */
 export async function fetchStudentAttendanceReport(studentId: EntityId): Promise<StudentAttendanceReportDto> {
@@ -138,7 +138,7 @@ export async function fetchStudentAttendanceReport(studentId: EntityId): Promise
 
 /**
  * Fetch attendance report for a specific session
- * @param {EntityId} sessionId - Session ID (number or string UUID)
+ * @param {EntityId} sessionId - Session ID (string UUID)
  * @returns {Promise<SessionAttendanceReportDto>} Session attendance report with student records
  */
 export async function fetchSessionAttendanceReport(sessionId: EntityId): Promise<SessionAttendanceReportDto> {
@@ -148,7 +148,7 @@ export async function fetchSessionAttendanceReport(sessionId: EntityId): Promise
 
 /**
  * Fetch attendance summary report for a class/section
- * @param {EntityId} sectionId - Section ID (number or string UUID)
+ * @param {EntityId} sectionId - Section ID (string UUID)
  * @param {ReportsFilter} params - Optional filter parameters (date range)
  * @returns {Promise<ClassAttendanceSummaryReportDto>} Class attendance summary with session stats
  */
@@ -162,7 +162,7 @@ export async function fetchClassAttendanceReport(
 
 /**
  * Fetch sessions report for a specific instructor
- * @param {EntityId} instructorId - Instructor ID (number or string UUID)
+ * @param {EntityId} instructorId - Instructor ID (string UUID)
  * @param {ReportsFilter} params - Optional filter parameters (date range)
  * @returns {Promise<InstructorSessionsReportDto>} Instructor sessions report with attendance stats
  */

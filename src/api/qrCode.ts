@@ -84,7 +84,7 @@ export type QrCodePaginationParams = PaginationParams & {
  * Generate a new QR code for a session
  *
  * @param {object} payload - Generation parameters
- * @param {EntityId} payload.sessionId - Session ID (number or string)
+ * @param {EntityId} payload.sessionId - Session ID (string UUID)
  * @param {number} [payload.expirationMinutes] - Expiration time in minutes
  * @param {number} [payload.maxUsage] - Maximum number of scans allowed (optional)
  * @returns {Promise<QrCodeGenerateResponseDto>} Generated QR code response with id, hash, and image
@@ -107,7 +107,7 @@ export async function generateQrCode(payload: QrCodePayload): Promise<QrCodeResp
  *
  * @param {object} payload - Scan data
  * @param {string} payload.qrHash - QR code hash
- * @param {EntityId} [payload.studentId] - Optional legacy student ID (number or string); server derives student from auth token
+ * @param {EntityId} [payload.studentId] - Optional student ID (string UUID); server derives student from auth token
  * @param {object} [payload.deviceInfo] - Optional device information
  * @returns {Promise<QrCodeValidationResponseDto>} Scan result
  */
@@ -132,7 +132,7 @@ export async function validateQrCode(qrHash: string): Promise<QrCodeValidationRe
 /**
  * Fetch a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string UUID)
+ * @param {EntityId} id - QR code ID (string UUID)
  * @returns {Promise<QrCodeResponseDto>} QR code details including hash, image, and metadata
  * @throws {Error} If QR code not found or request fails
  */
@@ -144,7 +144,7 @@ export async function getQrCodeById(id: EntityId): Promise<QrCodeResponseDto> {
 /**
  * Fetch a QR code by ID (alias for getQrCodeById)
  *
- * @param {EntityId} id - QR code ID (number or string UUID)
+ * @param {EntityId} id - QR code ID (string UUID)
  * @returns {Promise<QrCodeResponseDto>} QR code details including hash, image, and metadata
  * @throws {Error} If QR code not found or request fails
  */
@@ -155,7 +155,7 @@ export async function fetchQrCode(id: EntityId): Promise<QrCodeResponseDto> {
 /**
  * Get QR code image by ID
  *
- * @param {EntityId} id - QR code ID (number or string UUID)
+ * @param {EntityId} id - QR code ID (string UUID)
  * @returns {Promise<string | ArrayBuffer | null>} QR code image as data URL for display
  * @throws {Error} If QR code not found or image retrieval fails
  */
@@ -189,7 +189,7 @@ export async function getQrCodeByHash(qrHash: string): Promise<QrCodeResponseDto
 /**
  * Revoke a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string UUID)
+ * @param {EntityId} id - QR code ID (string UUID)
  * @param {object} [payload] - Revocation details
  * @param {string} [payload.reason] - Reason for revocation
  * @returns {Promise<QrCodeResponseDto>} Updated QR code with isActive set to false
@@ -222,7 +222,7 @@ export async function revokeQrCodeByHash(
 /**
  * Reactivate a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string UUID)
+ * @param {EntityId} id - QR code ID (string UUID)
  * @returns {Promise<QrCodeResponseDto>} Updated QR code with isActive set to true
  * @throws {Error} If QR code not found or reactivation fails
  */
@@ -247,7 +247,7 @@ export async function reactivateQrCodeByHash(qrHash: string): Promise<QrCodeResp
 /**
  * Get all QR codes for a specific session
  *
- * @param {EntityId} sessionId - Session ID (number or string UUID)
+ * @param {EntityId} sessionId - Session ID (string UUID)
  * @returns {Promise<Array<QrCodeResponseDto>>} List of QR codes generated for the session
  * @throws {Error} If session not found or retrieval fails
  */
@@ -259,7 +259,7 @@ export async function getSessionQrCodes(sessionId: EntityId): Promise<QrCodeResp
 /**
  * Get scan history for a QR code by ID
  *
- * @param {EntityId} id - QR code ID (number or string UUID)
+ * @param {EntityId} id - QR code ID (string UUID)
  * @param {object} [params] - Pagination parameters
  * @param {number} [params.page] - Page number (default: 1)
  * @param {number} [params.limit] - Items per page (default: 20)

@@ -24,7 +24,7 @@ export default {
   /**
    * Get subject by ID
    * GET /api/subjects/{id}
-   * @param {EntityId} id - Subject ID (number or string UUID)
+   * @param {EntityId} id - Subject ID (string UUID)
    * @returns {Promise<AxiosResponse<SubjectDto>>} Subject details
    */
   getSubjectById(id: EntityId): Promise<AxiosResponse<SubjectDto>> {
@@ -44,7 +44,7 @@ export default {
   /**
    * Update subject record
    * PATCH /api/subjects/{id}
-   * @param {EntityId} id - Subject ID (number or string UUID)
+   * @param {EntityId} id - Subject ID (string UUID)
    * @param {SubjectPayload} data - Subject data to update
    * @returns {Promise<AxiosResponse<SubjectDto>>} Updated subject
    */
@@ -55,7 +55,7 @@ export default {
   /**
    * Delete subject by ID
    * DELETE /api/subjects/{id}
-   * @param {EntityId} id - Subject ID (number or string UUID)
+   * @param {EntityId} id - Subject ID (string UUID)
    * @returns {Promise<AxiosResponse<unknown>>} Deletion confirmation
    */
   deleteSubject(id: EntityId): Promise<AxiosResponse<unknown>> {
@@ -65,7 +65,7 @@ export default {
   /**
    * Check if subject has schedules assigned
    * GET /api/subjects/{id}/has-schedules
-   * @param {EntityId} id - Subject ID (number or string UUID)
+   * @param {EntityId} id - Subject ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if subject has schedules
    */
   hasSchedulesInSubject(id: EntityId): Promise<AxiosResponse<boolean>> {
@@ -75,7 +75,7 @@ export default {
   /**
    * Check if subject has student enrollments
    * GET /api/subjects/{id}/has-enrollments
-   * @param {EntityId} id - Subject ID (number or string UUID)
+   * @param {EntityId} id - Subject ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if subject has enrollments
    */
   hasEnrollmentsInSubject(id: EntityId): Promise<AxiosResponse<boolean>> {

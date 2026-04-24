@@ -28,7 +28,7 @@ export default {
   /**
    * Get section by ID
    * GET /api/sections/{id}
-   * @param {EntityId} id - Section ID (number or string UUID)
+   * @param {EntityId} id - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<SectionDto>>} Section details
    */
   getSection(id: EntityId): Promise<AxiosResponse<SectionDto>> {
@@ -48,7 +48,7 @@ export default {
   /**
    * Update section
    * PUT /api/sections/{id}
-   * @param {EntityId} id - Section ID (number or string UUID)
+   * @param {EntityId} id - Section ID (string UUID)
    * @param {SectionPayload} data - Section data to update
    * @returns {Promise<AxiosResponse<SectionDto>>} Updated section
    */
@@ -59,7 +59,7 @@ export default {
   /**
    * Delete section
    * DELETE /api/sections/{id}
-   * @param {EntityId} id - Section ID (number or string UUID)
+   * @param {EntityId} id - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<unknown>>} Deletion confirmation
    */
   deleteSection(id: EntityId): Promise<AxiosResponse<unknown>> {
@@ -69,7 +69,7 @@ export default {
   /**
    * Get active students in section
    * GET /api/sections/{sectionId}/active-students
-   * @param {EntityId} sectionId - Section ID (number or string UUID)
+   * @param {EntityId} sectionId - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<StudentDto[]>>} Array of active students
    */
   getActiveStudents(sectionId: EntityId): Promise<AxiosResponse<StudentDto[]>> {
@@ -79,7 +79,7 @@ export default {
   /**
    * Get all students in section
    * GET /api/sections/{sectionId}/all-students
-   * @param {EntityId} sectionId - Section ID (number or string UUID)
+   * @param {EntityId} sectionId - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<StudentDto[]>>} Array of all students
    */
   getAllStudents(sectionId: EntityId): Promise<AxiosResponse<StudentDto[]>> {
@@ -89,7 +89,7 @@ export default {
   /**
    * Check if section has students
    * GET /api/sections/{sectionId}/has-students
-   * @param {EntityId} sectionId - Section ID (number or string UUID)
+   * @param {EntityId} sectionId - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if section has students
    */
   hasStudentsInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {
@@ -99,7 +99,7 @@ export default {
   /**
    * Check if section has enrollments
    * GET /api/sections/{sectionId}/has-enrollments
-   * @param {EntityId} sectionId - Section ID (number or string UUID)
+   * @param {EntityId} sectionId - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if section has enrollments
    */
   hasEnrollmentsInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {
@@ -109,7 +109,7 @@ export default {
   /**
    * Check if section has schedules
    * GET /api/sections/{sectionId}/has-schedules
-   * @param {EntityId} sectionId - Section ID (number or string UUID)
+   * @param {EntityId} sectionId - Section ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if section has schedules
    */
   hasSchedulesInSection(sectionId: EntityId): Promise<AxiosResponse<boolean>> {

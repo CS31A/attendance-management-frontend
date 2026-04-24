@@ -24,7 +24,7 @@ export default {
   /**
    * Get classroom by ID
    * GET /api/classrooms/{id}
-   * @param {EntityId} id - Classroom ID (number or string UUID)
+   * @param {EntityId} id - Classroom ID (string UUID)
    * @returns {Promise<AxiosResponse<ClassroomDto>>} Classroom details
    */
   getClassroomById(id: EntityId): Promise<AxiosResponse<ClassroomDto>> {
@@ -44,7 +44,7 @@ export default {
   /**
    * Update classroom record
    * PATCH /api/classrooms/{id}
-   * @param {EntityId} id - Classroom ID (number or string UUID)
+   * @param {EntityId} id - Classroom ID (string UUID)
    * @param {ClassroomPayload} data - Classroom data to update
    * @returns {Promise<AxiosResponse<ClassroomDto>>} Updated classroom
    */
@@ -55,7 +55,7 @@ export default {
   /**
    * Delete classroom by ID
    * DELETE /api/classrooms/{id}
-   * @param {EntityId} id - Classroom ID (number or string UUID)
+   * @param {EntityId} id - Classroom ID (string UUID)
    * @returns {Promise<AxiosResponse<unknown>>} Deletion confirmation
    */
   deleteClassroom(id: EntityId): Promise<AxiosResponse<unknown>> {
@@ -65,7 +65,7 @@ export default {
   /**
    * Check if classroom has schedules assigned
    * GET /api/classrooms/{id}/has-schedules
-   * @param {EntityId} id - Classroom ID (number or string UUID)
+   * @param {EntityId} id - Classroom ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if classroom has schedules
    */
   hasSchedulesInClassroom(id: EntityId): Promise<AxiosResponse<boolean>> {
@@ -75,7 +75,7 @@ export default {
   /**
    * Check if classroom has sessions using ActualRoomId
    * GET /api/classrooms/{id}/has-sessions
-   * @param {EntityId} id - Classroom ID (number or string UUID)
+   * @param {EntityId} id - Classroom ID (string UUID)
    * @returns {Promise<AxiosResponse<boolean>>} True if classroom has sessions
    */
   hasSessionsInClassroom(id: EntityId): Promise<AxiosResponse<boolean>> {
