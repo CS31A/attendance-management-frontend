@@ -1,15 +1,25 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { BookOpen, Calendar, Edit, Hash, Trash2 } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
 
-defineProps({
-  subjects: {
-    type: Array,
-    required: true,
-  },
-})
+interface Subject {
+  id: EntityId
+  name: string
+  code: string
+  createdAt?: string
+  updatedAt?: string
+  [key: string]: unknown
+}
 
-defineEmits(['edit', 'delete'])
+defineProps<{
+  subjects: Subject[]
+}>()
+
+defineEmits<{
+  edit: [subject: Subject]
+  delete: [id: EntityId]
+}>()
 </script>
 
 <template>

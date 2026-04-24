@@ -1,26 +1,28 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, Loader2, X } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useCourseStore } from '@/stores/courseStore'
 
-const props = defineProps({
-  section: {
-    type: Object,
-    default: null,
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-})
+const props = defineProps<{
+  section?: {
+    name?: string
+    courseId?: EntityId
+    [key: string]: unknown
+  } | null
+  loading?: boolean
+}>()
 
-const emit = defineEmits(['save', 'cancel'])
+const emit = defineEmits<{
+  save: [sectionData: { name: string, courseId: EntityId }]
+  cancel: []
+}>()
 
 const courseStore = useCourseStore()
 
 // Form data
 const name = ref('')
-const courseId = ref('')
+const courseId = ref<EntityId | ''>('')
 const errorMessage = ref('')
 
 // Initialize form if editing
@@ -68,14 +70,14 @@ function handleSubmit() {
 
   const sectionData = {
     name: name.value,
-    courseId: Number.parseInt(courseId.value),
+    courseId: courseId.value as EntityId,
   }
 
   emit('save', sectionData)
 }
 
 // Handle error from parent
-function handleError(error) {
+function handleError(error: string) {
   errorMessage.value = error
 }
 

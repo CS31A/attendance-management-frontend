@@ -412,7 +412,7 @@ watch(searchQuery, () => {
           hasPreviousPage,
           totalSchedules,
           itemsPerPage,
-        } : null"
+        } : undefined"
         :is-deletion-checking="isDeletionChecking"
         @next-page="handleNextPage"
         @previous-page="handlePreviousPage"

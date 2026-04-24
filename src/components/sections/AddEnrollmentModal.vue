@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EntityId } from '@/types'
 import type { SectionDto } from '@/api/sections'
 import { Loader2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
@@ -21,8 +22,8 @@ const subjectStore = useSubjectStore()
 const userStore = useUserStore()
 
 // State
-const selectedStudentId = ref('')
-const subjectId = ref('')
+const selectedStudentId = ref<EntityId | ''>('')
+const subjectId = ref<EntityId | ''>('')
 const enrollmentType = ref('Regular')
 const academicYear = ref(new Date().getFullYear().toString())
 const semester = ref('1st')
@@ -78,9 +79,9 @@ async function handleEnroll() {
 
   try {
     await enrollmentStore.enrollStudent({
-      studentId: Number(selectedStudentId.value),
+      studentId: selectedStudentId.value as EntityId,
       sectionId: props.section.id,
-      subjectId: Number(subjectId.value),
+      subjectId: subjectId.value as EntityId,
       enrollmentType: enrollmentType.value,
       academicYear: academicYear.value,
       semester: semester.value,

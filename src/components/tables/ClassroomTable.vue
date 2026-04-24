@@ -1,15 +1,24 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { Calendar, DoorOpen, Edit, Trash2 } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
 
-defineProps({
-  classrooms: {
-    type: Array,
-    required: true,
-  },
-})
+interface Classroom {
+  id: EntityId
+  name: string
+  createdAt?: string
+  updatedAt?: string
+  [key: string]: unknown
+}
 
-defineEmits(['edit', 'delete'])
+defineProps<{
+  classrooms: Classroom[]
+}>()
+
+defineEmits<{
+  edit: [classroom: Classroom]
+  delete: [id: EntityId]
+}>()
 </script>
 
 <template>
