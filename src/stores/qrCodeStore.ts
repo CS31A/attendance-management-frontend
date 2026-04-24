@@ -1,4 +1,5 @@
 import type { QrCodeResponseDto, QrCodeScanHistoryResponseDto } from '@/api/qrCode'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import qrCodeApi from '@/api/qrCode'
@@ -85,9 +86,9 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   /**
    * Fetch QR code details by ID
-   * @param {number} id
+   * @param {EntityId} id
    */
-  async function fetchQrCode(id: number) {
+  async function fetchQrCode(id: EntityId) {
     loading.value = true
     clearError()
     try {
