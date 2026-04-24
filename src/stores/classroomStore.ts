@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import classroomApi from '@/api/classrooms'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
+import { entityIdsMatch } from '@/utils/entityId'
 
 export const useClassroomStore = defineStore('classroom', () => {
   // State
@@ -78,7 +79,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     error.value = ''
     try {
       const response = await classroomApi.updateClassroom(id, data)
-      const index = classrooms.value.findIndex(c => c.id === id)
+      const index = classrooms.value.findIndex(c => entityIdsMatch(c.id, id))
       if (index !== -1) {
         classrooms.value[index] = response.data
       }
@@ -103,7 +104,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     error.value = ''
     try {
       await classroomApi.deleteClassroom(id)
-      classrooms.value = classrooms.value.filter(c => c.id !== id)
+      classrooms.value = classrooms.value.filter(c => !entityIdsMatch(c.id, id))
     }
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to delete classroom')

@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios'
 import type { Ref } from 'vue'
 import type { EntityId } from '@/types'
 import { reactive, ref } from 'vue'
+import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'
 
@@ -110,7 +111,7 @@ export function createDeleteFlow<T extends { id: EntityId }>({
       return
     }
 
-    const item = itemsArray.find((current: T) => current.id === id)
+    const item = itemsArray.find((current: T) => entityIdsMatch(current.id, id))
     if (!item) {
       return
     }
