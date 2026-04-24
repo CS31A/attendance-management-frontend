@@ -446,7 +446,7 @@ describe('instructorClassesView', () => {
       const sectionCard = wrapper.find('.section-card')
       await sectionCard.trigger('click')
 
-      expect(mockPush).toHaveBeenCalledWith('/instructor/classes/sections/10')
+      expect(mockPush).toHaveBeenCalledWith('/instructor/classes/sections/00000000-0000-0000-0000-000000000010')
     })
   })
 })

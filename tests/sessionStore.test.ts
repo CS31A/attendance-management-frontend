@@ -160,6 +160,100 @@ describe('sessionStore', () => {
     })
   })
 
+  describe('entityId mixed type handling', () => {
+    it('finds session by number ID', () => {
+      const store = useSessionStore()
+      store.sessions = [
+        createSession({ id: 1 as EntityId, status: 'active' }),
+        createSession({ id: 2 as EntityId, status: 'not_started' }),
+      ]
+
+      const session = store.getSessionById(1 as EntityId)
+      expect(session).toBeDefined()
+      expect(session?.id).toBe(1 as EntityId)
+      expect(session?.status).toBe('active')
+    })
+
+    it('finds session by string ID', () => {
+      const store = useSessionStore()
+      store.sessions = [
+        createSession({ id: 'uuid-123' as unknown as EntityId, status: 'active' }),
+        createSession({ id: 'uuid-456' as unknown as EntityId, status: 'not_started' }),
+      ]
+
+      const session = store.getSessionById('uuid-123' as unknown as EntityId)
+      expect(session).toBeDefined()
+      expect(session?.id).toBe('uuid-123' as unknown as EntityId)
+      expect(session?.status).toBe('active')
+    })
+
+    it('finds session with mixed ID types (string query, number stored)', () => {
+      const store = useSessionStore()
+      store.sessions = [
+        createSession({ id: 1 as EntityId, status: 'active' }),
+      ]
+
+      // String '1' should match number 1 via entityIdsMatch
+      const session = store.getSessionById('1' as unknown as EntityId)
+      expect(session).toBeDefined()
+      expect(session?.id).toBe(1 as EntityId)
+    })
+
+    it('sessionsByStatus filters with mixed ID types', () => {
+      const store = useSessionStore()
+      store.sessions = [
+        createSession({ id: 1 as EntityId, status: 'active' }),
+        createSession({ id: 'uuid-123' as unknown as EntityId, status: 'active' }),
+        createSession({ id: 2 as EntityId, status: 'not_started' }),
+      ]
+
+      const activeSessions = store.sessionsByStatus('active')
+      expect(activeSessions).toHaveLength(2)
+      expect(activeSessions[0].id).toBe(1 as EntityId)
+      expect(activeSessions[1].id).toBe('uuid-123' as unknown as EntityId)
+    })
+
+    it('handles string IDs in session operations', async () => {
+      const stringIdSession = createSession({
+        id: 'uuid-session-123' as unknown as EntityId,
+        status: 'not_started',
+        rowVersion: 'row-version-string',
+      })
+      const updatedSession = createSession({
+        id: 'uuid-session-123' as unknown as EntityId,
+        status: 'active',
+        rowVersion: 'row-version-string-2',
+      })
+
+      vi.mocked(apiStartSession).mockResolvedValue(updatedSession as never)
+
+      const store = useSessionStore()
+      store.sessions = [stringIdSession]
+
+      const result = await store.startSession('uuid-session-123' as unknown as EntityId, {})
+
+      expect(result.id).toBe('uuid-session-123' as unknown as EntityId)
+      expect(result.status).toBe('active')
+      expect(store.sessions[0].status).toBe('active')
+    })
+
+    it('fetchSessionById replaces session with mixed ID types', async () => {
+      const mockSession = createSession({ id: '1' as unknown as EntityId, status: 'active' })
+      vi.mocked(apiFetchSessionById).mockResolvedValue(mockSession as never)
+
+      const store = useSessionStore()
+      // Store has number ID
+      store.sessions = [createSession({ id: 1 as EntityId, status: 'not_started' })]
+
+      await store.fetchSessionById('1' as unknown as EntityId)
+
+      // Should replace the session even though ID types differ
+      expect(store.sessions).toHaveLength(1)
+      expect(store.sessions[0].status).toBe('active')
+      expect(store.currentSession?.status).toBe('active')
+    })
+  })
+
   describe('actions — success paths', () => {
     it('fetchSessions populates sessions', async () => {
       const mockSessions = [createSession(), createSession({ id: 2 as EntityId })]

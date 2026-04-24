@@ -23,7 +23,7 @@ vi.mock('@/utils/httpError', () => ({
 }))
 
 const mockPush = vi.fn()
-const mockRoute = reactive({ params: { studentId: '50' }, query: {} as Record<string, string> })
+const mockRoute = reactive({ params: { studentId: '50' as string | undefined }, query: {} as Record<string, string> })
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockRoute),
   useRouter: vi.fn(() => ({
@@ -148,10 +148,10 @@ describe('instructorStudentDetailView', () => {
       expect(retryButton.text()).toContain('Retry')
     })
 
-    it.each(['abc', '42.5', '0', '-1'])(
+    it.each(['', undefined])(
       'shows invalid link state and skips API call for studentId %s',
       async (studentId) => {
-        mockRoute.params.studentId = studentId
+        mockRoute.params.studentId = studentId as string | undefined
         vi.mocked(instructorsApi.getMyStudentDetail).mockResolvedValue(mockStudentDetail)
 
         const wrapper = mountComponent()
@@ -171,7 +171,7 @@ describe('instructorStudentDetailView', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('Alice Smith')
-      expect(wrapper.text()).toContain('ID: 50')
+      expect(wrapper.text()).toContain('ID: 00000000-0000-0000-0000-000000000050')
       expect(wrapper.text()).toContain('BSCS 3A')
       expect(wrapper.text()).toContain('Bachelor of Science in Computer Science')
     })
@@ -260,14 +260,14 @@ describe('instructorStudentDetailView', () => {
       const wrapper = mountComponent()
       await flushPromises()
 
-      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(1, 50)
+      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(1, '50')
       expect(wrapper.text()).toContain('Alice Smith')
 
       mockRoute.params.studentId = '51'
       await flushPromises()
       await flushPromises()
 
-      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(2, 51)
+      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(2, '51')
       expect(wrapper.text()).toContain('Bob Johnson')
     })
   })

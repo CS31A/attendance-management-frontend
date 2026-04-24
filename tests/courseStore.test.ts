@@ -357,4 +357,87 @@ describe('courseStore', () => {
       expect(sorted[1].name).toBe('Zulu')
     })
   })
+
+  describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
+    it('updateCourse finds course by number ID', async () => {
+      const existingCourse = createCourse({ id: 1 as EntityId, name: 'Old Name' })
+      const updatedCourse = createCourse({ id: 1 as EntityId, name: 'Updated Name' })
+      vi.mocked(courseApi.updateCourse).mockResolvedValue({ data: updatedCourse } as never)
+
+      const store = useCourseStore()
+      store.courses = [existingCourse]
+
+      const result = await store.updateCourse(1 as EntityId, { name: 'Updated Name' } as CoursePayload)
+
+      expect(result).toEqual(updatedCourse)
+      expect(store.courses[0]).toEqual(updatedCourse)
+    })
+
+    it('updateCourse finds course by string ID', async () => {
+      const existingCourse = createCourse({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId, name: 'Old Name' })
+      const updatedCourse = createCourse({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId, name: 'Updated Name' })
+      vi.mocked(courseApi.updateCourse).mockResolvedValue({ data: updatedCourse } as never)
+
+      const store = useCourseStore()
+      store.courses = [existingCourse]
+
+      const result = await store.updateCourse('550e8400-e29b-41d4-a716-446655440000' as EntityId, { name: 'Updated Name' } as CoursePayload)
+
+      expect(result).toEqual(updatedCourse)
+      expect(store.courses[0]).toEqual(updatedCourse)
+    })
+
+    it('updateCourse finds course with mixed ID types (store has number, search with string)', async () => {
+      const existingCourse = createCourse({ id: 1 as EntityId, name: 'Old Name' })
+      const updatedCourse = createCourse({ id: 1 as EntityId, name: 'Updated Name' })
+      vi.mocked(courseApi.updateCourse).mockResolvedValue({ data: updatedCourse } as never)
+
+      const store = useCourseStore()
+      store.courses = [existingCourse]
+
+      const result = await store.updateCourse('1' as EntityId, { name: 'Updated Name' } as CoursePayload)
+
+      expect(result).toEqual(updatedCourse)
+      expect(store.courses[0]).toEqual(updatedCourse)
+    })
+
+    it('deleteCourse removes course by number ID', async () => {
+      vi.mocked(courseApi.deleteCourse).mockResolvedValue({} as never)
+
+      const store = useCourseStore()
+      store.courses = [createCourse({ id: 1 as EntityId }), createCourse({ id: 2 as EntityId })]
+
+      await store.deleteCourse(1 as EntityId)
+
+      expect(store.courses).toHaveLength(1)
+      expect(store.courses[0].id).toBe(2 as EntityId)
+    })
+
+    it('deleteCourse removes course by string ID', async () => {
+      vi.mocked(courseApi.deleteCourse).mockResolvedValue({} as never)
+
+      const store = useCourseStore()
+      store.courses = [
+        createCourse({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId }),
+        createCourse({ id: '550e8400-e29b-41d4-a716-446655440001' as EntityId }),
+      ]
+
+      await store.deleteCourse('550e8400-e29b-41d4-a716-446655440000' as EntityId)
+
+      expect(store.courses).toHaveLength(1)
+      expect(store.courses[0].id).toBe('550e8400-e29b-41d4-a716-446655440001' as EntityId)
+    })
+
+    it('deleteCourse removes course with mixed ID types (store has number, delete with string)', async () => {
+      vi.mocked(courseApi.deleteCourse).mockResolvedValue({} as never)
+
+      const store = useCourseStore()
+      store.courses = [createCourse({ id: 1 as EntityId }), createCourse({ id: 2 as EntityId })]
+
+      await store.deleteCourse('1' as EntityId)
+
+      expect(store.courses).toHaveLength(1)
+      expect(store.courses[0].id).toBe(2 as EntityId)
+    })
+  })
 })

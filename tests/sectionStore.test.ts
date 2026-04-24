@@ -221,4 +221,87 @@ describe('sectionStore', () => {
       expect(store.sections).toEqual(originalSections)
     })
   })
+
+  describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
+    it('updateSection finds section by number ID', async () => {
+      const existingSection = createSection({ id: 1 as EntityId, name: 'Old Name' })
+      const updatedSection = createSection({ id: 1 as EntityId, name: 'Updated Name' })
+      vi.mocked(sectionsApi.updateSection).mockResolvedValue({ data: updatedSection } as never)
+
+      const store = useSectionStore()
+      store.sections = [existingSection]
+
+      const result = await store.updateSection(1 as EntityId, { name: 'Updated Name' } as SectionPayload)
+
+      expect(result).toEqual(updatedSection)
+      expect(store.sections[0]).toEqual(updatedSection)
+    })
+
+    it('updateSection finds section by string ID', async () => {
+      const existingSection = createSection({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId, name: 'Old Name' })
+      const updatedSection = createSection({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId, name: 'Updated Name' })
+      vi.mocked(sectionsApi.updateSection).mockResolvedValue({ data: updatedSection } as never)
+
+      const store = useSectionStore()
+      store.sections = [existingSection]
+
+      const result = await store.updateSection('550e8400-e29b-41d4-a716-446655440000' as EntityId, { name: 'Updated Name' } as SectionPayload)
+
+      expect(result).toEqual(updatedSection)
+      expect(store.sections[0]).toEqual(updatedSection)
+    })
+
+    it('updateSection finds section with mixed ID types (store has number, search with string)', async () => {
+      const existingSection = createSection({ id: 1 as EntityId, name: 'Old Name' })
+      const updatedSection = createSection({ id: 1 as EntityId, name: 'Updated Name' })
+      vi.mocked(sectionsApi.updateSection).mockResolvedValue({ data: updatedSection } as never)
+
+      const store = useSectionStore()
+      store.sections = [existingSection]
+
+      const result = await store.updateSection('1' as EntityId, { name: 'Updated Name' } as SectionPayload)
+
+      expect(result).toEqual(updatedSection)
+      expect(store.sections[0]).toEqual(updatedSection)
+    })
+
+    it('deleteSection removes section by number ID', async () => {
+      vi.mocked(sectionsApi.deleteSection).mockResolvedValue({} as never)
+
+      const store = useSectionStore()
+      store.sections = [createSection({ id: 1 as EntityId }), createSection({ id: 2 as EntityId })]
+
+      await store.deleteSection(1 as EntityId)
+
+      expect(store.sections).toHaveLength(1)
+      expect(store.sections[0].id).toBe(2 as EntityId)
+    })
+
+    it('deleteSection removes section by string ID', async () => {
+      vi.mocked(sectionsApi.deleteSection).mockResolvedValue({} as never)
+
+      const store = useSectionStore()
+      store.sections = [
+        createSection({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId }),
+        createSection({ id: '550e8400-e29b-41d4-a716-446655440001' as EntityId }),
+      ]
+
+      await store.deleteSection('550e8400-e29b-41d4-a716-446655440000' as EntityId)
+
+      expect(store.sections).toHaveLength(1)
+      expect(store.sections[0].id).toBe('550e8400-e29b-41d4-a716-446655440001' as EntityId)
+    })
+
+    it('deleteSection removes section with mixed ID types (store has number, delete with string)', async () => {
+      vi.mocked(sectionsApi.deleteSection).mockResolvedValue({} as never)
+
+      const store = useSectionStore()
+      store.sections = [createSection({ id: 1 as EntityId }), createSection({ id: 2 as EntityId })]
+
+      await store.deleteSection('1' as EntityId)
+
+      expect(store.sections).toHaveLength(1)
+      expect(store.sections[0].id).toBe(2 as EntityId)
+    })
+  })
 })

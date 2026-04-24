@@ -358,4 +358,87 @@ describe('classroomStore', () => {
       expect(store.classrooms).toEqual(originalClassrooms)
     })
   })
+
+  describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
+    it('updateClassroom finds classroom by number ID', async () => {
+      const existingClassroom = createClassroom({ id: 1 as EntityId, name: 'Old Name' })
+      const updatedClassroom = createClassroom({ id: 1 as EntityId, name: 'Updated Name' })
+      vi.mocked(classroomApi.updateClassroom).mockResolvedValue({ data: updatedClassroom } as never)
+
+      const store = useClassroomStore()
+      store.classrooms = [existingClassroom]
+
+      const result = await store.updateClassroom(1 as EntityId, { name: 'Updated Name' } as ClassroomPayload)
+
+      expect(result).toEqual(updatedClassroom)
+      expect(store.classrooms[0]).toEqual(updatedClassroom)
+    })
+
+    it('updateClassroom finds classroom by string ID', async () => {
+      const existingClassroom = createClassroom({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId, name: 'Old Name' })
+      const updatedClassroom = createClassroom({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId, name: 'Updated Name' })
+      vi.mocked(classroomApi.updateClassroom).mockResolvedValue({ data: updatedClassroom } as never)
+
+      const store = useClassroomStore()
+      store.classrooms = [existingClassroom]
+
+      const result = await store.updateClassroom('550e8400-e29b-41d4-a716-446655440000' as EntityId, { name: 'Updated Name' } as ClassroomPayload)
+
+      expect(result).toEqual(updatedClassroom)
+      expect(store.classrooms[0]).toEqual(updatedClassroom)
+    })
+
+    it('updateClassroom finds classroom with mixed ID types (store has number, search with string)', async () => {
+      const existingClassroom = createClassroom({ id: 1 as EntityId, name: 'Old Name' })
+      const updatedClassroom = createClassroom({ id: 1 as EntityId, name: 'Updated Name' })
+      vi.mocked(classroomApi.updateClassroom).mockResolvedValue({ data: updatedClassroom } as never)
+
+      const store = useClassroomStore()
+      store.classrooms = [existingClassroom]
+
+      const result = await store.updateClassroom('1' as EntityId, { name: 'Updated Name' } as ClassroomPayload)
+
+      expect(result).toEqual(updatedClassroom)
+      expect(store.classrooms[0]).toEqual(updatedClassroom)
+    })
+
+    it('deleteClassroom removes classroom by number ID', async () => {
+      vi.mocked(classroomApi.deleteClassroom).mockResolvedValue({} as never)
+
+      const store = useClassroomStore()
+      store.classrooms = [createClassroom({ id: 1 as EntityId }), createClassroom({ id: 2 as EntityId })]
+
+      await store.deleteClassroom(1 as EntityId)
+
+      expect(store.classrooms).toHaveLength(1)
+      expect(store.classrooms[0].id).toBe(2 as EntityId)
+    })
+
+    it('deleteClassroom removes classroom by string ID', async () => {
+      vi.mocked(classroomApi.deleteClassroom).mockResolvedValue({} as never)
+
+      const store = useClassroomStore()
+      store.classrooms = [
+        createClassroom({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId }),
+        createClassroom({ id: '550e8400-e29b-41d4-a716-446655440001' as EntityId }),
+      ]
+
+      await store.deleteClassroom('550e8400-e29b-41d4-a716-446655440000' as EntityId)
+
+      expect(store.classrooms).toHaveLength(1)
+      expect(store.classrooms[0].id).toBe('550e8400-e29b-41d4-a716-446655440001' as EntityId)
+    })
+
+    it('deleteClassroom removes classroom with mixed ID types (store has number, delete with string)', async () => {
+      vi.mocked(classroomApi.deleteClassroom).mockResolvedValue({} as never)
+
+      const store = useClassroomStore()
+      store.classrooms = [createClassroom({ id: 1 as EntityId }), createClassroom({ id: 2 as EntityId })]
+
+      await store.deleteClassroom('1' as EntityId)
+
+      expect(store.classrooms).toHaveLength(1)
+      expect(store.classrooms[0].id).toBe(2 as EntityId)
+    })
+  })
 })

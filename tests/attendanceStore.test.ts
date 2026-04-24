@@ -439,6 +439,90 @@ describe('attendanceStore', () => {
     })
   })
 
+  describe('entityId mixed type handling', () => {
+    it('applies updates by ID match (number vs string)', async () => {
+      const updatedRecord = createAttendanceRecord({ id: '1' as unknown as number, studentId: 10, sessionId: 100, status: 'present' })
+      vi.mocked(updateAttendance).mockResolvedValue(updatedRecord)
+
+      const store = useAttendanceStore()
+      store.currentSessionId = 100 as EntityId
+      store.sessionAttendance = [
+        createSessionAttendanceRecord({ id: 1, studentId: 10, sessionId: 100, status: 'absent' }),
+      ]
+
+      // Update with string ID should match number ID via entityIdsMatch
+      await store.updateAttendanceRecord('1' as unknown as EntityId, { status: 'present' })
+
+      expect(store.sessionAttendance[0].status).toBe('present')
+    })
+
+    it('applies updates by studentId match (number vs string)', async () => {
+      const updatedRecord = createAttendanceRecord({ id: 2, studentId: '10' as unknown as number, sessionId: 100, status: 'present' })
+      vi.mocked(createAttendance).mockResolvedValue(updatedRecord)
+      vi.mocked(apiFetchSessionAttendance).mockResolvedValue([
+        createSessionAttendanceRecord({ id: 1, studentId: 10, sessionId: 100, status: 'present' }),
+      ])
+
+      const store = useAttendanceStore()
+      store.currentSessionId = 100 as EntityId
+      store.sessionAttendance = [
+        createSessionAttendanceRecord({ id: 1, studentId: 10, sessionId: 100, status: 'absent' }),
+      ]
+
+      // Submit with string studentId should match number studentId via entityIdsMatch
+      await store.submitAttendance({
+        sessionId: 100,
+        records: [{ studentId: '10' as unknown as number, status: 'present' }],
+      })
+
+      // Background refresh will update the state
+      await new Promise(resolve => setTimeout(resolve, 10))
+      expect(store.sessionAttendance[0].status).toBe('present')
+    })
+
+    it('finds attendance by mixed ID types', () => {
+      const store = useAttendanceStore()
+      store.sessionAttendance = [
+        createSessionAttendanceRecord({ id: 1, studentId: 10 }),
+        createSessionAttendanceRecord({ id: 2, studentId: 20 }),
+      ]
+
+      // Find by string ID when stored as number
+      expect(store.getRecordByStudentId('10' as unknown as EntityId)).toEqual(store.sessionAttendance[0])
+      // Find by number ID when stored as number
+      expect(store.getRecordByStudentId(20 as EntityId)).toEqual(store.sessionAttendance[1])
+    })
+
+    it('updateLocalStatus works with mixed ID types', () => {
+      const store = useAttendanceStore()
+      store.sessionAttendance = [
+        createSessionAttendanceRecord({ id: 1, studentId: 1, status: 'present' }),
+        createSessionAttendanceRecord({ id: 2, studentId: 2, status: 'absent' }),
+      ]
+
+      // Update with string studentId should match number studentId via entityIdsMatch
+      store.updateLocalStatus('1' as unknown as EntityId, 'late')
+
+      expect(store.sessionAttendance[0].status).toBe('late')
+      expect(store.sessionAttendance[1].status).toBe('absent')
+    })
+
+    it('handles string IDs in mock data', () => {
+      const store = useAttendanceStore()
+      const stringIdRecord = createSessionAttendanceRecord({
+        id: 'uuid-123' as unknown as number,
+        studentId: 'student-uuid' as unknown as number,
+        sessionId: 'session-uuid' as unknown as number,
+        status: 'present',
+      })
+
+      store.sessionAttendance = [stringIdRecord]
+
+      expect(store.sessionAttendance[0].id).toBe('uuid-123' as unknown as number)
+      expect(store.getRecordByStudentId('student-uuid' as unknown as EntityId)).toEqual(stringIdRecord)
+    })
+  })
+
   describe('actions — error paths', () => {
     it('fetchAllAttendance rethrows and resets loading', async () => {
       const error = new Error('Network error')

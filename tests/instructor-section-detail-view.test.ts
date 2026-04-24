@@ -23,7 +23,7 @@ vi.mock('@/utils/httpError', () => ({
 }))
 
 const mockPush = vi.fn()
-const mockRoute = reactive({ params: { sectionId: '10' } })
+const mockRoute = reactive({ params: { sectionId: '10' as string | undefined } })
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockRoute),
   useRouter: vi.fn(() => ({
@@ -190,10 +190,10 @@ describe('instructorSectionDetailView', () => {
       expect(instructorsApi.getMySectionDetail).toHaveBeenCalledTimes(2)
     })
 
-    it.each(['abc', '42.5', '0', '-1'])(
+    it.each(['', undefined])(
       'shows invalid link state and skips API call for sectionId %s',
       async (sectionId) => {
-        mockRoute.params.sectionId = sectionId
+        mockRoute.params.sectionId = sectionId as string | undefined
         vi.mocked(instructorsApi.getMySectionDetail).mockResolvedValue(mockSectionDetail)
 
         const wrapper = mountComponent()
@@ -286,8 +286,8 @@ describe('instructorSectionDetailView', () => {
       await flushPromises()
 
       expect(toggleButton.attributes('aria-expanded')).toBe('true')
-      expect(toggleButton.attributes('aria-controls')).toBe('handled-class-100')
-      expect(wrapper.find('#handled-class-100').exists()).toBe(true)
+      expect(toggleButton.attributes('aria-controls')).toBe('handled-class-00000000-0000-0000-0000-000000000100')
+      expect(wrapper.find('#handled-class-00000000-0000-0000-0000-000000000100').exists()).toBe(true)
     })
   })
 
@@ -313,7 +313,7 @@ describe('instructorSectionDetailView', () => {
       const studentRows = wrapper.findAll('.student-row')
       await studentRows[0].trigger('click')
 
-      expect(mockPush).toHaveBeenCalledWith('/instructor/students/50?fromSectionId=10')
+      expect(mockPush).toHaveBeenCalledWith('/instructor/students/00000000-0000-0000-0000-000000000050?fromSectionId=10')
     })
   })
 })

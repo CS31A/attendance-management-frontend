@@ -498,4 +498,66 @@ describe('enrollmentStore', () => {
       expect(store.loading).toBe(false)
     })
   })
+
+  describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
+    it('dropStudent filters by number enrollmentId when sectionId is omitted', async () => {
+      vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue({} as never)
+
+      const store = useEnrollmentStore()
+      store.sectionStudents = [
+        createEnrollment({ enrollmentId: 100 as EntityId }),
+        createEnrollment({ enrollmentId: 200 as EntityId }),
+      ]
+
+      await store.dropStudent(100 as EntityId)
+
+      expect(store.sectionStudents).toHaveLength(1)
+      expect(store.sectionStudents[0].enrollmentId).toBe(200 as EntityId)
+    })
+
+    it('dropStudent filters by string enrollmentId when sectionId is omitted', async () => {
+      vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue({} as never)
+
+      const store = useEnrollmentStore()
+      store.sectionStudents = [
+        createEnrollment({ enrollmentId: '550e8400-e29b-41d4-a716-446655440000' as EntityId }),
+        createEnrollment({ enrollmentId: '550e8400-e29b-41d4-a716-446655440001' as EntityId }),
+      ]
+
+      await store.dropStudent('550e8400-e29b-41d4-a716-446655440000' as EntityId)
+
+      expect(store.sectionStudents).toHaveLength(1)
+      expect(store.sectionStudents[0].enrollmentId).toBe('550e8400-e29b-41d4-a716-446655440001' as EntityId)
+    })
+
+    it('dropStudent filters with mixed ID types (store has number, drop with string)', async () => {
+      vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue({} as never)
+
+      const store = useEnrollmentStore()
+      store.sectionStudents = [
+        createEnrollment({ enrollmentId: 100 as EntityId }),
+        createEnrollment({ enrollmentId: 200 as EntityId }),
+      ]
+
+      await store.dropStudent('100' as EntityId)
+
+      expect(store.sectionStudents).toHaveLength(1)
+      expect(store.sectionStudents[0].enrollmentId).toBe(200 as EntityId)
+    })
+
+    it('dropStudent filters with mixed ID types (store has string, drop with number)', async () => {
+      vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue({} as never)
+
+      const store = useEnrollmentStore()
+      store.sectionStudents = [
+        createEnrollment({ enrollmentId: '100' as EntityId }),
+        createEnrollment({ enrollmentId: '200' as EntityId }),
+      ]
+
+      await store.dropStudent(100 as EntityId)
+
+      expect(store.sectionStudents).toHaveLength(1)
+      expect(store.sectionStudents[0].enrollmentId).toBe('200' as EntityId)
+    })
+  })
 })

@@ -365,4 +365,66 @@ describe('scheduleStore', () => {
       expect(store.loading).toBe(false)
     })
   })
+
+  describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
+    it('deleteSchedule removes schedule by number ID', async () => {
+      vi.mocked(scheduleApi.deleteSchedule).mockResolvedValue({} as never)
+
+      const store = useScheduleStore()
+      store.schedules = [
+        createSchedule({ id: 1 as EntityId }),
+        createSchedule({ id: 2 as EntityId }),
+      ]
+
+      await store.deleteSchedule(1 as EntityId)
+
+      expect(store.schedules).toHaveLength(1)
+      expect(store.schedules[0].id).toBe(2 as EntityId)
+    })
+
+    it('deleteSchedule removes schedule by string ID', async () => {
+      vi.mocked(scheduleApi.deleteSchedule).mockResolvedValue({} as never)
+
+      const store = useScheduleStore()
+      store.schedules = [
+        createSchedule({ id: '550e8400-e29b-41d4-a716-446655440000' as EntityId }),
+        createSchedule({ id: '550e8400-e29b-41d4-a716-446655440001' as EntityId }),
+      ]
+
+      await store.deleteSchedule('550e8400-e29b-41d4-a716-446655440000' as EntityId)
+
+      expect(store.schedules).toHaveLength(1)
+      expect(store.schedules[0].id).toBe('550e8400-e29b-41d4-a716-446655440001' as EntityId)
+    })
+
+    it('deleteSchedule removes schedule with mixed ID types (store has number, delete with string)', async () => {
+      vi.mocked(scheduleApi.deleteSchedule).mockResolvedValue({} as never)
+
+      const store = useScheduleStore()
+      store.schedules = [
+        createSchedule({ id: 1 as EntityId }),
+        createSchedule({ id: 2 as EntityId }),
+      ]
+
+      await store.deleteSchedule('1' as EntityId)
+
+      expect(store.schedules).toHaveLength(1)
+      expect(store.schedules[0].id).toBe(2 as EntityId)
+    })
+
+    it('deleteSchedule removes schedule with mixed ID types (store has string, delete with number)', async () => {
+      vi.mocked(scheduleApi.deleteSchedule).mockResolvedValue({} as never)
+
+      const store = useScheduleStore()
+      store.schedules = [
+        createSchedule({ id: '1' as EntityId }),
+        createSchedule({ id: '2' as EntityId }),
+      ]
+
+      await store.deleteSchedule(1 as EntityId)
+
+      expect(store.schedules).toHaveLength(1)
+      expect(store.schedules[0].id).toBe('2' as EntityId)
+    })
+  })
 })
