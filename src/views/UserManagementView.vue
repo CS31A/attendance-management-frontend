@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { InstructorSessionsReportDto } from '@/api/reports'
 import type { CreateUserInput } from '@/stores/userStore'
-import type { Id } from '@/types'
+import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -197,12 +197,23 @@ async function loadInstructorWorkload(instructorProfileId: string) {
     return
   }
 
+  // Check if ID is a UUID (36 chars with hyphens or 32 chars without)
+  const isUuid = (instructorProfileId.length === 36 && instructorProfileId.includes('-'))
+    || (instructorProfileId.length === 32 && !instructorProfileId.includes('-'))
+    || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(instructorProfileId)
+
+  if (isUuid) {
+    instructorWorkload.value = null
+    instructorWorkloadError.value = 'Instructor workload moves to the UUID report route in Phase 7.'
+    return
+  }
+
   instructorWorkloadLoading.value = true
   instructorWorkloadError.value = ''
 
   try {
     const { startDate, endDate } = getWorkloadRange()
-    instructorWorkload.value = await fetchInstructorSessionsReport(Number(instructorProfileId), { startDate, endDate })
+    instructorWorkload.value = await fetchInstructorSessionsReport(instructorProfileId, { startDate, endDate })
   }
   catch (error) {
     console.error('Failed to load instructor workload:', error)
@@ -231,7 +242,7 @@ async function handleUpdateUser(updatedUserData: Record<string, unknown>) {
   if (!editingUser.value)
     return
 
-  const id = (editingUser.value.userId || editingUser.value.id) as Id | undefined
+  const id = (editingUser.value.userId || editingUser.value.id) as EntityId | undefined
   if (id == null)
     return
 

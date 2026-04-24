@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { CheckCircle, Clock, Download, Users, X, XCircle } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
@@ -10,7 +10,7 @@ const props = defineProps({
     required: true,
   },
   qrCodeId: {
-    type: Number,
+    type: String,
     required: true,
   },
 })
@@ -47,7 +47,7 @@ async function loadScanHistory() {
   }
 }
 
-function handlePageChange(page) {
+function handlePageChange(page: number) {
   currentPage.value = page
   loadScanHistory()
 }

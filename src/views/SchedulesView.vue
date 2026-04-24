@@ -259,9 +259,8 @@ async function filterByInstructor(instructorId: string | null | undefined) {
   if (!instructorId)
     return
 
-  const parsedInstructorId = Number.parseInt(instructorId, 10)
-  if (Number.isNaN(parsedInstructorId))
-    return
+  // instructorId is already a string (EntityId)
+  const parsedInstructorId = instructorId
 
   isLoadingInstructorFilter.value = true
   try {

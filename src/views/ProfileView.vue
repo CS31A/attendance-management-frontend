@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EntityId } from '@/types'
 import { Calendar, Check, Clock, Copy, Eye, EyeOff, Hash, Lock, Mail, Pencil, Save, Shield, X } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, reactive, ref } from 'vue'
@@ -10,6 +11,14 @@ import { getErrorMessage } from '@/utils/httpError'
 const authStore = useAuthStore()
 const { userProfile, isLoading } = storeToRefs(authStore)
 
+interface EditProfileForm {
+  email: string
+  username: string
+  firstname: string
+  lastname: string
+  sectionId: EntityId | null
+}
+
 interface UpdateProfilePayload {
   firstname?: string
   lastname?: string
@@ -17,15 +26,7 @@ interface UpdateProfilePayload {
   currentPassword?: string
   newPassword?: string
   confirmNewPassword?: string
-  sectionId?: number | string | null
-}
-
-interface EditProfileForm {
-  email: string
-  username: string
-  firstname: string
-  lastname: string
-  sectionId: number | string | null
+  sectionId?: EntityId
 }
 
 // UI State

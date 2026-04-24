@@ -415,7 +415,7 @@ onMounted(() => {
     <QRGenerateModal
       v-if="showQRGenerateModal && selectedSession"
       :show="showQRGenerateModal"
-      :session-id="Number(selectedSession.id)"
+      :session-id="selectedSession.id"
       @generated="handleQrGenerated"
       @close="showQRGenerateModal = false"
     />

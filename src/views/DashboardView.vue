@@ -18,13 +18,13 @@ import { getErrorMessage } from '@/utils/httpError'
 const Doughnut = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Doughnut })))
 
 interface InstructorProfile {
-  id?: number | string
+  id?: EntityId
   firstname?: string
   lastname?: string
 }
 
 interface ScheduleItem {
-  id: number | string
+  id: EntityId
   dayOfWeek?: string
   timeIn?: string
   timeOut?: string
@@ -34,7 +34,7 @@ interface ScheduleItem {
 }
 
 interface RawScheduleItem extends Record<string, unknown> {
-  id?: number | string
+  id?: EntityId
   dayOfWeek?: string
   timeIn?: string
   timeOut?: string
@@ -212,7 +212,7 @@ async function loadInstructorData() {
     instructorProfile.value = profile?.instructorProfile || null
 
     if (instructorProfile.value?.id) {
-      const subjectsData = await getInstructorSubjects(instructorProfile.value.id)
+      const subjectsData = await getInstructorSubjects(instructorProfile.value.id as EntityId)
       subjects.value = subjectsData.filter((item): item is InstructorSubject => typeof item === 'object' && item !== null)
     }
   }

@@ -9,7 +9,6 @@ import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 interface ApiUserProfile {
   id?: EntityId
-  uuid?: string
   firstname?: string
   lastname?: string
   department?: string | null
@@ -31,7 +30,6 @@ interface ApiUser {
   firstName?: string
   lastName?: string
   profileId?: EntityId
-  uuid?: string
   department?: string | null
   sectionId?: EntityId | null
   isRegular?: boolean
@@ -82,7 +80,6 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.firstName = user.adminProfile.firstname
     mappedUser.lastName = user.adminProfile.lastname
     mappedUser.profileId = user.adminProfile.id
-    mappedUser.uuid = user.adminProfile.uuid
     mappedUser.createdAt = user.adminProfile.createdAt
     mappedUser.updatedAt = user.adminProfile.updatedAt
   }
@@ -91,7 +88,6 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.lastName = user.instructorProfile.lastname
     mappedUser.department = user.instructorProfile.department ?? null
     mappedUser.profileId = user.instructorProfile.id
-    mappedUser.uuid = user.instructorProfile.uuid
     mappedUser.createdAt = user.instructorProfile.createdAt
     mappedUser.updatedAt = user.instructorProfile.updatedAt
   }
@@ -101,7 +97,6 @@ function mapUserProfile(user: ApiUser): ApiUser {
     mappedUser.sectionId = user.studentProfile.sectionId
     mappedUser.isRegular = user.studentProfile.isRegular
     mappedUser.profileId = user.studentProfile.id
-    mappedUser.uuid = user.studentProfile.uuid
     mappedUser.createdAt = user.studentProfile.createdAt
     mappedUser.updatedAt = user.studentProfile.updatedAt
   }
@@ -227,7 +222,7 @@ export const useUserStore = defineStore('user', () => {
         repeatedPassword: userData.RepeatedPassword,
         role: userData.Role, // 'Admin' | 'Instructor' | 'Student'
         sectionId: userData.Role === 'Student' && userData.SectionId
-          ? Number.parseInt(userData.SectionId, 10)
+          ? userData.SectionId
           : null,
       }
       const response = await api.post('/account/register', registerData)
@@ -279,18 +274,12 @@ export const useUserStore = defineStore('user', () => {
         throw new Error('User not found')
       }
 
-      // Use the original user's role to determine the correct endpoint
-      // API may return 'Teacher' for legacy users, also handle 'Instructor' for compatibility
-      const isInstructor = originalUser.role === ROLES.INSTRUCTOR || originalUser.role === 'Teacher'
-      const endpoint = isInstructor ? '/instructors' : '/students'
-
-      // Use profileId for the endpoint (backend expects profile ID, not user ID)
-      const profileId = originalUser.profileId
-      if (!profileId) {
-        throw new Error('Profile ID not found for user')
+      const requestUserId = originalUser.userId || originalUser.id
+      if (!requestUserId) {
+        throw new Error('User ID not found for user')
       }
 
-      const response = await api.patch(`${endpoint}/${profileId}`, userData)
+      const response = await api.patch(`/account/admin/users/${requestUserId}`, userData)
 
       // Update the user in the store with the original role (role cannot be changed)
       const index = users.value.findIndex(user => entityIdsMatch(user.userId || user.id, userId))
