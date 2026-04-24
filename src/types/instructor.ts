@@ -13,7 +13,7 @@
 import type { EntityId } from './index'
 
 export interface InstructorSectionsWithStudentsResponseDto {
-  instructorId: number
+  instructorId: EntityId
   instructorFirstname: string
   instructorLastname: string
   sections: SectionWithStudentsDto[]
@@ -24,9 +24,9 @@ export interface InstructorSectionsWithStudentsResponseDto {
  * Matches: SectionWithStudentsDto.cs
  */
 export interface SectionWithStudentsDto {
-  sectionId: number
+  sectionId: EntityId
   sectionName: string
-  courseId: number
+  courseId: EntityId
   courseName: string
   subjects: SubjectScheduleDto[]
 }
@@ -36,10 +36,10 @@ export interface SectionWithStudentsDto {
  * Matches: SubjectScheduleDto.cs
  */
 export interface SubjectScheduleDto {
-  subjectId: number
+  subjectId: EntityId
   subjectName: string
   subjectCode: string
-  scheduleId: number
+  scheduleId: EntityId
   dayOfWeek: string
   timeIn: string
   timeOut: string
@@ -52,7 +52,7 @@ export interface SubjectScheduleDto {
  * Matches: StudentDto.cs
  */
 export interface StudentDto {
-  studentId: number
+  studentId: EntityId
   firstname: string
   lastname: string
   isRegular: boolean

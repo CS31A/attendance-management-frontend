@@ -1,4 +1,4 @@
-import type { PaginationParams } from '@/types'
+import type { EntityId, PaginationParams } from '@/types'
 import api from '@/api'
 
 /**
@@ -8,7 +8,7 @@ import api from '@/api'
 export type DashboardQueryParams = PaginationParams & {
   startDate?: string
   endDate?: string
-  sectionId?: number
+  sectionId?: EntityId
 }
 
 export type AdminMetricDto = Record<string, unknown>

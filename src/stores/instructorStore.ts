@@ -46,7 +46,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
   const totalSections = computed(() => sections.value.length)
 
   const uniqueStudentIds = computed(() => {
-    const ids = new Set<number>()
+    const ids = new Set<EntityId>()
 
     for (const section of sections.value) {
       for (const subject of section.subjects) {

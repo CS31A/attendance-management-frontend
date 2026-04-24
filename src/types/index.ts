@@ -1,6 +1,11 @@
 export type Id = number | string
 
-export type EntityId = Id
+/**
+ * EntityId represents a unique identifier for domain entities.
+ * Post-transition: This type now only accepts string (UUID) values.
+ * The migration from number | string to string is complete.
+ */
+export type EntityId = string
 
 interface PagePaginationParams {
   page?: number
