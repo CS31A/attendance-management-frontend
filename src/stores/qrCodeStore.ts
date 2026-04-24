@@ -8,7 +8,7 @@ import { parseUtcDate } from '@/utils/qrcode'
 
 interface ActiveQrCode extends QrCodeResponseDto {
   qrCodeData?: string | ArrayBuffer | null
-  sessionId?: number
+  sessionId?: EntityId
   expirationMinutes?: number
   maxUsage?: number
 }
