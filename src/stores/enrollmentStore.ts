@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import enrollmentsApi from '@/api/enrollments'
 import { getErrorMessage } from '@/utils/httpError'
+import { entityIdsMatch } from '@/utils/entityId'
 
 export const useEnrollmentStore = defineStore('enrollments', () => {
   // State
@@ -98,7 +99,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       else {
         // Update local state only when we are not refreshing from API.
         sectionStudents.value = sectionStudents.value.filter(
-          s => s.enrollmentId !== enrollmentId,
+          s => !entityIdsMatch(s.enrollmentId, enrollmentId),
         )
       }
     }

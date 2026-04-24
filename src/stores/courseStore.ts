@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import courseApi from '@/api/courses'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
+import { entityIdsMatch } from '@/utils/entityId'
 
 export const useCourseStore = defineStore('course', () => {
   // State
@@ -78,7 +79,7 @@ export const useCourseStore = defineStore('course', () => {
     error.value = ''
     try {
       const response = await courseApi.updateCourse(id, data)
-      const index = courses.value.findIndex(c => c.id === id)
+      const index = courses.value.findIndex(c => entityIdsMatch(c.id, id))
       if (index !== -1) {
         courses.value[index] = response.data
       }
@@ -103,7 +104,7 @@ export const useCourseStore = defineStore('course', () => {
     error.value = ''
     try {
       await courseApi.deleteCourse(id)
-      courses.value = courses.value.filter(c => c.id !== id)
+      courses.value = courses.value.filter(c => !entityIdsMatch(c.id, id))
     }
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to delete course')
