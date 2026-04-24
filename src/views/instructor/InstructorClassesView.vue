@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
 import { useInstructorStore } from '@/stores/instructorStore'
+import type { EntityId } from '@/types'
 import { getErrorMessage } from '@/utils/httpError'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
@@ -21,7 +22,7 @@ const totalUniqueStudents = computed(() => instructorStore.totalUniqueStudents)
 
 const { toast, showToast, closeToast } = useToast()
 
-function navigateToSection(sectionId: number) {
+function navigateToSection(sectionId: EntityId) {
   router.push(`/instructor/classes/sections/${sectionId}`)
 }
 

@@ -305,21 +305,17 @@ describe('instructorStore', () => {
       })
       store.sectionsOverviewList = [
         {
-          sectionId: 1,
-          sectionUuid: '00000000-0000-0000-0000-000000000001',
+          sectionId: '00000000-0000-0000-0000-000000000001',
           sectionName: 'CS21A',
-          courseId: 1,
-          courseUuid: '00000000-0000-0000-0000-000000000001',
+          courseId: '00000000-0000-0000-0000-000000000001',
           courseName: 'Computer Science',
           handledClassCount: 1,
           uniqueStudentCount: 2,
         },
         {
-          sectionId: 2,
-          sectionUuid: '00000000-0000-0000-0000-000000000002',
+          sectionId: '00000000-0000-0000-0000-000000000002',
           sectionName: 'CS21B',
-          courseId: 1,
-          courseUuid: '00000000-0000-0000-0000-000000000001',
+          courseId: '00000000-0000-0000-0000-000000000001',
           courseName: 'Computer Science',
           handledClassCount: 1,
           uniqueStudentCount: 2,

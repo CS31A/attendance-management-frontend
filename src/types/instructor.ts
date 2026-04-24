@@ -57,20 +57,19 @@ export interface StudentDto {
 
 // ==================== Section-First Drilldown Types ====================
 
+import type { EntityId } from './index'
+
 export interface InstructorSectionOverviewItem {
-  sectionId: number
-  sectionUuid: string
+  sectionId: EntityId
   sectionName: string
-  courseId: number
-  courseUuid: string
+  courseId: EntityId
   courseName: string
   handledClassCount: number
   uniqueStudentCount: number
 }
 
 export interface InstructorHandledClassStudent {
-  studentId: number
-  studentUuid: string
+  studentId: EntityId
   firstname: string
   lastname: string
   isRegular: boolean
@@ -78,25 +77,21 @@ export interface InstructorHandledClassStudent {
 }
 
 export interface InstructorHandledClassDetail {
-  subjectId: number
-  subjectUuid: string
+  subjectId: EntityId
   subjectName: string
   subjectCode: string
-  scheduleId: number
-  scheduleUuid: string
+  scheduleId: EntityId
   dayOfWeek: string
   timeIn: string
   timeOut: string
-  classroomId: number
-  classroomUuid: string
+  classroomId: EntityId
   classroomName: string
   studentCount: number
   students: InstructorHandledClassStudent[]
 }
 
 export interface InstructorHomeSectionStudent {
-  studentId: number
-  studentUuid: string
+  studentId: EntityId
   firstname: string
   lastname: string
   isRegular: boolean
@@ -104,11 +99,9 @@ export interface InstructorHomeSectionStudent {
 }
 
 export interface InstructorSectionDetail {
-  sectionId: number
-  sectionUuid: string
+  sectionId: EntityId
   sectionName: string
-  courseId: number
-  courseUuid: string
+  courseId: EntityId
   courseName: string
   handledClassCount: number
   homeSectionStudentCount: number
@@ -117,10 +110,10 @@ export interface InstructorSectionDetail {
 }
 
 export interface InstructorStudentEnrollment {
-  subjectId: number
+  subjectId: EntityId
   subjectName: string
   subjectCode: string
-  sectionId: number
+  sectionId: EntityId
   sectionName: string
   enrollmentType: string
 }
@@ -134,13 +127,12 @@ export interface InstructorStudentAttendanceSummary {
 }
 
 export interface InstructorStudentDetail {
-  studentId: number
-  studentUuid: string
+  studentId: EntityId
   firstname: string
   lastname: string
-  sectionId: number | null
+  sectionId: EntityId | null
   sectionName: string | null
-  courseId: number | null
+  courseId: EntityId | null
   courseName: string | null
   isRegular: boolean
   enrollmentType: string

@@ -82,7 +82,7 @@ export async function getMySectionsOverview(): Promise<InstructorSectionOverview
   }
 }
 
-export async function getMySectionDetail(sectionId: number): Promise<InstructorSectionDetail> {
+export async function getMySectionDetail(sectionId: EntityId): Promise<InstructorSectionDetail> {
   try {
     const response = await api.get(`/instructors/me/sections/${sectionId}`)
     return normalizeSectionDetail(response.data)
@@ -93,7 +93,7 @@ export async function getMySectionDetail(sectionId: number): Promise<InstructorS
   }
 }
 
-export async function getMyStudentDetail(studentId: number): Promise<InstructorStudentDetail> {
+export async function getMyStudentDetail(studentId: EntityId): Promise<InstructorStudentDetail> {
   try {
     const response = await api.get(`/instructors/me/students/${studentId}`)
     return normalizeStudentDetail(response.data)
@@ -149,11 +149,10 @@ function normalizeSectionsOverview(payload: Record<string, unknown> | Record<str
 
 function normalizeSectionOverviewItem(section: Record<string, unknown>): InstructorSectionOverviewItem {
   return {
-    sectionId: (section.sectionId as number) ?? (section.SectionId as number) ?? 0,
-    sectionUuid: (section.sectionUuid as string) ?? (section.SectionUuid as string) ?? '',
+    // Prefer UUID if available, fall back to integer ID
+    sectionId: (section.sectionUuid as string) ?? (section.SectionUuid as string) ?? (section.sectionId as number) ?? (section.SectionId as number) ?? 0,
     sectionName: (section.sectionName as string) ?? (section.SectionName as string) ?? '',
-    courseId: (section.courseId as number) ?? (section.CourseId as number) ?? 0,
-    courseUuid: (section.courseUuid as string) ?? (section.CourseUuid as string) ?? '',
+    courseId: (section.courseUuid as string) ?? (section.CourseUuid as string) ?? (section.courseId as number) ?? (section.CourseId as number) ?? 0,
     courseName: (section.courseName as string) ?? (section.CourseName as string) ?? '',
     handledClassCount: (section.handledClassCount as number) ?? (section.HandledClassCount as number) ?? 0,
     uniqueStudentCount: (section.uniqueStudentCount as number) ?? (section.UniqueStudentCount as number) ?? 0,
@@ -165,11 +164,10 @@ function normalizeSectionDetail(payload: Record<string, unknown>): InstructorSec
   const homeSectionStudents = Array.isArray(payload.homeSectionStudents) ? payload.homeSectionStudents : (payload.HomeSectionStudents as unknown[]) ?? []
 
   return {
-    sectionId: (payload.sectionId as number) ?? (payload.SectionId as number) ?? 0,
-    sectionUuid: (payload.sectionUuid as string) ?? (payload.SectionUuid as string) ?? '',
+    // Prefer UUID if available, fall back to integer ID
+    sectionId: (payload.sectionUuid as string) ?? (payload.SectionUuid as string) ?? (payload.sectionId as number) ?? (payload.SectionId as number) ?? 0,
     sectionName: (payload.sectionName as string) ?? (payload.SectionName as string) ?? '',
-    courseId: (payload.courseId as number) ?? (payload.CourseId as number) ?? 0,
-    courseUuid: (payload.courseUuid as string) ?? (payload.CourseUuid as string) ?? '',
+    courseId: (payload.courseUuid as string) ?? (payload.CourseUuid as string) ?? (payload.courseId as number) ?? (payload.CourseId as number) ?? 0,
     courseName: (payload.courseName as string) ?? (payload.CourseName as string) ?? '',
     handledClassCount: (payload.handledClassCount as number) ?? (payload.HandledClassCount as number) ?? 0,
     homeSectionStudentCount: (payload.homeSectionStudentCount as number) ?? (payload.HomeSectionStudentCount as number) ?? 0,
@@ -182,17 +180,15 @@ function normalizeHandledClassDetail(payload: Record<string, unknown>) {
   const students = Array.isArray(payload.students) ? payload.students : (payload.Students as unknown[]) ?? []
 
   return {
-    subjectId: (payload.subjectId as number) ?? (payload.SubjectId as number) ?? 0,
-    subjectUuid: (payload.subjectUuid as string) ?? (payload.SubjectUuid as string) ?? '',
+    // Prefer UUID if available, fall back to integer ID
+    subjectId: (payload.subjectUuid as string) ?? (payload.SubjectUuid as string) ?? (payload.subjectId as number) ?? (payload.SubjectId as number) ?? 0,
     subjectName: (payload.subjectName as string) ?? (payload.SubjectName as string) ?? '',
     subjectCode: (payload.subjectCode as string) ?? (payload.SubjectCode as string) ?? '',
-    scheduleId: (payload.scheduleId as number) ?? (payload.ScheduleId as number) ?? 0,
-    scheduleUuid: (payload.scheduleUuid as string) ?? (payload.ScheduleUuid as string) ?? '',
+    scheduleId: (payload.scheduleUuid as string) ?? (payload.ScheduleUuid as string) ?? (payload.scheduleId as number) ?? (payload.ScheduleId as number) ?? 0,
     dayOfWeek: (payload.dayOfWeek as string) ?? (payload.DayOfWeek as string) ?? '',
     timeIn: (payload.timeIn as string) ?? (payload.TimeIn as string) ?? '',
     timeOut: (payload.timeOut as string) ?? (payload.TimeOut as string) ?? '',
-    classroomId: (payload.classroomId as number) ?? (payload.ClassroomId as number) ?? 0,
-    classroomUuid: (payload.classroomUuid as string) ?? (payload.ClassroomUuid as string) ?? '',
+    classroomId: (payload.classroomUuid as string) ?? (payload.ClassroomUuid as string) ?? (payload.classroomId as number) ?? (payload.ClassroomId as number) ?? 0,
     classroomName: (payload.classroomName as string) ?? (payload.ClassroomName as string) ?? '',
     studentCount: (payload.studentCount as number) ?? (payload.StudentCount as number) ?? 0,
     students: (students as Record<string, unknown>[]).map(student => normalizeHandledClassStudent(student)),
@@ -201,8 +197,8 @@ function normalizeHandledClassDetail(payload: Record<string, unknown>) {
 
 function normalizeHandledClassStudent(payload: Record<string, unknown>) {
   return {
-    studentId: (payload.studentId as number) ?? (payload.StudentId as number) ?? 0,
-    studentUuid: (payload.studentUuid as string) ?? (payload.StudentUuid as string) ?? '',
+    // Prefer UUID if available, fall back to integer ID
+    studentId: (payload.studentUuid as string) ?? (payload.StudentUuid as string) ?? (payload.studentId as number) ?? (payload.StudentId as number) ?? 0,
     firstname: (payload.firstname as string) ?? (payload.Firstname as string) ?? '',
     lastname: (payload.lastname as string) ?? (payload.Lastname as string) ?? '',
     isRegular: (payload.isRegular as boolean) ?? (payload.IsRegular as boolean) ?? false,
@@ -212,8 +208,8 @@ function normalizeHandledClassStudent(payload: Record<string, unknown>) {
 
 function normalizeHomeSectionStudent(payload: Record<string, unknown>) {
   return {
-    studentId: (payload.studentId as number) ?? (payload.StudentId as number) ?? 0,
-    studentUuid: (payload.studentUuid as string) ?? (payload.StudentUuid as string) ?? '',
+    // Prefer UUID if available, fall back to integer ID
+    studentId: (payload.studentUuid as string) ?? (payload.StudentUuid as string) ?? (payload.studentId as number) ?? (payload.StudentId as number) ?? 0,
     firstname: (payload.firstname as string) ?? (payload.Firstname as string) ?? '',
     lastname: (payload.lastname as string) ?? (payload.Lastname as string) ?? '',
     isRegular: (payload.isRegular as boolean) ?? (payload.IsRegular as boolean) ?? false,
@@ -226,13 +222,13 @@ function normalizeStudentDetail(payload: Record<string, unknown>): InstructorStu
   const attendanceSummary = payload.attendanceSummary ?? payload.AttendanceSummary ?? {}
 
   return {
-    studentId: (payload.studentId as number) ?? (payload.StudentId as number) ?? 0,
-    studentUuid: (payload.studentUuid as string) ?? (payload.StudentUuid as string) ?? '',
+    // Prefer UUID if available, fall back to integer ID
+    studentId: (payload.studentUuid as string) ?? (payload.StudentUuid as string) ?? (payload.studentId as number) ?? (payload.StudentId as number) ?? 0,
     firstname: (payload.firstname as string) ?? (payload.Firstname as string) ?? '',
     lastname: (payload.lastname as string) ?? (payload.Lastname as string) ?? '',
-    sectionId: (payload.sectionId as number | null) ?? (payload.SectionId as number | null) ?? null,
+    sectionId: (payload.sectionUuid as string | null) ?? (payload.SectionUuid as string | null) ?? (payload.sectionId as number | null) ?? (payload.SectionId as number | null) ?? null,
     sectionName: (payload.sectionName as string | null) ?? (payload.SectionName as string | null) ?? null,
-    courseId: (payload.courseId as number | null) ?? (payload.CourseId as number | null) ?? null,
+    courseId: (payload.courseUuid as string | null) ?? (payload.CourseUuid as string | null) ?? (payload.courseId as number | null) ?? (payload.CourseId as number | null) ?? null,
     courseName: (payload.courseName as string | null) ?? (payload.CourseName as string | null) ?? null,
     isRegular: (payload.isRegular as boolean) ?? (payload.IsRegular as boolean) ?? false,
     enrollmentType: (payload.enrollmentType as string) ?? (payload.EnrollmentType as string) ?? 'Regular',
@@ -243,10 +239,11 @@ function normalizeStudentDetail(payload: Record<string, unknown>): InstructorStu
 
 function normalizeStudentEnrollment(payload: Record<string, unknown>) {
   return {
-    subjectId: (payload.subjectId as number) ?? (payload.SubjectId as number) ?? 0,
+    // Prefer UUID if available, fall back to integer ID
+    subjectId: (payload.subjectUuid as string) ?? (payload.SubjectUuid as string) ?? (payload.subjectId as number) ?? (payload.SubjectId as number) ?? 0,
     subjectName: (payload.subjectName as string) ?? (payload.SubjectName as string) ?? '',
     subjectCode: (payload.subjectCode as string) ?? (payload.SubjectCode as string) ?? '',
-    sectionId: (payload.sectionId as number) ?? (payload.SectionId as number) ?? 0,
+    sectionId: (payload.sectionUuid as string) ?? (payload.SectionUuid as string) ?? (payload.sectionId as number) ?? (payload.SectionId as number) ?? 0,
     sectionName: (payload.sectionName as string) ?? (payload.SectionName as string) ?? '',
     enrollmentType: (payload.enrollmentType as string) ?? (payload.EnrollmentType as string) ?? 'Regular',
   }

@@ -20,7 +20,7 @@ type EnrollmentTypeFilter = typeof enrollmentTypeFilters[number]
 
 const errorMessage = ref('')
 const selectedEnrollmentFilter = ref<EnrollmentTypeFilter>('All')
-const expandedClasses = ref<Set<number>>(new Set())
+const expandedClasses = ref<Set<EntityId>>(new Set())
 
 const sectionDetail = computed(() => instructorStore.currentSectionDetail)
 const loading = computed(() => instructorStore.loading)
@@ -80,7 +80,7 @@ const filteredHomeSectionStudents = computed(() => {
   return sectionDetail.value ? getFilteredStudents(sectionDetail.value.homeSectionStudents) : []
 })
 
-function toggleClassExpansion(scheduleId: number) {
+function toggleClassExpansion(scheduleId: EntityId) {
   const newSet = new Set(expandedClasses.value)
   if (newSet.has(scheduleId)) {
     newSet.delete(scheduleId)
@@ -91,11 +91,11 @@ function toggleClassExpansion(scheduleId: number) {
   expandedClasses.value = newSet
 }
 
-function isClassExpanded(scheduleId: number) {
+function isClassExpanded(scheduleId: EntityId) {
   return expandedClasses.value.has(scheduleId)
 }
 
-function navigateToStudent(studentId: number) {
+function navigateToStudent(studentId: EntityId) {
   router.push(`/instructor/students/${studentId}?fromSectionId=${sectionId.value}`)
 }
 

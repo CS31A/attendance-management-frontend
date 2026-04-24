@@ -1,20 +1,26 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
+import type { SessionResponseDto } from '@/api/sessions'
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import { canStartSession } from '@/api/sessions'
 import { LOCALE } from '@/utils/constants'
 import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
-defineProps({
-  sessions: {
-    type: Array,
-    required: true,
-  },
-})
+defineProps<{
+  sessions: SessionResponseDto[]
+}>()
 
-defineEmits(['start', 'end', 'delete', 'updateRoom', 'generateQr', 'viewQrCodes'])
+defineEmits<{
+  start: [session: SessionResponseDto]
+  end: [session: SessionResponseDto]
+  delete: [id: EntityId]
+  updateRoom: [session: SessionResponseDto]
+  generateQr: [session: SessionResponseDto]
+  viewQrCodes: [session: SessionResponseDto]
+}>()
 
-function getCourseName(session) {
+function getCourseName(session: SessionResponseDto | null) {
   if (!session)
     return 'Unknown Course'
 
@@ -36,7 +42,7 @@ function getCourseName(session) {
     || 'Unknown Course'
 }
 
-function getScheduleInfo(session) {
+function getScheduleInfo(session: SessionResponseDto) {
   const parts = []
   if (session.subjectCode)
     parts.push(session.subjectCode)
@@ -45,17 +51,22 @@ function getScheduleInfo(session) {
   return parts.join(' • ') || 'No schedule info'
 }
 
-function getTimeRange(session) {
-  if (session.actualStartTime && session.actualEndTime) {
-    return `${formatTime(session.actualStartTime)} - ${formatTime(session.actualEndTime)}`
+function getTimeRange(session: SessionResponseDto) {
+  const actualStart = session.actualStartTime as string | undefined
+  const actualEnd = session.actualEndTime as string | undefined
+  const scheduledStart = (session.scheduledStartTime as string | undefined) || (session.startTime as string | undefined)
+  const scheduledEnd = (session.scheduledEndTime as string | undefined) || (session.endTime as string | undefined)
+  
+  if (actualStart && actualEnd) {
+    return `${formatTime(actualStart)} - ${formatTime(actualEnd)}`
   }
-  if (session.scheduledStartTime && session.scheduledEndTime) {
-    return `${formatTime(session.scheduledStartTime)} - ${formatTime(session.scheduledEndTime)}`
+  if (scheduledStart && scheduledEnd) {
+    return `${formatTime(scheduledStart)} - ${formatTime(scheduledEnd)}`
   }
   return 'Time TBD'
 }
 
-function formatTime(timeString) {
+function formatTime(timeString: string | undefined) {
   if (!timeString)
     return ''
 

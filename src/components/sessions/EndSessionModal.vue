@@ -1,23 +1,24 @@
-<script setup>
+<script setup lang="ts">
+import type { SessionResponseDto, EndSessionPayload } from '@/api/sessions'
 import { AlertTriangle, StopCircle, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
-defineProps({
-  session: {
-    type: Object,
-    required: true,
-  },
-})
+defineProps<{
+  session: SessionResponseDto
+}>()
 
-const emit = defineEmits(['end', 'cancel'])
+const emit = defineEmits<{
+  end: [payload: Omit<EndSessionPayload, 'rowVersion'>]
+  cancel: []
+}>()
 
 // State
 const notes = ref('')
 const errorMessage = ref('')
 
 // Methods
-function getCourseName(session) {
+function getCourseName(session: SessionResponseDto | null) {
   if (!session)
     return 'N/A'
 
@@ -39,7 +40,7 @@ function getCourseName(session) {
     || 'Unknown Course'
 }
 
-function formatDateTime(datetimeString) {
+function formatDateTime(datetimeString: string | undefined) {
   if (!datetimeString)
     return 'N/A'
   const date = new Date(datetimeString)
@@ -54,11 +55,11 @@ function endSession() {
   errorMessage.value = ''
 
   // Build payload
-  const payload = {}
+  const payload: Omit<EndSessionPayload, 'rowVersion'> = {}
 
-  // Add notes if provided
+  // Add notes if provided (description field in the API)
   if (notes.value.trim()) {
-    payload.notes = notes.value.trim()
+    payload.description = notes.value.trim()
   }
 
   emit('end', payload)

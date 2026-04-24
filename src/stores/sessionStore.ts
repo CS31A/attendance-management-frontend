@@ -23,6 +23,7 @@ import {
   updateSessionRoom as apiUpdateSessionRoom,
 
 } from '@/api/sessions'
+import { entityIdsMatch } from '@/utils/entityId'
 import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
 
 /**
@@ -126,7 +127,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {object | undefined} Session object
    */
   const getSessionById = computed(() => (sessionId: EntityId) => {
-    return sessions.value.find(session => session.id === sessionId)
+    return sessions.value.find(session => entityIdsMatch(session.id, sessionId))
   })
 
   function beginLoading() {
@@ -174,7 +175,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       currentSession.value = data
 
       // Update in sessions array if it exists, otherwise push it
-      const index = sessions.value.findIndex(s => s.id === sessionId)
+      const index = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
       if (index !== -1) {
         sessions.value[index] = data
       }
@@ -301,10 +302,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
     beginLoading()
 
     // Store original state for rollback
-    const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const originalCurrentSession = currentSession.value
-    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
+    const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
     try {
       // Client-side validation
@@ -323,7 +324,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
       }
-      if (currentSession.value?.id === sessionId) {
+      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
         currentSession.value = updatedSession
       }
 
@@ -336,7 +337,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1 && originalSessionSnapshot) {
         sessions.value[sessionIndex] = originalSessionSnapshot
       }
-      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
         currentSession.value = originalCurrentSession
       }
 
@@ -359,10 +360,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
     beginLoading()
 
     // Store original state for rollback
-    const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const originalCurrentSession = currentSession.value
-    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
+    const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
     try {
       // Client-side validation
@@ -377,7 +378,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
       }
-      if (currentSession.value?.id === sessionId) {
+      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
         currentSession.value = updatedSession
       }
 
@@ -390,7 +391,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1 && originalSessionSnapshot) {
         sessions.value[sessionIndex] = originalSessionSnapshot
       }
-      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
         currentSession.value = originalCurrentSession
       }
 
@@ -413,9 +414,9 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
     // Store original state for rollback
     const originalSessions = [...sessions.value]
-    const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalCurrentSession = currentSession.value
-    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
+    const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
     try {
       // Client-side validation
@@ -432,7 +433,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
       }
-      if (currentSession.value?.id === sessionId) {
+      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
         currentSession.value = updatedSession
       }
 
@@ -443,7 +444,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
 
       // Rollback optimistic update
       sessions.value = originalSessions
-      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
         currentSession.value = originalCurrentSession
       }
 
@@ -469,10 +470,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
     beginLoading()
 
     // Store original state for rollback
-    const originalSession = sessions.value.find(s => s.id === sessionId)
+    const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const originalCurrentSession = currentSession.value
-    const sessionIndex = sessions.value.findIndex(s => s.id === sessionId)
+    const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
     try {
       // Client-side validation
@@ -487,7 +488,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1) {
         sessions.value[sessionIndex] = updatedSession
       }
-      if (currentSession.value?.id === sessionId) {
+      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
         currentSession.value = updatedSession
       }
 
@@ -500,7 +501,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       if (sessionIndex !== -1 && originalSessionSnapshot) {
         sessions.value[sessionIndex] = originalSessionSnapshot
       }
-      if (originalCurrentSession?.id === sessionId || currentSession.value?.id === sessionId) {
+      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
         currentSession.value = originalCurrentSession
       }
 

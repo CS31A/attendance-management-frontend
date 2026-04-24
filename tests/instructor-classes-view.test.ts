@@ -34,11 +34,9 @@ vi.mock('vue-router', () => ({
 
 const mockSectionsOverview: InstructorSectionOverviewItem[] = [
   {
-    sectionId: 10,
-    sectionUuid: '00000000-0000-0000-0000-000000000010',
+    sectionId: '00000000-0000-0000-0000-000000000010',
     sectionName: 'BSCS 3A',
-    courseId: 5,
-    courseUuid: '00000000-0000-0000-0000-000000000005',
+    courseId: '00000000-0000-0000-0000-000000000005',
     courseName: 'Bachelor of Science in Computer Science',
     handledClassCount: 2,
     uniqueStudentCount: 30,
@@ -286,21 +284,17 @@ describe('instructorClassesView', () => {
     it('uses globally deduped total while keeping per-section counts', async () => {
       const overlapOverview: InstructorSectionOverviewItem[] = [
         {
-          sectionId: 10,
-          sectionUuid: '00000000-0000-0000-0000-000000000010',
+          sectionId: '00000000-0000-0000-0000-000000000010',
           sectionName: 'BSCS 3A',
-          courseId: 5,
-          courseUuid: '00000000-0000-0000-0000-000000000005',
+          courseId: '00000000-0000-0000-0000-000000000005',
           courseName: 'Bachelor of Science in Computer Science',
           handledClassCount: 1,
           uniqueStudentCount: 2,
         },
         {
-          sectionId: 11,
-          sectionUuid: '00000000-0000-0000-0000-000000000011',
+          sectionId: '00000000-0000-0000-0000-000000000011',
           sectionName: 'BSCS 3B',
-          courseId: 5,
-          courseUuid: '00000000-0000-0000-0000-000000000005',
+          courseId: '00000000-0000-0000-0000-000000000005',
           courseName: 'Bachelor of Science in Computer Science',
           handledClassCount: 1,
           uniqueStudentCount: 2,
@@ -420,11 +414,9 @@ describe('instructorClassesView', () => {
       const multiSectionOverview: InstructorSectionOverviewItem[] = [
         ...mockSectionsOverview,
         {
-          sectionId: 11,
-          sectionUuid: '00000000-0000-0000-0000-000000000011',
+          sectionId: '00000000-0000-0000-0000-000000000011',
           sectionName: 'BSCS 3B',
-          courseId: 5,
-          courseUuid: '00000000-0000-0000-0000-000000000005',
+          courseId: '00000000-0000-0000-0000-000000000005',
           courseName: 'Bachelor of Science in Computer Science',
           handledClassCount: 1,
           uniqueStudentCount: 25,

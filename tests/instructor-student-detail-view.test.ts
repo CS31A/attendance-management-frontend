@@ -32,22 +32,21 @@ vi.mock('vue-router', () => ({
 }))
 
 const mockStudentDetail: InstructorStudentDetail = {
-  studentId: 50,
-  studentUuid: '00000000-0000-0000-0000-000000000050',
+  studentId: '00000000-0000-0000-0000-000000000050',
   firstname: 'Alice',
   lastname: 'Smith',
-  sectionId: 10,
+  sectionId: '00000000-0000-0000-0000-000000000010',
   sectionName: 'BSCS 3A',
-  courseId: 5,
+  courseId: '00000000-0000-0000-0000-000000000005',
   courseName: 'Bachelor of Science in Computer Science',
   isRegular: true,
   enrollmentType: 'Regular',
   enrollments: [
     {
-      subjectId: 20,
+      subjectId: '00000000-0000-0000-0000-000000000020',
       subjectName: 'Data Structures',
       subjectCode: 'CS301',
-      sectionId: 10,
+      sectionId: '00000000-0000-0000-0000-000000000010',
       sectionName: 'BSCS 3A',
       enrollmentType: 'Regular',
     },
@@ -253,8 +252,7 @@ describe('instructorStudentDetailView', () => {
         .mockResolvedValueOnce(mockStudentDetail)
         .mockResolvedValueOnce({
           ...mockStudentDetail,
-          studentId: 51,
-          studentUuid: '00000000-0000-0000-0000-000000000051',
+          studentId: '00000000-0000-0000-0000-000000000051',
           firstname: 'Bob',
           lastname: 'Johnson',
         })

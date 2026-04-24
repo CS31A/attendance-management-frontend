@@ -389,7 +389,7 @@ onMounted(() => {
 
     <!-- Start Session Modal -->
     <StartSessionModal
-      v-if="showStartModal"
+      v-if="showStartModal && selectedSession"
       :session="selectedSession"
       @start="handleConfirmStart"
       @cancel="showStartModal = false"
@@ -397,7 +397,7 @@ onMounted(() => {
 
     <!-- End Session Modal -->
     <EndSessionModal
-      v-if="showEndModal"
+      v-if="showEndModal && selectedSession"
       :session="selectedSession"
       @end="handleConfirmEnd"
       @cancel="showEndModal = false"
@@ -405,7 +405,7 @@ onMounted(() => {
 
     <!-- Update Room Modal -->
     <UpdateRoomModal
-      v-if="showUpdateRoomModal"
+      v-if="showUpdateRoomModal && selectedSession"
       :session="selectedSession"
       @update="handleConfirmUpdateRoom"
       @cancel="showUpdateRoomModal = false"
