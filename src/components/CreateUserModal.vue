@@ -1,22 +1,34 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { AlertTriangle, Eye, EyeOff, GraduationCap, Loader2, Shield, User, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
-defineProps({
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-})
+type UiRole = 'Admin' | 'Instructor' | 'Student'
 
-const emit = defineEmits(['create', 'cancel'])
+defineProps<{
+  loading?: boolean
+}>()
+
+const emit = defineEmits<{
+  create: [userData: {
+    Username: string
+    Email: string
+    Password: string
+    RepeatedPassword: string
+    FirstName: string
+    LastName: string
+    Role: UiRole
+    SectionId?: string
+  }]
+  cancel: []
+}>()
 
 // Get auth store to determine role restrictions
 const authStore = useAuthStore()
 
 // Computed property to determine available roles based on current user's role
-const availableRoles = computed(() => {
+const availableRoles = computed<UiRole[]>(() => {
   if (authStore.isAdmin) {
     // Admins can create admins, instructors and students
     return ['Admin', 'Instructor', 'Student']
@@ -35,8 +47,8 @@ const firstName = ref('')
 const lastName = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-const role = ref('')
-const sectionId = ref('')
+const role = ref<UiRole | ''>('')
+const sectionId = ref<EntityId | ''>('')
 const errorMessage = ref('')
 const passwordMismatchError = ref('')
 const showPassword = ref(false)
@@ -49,7 +61,7 @@ const submitButtonText = computed(() => 'Create Account')
 const isFormValid = computed(() => {
   if (!username.value?.trim() || !role.value || !availableRoles.value.includes(role.value))
     return false
-  if (role.value === 'Student' && !sectionId.value?.trim())
+  if (role.value === 'Student' && !String(sectionId.value || '').trim())
     return false
 
   // In create mode, password is required
@@ -72,7 +84,7 @@ watch([password, confirmPassword], () => {
 // Watch for changes in available roles to set default role
 watch(availableRoles, (newAvailableRoles) => {
   // If the currently selected role is not available, reset it
-  if (role.value && !newAvailableRoles.includes(role.value)) {
+  if (role.value && !newAvailableRoles.includes(role.value as UiRole)) {
     role.value = ''
   }
 
@@ -93,7 +105,7 @@ function createUser() {
   }
 
   // Validate that selected role is available to current user
-  if (!availableRoles.value.includes(role.value)) {
+  if (!availableRoles.value.includes(role.value as UiRole)) {
     errorMessage.value = 'You don\'t have permission to create this role'
     return
   }
@@ -111,7 +123,7 @@ function createUser() {
   }
 
   if (role.value === 'Student') {
-    if (!sectionId.value?.trim()) {
+    if (!String(sectionId.value || '').trim()) {
       errorMessage.value = 'Please enter a section for students'
       return
     }
@@ -125,8 +137,8 @@ function createUser() {
     RepeatedPassword: confirmPassword.value,
     FirstName: firstName.value,
     LastName: lastName.value,
-    Role: role.value,
-    SectionId: role.value === 'Student' ? sectionId.value.trim() : null,
+    Role: role.value as UiRole,
+    SectionId: role.value === 'Student' ? String(sectionId.value || '').trim() : undefined,
   }
 
   // Emit the create event
@@ -144,7 +156,7 @@ function createUser() {
 }
 
 // Handle error from parent
-function handleError(error) {
+function handleError(error: string) {
   errorMessage.value = error
 }
 

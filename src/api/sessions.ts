@@ -17,7 +17,7 @@ export interface SessionResponseDto {
 }
 
 export interface CreateSessionPayload {
-  scheduleId: number
+  scheduleId: EntityId
   sessionDate?: string
   description?: string
   allowOffScheduleDate?: boolean
@@ -25,7 +25,7 @@ export interface CreateSessionPayload {
 }
 
 export interface StartSessionPayload {
-  actualRoomId?: number
+  actualRoomId?: EntityId
   attendanceCutoffMinutes?: number
   rowVersion: string
 }
@@ -36,7 +36,7 @@ export interface EndSessionPayload {
 }
 
 export interface UpdateSessionRoomPayload {
-  actualRoomId: number
+  actualRoomId: EntityId
   rowVersion: string
 }
 

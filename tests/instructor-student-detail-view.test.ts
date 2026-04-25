@@ -23,7 +23,7 @@ vi.mock('@/utils/httpError', () => ({
 }))
 
 const mockPush = vi.fn()
-const mockRoute = reactive({ params: { studentId: '50' }, query: {} as Record<string, string> })
+const mockRoute = reactive({ params: { studentId: '50' as string | undefined }, query: {} as Record<string, string> })
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockRoute),
   useRouter: vi.fn(() => ({
@@ -32,30 +32,29 @@ vi.mock('vue-router', () => ({
 }))
 
 const mockStudentDetail: InstructorStudentDetail = {
-  studentId: 50,
-  studentUuid: '00000000-0000-0000-0000-000000000050',
+  studentId: '00000000-0000-0000-0000-000000000050',
   firstname: 'Alice',
   lastname: 'Smith',
-  sectionId: 10,
+  sectionId: '00000000-0000-0000-0000-000000000010',
   sectionName: 'BSCS 3A',
-  courseId: 5,
+  courseId: '00000000-0000-0000-0000-000000000005',
   courseName: 'Bachelor of Science in Computer Science',
   isRegular: true,
   enrollmentType: 'Regular',
   enrollments: [
     {
-      subjectId: 20,
+      subjectId: '00000000-0000-0000-0000-000000000020',
       subjectName: 'Data Structures',
       subjectCode: 'CS301',
-      sectionId: 10,
+      sectionId: '00000000-0000-0000-0000-000000000010',
       sectionName: 'BSCS 3A',
       enrollmentType: 'Regular',
     },
     {
-      subjectId: 21,
+      subjectId: '21',
       subjectName: 'Algorithms',
       subjectCode: 'CS302',
-      sectionId: 10,
+      sectionId: '10',
       sectionName: 'BSCS 3A',
       enrollmentType: 'Regular',
     },
@@ -149,10 +148,10 @@ describe('instructorStudentDetailView', () => {
       expect(retryButton.text()).toContain('Retry')
     })
 
-    it.each(['abc', '42.5', '0', '-1'])(
+    it.each(['', undefined])(
       'shows invalid link state and skips API call for studentId %s',
       async (studentId) => {
-        mockRoute.params.studentId = studentId
+        mockRoute.params.studentId = studentId as string | undefined
         vi.mocked(instructorsApi.getMyStudentDetail).mockResolvedValue(mockStudentDetail)
 
         const wrapper = mountComponent()
@@ -172,7 +171,7 @@ describe('instructorStudentDetailView', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('Alice Smith')
-      expect(wrapper.text()).toContain('ID: 50')
+      expect(wrapper.text()).toContain('ID: 00000000-0000-0000-0000-000000000050')
       expect(wrapper.text()).toContain('BSCS 3A')
       expect(wrapper.text()).toContain('Bachelor of Science in Computer Science')
     })
@@ -222,18 +221,18 @@ describe('instructorStudentDetailView', () => {
         ...mockStudentDetail,
         enrollments: [
           {
-            subjectId: 20,
+            subjectId: '20',
             subjectName: 'Data Structures',
             subjectCode: 'CS301',
-            sectionId: 10,
+            sectionId: '10',
             sectionName: 'BSCS 3A',
             enrollmentType: 'Regular',
           },
           {
-            subjectId: 20,
+            subjectId: '20',
             subjectName: 'Data Structures',
             subjectCode: 'CS301',
-            sectionId: 11,
+            sectionId: '11',
             sectionName: 'BSCS 3B',
             enrollmentType: 'Irregular',
           },
@@ -253,8 +252,7 @@ describe('instructorStudentDetailView', () => {
         .mockResolvedValueOnce(mockStudentDetail)
         .mockResolvedValueOnce({
           ...mockStudentDetail,
-          studentId: 51,
-          studentUuid: '00000000-0000-0000-0000-000000000051',
+          studentId: '00000000-0000-0000-0000-000000000051',
           firstname: 'Bob',
           lastname: 'Johnson',
         })
@@ -262,14 +260,14 @@ describe('instructorStudentDetailView', () => {
       const wrapper = mountComponent()
       await flushPromises()
 
-      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(1, 50)
+      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(1, '50')
       expect(wrapper.text()).toContain('Alice Smith')
 
       mockRoute.params.studentId = '51'
       await flushPromises()
       await flushPromises()
 
-      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(2, 51)
+      expect(instructorsApi.getMyStudentDetail).toHaveBeenNthCalledWith(2, '51')
       expect(wrapper.text()).toContain('Bob Johnson')
     })
   })

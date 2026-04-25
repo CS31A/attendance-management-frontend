@@ -1,22 +1,31 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { BookOpen, Calendar, Edit, Trash2, Users } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
 
-defineProps({
-  sections: {
-    type: Array,
-    required: true,
-  },
-  isDeletionChecking: {
-    type: Boolean,
-    default: false,
-  },
-})
+interface Section {
+  id: EntityId
+  name?: string
+  sectionName?: string
+  code?: string
+  courseId?: EntityId
+  createdAt?: string
+  [key: string]: unknown
+}
 
-defineEmits(['edit', 'delete', 'manageEnrollments'])
+defineProps<{
+  sections: Section[]
+  isDeletionChecking?: boolean
+}>()
+
+defineEmits<{
+  edit: [section: Section]
+  delete: [id: EntityId]
+  manageEnrollments: [section: Section]
+}>()
 
 // Get section name - handle different possible field names
-function getSectionName(section) {
+function getSectionName(section: Section): string {
   if (section.name) {
     return section.name
   }

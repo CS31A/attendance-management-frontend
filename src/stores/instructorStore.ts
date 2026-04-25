@@ -1,3 +1,4 @@
+import type { EntityId } from '@/types'
 import type {
   InstructorSectionDetail,
   InstructorSectionOverviewItem,
@@ -45,7 +46,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
   const totalSections = computed(() => sections.value.length)
 
   const uniqueStudentIds = computed(() => {
-    const ids = new Set<number>()
+    const ids = new Set<EntityId>()
 
     for (const section of sections.value) {
       for (const subject of section.subjects) {
@@ -116,7 +117,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     }
   }
 
-  const fetchSectionDetail = async (sectionId: number) => {
+  const fetchSectionDetail = async (sectionId: EntityId) => {
     beginLoading()
     error.value = null
 
@@ -135,7 +136,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
     }
   }
 
-  const fetchStudentDetail = async (studentId: number) => {
+  const fetchStudentDetail = async (studentId: EntityId) => {
     beginLoading()
     error.value = null
 

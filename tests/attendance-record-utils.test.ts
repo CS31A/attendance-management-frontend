@@ -6,7 +6,7 @@ function createEditableAttendanceRecord(
   overrides: Partial<EditableAttendanceRecord> = {},
 ): EditableAttendanceRecord {
   return {
-    studentId: 1,
+    studentId: '1',
     status: 'present',
     ...overrides,
   }
@@ -17,8 +17,8 @@ describe('attendance record helpers', () => {
     const previousRecords: EditableAttendanceRecord[] = [
       createEditableAttendanceRecord({
         id: 11,
-        studentId: 1,
-        sessionId: 9,
+        studentId: '1',
+        sessionId: '9',
         status: 'late',
         notes: 'Traffic',
         originalStatus: 'present',
@@ -31,8 +31,8 @@ describe('attendance record helpers', () => {
     const incomingRecords: EditableAttendanceRecord[] = [
       createEditableAttendanceRecord({
         id: 11,
-        studentId: 1,
-        sessionId: 9,
+        studentId: '1',
+        sessionId: '9',
         status: 'present',
         notes: '',
         studentName: 'Alice Santos',
@@ -56,8 +56,8 @@ describe('attendance record helpers', () => {
     const previousRecords: EditableAttendanceRecord[] = [
       createEditableAttendanceRecord({
         id: 22,
-        studentId: 2,
-        sessionId: 9,
+        studentId: '2',
+        sessionId: '9',
         status: 'present',
         notes: '',
         originalStatus: 'present',
@@ -70,8 +70,8 @@ describe('attendance record helpers', () => {
     const incomingRecords: EditableAttendanceRecord[] = [
       createEditableAttendanceRecord({
         id: 22,
-        studentId: 2,
-        sessionId: 9,
+        studentId: '2',
+        sessionId: '9',
         status: 'excused',
         notes: 'Clinic visit',
         checkInTime: '09:15:00',

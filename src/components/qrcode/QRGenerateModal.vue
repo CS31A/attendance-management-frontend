@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { AlertTriangle, Clock, Hash, QrCode, RefreshCw, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
@@ -9,7 +9,7 @@ const props = defineProps({
     required: true,
   },
   sessionId: {
-    type: Number,
+    type: String,
     required: true,
   },
 })
@@ -38,7 +38,7 @@ generateHash()
 
 // Validation
 const isValid = computed(() => {
-  return expirationMinutes.value > 0 && (!maxUsage.value || maxUsage.value > 0)
+  return expirationMinutes.value > 0 && (!maxUsage.value || Number(maxUsage.value) > 0)
 })
 
 const expirationOptions = [
@@ -85,7 +85,8 @@ async function handleSubmit() {
   }
   catch (err) {
     console.error('QR Generation error:', err)
-    error.value = err.response?.data?.message || err.message || 'Failed to generate QR code'
+    const errorResponse = err as { response?: { data?: { message?: string } }, message?: string }
+    error.value = errorResponse.response?.data?.message || errorResponse.message || 'Failed to generate QR code'
   }
   finally {
     loading.value = false

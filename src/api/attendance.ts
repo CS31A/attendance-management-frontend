@@ -17,9 +17,9 @@ export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
 export type BackendAttendanceStatus = Capitalize<AttendanceStatus>
 
 export interface AttendanceResponseDto {
-  id: number
-  studentId: number
-  sessionId: number
+  id: EntityId
+  studentId: EntityId
+  sessionId: EntityId
   status: AttendanceStatus
   notes?: string
   [key: string]: unknown
@@ -44,30 +44,30 @@ export type AttendanceQueryParams = PaginationParams & {
   date?: string
   startDate?: string
   endDate?: string
-  sessionId?: number
-  studentId?: number
-  sectionId?: number
+  sessionId?: EntityId
+  studentId?: EntityId
+  sectionId?: EntityId
 }
 
 export interface StudentAttendance {
   id?: EntityId
-  studentId: number
+  studentId: EntityId
   status: AttendanceStatus
   notes?: string
   checkInTime?: string
 }
 
 export interface RecordAttendancePayload {
-  sessionId: number
+  sessionId: EntityId
   records: StudentAttendance[]
 }
 
 export interface CreateAttendancePayload {
-  studentId: number
+  studentId: EntityId
   status: BackendAttendanceStatus
   notes?: string
   checkInTime?: string
-  sessionId: number
+  sessionId: EntityId
 }
 
 export interface UpdateAttendancePayload {

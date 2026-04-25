@@ -18,14 +18,13 @@ const AddEnrollmentModal = defineAsyncComponent(() => import('@/components/secti
 const route = useRoute()
 const router = useRouter()
 
-function parseSectionRouteParam(value: EntityId | undefined): number | null {
-  if (typeof value === 'number') {
-    return Number.isInteger(value) && value > 0 ? value : null
+function parseSectionRouteParam(value: EntityId | undefined): EntityId | null {
+  if (typeof value === 'string' && value.trim() !== '') {
+    return value
   }
 
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value)
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+  if (typeof value === 'number') {
+    return String(value)
   }
 
   return null
@@ -48,7 +47,7 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(true)
 const invalidLink = ref(false)
-let pendingSectionFetchId: number | null | undefined
+let pendingSectionFetchId: EntityId | null | undefined
 let isProcessingSectionFetch = false
 
 // Computed
@@ -79,7 +78,7 @@ const filteredEnrolledStudents = computed(() => {
   )
 })
 
-async function fetchDataForSection(currentSectionId: number | null) {
+async function fetchDataForSection(currentSectionId: EntityId | null) {
   loading.value = true
   errorMessage.value = ''
   invalidLink.value = false

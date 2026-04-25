@@ -209,7 +209,7 @@ describe('userStore', () => {
   })
 
   describe('createUser', () => {
-    it('sends transformed register payload, including numeric sectionId for students', async () => {
+    it('sends transformed register payload, preserving string sectionId for students', async () => {
       const userData: CreateUserInput = {
         Username: 'student1',
         FirstName: 'John',
@@ -233,7 +233,7 @@ describe('userStore', () => {
         password: 'password123',
         repeatedPassword: 'password123',
         role: 'Student',
-        sectionId: 123,
+        sectionId: '123',
       })
     })
 
@@ -340,7 +340,7 @@ describe('userStore', () => {
   })
 
   describe('updateUser', () => {
-    it('uses /instructors/:id for Instructor and legacy Teacher', async () => {
+    it('uses /account/admin/users/:userId for instructors', async () => {
       const store = useUserStore()
       store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.INSTRUCTOR, profileId: '101' as EntityId }) as ApiUser]
 
@@ -352,10 +352,10 @@ describe('userStore', () => {
 
       await store.updateUser('1' as EntityId, userData)
 
-      expect(api.patch).toHaveBeenCalledWith('/instructors/101', userData)
+      expect(api.patch).toHaveBeenCalledWith('/account/admin/users/1', userData)
     })
 
-    it('uses /students/:id for students', async () => {
+    it('uses /account/admin/users/:userId for students', async () => {
       const store = useUserStore()
       store.users = [createMockApiUser({ userId: '1' as EntityId, role: ROLES.STUDENT, profileId: '102' as EntityId }) as ApiUser]
 
@@ -364,7 +364,7 @@ describe('userStore', () => {
 
       await store.updateUser('1' as EntityId, userData)
 
-      expect(api.patch).toHaveBeenCalledWith('/students/102', userData)
+      expect(api.patch).toHaveBeenCalledWith('/account/admin/users/1', userData)
     })
 
     it('preserves original role in local state', async () => {

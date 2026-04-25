@@ -16,7 +16,7 @@ vi.mock('@/utils/date', () => ({
 
 function createSession(overrides: Partial<SessionResponseDto> = {}): SessionResponseDto {
   return {
-    id: 1,
+    id: '1',
     status: 'not_started' as SessionStatus,
     sessionDate: '2026-01-01T00:00:00',
     courseCode: 'CS101',

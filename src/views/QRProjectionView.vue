@@ -15,7 +15,7 @@ const error = ref('')
 const timeRemaining = ref(0)
 const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
-const qrCodeId = computed(() => Number(route.params.qrCodeId))
+const qrCodeId = computed(() => String(route.params.qrCodeId))
 const qrCode = computed(() => qrCodeStore.getActiveQrCode)
 const qrCodeImageSrc = computed(() =>
   typeof qrCode.value?.qrCodeData === 'string' ? qrCode.value.qrCodeData : '',

@@ -1,4 +1,5 @@
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import type { EntityId } from '@/types'
 import { readFileSync } from 'node:fs'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, expect, it, vi } from 'vitest'
@@ -10,7 +11,7 @@ import { useUserStore } from '@/stores/userStore'
 import { ROLES } from '@/utils/constants'
 
 interface MockUser extends Record<string, unknown> {
-  userId: number
+  userId: EntityId
   role: 'Instructor'
 }
 
@@ -75,7 +76,7 @@ describe('issue fixes 1-4', () => {
     api.post = (async (_url: string, payload?: unknown, _config?: unknown) => {
       capturedPayloads.push(payload as Record<string, unknown>)
       return createAxiosResponse<Record<string, unknown>>({
-        userId: 77,
+        userId: '77',
         username: 'student.user',
         email: 'student@example.com',
         role: 'Student',
@@ -83,7 +84,7 @@ describe('issue fixes 1-4', () => {
           id: 88,
           firstname: 'Section',
           lastname: 'Student',
-          sectionId: 42,
+          sectionId: '42',
           isRegular: true,
         },
       })
@@ -103,18 +104,18 @@ describe('issue fixes 1-4', () => {
 
       expect(result.success).toBe(true)
       expect(capturedPayloads).toHaveLength(1)
-      expect(capturedPayloads[0]?.sectionId).toBe(42)
-      expect(userStore.users[0]?.sectionId).toBe(42)
+      expect(capturedPayloads[0]?.sectionId).toBe('42')
+      expect(userStore.users[0]?.sectionId).toBe('42')
     }
     finally {
       api.post = originalPost
     }
   })
 
-  it('updateUser uses instructors endpoint for Instructor compatibility role', async () => {
+  it('updateUser uses the admin profile update endpoint', async () => {
     setActivePinia(createPinia())
     const userStore = useUserStore()
-    userStore.users = [{ userId: 1, role: 'Instructor', profileId: 1 }] as unknown as MockUser[]
+    userStore.users = [{ userId: '1', role: 'Instructor', profileId: '1' }] as unknown as MockUser[]
 
     let endpoint = ''
     const originalPatch = api.patch
@@ -124,8 +125,8 @@ describe('issue fixes 1-4', () => {
     }) as typeof api.patch
 
     try {
-      await userStore.updateUser(1, { firstName: 'Updated' })
-      expect(endpoint).toBe('/instructors/1')
+      await userStore.updateUser('1', { firstName: 'Updated' })
+      expect(endpoint).toBe('/account/admin/users/1')
     }
     finally {
       api.patch = originalPatch
@@ -170,26 +171,26 @@ describe('issue fixes 1-4', () => {
     const originalGet = api.get
     api.get = (async (_url: string, _config?: unknown) => createAxiosResponse<Array<Record<string, unknown>>>([
       {
-        userId: 1,
+        userId: '1',
         username: 'legacy.teacher',
         email: 'legacy@example.com',
         role: 'Teacher',
-        instructorProfile: { id: 10, firstname: 'Legacy', lastname: 'Teacher' },
+        instructorProfile: { id: '10', firstname: 'Legacy', lastname: 'Teacher' },
       },
       {
-        userId: 2,
+        userId: '2',
         username: 'new.instructor',
         email: 'new@example.com',
         role: 'Instructor',
-        instructorProfile: { id: 20, firstname: 'New', lastname: 'Instructor' },
+        instructorProfile: { id: '20', firstname: 'New', lastname: 'Instructor' },
       },
     ])) as typeof api.get
 
     try {
       await userStore.fetchUsers()
       // Both 'Teacher' (legacy) and 'Instructor' should be normalized to 'Instructor'
-      const legacyUser = userStore.users.find(u => u.userId === 1)
-      const newUser = userStore.users.find(u => u.userId === 2)
+      const legacyUser = userStore.users.find(u => u.userId === '1')
+      const newUser = userStore.users.find(u => u.userId === '2')
       expect(legacyUser?.role).toBe('Instructor')
       expect(newUser?.role).toBe('Instructor')
       // Legacy user's profile data should still be mapped correctly
@@ -262,7 +263,7 @@ describe('issue fixes 1-4', () => {
       expect(userStore.loading).toBe(true)
 
       resolvePost(createAxiosResponse({
-        userId: 99,
+        userId: '99',
         username: 'pending.user',
         email: 'pending@example.com',
         role: 'Instructor',

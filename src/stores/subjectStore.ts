@@ -3,6 +3,7 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import subjectApi from '@/api/subjects'
+import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export const useSubjectStore = defineStore('subject', () => {
@@ -78,7 +79,7 @@ export const useSubjectStore = defineStore('subject', () => {
     error.value = ''
     try {
       const response = await subjectApi.updateSubject(id, data)
-      const index = subjects.value.findIndex(s => s.id === id)
+      const index = subjects.value.findIndex(s => entityIdsMatch(s.id, id))
       if (index !== -1) {
         subjects.value[index] = response.data
       }
@@ -103,7 +104,7 @@ export const useSubjectStore = defineStore('subject', () => {
     error.value = ''
     try {
       await subjectApi.deleteSubject(id)
-      subjects.value = subjects.value.filter(s => s.id !== id)
+      subjects.value = subjects.value.filter(s => !entityIdsMatch(s.id, id))
     }
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to delete subject')

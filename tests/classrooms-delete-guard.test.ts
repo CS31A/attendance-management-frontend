@@ -1,4 +1,5 @@
 import type { ClassroomDto } from '@/api/classrooms'
+import type { EntityId } from '@/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createClassroomDeleteFlow } from '@/composables/useClassroomDeleteFlow'
@@ -19,7 +20,7 @@ function createConflictError(message: string) {
   return error
 }
 
-function createClassroom(id = 1, name = 'Test Classroom'): ClassroomDto {
+function createClassroom(id = '1', name = 'Test Classroom'): ClassroomDto {
   return { id, name }
 }
 
@@ -40,11 +41,11 @@ describe('classrooms delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteClassroom(1)
+    await flow.handleDeleteClassroom('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.classroomToDelete.value?.id).toBe(1)
+    expect(flow.classroomToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
@@ -60,7 +61,7 @@ describe('classrooms delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteClassroom(1)
+    await flow.handleDeleteClassroom('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.classroomToDelete.value).toBeNull()
@@ -81,7 +82,7 @@ describe('classrooms delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteClassroom(1)
+    await flow.handleDeleteClassroom('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.classroomToDelete.value).toBeNull()
@@ -102,7 +103,7 @@ describe('classrooms delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteClassroom(1)
+    await flow.handleDeleteClassroom('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.toast.message).toBe('Cannot delete: Classroom has schedules assigned. Remove schedules first.')
@@ -122,11 +123,11 @@ describe('classrooms delete guard regression', () => {
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteClassroom(1)
+    await flow.handleDeleteClassroom('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.classroomToDelete.value?.id).toBe(1)
+    expect(flow.classroomToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify classroom dependencies. Server will validate the delete request.')
@@ -161,7 +162,7 @@ describe('classrooms delete guard regression', () => {
     const onDeleteSuccess = vi.fn()
     const classroomsStore = {
       classrooms: [classroom],
-      deleteClassroom: vi.fn().mockImplementation(async (id: number) => {
+      deleteClassroom: vi.fn().mockImplementation(async (id: EntityId) => {
         classroomsStore.classrooms = classroomsStore.classrooms.filter(current => current.id !== id)
       }),
     }
@@ -200,7 +201,7 @@ describe('classrooms delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteClassroom(1)
+      await flow.handleDeleteClassroom('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
       expect(flow.classroomToDelete.value).toBeNull()

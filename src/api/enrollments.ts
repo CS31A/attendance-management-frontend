@@ -66,7 +66,7 @@ export default {
   /**
    * Get all enrollments for a specific student
    * GET /api/StudentEnrollment/student/{studentId}
-   * @param {EntityId} studentId - Student ID
+   * @param {EntityId} studentId - Student ID (string UUID)
    * @returns {Promise} Response with array of student enrollments
    */
   getStudentEnrollments(studentId: EntityId): Promise<AxiosResponse<StudentSectionsResponseDto>> {
@@ -76,7 +76,7 @@ export default {
   /**
    * Get all active students enrolled in a specific section
    * GET /api/StudentEnrollment/section/{sectionId}/students
-   * @param {EntityId} sectionId - Section ID
+   * @param {EntityId} sectionId - Section ID (string UUID)
    * @returns {Promise} Response with array of enrolled students
    */
   getSectionStudents(sectionId: EntityId): Promise<AxiosResponse<EnrollmentDto[]>> {
@@ -86,7 +86,7 @@ export default {
   /**
    * Drop a student from a specific enrollment
    * PATCH /api/StudentEnrollment/{enrollmentId}/drop
-   * @param {EntityId} enrollmentId - Enrollment ID
+   * @param {EntityId} enrollmentId - Enrollment ID (string UUID)
    * @returns {Promise} Response confirming drop
    */
   dropStudent(enrollmentId: EntityId): Promise<AxiosResponse<unknown>> {
@@ -96,7 +96,7 @@ export default {
   /**
    * Re-enroll a student (reactivate enrollment)
    * PATCH /api/StudentEnrollment/{enrollmentId}/reenroll
-   * @param {EntityId} enrollmentId - Enrollment ID
+   * @param {EntityId} enrollmentId - Enrollment ID (string UUID)
    * @returns {Promise} Response confirming re-enrollment
    */
   reenrollStudent(enrollmentId: EntityId): Promise<AxiosResponse<unknown>> {

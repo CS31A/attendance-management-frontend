@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, ChevronRight, RefreshCw, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -21,7 +22,7 @@ const totalUniqueStudents = computed(() => instructorStore.totalUniqueStudents)
 
 const { toast, showToast, closeToast } = useToast()
 
-function navigateToSection(sectionId: number) {
+function navigateToSection(sectionId: EntityId) {
   router.push(`/instructor/classes/sections/${sectionId}`)
 }
 

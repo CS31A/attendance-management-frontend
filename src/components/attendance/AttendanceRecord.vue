@@ -1,4 +1,8 @@
-<script setup>
+<script setup lang="ts">
+import type { AttendanceStatus, SessionAttendanceResponseDto } from '@/api/attendance'
+import type { SessionResponseDto } from '@/api/sessions'
+import type { EntityId } from '@/types'
+import type { EditableAttendanceRecord } from '@/utils/attendanceRecord'
 import {
   ArrowLeft,
   Calendar,
@@ -17,43 +21,33 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
 import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
+import { entityIdsMatch } from '@/utils/entityId'
 
-const props = defineProps({
-  session: {
-    type: Object,
-    required: true,
-  },
-  attendance: {
-    type: Array,
-    default: () => [],
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  onSubmit: {
-    type: Function,
-    required: true,
-  },
-  stats: {
-    type: Object,
-    default: () => ({
-      total: 0,
-      presentCount: 0,
-      absentCount: 0,
-      lateCount: 0,
-      excusedCount: 0,
-      presentPercentage: 0,
-    }),
-  },
-})
+interface AttendanceStats {
+  total: number
+  presentCount: number
+  absentCount: number
+  lateCount: number
+  excusedCount: number
+  presentPercentage: number
+}
 
-const emit = defineEmits(['back'])
+const props = defineProps<{
+  session: SessionResponseDto
+  attendance: SessionAttendanceResponseDto[]
+  loading?: boolean
+  onSubmit: (attendanceData: EditableAttendanceRecord[]) => Promise<void>
+  stats?: AttendanceStats
+}>()
+
+const emit = defineEmits<{
+  back: []
+}>()
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // Local state for attendance records
-const localAttendance = ref([])
+const localAttendance = ref<EditableAttendanceRecord[]>([])
 const searchQuery = ref('')
 const submitting = ref(false)
 const hasChanges = ref(false)
@@ -108,15 +102,15 @@ const localStats = computed(() => {
 })
 
 // Methods
-function updateStatus(studentId, status) {
-  const record = localAttendance.value.find(r => r.studentId === studentId)
+function updateStatus(studentId: EntityId, status: AttendanceStatus) {
+  const record = localAttendance.value.find(r => entityIdsMatch(r.studentId, studentId))
   if (record) {
     record.status = status
     checkForChanges()
   }
 }
 
-function markAllAs(status) {
+function markAllAs(status: AttendanceStatus) {
   localAttendance.value.forEach((record) => {
     record.status = status
   })
@@ -162,13 +156,13 @@ function handleBack() {
   emit('back')
 }
 
-function formatTime(timeString) {
+function formatTime(timeString: string | undefined) {
   if (!timeString)
     return 'N/A'
   return timeString.substring(0, 5)
 }
 
-function getStatusButtonClass(currentStatus, buttonStatus) {
+function getStatusButtonClass(currentStatus: AttendanceStatus, buttonStatus: AttendanceStatus) {
   const isActive = currentStatus === buttonStatus
   const classes = ['status-btn', `status-btn-${buttonStatus}`]
   if (isActive) {
@@ -185,7 +179,8 @@ const hasExistingAttendance = computed(() => {
 onMounted(() => {
   // If no attendance records exist, initialize with default absent status
   if (localAttendance.value.length === 0 && props.session.students) {
-    localAttendance.value = props.session.students.map(student => ({
+    const students = props.session.students as Array<{ id: EntityId, name: string, studentNumber?: string }>
+    localAttendance.value = students.map(student => ({
       studentId: student.id,
       studentName: student.name,
       studentNumber: student.studentNumber,
@@ -221,7 +216,7 @@ onMounted(() => {
         </div>
         <div class="meta-item">
           <Clock :size="18" />
-          <span>{{ formatTime(session.scheduledStartTime) }} - {{ formatTime(session.scheduledEndTime) }}</span>
+          <span>{{ formatTime(session.scheduledStartTime as string | undefined) }} - {{ formatTime(session.scheduledEndTime as string | undefined) }}</span>
         </div>
         <div v-if="session.roomName" class="meta-item">
           <MapPin :size="18" />

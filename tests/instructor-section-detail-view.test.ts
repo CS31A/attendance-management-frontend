@@ -23,7 +23,7 @@ vi.mock('@/utils/httpError', () => ({
 }))
 
 const mockPush = vi.fn()
-const mockRoute = reactive({ params: { sectionId: '10' } })
+const mockRoute = reactive({ params: { sectionId: '10' as string | undefined } })
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockRoute),
   useRouter: vi.fn(() => ({
@@ -32,49 +32,41 @@ vi.mock('vue-router', () => ({
 }))
 
 const mockSectionDetail: InstructorSectionDetail = {
-  sectionId: 10,
-  sectionUuid: '00000000-0000-0000-0000-000000000010',
+  sectionId: '00000000-0000-0000-0000-000000000010',
   sectionName: 'BSCS 3A',
-  courseId: 5,
-  courseUuid: '00000000-0000-0000-0000-000000000005',
+  courseId: '00000000-0000-0000-0000-000000000005',
   courseName: 'Bachelor of Science in Computer Science',
   handledClassCount: 1,
   homeSectionStudentCount: 2,
   handledClasses: [
     {
-      subjectId: 20,
-      subjectUuid: '00000000-0000-0000-0000-000000000020',
+      subjectId: '00000000-0000-0000-0000-000000000020',
       subjectName: 'Data Structures',
       subjectCode: 'CS301',
-      scheduleId: 100,
-      scheduleUuid: '00000000-0000-0000-0000-000000000100',
+      scheduleId: '00000000-0000-0000-0000-000000000100',
       dayOfWeek: 'Monday',
       timeIn: '08:00:00',
       timeOut: '10:00:00',
-      classroomId: 1,
-      classroomUuid: '00000000-0000-0000-0000-000000000001',
+      classroomId: '00000000-0000-0000-0000-000000000001',
       classroomName: 'Room 101',
       studentCount: 3,
       students: [
         {
-          studentId: 50,
-          studentUuid: '00000000-0000-0000-0000-000000000050',
+          studentId: '00000000-0000-0000-0000-000000000050',
           firstname: 'Alice',
           lastname: 'Smith',
           isRegular: true,
           enrollmentType: 'Regular',
         },
         {
-          studentId: 51,
-          studentUuid: '00000000-0000-0000-0000-000000000051',
+          studentId: '00000000-0000-0000-0000-000000000051',
           firstname: 'Bob',
           lastname: 'Johnson',
           isRegular: false,
           enrollmentType: 'Irregular',
         },
         {
-          studentId: 52,
-          studentUuid: '00000000-0000-0000-0000-000000000052',
+          studentId: '00000000-0000-0000-0000-000000000052',
           firstname: 'Cara',
           lastname: 'Davis',
           isRegular: false,
@@ -85,16 +77,14 @@ const mockSectionDetail: InstructorSectionDetail = {
   ],
   homeSectionStudents: [
     {
-      studentId: 50,
-      studentUuid: '00000000-0000-0000-0000-000000000050',
+      studentId: '00000000-0000-0000-0000-000000000050',
       firstname: 'Alice',
       lastname: 'Smith',
       isRegular: true,
       enrollmentType: 'Regular',
     },
     {
-      studentId: 53,
-      studentUuid: '00000000-0000-0000-0000-000000000053',
+      studentId: '00000000-0000-0000-0000-000000000053',
       firstname: 'David',
       lastname: 'Lee',
       isRegular: true,
@@ -200,10 +190,10 @@ describe('instructorSectionDetailView', () => {
       expect(instructorsApi.getMySectionDetail).toHaveBeenCalledTimes(2)
     })
 
-    it.each(['abc', '42.5', '0', '-1'])(
+    it.each(['', undefined])(
       'shows invalid link state and skips API call for sectionId %s',
       async (sectionId) => {
-        mockRoute.params.sectionId = sectionId
+        mockRoute.params.sectionId = sectionId as string | undefined
         vi.mocked(instructorsApi.getMySectionDetail).mockResolvedValue(mockSectionDetail)
 
         const wrapper = mountComponent()
@@ -296,8 +286,8 @@ describe('instructorSectionDetailView', () => {
       await flushPromises()
 
       expect(toggleButton.attributes('aria-expanded')).toBe('true')
-      expect(toggleButton.attributes('aria-controls')).toBe('handled-class-100')
-      expect(wrapper.find('#handled-class-100').exists()).toBe(true)
+      expect(toggleButton.attributes('aria-controls')).toBe('handled-class-00000000-0000-0000-0000-000000000100')
+      expect(wrapper.find('#handled-class-00000000-0000-0000-0000-000000000100').exists()).toBe(true)
     })
   })
 
@@ -323,7 +313,7 @@ describe('instructorSectionDetailView', () => {
       const studentRows = wrapper.findAll('.student-row')
       await studentRows[0].trigger('click')
 
-      expect(mockPush).toHaveBeenCalledWith('/instructor/students/50?fromSectionId=10')
+      expect(mockPush).toHaveBeenCalledWith('/instructor/students/00000000-0000-0000-0000-000000000050?fromSectionId=10')
     })
   })
 })

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SectionDto } from '@/api/sections'
+import type { EntityId } from '@/types'
 import { Loader2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
@@ -21,8 +22,8 @@ const subjectStore = useSubjectStore()
 const userStore = useUserStore()
 
 // State
-const selectedStudentId = ref('')
-const subjectId = ref('')
+const selectedStudentId = ref<EntityId | ''>('')
+const subjectId = ref<EntityId | ''>('')
 const enrollmentType = ref('Regular')
 const academicYear = ref(new Date().getFullYear().toString())
 const semester = ref('1st')
@@ -78,9 +79,9 @@ async function handleEnroll() {
 
   try {
     await enrollmentStore.enrollStudent({
-      studentId: Number(selectedStudentId.value),
+      studentId: selectedStudentId.value as EntityId,
       sectionId: props.section.id,
-      subjectId: Number(subjectId.value),
+      subjectId: subjectId.value as EntityId,
       enrollmentType: enrollmentType.value,
       academicYear: academicYear.value,
       semester: semester.value,
@@ -133,7 +134,7 @@ watch(() => props.section.id, () => {
                 Select Student
               </option>
               <option v-for="student in availableStudents" :key="student.userId || student.id" :value="student.userId || student.id">
-                {{ student.lastName }}, {{ student.firstName }} ({{ student.uuid }})
+                {{ student.lastName }}, {{ student.firstName }} ({{ student.userId || student.id }})
               </option>
             </select>
           </div>

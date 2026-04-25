@@ -17,11 +17,11 @@ describe('schedules API', () => {
   })
 
   it('updates schedules with PATCH to match the backend route', async () => {
-    const response = { data: { id: 5 } }
+    const response = { data: { id: '5' } }
     patchMock.mockResolvedValue(response)
 
     const schedulesApi = await import('@/api/schedules')
-    const result = await schedulesApi.updateSchedule(5, { dayOfWeek: 'Tuesday' })
+    const result = await schedulesApi.updateSchedule('5', { dayOfWeek: 'Tuesday' })
 
     expect(patchMock).toHaveBeenCalledWith('/schedules/5', { dayOfWeek: 'Tuesday' })
     expect(result).toBe(response.data)
@@ -32,7 +32,7 @@ describe('schedules API', () => {
     getMock.mockResolvedValue(response)
 
     const schedulesApi = await import('@/api/schedules')
-    const result = await schedulesApi.hasSessionsInSchedule(9)
+    const result = await schedulesApi.hasSessionsInSchedule('9')
 
     expect(getMock).toHaveBeenCalledWith('/schedules/9/has-sessions')
     expect(result).toBe(response)

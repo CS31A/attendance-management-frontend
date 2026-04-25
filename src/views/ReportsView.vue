@@ -270,7 +270,7 @@ async function fetchDashboardData() {
       performanceLabels.push(section.name || 'Unnamed')
       try {
         const sectionStats = await fetchReportsSummary({
-          sectionId: Number(section.id),
+          sectionId: section.id,
           startDate,
           endDate,
         })

@@ -18,7 +18,7 @@ describe('sections API', () => {
     getMock.mockResolvedValue(response)
 
     const sectionsApi = (await import('@/api/sections')).default
-    const result = await sectionsApi.hasSchedulesInSection(42)
+    const result = await sectionsApi.hasSchedulesInSection('42')
 
     expect(getMock).toHaveBeenCalledWith('/sections/42/has-schedules')
     expect(result).toBe(response)

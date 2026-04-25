@@ -1,13 +1,15 @@
 import type { QrCodeResponseDto, QrCodeScanHistoryResponseDto } from '@/api/qrCode'
+import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import qrCodeApi from '@/api/qrCode'
+import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage } from '@/utils/httpError'
 import { parseUtcDate } from '@/utils/qrcode'
 
 interface ActiveQrCode extends QrCodeResponseDto {
   qrCodeData?: string | ArrayBuffer | null
-  sessionId?: number
+  sessionId?: EntityId
   expirationMinutes?: number
   maxUsage?: number
 }
@@ -32,7 +34,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
   const isPolling = ref(false)
   const pollInterval = ref<ReturnType<typeof setInterval> | null>(null)
   const pollIntervalMs = ref(5000)
-  const currentQrCodeId = ref<number | null>(null)
+  const currentQrCodeId = ref<EntityId | null>(null)
   const isVisible = ref(true)
 
   // Getters
@@ -51,7 +53,7 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
    * Generate a new QR code
    * @param {object} payload - { sessionId, expirationMinutes, maxUsage, uniqueHash }
    */
-  async function generateQrCode(payload: Record<string, unknown> & { sessionId: number }) {
+  async function generateQrCode(payload: Record<string, unknown> & { sessionId: EntityId }) {
     loading.value = true
     clearError()
     try {
@@ -85,9 +87,9 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   /**
    * Fetch QR code details by ID
-   * @param {number} id
+   * @param {EntityId} id
    */
-  async function fetchQrCode(id: number) {
+  async function fetchQrCode(id: EntityId) {
     loading.value = true
     clearError()
     try {
@@ -118,9 +120,9 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   /**
    * Fetch all QR codes for a specific session
-   * @param {number} sessionId - Session ID
+   * @param {EntityId} sessionId - Session ID
    */
-  async function fetchSessionQrCodes(sessionId: number) {
+  async function fetchSessionQrCodes(sessionId: EntityId) {
     loading.value = true
     clearError()
     try {
@@ -146,10 +148,10 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   /**
    * Fetch scan history for a QR code
-   * @param {number} id - QR Code ID
+   * @param {EntityId} id - QR Code ID
    * @param {object} params - pagination params
    */
-  async function fetchScanHistory(id: number, params: Record<string, unknown> = {}) {
+  async function fetchScanHistory(id: EntityId, params: Record<string, unknown> = {}) {
     try {
       // Note: We don't set global loading here to avoid flickering during polling
       const data = await qrCodeApi.getScanHistoryById(id, params)
@@ -167,16 +169,16 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   /**
    * Revoke the current or specified QR code
-   * @param {number} id
+   * @param {EntityId} id
    * @param {string} reason
    */
-  async function revokeQrCode(id: number, reason: string | null = null) {
+  async function revokeQrCode(id: EntityId, reason: string | null = null) {
     loading.value = true
     clearError()
     try {
       const data = await qrCodeApi.revokeQrCodeById(id, { reason })
       // Update activeQrCode if it matches
-      if (activeQrCode.value && activeQrCode.value.id === id) {
+      if (activeQrCode.value && entityIdsMatch(activeQrCode.value.id, id)) {
         activeQrCode.value = { ...activeQrCode.value, ...data }
       }
       return data
@@ -246,10 +248,10 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
 
   /**
    * Start polling for scan history updates
-   * @param {number} qrCodeId
+   * @param {EntityId} qrCodeId
    */
-  function startPolling(qrCodeId: number): void {
-    if (isPolling.value && currentQrCodeId.value === qrCodeId)
+  function startPolling(qrCodeId: EntityId): void {
+    if (isPolling.value && entityIdsMatch(currentQrCodeId.value, qrCodeId))
       return
 
     // Stop any existing polling

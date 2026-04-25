@@ -1,21 +1,25 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { AlertTriangle, Plus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { getMySchedules } from '@/api/instructors'
 import { LOCALE } from '@/utils/constants'
 import { toLocalDateKey } from '@/utils/sessionDateHelpers'
 
-const emit = defineEmits(['create', 'cancel'])
+const emit = defineEmits<{
+  create: [payload: { scheduleId: EntityId, sessionDate?: string, description?: string, allowOffScheduleDate?: boolean, offScheduleReason?: string }]
+  cancel: []
+}>()
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
 
 // State
-const scheduleId = ref('')
+const scheduleId = ref<EntityId | ''>('')
 const sessionDate = ref('')
 const offScheduleReason = ref('')
 const description = ref('')
 const errorMessage = ref('')
-const schedules = ref([])
+const schedules = ref<Array<Record<string, unknown>>>([])
 const loadingSchedules = ref(false)
 
 // Computed
@@ -31,7 +35,7 @@ const selectedSchedule = computed(() => {
   return schedules.value.find(schedule => String(schedule.id) === String(scheduleId.value)) || null
 })
 
-function getWeekdayNameFromDate(dateValue) {
+function getWeekdayNameFromDate(dateValue: string): string | null {
   if (!dateValue)
     return null
 
@@ -70,9 +74,10 @@ async function loadSchedules() {
       errorMessage.value = 'No schedules found. Please contact your administrator to assign schedules.'
     }
   }
-  catch (error) {
+  catch (error: unknown) {
     console.error('Failed to load schedules:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to load schedules. Please try again.'
+    const err = error as { response?: { data?: { message?: string } } }
+    errorMessage.value = err.response?.data?.message || 'Failed to load schedules. Please try again.'
     schedules.value = []
   }
   finally {
@@ -80,17 +85,18 @@ async function loadSchedules() {
   }
 }
 
-function getScheduleLabel(schedule) {
+function getScheduleLabel(schedule: Record<string, unknown>): string {
   // Build a descriptive label from schedule data
-  const parts = []
+  const parts: string[] = []
 
   if (schedule.course) {
     // Handle both object and string formats for course
-    const courseName = typeof schedule.course === 'object'
-      ? (schedule.course.name || schedule.course.title || schedule.course.courseName)
-      : schedule.course
-    const courseCode = typeof schedule.course === 'object'
-      ? (schedule.course.code || schedule.course.courseCode)
+    const course = schedule.course as Record<string, unknown> | string
+    const courseName = typeof course === 'object'
+      ? ((course.name || course.title || course.courseName) as string | undefined)
+      : course
+    const courseCode = typeof course === 'object'
+      ? ((course.code || course.courseCode) as string | undefined)
       : null
     if (courseCode && courseName) {
       parts.push(`${courseCode} - ${courseName}`)
@@ -114,18 +120,20 @@ function getScheduleLabel(schedule) {
 
   if (schedule.section) {
     // Handle both object and string formats for section
-    const sectionName = typeof schedule.section === 'object'
-      ? (schedule.section.name || schedule.section.title || schedule.section.sectionName)
-      : schedule.section
+    const section = schedule.section as Record<string, unknown> | string
+    const sectionName = typeof section === 'object'
+      ? ((section.name || section.title || section.sectionName) as string | undefined)
+      : section
     if (sectionName && sectionName !== null && sectionName !== undefined)
       parts.push(`Section ${sectionName}`)
   }
 
   if (schedule.classroom) {
     // Handle both object and string formats for classroom
-    const classroomName = typeof schedule.classroom === 'object'
-      ? (schedule.classroom.name || schedule.classroom.room || schedule.classroom.classroomName)
-      : schedule.classroom
+    const classroom = schedule.classroom as Record<string, unknown> | string
+    const classroomName = typeof classroom === 'object'
+      ? ((classroom.name || classroom.room || classroom.classroomName) as string | undefined)
+      : classroom
     if (classroomName && classroomName !== null && classroomName !== undefined)
       parts.push(classroomName.toString())
   }
@@ -153,8 +161,14 @@ function createSession() {
   }
 
   // Build payload
-  const payload = {
-    scheduleId: Number.parseInt(scheduleId.value, 10),
+  const payload: {
+    scheduleId: EntityId
+    sessionDate?: string
+    description?: string
+    allowOffScheduleDate?: boolean
+    offScheduleReason?: string
+  } = {
+    scheduleId: scheduleId.value as EntityId,
   }
 
   // Add optional date if provided
@@ -230,7 +244,7 @@ onMounted(() => {
             </option>
             <option
               v-for="schedule in schedules"
-              :key="schedule.id"
+              :key="String(schedule.id)"
               :value="schedule.id"
             >
               {{ getScheduleLabel(schedule) }}

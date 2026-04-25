@@ -7,25 +7,21 @@ interface StudentRouteUser {
   id?: EntityId
 }
 
-function toPositiveInteger(value: EntityId | undefined): number | null {
-  if (typeof value === 'number')
-    return Number.isInteger(value) && value > 0 ? value : null
+function toRouteId(value: EntityId | undefined): string | null {
+  if (typeof value !== 'string')
+    return null
 
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value)
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : null
-  }
-
-  return null
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
 }
 
-export function resolveStudentProfileId(user: StudentRouteUser): number | null {
+export function resolveStudentProfileId(user: StudentRouteUser): string | null {
   if (user.role !== 'Student')
     return null
 
-  return toPositiveInteger(user.profileId)
+  return toRouteId(user.profileId)
 }
 
-export function parseStudentRouteParam(value: EntityId | undefined): number | null {
-  return toPositiveInteger(value)
+export function parseStudentRouteParam(value: EntityId | undefined): string | null {
+  return toRouteId(value)
 }

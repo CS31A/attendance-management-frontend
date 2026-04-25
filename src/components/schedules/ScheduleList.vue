@@ -1,24 +1,50 @@
-<script setup>
+<script setup lang="ts">
+import type { EntityId } from '@/types'
 import { Calendar, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-vue-next'
 
-defineProps({
-  schedules: {
-    type: Array,
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  pagination: {
-    type: Object,
-    default: null,
-  },
-})
+interface Schedule {
+  id: EntityId
+  subject?: { name?: string, code?: string, [key: string]: unknown } | null
+  subjectName?: string
+  subjectCode?: string
+  section?: { name?: string, [key: string]: unknown } | null
+  sectionName?: string
+  dayOfWeek?: string
+  timeIn?: string
+  timeOut?: string
+  classroom?: { name?: string, [key: string]: unknown } | null
+  classroomName?: string
+  instructor?: { firstName?: string, firstname?: string, lastName?: string, lastname?: string, [key: string]: unknown } | null
+  instructorFirstName?: string
+  instructorLastName?: string
+  [key: string]: unknown
+}
 
-defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
+interface Pagination {
+  currentPage: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  totalSchedules: number
+  itemsPerPage: number
+}
 
-function formatTime(time) {
+defineProps<{
+  schedules: Schedule[]
+  title: string
+  pagination?: Pagination | null
+}>()
+
+defineEmits<{
+  edit: [schedule: Schedule]
+  delete: [id: EntityId]
+  nextPage: []
+  previousPage: []
+  goToPage: [page: number]
+  setItemsPerPage: [itemsPerPage: number]
+}>()
+
+function formatTime(time: string | null | undefined): string {
   if (!time)
     return '-'
   // Handle both HH:mm and HH:mm:ss formats
@@ -29,7 +55,7 @@ function formatTime(time) {
   return `${formattedHour}:${minutes} ${ampm}`
 }
 
-function getInstructorName(schedule) {
+function getInstructorName(schedule: Schedule): string {
   const instructor = schedule.instructor || {}
   const firstName = instructor.firstName || instructor.firstname || schedule.instructorFirstName || ''
   const lastName = instructor.lastName || instructor.lastname || schedule.instructorLastName || ''
@@ -128,7 +154,7 @@ function getInstructorName(schedule) {
               id="itemsPerPage"
               :value="pagination.itemsPerPage"
               class="items-select"
-              @change="$emit('setItemsPerPage', parseInt($event.target.value))"
+              @change="$emit('setItemsPerPage', parseInt(($event.target as HTMLSelectElement).value))"
             >
               <option value="5">
                 5

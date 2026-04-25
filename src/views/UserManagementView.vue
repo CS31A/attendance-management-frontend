@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { InstructorSessionsReportDto } from '@/api/reports'
 import type { CreateUserInput } from '@/stores/userStore'
-import type { Id } from '@/types'
+import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
 import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -202,7 +202,7 @@ async function loadInstructorWorkload(instructorProfileId: string) {
 
   try {
     const { startDate, endDate } = getWorkloadRange()
-    instructorWorkload.value = await fetchInstructorSessionsReport(Number(instructorProfileId), { startDate, endDate })
+    instructorWorkload.value = await fetchInstructorSessionsReport(instructorProfileId, { startDate, endDate })
   }
   catch (error) {
     console.error('Failed to load instructor workload:', error)
@@ -231,7 +231,7 @@ async function handleUpdateUser(updatedUserData: Record<string, unknown>) {
   if (!editingUser.value)
     return
 
-  const id = (editingUser.value.userId || editingUser.value.id) as Id | undefined
+  const id = (editingUser.value.userId || editingUser.value.id) as EntityId | undefined
   if (id == null)
     return
 

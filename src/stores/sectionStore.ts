@@ -3,6 +3,7 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import sectionsApi from '@/api/sections'
+import { entityIdsMatch } from '@/utils/entityId'
 
 export const useSectionStore = defineStore('sectionsStore', () => {
   const sections = ref<SectionDto[]>([])
@@ -61,7 +62,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     try {
       const resp = await sectionsApi.updateSection(id, sectionData)
       // Update in local list
-      const index = sections.value.findIndex(s => s.id === id)
+      const index = sections.value.findIndex(s => entityIdsMatch(s.id, id))
       if (index !== -1) {
         sections.value[index] = resp.data
       }
@@ -83,7 +84,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     try {
       await sectionsApi.deleteSection(id)
       // Remove from local list
-      sections.value = sections.value.filter(s => s.id !== id)
+      sections.value = sections.value.filter(s => !entityIdsMatch(s.id, id))
     }
     catch (err) {
       console.error('Error deleting section:', err)

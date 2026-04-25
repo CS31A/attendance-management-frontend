@@ -19,7 +19,7 @@ function createConflictError(message: string) {
   return error
 }
 
-function createSchedule(id = 1, subjectName = 'Test Subject'): ScheduleDto {
+function createSchedule(id = '1', subjectName = 'Test Subject'): ScheduleDto {
   return { id, subjectName, dayOfWeek: 'Monday', timeIn: '08:00', timeOut: '09:00' }
 }
 
@@ -39,11 +39,11 @@ describe('schedules delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSchedule(1)
+    await flow.handleDeleteSchedule('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.scheduleToDelete.value?.id).toBe(1)
+    expect(flow.scheduleToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
@@ -58,7 +58,7 @@ describe('schedules delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSchedule(1)
+    await flow.handleDeleteSchedule('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.scheduleToDelete.value).toBeNull()
@@ -80,11 +80,11 @@ describe('schedules delete guard regression', () => {
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteSchedule(1)
+    await flow.handleDeleteSchedule('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.scheduleToDelete.value?.id).toBe(1)
+    expect(flow.scheduleToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify schedule dependencies. Server will validate the delete request.')
@@ -119,7 +119,7 @@ describe('schedules delete guard regression', () => {
     const onDeleteSuccess = vi.fn()
     const schedulesStore = {
       schedules: [schedule],
-      deleteSchedule: vi.fn().mockImplementation(async (id: number) => {
+      deleteSchedule: vi.fn().mockImplementation(async (id: string) => {
         schedulesStore.schedules = schedulesStore.schedules.filter(current => current.id !== id)
       }),
     }
@@ -157,7 +157,7 @@ describe('schedules delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSchedule(1)
+      await flow.handleDeleteSchedule('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
       expect(flow.scheduleToDelete.value).toBeNull()

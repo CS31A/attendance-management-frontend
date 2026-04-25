@@ -79,7 +79,7 @@ export async function getAllSchedules(): Promise<ScheduleCollectionDto> {
 
 /**
  * Get schedules for a specific section
- * @param {number} sectionId - Section ID
+ * @param {EntityId} sectionId - Section ID (string UUID)
  * @returns {Promise<Array>} List of schedule objects for the section
  */
 export async function getSchedulesBySection(sectionId: EntityId): Promise<ScheduleCollectionDto> {
@@ -110,7 +110,7 @@ export async function getMySchedules(): Promise<ScheduleCollectionDto> {
 
 /**
  * Get a specific schedule by ID
- * @param {number} id - Schedule ID
+ * @param {EntityId} id - Schedule ID (string UUID)
  * @returns {Promise<object>} Schedule object
  */
 export async function getScheduleById(id: EntityId): Promise<ScheduleDto> {
@@ -142,7 +142,7 @@ export async function createSchedule(data: SchedulePayload): Promise<ScheduleDto
 
 /**
  * Update an existing schedule
- * @param {number} id - Schedule ID
+ * @param {EntityId} id - Schedule ID (string UUID)
  * @param {object} data - Updated schedule data
  * @returns {Promise<object>} Updated schedule object
  */
@@ -159,7 +159,7 @@ export async function updateSchedule(id: EntityId, data: SchedulePayload): Promi
 
 /**
  * Delete a schedule
- * @param {number} id - Schedule ID
+ * @param {EntityId} id - Schedule ID (string UUID)
  * @returns {Promise<void>}
  */
 export async function deleteSchedule(id: EntityId): Promise<void> {
@@ -174,7 +174,7 @@ export async function deleteSchedule(id: EntityId): Promise<void> {
 
 /**
  * Check if schedule has sessions assigned
- * @param {number} id - Schedule ID
+ * @param {EntityId} id - Schedule ID (string UUID)
  * @returns {Promise<AxiosResponse<boolean>>} True if schedule has sessions
  */
 export async function hasSessionsInSchedule(id: EntityId): Promise<AxiosResponse<boolean>> {

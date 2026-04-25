@@ -34,9 +34,9 @@ describe('attendance submission contract', () => {
   it('submitAttendance posts one new attendance record with backend status casing', async () => {
     const attendanceStore = useAttendanceStore()
     const createdRecord = {
-      id: 101,
-      studentId: 1,
-      sessionId: 55,
+      id: '101',
+      studentId: '1',
+      sessionId: '55',
       status: 'present',
       notes: 'On time',
     }
@@ -52,10 +52,10 @@ describe('attendance submission contract', () => {
     api.post = mockPost as typeof api.post
 
     const result = await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
         {
-          studentId: 1,
+          studentId: '1',
           status: 'present',
           notes: 'On time',
         },
@@ -65,8 +65,8 @@ describe('attendance submission contract', () => {
     expect(calls).toHaveLength(1)
     expect(calls[0].url).toBe('/attendance')
     expect(calls[0].payload).toEqual({
-      sessionId: 55,
-      studentId: 1,
+      sessionId: '55',
+      studentId: '1',
       status: 'Present',
       notes: 'On time',
     })
@@ -83,7 +83,7 @@ describe('attendance submission contract', () => {
       return {
         status: 201,
         data: {
-          id: 101,
+          id: '101',
           studentId: payload.studentId,
           sessionId: payload.sessionId,
           status: String(payload.status).toLowerCase(),
@@ -93,12 +93,12 @@ describe('attendance submission contract', () => {
     api.post = mockPost as typeof api.post
 
     await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
-        { studentId: 1, status: 'present' },
-        { studentId: 2, status: 'absent' },
-        { studentId: 3, status: 'late' },
-        { studentId: 4, status: 'excused' },
+        { studentId: '1', status: 'present' },
+        { studentId: '2', status: 'absent' },
+        { studentId: '3', status: 'late' },
+        { studentId: '4', status: 'excused' },
       ],
     })
 
@@ -111,9 +111,9 @@ describe('attendance submission contract', () => {
   it('submitAttendance returns successful data when API responds with created or existing record', async () => {
     const attendanceStore = useAttendanceStore()
     const existingRecord = {
-      id: 101,
-      studentId: 1,
-      sessionId: 55,
+      id: '101',
+      studentId: '1',
+      sessionId: '55',
       status: 'present',
       notes: 'Already recorded',
     }
@@ -127,10 +127,10 @@ describe('attendance submission contract', () => {
     api.post = mockPost as typeof api.post
 
     const result = await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
         {
-          studentId: 1,
+          studentId: '1',
           status: 'present',
           notes: 'Retry from UI',
         },
@@ -166,10 +166,10 @@ describe('attendance submission contract', () => {
     let caughtError: unknown
     try {
       await attendanceStore.submitAttendance({
-        sessionId: 55,
+        sessionId: '55',
         records: [
           {
-            studentId: 99,
+            studentId: '99',
             status: 'present',
           },
         ],
@@ -189,9 +189,9 @@ describe('attendance submission contract', () => {
   it('submitAttendance updates existing attendance records via PUT instead of POST', async () => {
     const attendanceStore = useAttendanceStore()
     const updatedRecord = {
-      id: 101,
-      studentId: 1,
-      sessionId: 55,
+      id: '101',
+      studentId: '1',
+      sessionId: '55',
       status: 'late',
       notes: 'Updated by instructor',
     }
@@ -220,11 +220,11 @@ describe('attendance submission contract', () => {
     api.put = mockPut as typeof api.put
 
     const result = await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
         {
-          id: 101,
-          studentId: 1,
+          id: '101',
+          studentId: '1',
           status: 'late',
           notes: 'Updated by instructor',
         },
@@ -253,9 +253,9 @@ describe('attendance submission contract', () => {
       return {
         status: 200,
         data: {
-          id: 101,
-          studentId: 1,
-          sessionId: 55,
+          id: '101',
+          studentId: '1',
+          sessionId: '55',
           status: String(payload.status).toLowerCase(),
           notes: payload.notes,
         },
@@ -279,16 +279,16 @@ describe('attendance submission contract', () => {
     api.post = mockPost as typeof api.post
 
     const result = await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
         {
-          id: 101,
-          studentId: 1,
+          id: '101',
+          studentId: '1',
           status: 'present',
           notes: 'Kept present',
         },
         {
-          studentId: 2,
+          studentId: '2',
           status: 'absent',
           notes: 'No show',
         },
@@ -307,8 +307,8 @@ describe('attendance submission contract', () => {
     expect(calls[1].method).toBe('post')
     expect(calls[1].url).toBe('/attendance')
     expect(calls[1].payload).toEqual({
-      sessionId: 55,
-      studentId: 2,
+      sessionId: '55',
+      studentId: '2',
       status: 'Absent',
       notes: 'No show',
     })
@@ -316,16 +316,16 @@ describe('attendance submission contract', () => {
 
     expect(result).toEqual([
       {
-        id: 101,
-        studentId: 1,
-        sessionId: 55,
+        id: '101',
+        studentId: '1',
+        sessionId: '55',
         status: 'present',
         notes: 'Kept present',
       },
       {
         id: 102,
-        studentId: 2,
-        sessionId: 55,
+        studentId: '2',
+        sessionId: '55',
         status: 'absent',
         notes: 'No show',
       },
@@ -360,11 +360,11 @@ describe('attendance submission contract', () => {
     let caughtError: unknown
     try {
       await attendanceStore.submitAttendance({
-        sessionId: 55,
+        sessionId: '55',
         records: [
-          { studentId: 1, status: 'present' },
-          { studentId: 2, status: 'absent' },
-          { studentId: 3, status: 'late' },
+          { studentId: '1', status: 'present' },
+          { studentId: '2', status: 'absent' },
+          { studentId: '3', status: 'late' },
         ],
       })
     }
@@ -392,7 +392,7 @@ describe('attendance submission contract', () => {
         return {
           status: 201,
           data: {
-            id: 101,
+            id: '101',
             studentId: payload.studentId,
             sessionId: payload.sessionId,
             status: String(payload.status).toLowerCase(),
@@ -409,10 +409,10 @@ describe('attendance submission contract', () => {
     let caughtError: unknown
     try {
       await attendanceStore.submitAttendance({
-        sessionId: 55,
+        sessionId: '55',
         records: [
-          { studentId: 1, status: 'present' },
-          { studentId: 2, status: 'absent' },
+          { studentId: '1', status: 'present' },
+          { studentId: '2', status: 'absent' },
         ],
       })
     }
@@ -439,9 +439,9 @@ describe('attendance submission contract', () => {
 
     try {
       await attendanceStore.submitAttendance({
-        sessionId: 55,
+        sessionId: '55',
         records: [
-          { studentId: 1, status: 'present' },
+          { studentId: '1', status: 'present' },
         ],
       })
     }
@@ -461,7 +461,7 @@ describe('attendance submission contract', () => {
       return {
         status: 201,
         data: {
-          id: 101,
+          id: '101',
           studentId: payload.studentId,
           sessionId: payload.sessionId,
           status: String(payload.status).toLowerCase(),
@@ -471,9 +471,9 @@ describe('attendance submission contract', () => {
     api.post = mockPost as typeof api.post
 
     await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
-        { studentId: 1, status: 'present' },
+        { studentId: '1', status: 'present' },
       ],
     })
 
@@ -489,7 +489,7 @@ describe('attendance submission contract', () => {
       return {
         status: 201,
         data: {
-          id: 101,
+          id: '101',
           studentId: payload.studentId,
           sessionId: payload.sessionId,
           status: String(payload.status).toLowerCase(),
@@ -500,11 +500,11 @@ describe('attendance submission contract', () => {
     api.post = mockPost as typeof api.post
 
     await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
-        { studentId: 1, status: 'present', notes: '   ' },
-        { studentId: 2, status: 'absent', notes: '' },
-        { studentId: 3, status: 'late', notes: undefined },
+        { studentId: '1', status: 'present', notes: '   ' },
+        { studentId: '2', status: 'absent', notes: '' },
+        { studentId: '3', status: 'late', notes: undefined },
       ],
     })
 
@@ -515,17 +515,17 @@ describe('attendance submission contract', () => {
 
   it('submitAttendance applies updates once after all records saved', async () => {
     const attendanceStore = useAttendanceStore()
-    attendanceStore.currentSessionId = 55
+    attendanceStore.currentSessionId = '55'
     attendanceStore.sessionAttendance = [
-      { id: 101, studentId: 1, sessionId: 55, status: 'absent' },
-      { id: 102, studentId: 2, sessionId: 55, status: 'absent' },
+      { id: '101', studentId: '1', sessionId: '55', status: 'absent' },
+      { id: '102', studentId: '2', sessionId: '55', status: 'absent' },
     ]
 
     const mockPost = async (_url: string, payload: Record<string, unknown>) => {
       return {
         status: 201,
         data: {
-          id: Number(payload.studentId) === 1 ? 101 : 102,
+          id: payload.studentId === '1' ? '101' : '102',
           studentId: payload.studentId,
           sessionId: payload.sessionId,
           status: String(payload.status).toLowerCase(),
@@ -539,8 +539,8 @@ describe('attendance submission contract', () => {
         status: 200,
         data: {
           attendanceRecords: [
-            { id: 101, studentId: 1, sessionId: 55, status: 'present' },
-            { id: 102, studentId: 2, sessionId: 55, status: 'present' },
+            { id: '101', studentId: '1', sessionId: '55', status: 'present' },
+            { id: '102', studentId: '2', sessionId: '55', status: 'present' },
           ],
         },
       }
@@ -548,10 +548,10 @@ describe('attendance submission contract', () => {
     api.get = mockGet as typeof api.get
 
     await attendanceStore.submitAttendance({
-      sessionId: 55,
+      sessionId: '55',
       records: [
-        { studentId: 1, status: 'present' },
-        { studentId: 2, status: 'present' },
+        { studentId: '1', status: 'present' },
+        { studentId: '2', status: 'present' },
       ],
     })
 
