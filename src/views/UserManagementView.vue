@@ -197,17 +197,6 @@ async function loadInstructorWorkload(instructorProfileId: string) {
     return
   }
 
-  // Check if ID is a UUID (36 chars with hyphens or 32 chars without)
-  const isUuid = (instructorProfileId.length === 36 && instructorProfileId.includes('-'))
-    || (instructorProfileId.length === 32 && !instructorProfileId.includes('-'))
-    || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(instructorProfileId)
-
-  if (isUuid) {
-    instructorWorkload.value = null
-    instructorWorkloadError.value = 'Instructor workload moves to the UUID report route in Phase 7.'
-    return
-  }
-
   instructorWorkloadLoading.value = true
   instructorWorkloadError.value = ''
 

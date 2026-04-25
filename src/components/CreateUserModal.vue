@@ -61,7 +61,7 @@ const submitButtonText = computed(() => 'Create Account')
 const isFormValid = computed(() => {
   if (!username.value?.trim() || !role.value || !availableRoles.value.includes(role.value))
     return false
-  if (role.value === 'Student' && !sectionId.value)
+  if (role.value === 'Student' && !String(sectionId.value || '').trim())
     return false
 
   // In create mode, password is required
@@ -123,7 +123,7 @@ function createUser() {
   }
 
   if (role.value === 'Student') {
-    if (!sectionId.value) {
+    if (!String(sectionId.value || '').trim()) {
       errorMessage.value = 'Please enter a section for students'
       return
     }
@@ -138,7 +138,7 @@ function createUser() {
     FirstName: firstName.value,
     LastName: lastName.value,
     Role: role.value as UiRole,
-    SectionId: role.value === 'Student' ? String(sectionId.value) : undefined,
+    SectionId: role.value === 'Student' ? String(sectionId.value || '').trim() : undefined,
   }
 
   // Emit the create event
