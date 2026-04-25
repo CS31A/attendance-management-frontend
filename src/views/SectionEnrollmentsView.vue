@@ -23,10 +23,6 @@ function parseSectionRouteParam(value: EntityId | undefined): EntityId | null {
     return value
   }
 
-  if (typeof value === 'number') {
-    return String(value)
-  }
-
   return null
 }
 
@@ -54,11 +50,9 @@ let isProcessingSectionFetch = false
 const enrolledStudents = computed(() => enrollmentStore.getSectionStudents)
 const isLoading = computed(() => enrollmentStore.isLoading || sectionStore.loading || userStore.loading || loading.value)
 
-function asSearchableString(value: string | number) {
+function asSearchableString(value: string) {
   if (typeof value === 'string')
     return value.toLowerCase()
-  if (typeof value === 'number')
-    return String(value).toLowerCase()
   return ''
 }
 

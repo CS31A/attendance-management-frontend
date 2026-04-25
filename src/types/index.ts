@@ -1,9 +1,8 @@
-export type Id = number | string
+export type Id = string
 
 /**
  * EntityId represents a unique identifier for domain entities.
- * Post-transition: This type now only accepts string (UUID) values.
- * The migration from number | string to string is complete.
+ * Entity IDs are UUID strings at public API boundaries.
  */
 export type EntityId = string
 

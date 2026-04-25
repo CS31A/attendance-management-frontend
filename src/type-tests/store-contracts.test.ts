@@ -68,6 +68,7 @@ type _subjectPayloadNotAny = ExpectFalse<IsAny<Parameters<SubjectStore['createSu
 
 type _entityIdNormalizerReturn = ExpectTrue<Extends<ReturnType<typeof import('@/utils/entityId').normalizeEntityId>, string | null>>
 type _entityIdMatcherReturn = ExpectTrue<Extends<ReturnType<typeof import('@/utils/entityId').entityIdsMatch>, boolean>>
+type _entityIdRejectsNumber = ExpectFalse<Extends<number, EntityId>>
 
 type _paginationParamsAcceptPage = ExpectTrue<Extends<{ page: number, limit: number }, PaginationParams>>
 type _paginationParamsAcceptOffset = ExpectTrue<Extends<{ offset: number, limit: number }, PaginationParams>>

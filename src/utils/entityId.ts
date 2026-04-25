@@ -4,7 +4,7 @@ export function normalizeEntityId(id: EntityId | null | undefined): string | nul
   if (id === null || id === undefined)
     return null
 
-  return String(id)
+  return id
 }
 
 export function entityIdsMatch(left: EntityId | null | undefined, right: EntityId | null | undefined): boolean {
