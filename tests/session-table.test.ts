@@ -22,7 +22,7 @@ vi.mock('@/utils/date', () => ({
 function createSession(overrides: Partial<SessionResponseDto> = {}): SessionResponseDto {
   const today = new Date()
   return {
-    id: 1,
+    id: '1',
     status: 'not_started' as SessionStatus,
     sessionDate: today.toISOString(),
     subjectCode: 'CS101',

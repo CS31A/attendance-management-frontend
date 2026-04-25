@@ -224,14 +224,14 @@ describe('sectionStore', () => {
 
   describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
     it('updateSection finds section by number ID', async () => {
-      const existingSection = createSection({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedSection = createSection({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingSection = createSection({ id: '1', name: 'Old Name' })
+      const updatedSection = createSection({ id: '1', name: 'Updated Name' })
       vi.mocked(sectionsApi.updateSection).mockResolvedValue({ data: updatedSection } as never)
 
       const store = useSectionStore()
       store.sections = [existingSection]
 
-      const result = await store.updateSection(1 as EntityId, { name: 'Updated Name' } as SectionPayload)
+      const result = await store.updateSection('1', { name: 'Updated Name' } as SectionPayload)
 
       expect(result).toEqual(updatedSection)
       expect(store.sections[0]).toEqual(updatedSection)
@@ -252,8 +252,8 @@ describe('sectionStore', () => {
     })
 
     it('updateSection finds section with mixed ID types (store has number, search with string)', async () => {
-      const existingSection = createSection({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedSection = createSection({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingSection = createSection({ id: '1', name: 'Old Name' })
+      const updatedSection = createSection({ id: '1', name: 'Updated Name' })
       vi.mocked(sectionsApi.updateSection).mockResolvedValue({ data: updatedSection } as never)
 
       const store = useSectionStore()
@@ -269,12 +269,12 @@ describe('sectionStore', () => {
       vi.mocked(sectionsApi.deleteSection).mockResolvedValue({} as never)
 
       const store = useSectionStore()
-      store.sections = [createSection({ id: 1 as EntityId }), createSection({ id: 2 as EntityId })]
+      store.sections = [createSection({ id: '1' }), createSection({ id: '2' })]
 
-      await store.deleteSection(1 as EntityId)
+      await store.deleteSection('1')
 
       expect(store.sections).toHaveLength(1)
-      expect(store.sections[0].id).toBe(2 as EntityId)
+      expect(store.sections[0].id).toBe('2')
     })
 
     it('deleteSection removes section by string ID', async () => {
@@ -296,12 +296,12 @@ describe('sectionStore', () => {
       vi.mocked(sectionsApi.deleteSection).mockResolvedValue({} as never)
 
       const store = useSectionStore()
-      store.sections = [createSection({ id: 1 as EntityId }), createSection({ id: 2 as EntityId })]
+      store.sections = [createSection({ id: '1' }), createSection({ id: '2' })]
 
       await store.deleteSection('1' as EntityId)
 
       expect(store.sections).toHaveLength(1)
-      expect(store.sections[0].id).toBe(2 as EntityId)
+      expect(store.sections[0].id).toBe('2')
     })
   })
 })

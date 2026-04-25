@@ -1,4 +1,5 @@
 import type { CourseDto } from '@/api/courses'
+import type { EntityId } from '@/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createCourseDeleteFlow } from '@/composables/useCourseDeleteFlow'
@@ -19,7 +20,7 @@ function createConflictError(message: string) {
   return error
 }
 
-function createCourse(id = 1, name = 'Test Course'): CourseDto {
+function createCourse(id = '1', name = 'Test Course'): CourseDto {
   return { id, name }
 }
 
@@ -39,11 +40,11 @@ describe('courses delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteCourse(1)
+    await flow.handleDeleteCourse('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.courseToDelete.value?.id).toBe(1)
+    expect(flow.courseToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
@@ -58,7 +59,7 @@ describe('courses delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteCourse(1)
+    await flow.handleDeleteCourse('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.courseToDelete.value).toBeNull()
@@ -80,11 +81,11 @@ describe('courses delete guard regression', () => {
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteCourse(1)
+    await flow.handleDeleteCourse('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.courseToDelete.value?.id).toBe(1)
+    expect(flow.courseToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify course dependencies. Server will validate the delete request.')
@@ -119,7 +120,7 @@ describe('courses delete guard regression', () => {
     const onDeleteSuccess = vi.fn()
     const coursesStore = {
       courses: [course],
-      deleteCourse: vi.fn().mockImplementation(async (id: number) => {
+      deleteCourse: vi.fn().mockImplementation(async (id: EntityId) => {
         coursesStore.courses = coursesStore.courses.filter(current => current.id !== id)
       }),
     }
@@ -157,7 +158,7 @@ describe('courses delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteCourse(1)
+      await flow.handleDeleteCourse('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
       expect(flow.courseToDelete.value).toBeNull()
@@ -184,11 +185,11 @@ describe('courses delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteCourse(1)
+      await flow.handleDeleteCourse('1')
 
       expect(flow.isDeletionChecking.value).toBe(false)
       expect(flow.showDeleteModal.value).toBe(true)
-      expect(flow.courseToDelete.value?.id).toBe(1)
+      expect(flow.courseToDelete.value?.id).toBe('1')
       expect(externalShowToast).toHaveBeenCalledWith(
         'Warning: Could not verify course dependencies. Server will validate the delete request.',
         'warning',
@@ -204,7 +205,7 @@ describe('courses delete guard regression', () => {
       const course = createCourse()
       const coursesStore = {
         courses: [course],
-        deleteCourse: vi.fn().mockImplementation(async (id: number) => {
+        deleteCourse: vi.fn().mockImplementation(async (id: EntityId) => {
           coursesStore.courses = coursesStore.courses.filter((current: CourseDto) => current.id !== id)
         }),
       }

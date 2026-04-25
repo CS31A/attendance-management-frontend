@@ -1,12 +1,13 @@
+import type { EntityId } from '@/types'
 import { describe, expect, it } from 'vitest'
 import { useDeleteModalLifecycle } from '@/composables/useDeleteModalLifecycle'
 
 interface TestEntity {
-  id: number
+  id: EntityId
   name: string
 }
 
-function createTestEntity(id = 1, name = 'Test Entity'): TestEntity {
+function createTestEntity(id = '1', name = 'Test Entity'): TestEntity {
   return { id, name }
 }
 
@@ -21,7 +22,7 @@ describe('useDeleteModalLifecycle', () => {
 
   it('opens modal with entity', () => {
     const { showDeleteModal, entityToDelete, openDeleteModal } = useDeleteModalLifecycle<TestEntity>()
-    const entity = createTestEntity(1, 'Entity 1')
+    const entity = createTestEntity('1', 'Entity 1')
 
     openDeleteModal(entity)
 
@@ -32,7 +33,7 @@ describe('useDeleteModalLifecycle', () => {
   it('closes modal and clears entity', () => {
     const { showDeleteModal, entityToDelete, openDeleteModal, closeDeleteModal }
       = useDeleteModalLifecycle<TestEntity>()
-    const entity = createTestEntity(1, 'Entity 1')
+    const entity = createTestEntity('1', 'Entity 1')
 
     openDeleteModal(entity)
     closeDeleteModal()
@@ -54,16 +55,16 @@ describe('useDeleteModalLifecycle', () => {
   })
 
   it('maintains separate state for different entity types', () => {
-    interface EntityA { id: number, name: string }
-    interface EntityB { id: string, title: string }
+    interface EntityA { id: EntityId, name: string }
+    interface EntityB { id: EntityId, title: string }
 
     const flowA = useDeleteModalLifecycle<EntityA>()
     const flowB = useDeleteModalLifecycle<EntityB>()
 
-    flowA.openDeleteModal({ id: 1, name: 'A' })
+    flowA.openDeleteModal({ id: '1', name: 'A' })
     flowB.openDeleteModal({ id: '2', title: 'B' })
 
-    expect(flowA.entityToDelete.value).toEqual({ id: 1, name: 'A' })
+    expect(flowA.entityToDelete.value).toEqual({ id: '1', name: 'A' })
     expect(flowB.entityToDelete.value).toEqual({ id: '2', title: 'B' })
     expect(flowA.showDeleteModal.value).toBe(true)
     expect(flowB.showDeleteModal.value).toBe(true)

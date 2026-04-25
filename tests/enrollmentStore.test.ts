@@ -505,14 +505,14 @@ describe('enrollmentStore', () => {
 
       const store = useEnrollmentStore()
       store.sectionStudents = [
-        createEnrollment({ enrollmentId: 100 as EntityId }),
-        createEnrollment({ enrollmentId: 200 as EntityId }),
+        createEnrollment({ enrollmentId: '100' }),
+        createEnrollment({ enrollmentId: '200' }),
       ]
 
-      await store.dropStudent(100 as EntityId)
+      await store.dropStudent('100')
 
       expect(store.sectionStudents).toHaveLength(1)
-      expect(store.sectionStudents[0].enrollmentId).toBe(200 as EntityId)
+      expect(store.sectionStudents[0].enrollmentId).toBe('200')
     })
 
     it('dropStudent filters by string enrollmentId when sectionId is omitted', async () => {
@@ -535,14 +535,14 @@ describe('enrollmentStore', () => {
 
       const store = useEnrollmentStore()
       store.sectionStudents = [
-        createEnrollment({ enrollmentId: 100 as EntityId }),
-        createEnrollment({ enrollmentId: 200 as EntityId }),
+        createEnrollment({ enrollmentId: '100' }),
+        createEnrollment({ enrollmentId: '200' }),
       ]
 
       await store.dropStudent('100' as EntityId)
 
       expect(store.sectionStudents).toHaveLength(1)
-      expect(store.sectionStudents[0].enrollmentId).toBe(200 as EntityId)
+      expect(store.sectionStudents[0].enrollmentId).toBe('200')
     })
 
     it('dropStudent filters with mixed ID types (store has string, drop with number)', async () => {
@@ -554,7 +554,7 @@ describe('enrollmentStore', () => {
         createEnrollment({ enrollmentId: '200' as EntityId }),
       ]
 
-      await store.dropStudent(100 as EntityId)
+      await store.dropStudent('100')
 
       expect(store.sectionStudents).toHaveLength(1)
       expect(store.sectionStudents[0].enrollmentId).toBe('200' as EntityId)

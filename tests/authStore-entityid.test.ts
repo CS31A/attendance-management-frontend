@@ -1,6 +1,6 @@
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import type { AuthUserProfile, CheckAuthResponse } from '@/types/auth'
 import type { EntityId } from '@/types'
+import type { AuthUserProfile, CheckAuthResponse } from '@/types/auth'
 
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -43,7 +43,7 @@ describe('authStore with EntityId (mixed types)', () => {
   describe('fetchUserProfile with EntityId', () => {
     it('fetches profile with number EntityId', async () => {
       const mockProfile = createMockUserProfile({
-        userId: 1 as EntityId,
+        userId: '1',
         username: 'user1',
         role: ROLES.INSTRUCTOR,
       })
@@ -54,7 +54,7 @@ describe('authStore with EntityId (mixed types)', () => {
 
       expect(api.get).toHaveBeenCalledWith('/account/me')
       expect(result).toEqual(mockProfile)
-      expect(store.userProfile?.userId).toBe(1 as EntityId)
+      expect(store.userProfile?.userId).toBe('1')
     })
 
     it('fetches profile with string UUID EntityId', async () => {
@@ -100,9 +100,9 @@ describe('authStore with EntityId (mixed types)', () => {
   describe('checkAuth with EntityId', () => {
     it('checks auth with number EntityId', async () => {
       const mockCheckResponse = createMockCheckAuthResponse({
-        user: { id: 1 as EntityId, name: 'User One', email: 'user1@example.com' } as CheckAuthResponse['user'],
+        user: { id: '1', name: 'User One', email: 'user1@example.com' } as CheckAuthResponse['user'],
       })
-      const mockProfile = createMockUserProfile({ userId: 1 as EntityId })
+      const mockProfile = createMockUserProfile({ userId: '1' })
 
       vi.mocked(api.get).mockImplementation((path) => {
         if (path === '/account/check')
@@ -116,8 +116,8 @@ describe('authStore with EntityId (mixed types)', () => {
       const result = await store.checkAuth()
 
       expect(result).toBe(true)
-      expect(store.user?.id).toBe(1 as EntityId)
-      expect(store.userProfile?.userId).toBe(1 as EntityId)
+      expect(store.user?.id).toBe('1')
+      expect(store.userProfile?.userId).toBe('1')
     })
 
     it('checks auth with string UUID EntityId', async () => {
@@ -152,10 +152,10 @@ describe('authStore with EntityId (mixed types)', () => {
   describe('login with EntityId', () => {
     it('logs in user with number EntityId', async () => {
       const mockCheckResponse = createMockCheckAuthResponse({
-        user: { id: 2 as EntityId, name: 'Instructor', email: 'instructor@example.com' } as CheckAuthResponse['user'],
+        user: { id: '2', name: 'Instructor', email: 'instructor@example.com' } as CheckAuthResponse['user'],
       })
       const mockProfile = createMockUserProfile({
-        userId: 2 as EntityId,
+        userId: '2',
         role: ROLES.INSTRUCTOR,
       })
 
@@ -179,8 +179,8 @@ describe('authStore with EntityId (mixed types)', () => {
       const result = await store.login('instructor@example.com', 'password')
 
       expect(result).toEqual({ success: true })
-      expect(store.user?.id).toBe(2 as EntityId)
-      expect(store.userProfile?.userId).toBe(2 as EntityId)
+      expect(store.user?.id).toBe('2')
+      expect(store.userProfile?.userId).toBe('2')
     })
 
     it('logs in user with string UUID EntityId', async () => {
@@ -225,9 +225,9 @@ describe('authStore with EntityId (mixed types)', () => {
     it('handles transition from number to string EntityId', async () => {
       // First login with number ID
       const mockCheckResponse1 = createMockCheckAuthResponse({
-        user: { id: 3 as EntityId, name: 'User', email: 'user@example.com' } as CheckAuthResponse['user'],
+        user: { id: '3', name: 'User', email: 'user@example.com' } as CheckAuthResponse['user'],
       })
-      const mockProfile1 = createMockUserProfile({ userId: 3 as EntityId })
+      const mockProfile1 = createMockUserProfile({ userId: '3' })
 
       vi.mocked(api.post).mockImplementation((path) => {
         if (path === '/account/web/login')
@@ -248,8 +248,8 @@ describe('authStore with EntityId (mixed types)', () => {
       const store = useAuthStore()
       await store.login('user@example.com', 'password')
 
-      expect(store.user?.id).toBe(3 as EntityId)
-      expect(store.userProfile?.userId).toBe(3 as EntityId)
+      expect(store.user?.id).toBe('3')
+      expect(store.userProfile?.userId).toBe('3')
 
       // Logout
       await store.logout()

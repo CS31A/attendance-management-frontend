@@ -14,7 +14,7 @@ vi.mock('@/utils/httpError')
 // Helper factory
 function createSchedule(overrides: Partial<ScheduleDto> = {}): ScheduleDto {
   return {
-    id: 1 as EntityId,
+    id: '1',
     dayOfWeek: 'Monday',
     timeIn: '08:00',
     timeOut: '09:00',
@@ -44,45 +44,45 @@ describe('scheduleStore', () => {
     it('sortedSchedules sorts by weekday then timeIn', () => {
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 2 as EntityId, dayOfWeek: 'Wednesday', timeIn: '10:00' }),
-        createSchedule({ id: 1 as EntityId, dayOfWeek: 'Monday', timeIn: '08:00' }),
-        createSchedule({ id: 3 as EntityId, dayOfWeek: 'Monday', timeIn: '09:00' }),
+        createSchedule({ id: '2', dayOfWeek: 'Wednesday', timeIn: '10:00' }),
+        createSchedule({ id: '1', dayOfWeek: 'Monday', timeIn: '08:00' }),
+        createSchedule({ id: '3', dayOfWeek: 'Monday', timeIn: '09:00' }),
       ]
       const sorted = store.sortedSchedules
-      expect(sorted[0].id).toBe(1 as EntityId)
-      expect(sorted[1].id).toBe(3 as EntityId)
-      expect(sorted[2].id).toBe(2 as EntityId)
+      expect(sorted[0].id).toBe('1')
+      expect(sorted[1].id).toBe('3')
+      expect(sorted[2].id).toBe('2')
     })
 
     it('sortedSchedules handles missing dayOfWeek', () => {
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 1 as EntityId, dayOfWeek: 'Monday', timeIn: '08:00' }),
-        createSchedule({ id: 2 as EntityId, dayOfWeek: undefined, timeIn: '09:00' }),
+        createSchedule({ id: '1', dayOfWeek: 'Monday', timeIn: '08:00' }),
+        createSchedule({ id: '2', dayOfWeek: undefined, timeIn: '09:00' }),
       ]
       const sorted = store.sortedSchedules
       // Items with missing dayOfWeek sort to the beginning (indexOf('') returns -1)
-      expect(sorted[0].id).toBe(2 as EntityId)
-      expect(sorted[1].id).toBe(1 as EntityId)
+      expect(sorted[0].id).toBe('2')
+      expect(sorted[1].id).toBe('1')
     })
 
     it('sortedSchedules handles missing timeIn', () => {
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 1 as EntityId, dayOfWeek: 'Monday', timeIn: '08:00' }),
-        createSchedule({ id: 2 as EntityId, dayOfWeek: 'Monday', timeIn: undefined }),
+        createSchedule({ id: '1', dayOfWeek: 'Monday', timeIn: '08:00' }),
+        createSchedule({ id: '2', dayOfWeek: 'Monday', timeIn: undefined }),
       ]
       const sorted = store.sortedSchedules
       // Items with missing timeIn should sort by empty string
-      expect(sorted[0].id).toBe(2 as EntityId)
-      expect(sorted[1].id).toBe(1 as EntityId)
+      expect(sorted[0].id).toBe('2')
+      expect(sorted[1].id).toBe('1')
     })
 
     it('sortedSchedules does not mutate original schedules', () => {
       const store = useScheduleStore()
       const originalSchedules = [
-        createSchedule({ id: 2 as EntityId, dayOfWeek: 'Wednesday', timeIn: '10:00' }),
-        createSchedule({ id: 1 as EntityId, dayOfWeek: 'Monday', timeIn: '08:00' }),
+        createSchedule({ id: '2', dayOfWeek: 'Wednesday', timeIn: '10:00' }),
+        createSchedule({ id: '1', dayOfWeek: 'Monday', timeIn: '08:00' }),
       ]
       store.schedules = [...originalSchedules]
 
@@ -95,7 +95,7 @@ describe('scheduleStore', () => {
 
   describe('actions — success paths', () => {
     it('fetchSchedules populates schedules, clears error, and resets loading', async () => {
-      const mockSchedules = [createSchedule(), createSchedule({ id: 2 as EntityId })]
+      const mockSchedules = [createSchedule(), createSchedule({ id: '2' })]
       vi.mocked(scheduleApi.getAllSchedules).mockResolvedValue(mockSchedules as never)
 
       const store = useScheduleStore()
@@ -122,13 +122,13 @@ describe('scheduleStore', () => {
     })
 
     it('fetchSchedule sets currentSchedule', async () => {
-      const mockSchedule = createSchedule({ id: 1 as EntityId })
+      const mockSchedule = createSchedule({ id: '1' })
       vi.mocked(scheduleApi.getScheduleById).mockResolvedValue(mockSchedule as never)
 
       const store = useScheduleStore()
       store.error = 'previous error'
 
-      await store.fetchSchedule(1 as EntityId)
+      await store.fetchSchedule('1')
 
       expect(store.currentSchedule).toEqual(mockSchedule)
       expect(store.error).toBe('')
@@ -136,7 +136,7 @@ describe('scheduleStore', () => {
     })
 
     it('createSchedule returns created item and refetches via fetchSchedules(true)', async () => {
-      const newSchedule = createSchedule({ id: 2 as EntityId })
+      const newSchedule = createSchedule({ id: '2' })
       const refreshedSchedules = [createSchedule(), newSchedule]
       const payload: SchedulePayload = { dayOfWeek: 'Tuesday', timeIn: '10:00' }
 
@@ -156,7 +156,7 @@ describe('scheduleStore', () => {
     })
 
     it('updateSchedule returns updated item and refetches via fetchSchedules(true)', async () => {
-      const updatedSchedule = createSchedule({ id: 1 as EntityId, timeIn: '09:00' })
+      const updatedSchedule = createSchedule({ id: '1', timeIn: '09:00' })
       const refreshedSchedules = [updatedSchedule]
       const payload: SchedulePayload = { timeIn: '09:00' }
 
@@ -166,7 +166,7 @@ describe('scheduleStore', () => {
       const store = useScheduleStore()
       store.error = 'previous error'
 
-      const result = await store.updateSchedule(1 as EntityId, payload)
+      const result = await store.updateSchedule('1', payload)
 
       expect(result).toEqual(updatedSchedule)
       expect(scheduleApi.getAllSchedules).toHaveBeenCalled()
@@ -180,14 +180,14 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 1 as EntityId }),
-        createSchedule({ id: 2 as EntityId }),
+        createSchedule({ id: '1' }),
+        createSchedule({ id: '2' }),
       ]
 
-      await store.deleteSchedule(1 as EntityId)
+      await store.deleteSchedule('1')
 
       expect(store.schedules).toHaveLength(1)
-      expect(store.schedules[0].id).toBe(2 as EntityId)
+      expect(store.schedules[0].id).toBe('2')
       expect(store.loading).toBe(false)
     })
 
@@ -196,14 +196,14 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 1 as EntityId }),
-        createSchedule({ id: 2 as EntityId }),
+        createSchedule({ id: '1' }),
+        createSchedule({ id: '2' }),
       ]
 
       await store.deleteSchedule('1' as EntityId)
 
       expect(store.schedules).toHaveLength(1)
-      expect(store.schedules[0].id).toBe(2 as EntityId)
+      expect(store.schedules[0].id).toBe('2')
     })
   })
 
@@ -214,7 +214,7 @@ describe('scheduleStore', () => {
       vi.mocked(getErrorMessage).mockReturnValue('Failed to fetch schedules: Fetch failed')
 
       const store = useScheduleStore()
-      const originalSchedules = [createSchedule({ id: 99 as EntityId })]
+      const originalSchedules = [createSchedule({ id: '99' })]
       store.schedules = [...originalSchedules]
 
       await store.fetchSchedules()
@@ -231,10 +231,10 @@ describe('scheduleStore', () => {
       vi.mocked(getErrorMessage).mockReturnValue('Schedule with ID 99 not found: Not found')
 
       const store = useScheduleStore()
-      const originalSchedule = createSchedule({ id: 1 as EntityId })
+      const originalSchedule = createSchedule({ id: '1' })
       store.currentSchedule = originalSchedule
 
-      await store.fetchSchedule(99 as EntityId)
+      await store.fetchSchedule('99')
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Schedule with ID 99 not found')
       expect(store.error).toBe('Schedule with ID 99 not found: Not found')
@@ -288,7 +288,7 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
 
-      await expect(store.updateSchedule(1 as EntityId, payload)).rejects.toThrow(testError)
+      await expect(store.updateSchedule('1', payload)).rejects.toThrow(testError)
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Failed to update schedule')
       expect(getValidationErrorMessages).toHaveBeenCalledWith(testError)
@@ -306,7 +306,7 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
 
-      await expect(store.updateSchedule(1 as EntityId, payload)).rejects.toThrow(testError)
+      await expect(store.updateSchedule('1', payload)).rejects.toThrow(testError)
 
       expect(store.error).toBe('Failed to update schedule: Server error')
       expect(store.loading).toBe(false)
@@ -318,10 +318,10 @@ describe('scheduleStore', () => {
       vi.mocked(getErrorMessage).mockReturnValue('Failed to delete schedule: Delete failed')
 
       const store = useScheduleStore()
-      const originalSchedules = [createSchedule({ id: 1 as EntityId })]
+      const originalSchedules = [createSchedule({ id: '1' })]
       store.schedules = [...originalSchedules]
 
-      await expect(store.deleteSchedule(1 as EntityId)).rejects.toThrow(testError)
+      await expect(store.deleteSchedule('1')).rejects.toThrow(testError)
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Failed to delete schedule')
       expect(store.error).toBe('Failed to delete schedule: Delete failed')
@@ -330,7 +330,7 @@ describe('scheduleStore', () => {
     })
 
     it('refetch failure after successful createSchedule sets store error but still returns API result', async () => {
-      const newSchedule = createSchedule({ id: 2 as EntityId })
+      const newSchedule = createSchedule({ id: '2' })
       const refreshError = new Error('Refresh failed')
       const payload: SchedulePayload = { dayOfWeek: 'Tuesday' }
 
@@ -348,7 +348,7 @@ describe('scheduleStore', () => {
     })
 
     it('refetch failure after successful updateSchedule sets store error but still returns API result', async () => {
-      const updatedSchedule = createSchedule({ id: 1 as EntityId, timeIn: '09:00' })
+      const updatedSchedule = createSchedule({ id: '1', timeIn: '09:00' })
       const refreshError = new Error('Refresh failed')
       const payload: SchedulePayload = { timeIn: '09:00' }
 
@@ -358,7 +358,7 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
 
-      const result = await store.updateSchedule(1 as EntityId, payload)
+      const result = await store.updateSchedule('1', payload)
 
       expect(result).toEqual(updatedSchedule)
       expect(store.error).toBe('Failed to fetch schedules: Refresh failed')
@@ -372,14 +372,14 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 1 as EntityId }),
-        createSchedule({ id: 2 as EntityId }),
+        createSchedule({ id: '1' }),
+        createSchedule({ id: '2' }),
       ]
 
-      await store.deleteSchedule(1 as EntityId)
+      await store.deleteSchedule('1')
 
       expect(store.schedules).toHaveLength(1)
-      expect(store.schedules[0].id).toBe(2 as EntityId)
+      expect(store.schedules[0].id).toBe('2')
     })
 
     it('deleteSchedule removes schedule by string ID', async () => {
@@ -402,14 +402,14 @@ describe('scheduleStore', () => {
 
       const store = useScheduleStore()
       store.schedules = [
-        createSchedule({ id: 1 as EntityId }),
-        createSchedule({ id: 2 as EntityId }),
+        createSchedule({ id: '1' }),
+        createSchedule({ id: '2' }),
       ]
 
       await store.deleteSchedule('1' as EntityId)
 
       expect(store.schedules).toHaveLength(1)
-      expect(store.schedules[0].id).toBe(2 as EntityId)
+      expect(store.schedules[0].id).toBe('2')
     })
 
     it('deleteSchedule removes schedule with mixed ID types (store has string, delete with number)', async () => {
@@ -421,7 +421,7 @@ describe('scheduleStore', () => {
         createSchedule({ id: '2' as EntityId }),
       ]
 
-      await store.deleteSchedule(1 as EntityId)
+      await store.deleteSchedule('1')
 
       expect(store.schedules).toHaveLength(1)
       expect(store.schedules[0].id).toBe('2' as EntityId)

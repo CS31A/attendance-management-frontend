@@ -1,12 +1,11 @@
-import type { EntityId } from '@/types'
 import type {
-  AttendanceRecordItemDto,
   ClassAttendanceSummaryReportDto,
   InstructorSessionsReportDto,
   ReportsFilter,
   SessionAttendanceReportDto,
   StudentAttendanceReportDto,
 } from '@/api/reports'
+import type { EntityId } from '@/types'
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -22,10 +21,10 @@ describe('reports API module with EntityId', () => {
 
   describe('fetchStudentAttendanceReport', () => {
     it('fetches student attendance report with EntityId (number)', async () => {
-      const studentId = 123 as EntityId
+      const studentId = '123'
 
       const mockResponse: StudentAttendanceReportDto = {
-        studentId: 123 as EntityId,
+        studentId: '123',
         studentName: 'John Doe',
         studentNumber: 'S12345',
         totalSessions: 20,
@@ -36,8 +35,8 @@ describe('reports API module with EntityId', () => {
         attendancePercentage: 75,
         attendanceRecords: [
           {
-            id: 1 as EntityId,
-            sessionId: 100 as EntityId,
+            id: '1',
+            sessionId: '100',
             sessionDate: '2024-01-01',
             status: 'present',
             checkInTime: '09:00:00',
@@ -54,11 +53,11 @@ describe('reports API module with EntityId', () => {
       const result = await reportsApi.fetchStudentAttendanceReport(studentId)
 
       expect(api.get).toHaveBeenCalledWith('/reports/student-attendance/123')
-      expect(result.studentId).toBe(123 as EntityId)
+      expect(result.studentId).toBe('123')
       expect(result.studentName).toBe('John Doe')
       expect(result.attendanceRecords).toHaveLength(1)
-      expect(result.attendanceRecords[0].id).toBe(1 as EntityId)
-      expect(result.attendanceRecords[0].sessionId).toBe(100 as EntityId)
+      expect(result.attendanceRecords[0].id).toBe('1')
+      expect(result.attendanceRecords[0].sessionId).toBe('100')
     })
 
     it('fetches student attendance report with EntityId (string UUID)', async () => {
@@ -101,12 +100,12 @@ describe('reports API module with EntityId', () => {
 
   describe('fetchSessionAttendanceReport', () => {
     it('fetches session attendance report with EntityId (number)', async () => {
-      const sessionId = 200 as EntityId
+      const sessionId = '200'
 
       const mockResponse: SessionAttendanceReportDto = {
-        sessionId: 200 as EntityId,
+        sessionId: '200',
         sessionDate: '2024-01-15',
-        scheduleId: 300 as EntityId,
+        scheduleId: '300',
         scheduleTitle: 'Chemistry Lab',
         subjectName: 'Chemistry',
         sectionName: 'Section C',
@@ -117,10 +116,10 @@ describe('reports API module with EntityId', () => {
         attendanceRate: 80,
         attendanceRecords: [
           {
-            studentId: 400 as EntityId,
+            studentId: '400',
             studentName: 'Alice Johnson',
             studentNumber: 'S11111',
-            attendanceRecordId: 500 as EntityId,
+            attendanceRecordId: '500',
             status: 'present',
             checkInTime: '10:00:00',
             isManualEntry: false,
@@ -133,11 +132,11 @@ describe('reports API module with EntityId', () => {
       const result = await reportsApi.fetchSessionAttendanceReport(sessionId)
 
       expect(api.get).toHaveBeenCalledWith('/reports/session-attendance/200')
-      expect(result.sessionId).toBe(200 as EntityId)
-      expect(result.scheduleId).toBe(300 as EntityId)
+      expect(result.sessionId).toBe('200')
+      expect(result.scheduleId).toBe('300')
       expect(result.attendanceRecords).toHaveLength(1)
-      expect(result.attendanceRecords[0].studentId).toBe(400 as EntityId)
-      expect(result.attendanceRecords[0].attendanceRecordId).toBe(500 as EntityId)
+      expect(result.attendanceRecords[0].studentId).toBe('400')
+      expect(result.attendanceRecords[0].attendanceRecordId).toBe('500')
     })
 
     it('fetches session attendance report with EntityId (string UUID)', async () => {
@@ -182,10 +181,10 @@ describe('reports API module with EntityId', () => {
 
   describe('fetchClassAttendanceReport', () => {
     it('fetches class attendance report with EntityId (number)', async () => {
-      const sectionId = 600 as EntityId
+      const sectionId = '600'
 
       const mockResponse: ClassAttendanceSummaryReportDto = {
-        sectionId: 600 as EntityId,
+        sectionId: '600',
         sectionName: 'Section E',
         totalSessions: 40,
         totalPresent: 800,
@@ -195,7 +194,7 @@ describe('reports API module with EntityId', () => {
         attendanceRate: 85,
         sessions: [
           {
-            sessionId: 700 as EntityId,
+            sessionId: '700',
             sessionDate: '2024-01-10',
             subjectName: 'History',
             scheduleTitle: 'History 101',
@@ -216,9 +215,9 @@ describe('reports API module with EntityId', () => {
       const result = await reportsApi.fetchClassAttendanceReport(sectionId)
 
       expect(api.get).toHaveBeenCalledWith('/reports/class-attendance/600', { params: {} })
-      expect(result.sectionId).toBe(600 as EntityId)
+      expect(result.sectionId).toBe('600')
       expect(result.sessions).toHaveLength(1)
-      expect(result.sessions[0].sessionId).toBe(700 as EntityId)
+      expect(result.sessions[0].sessionId).toBe('700')
     })
 
     it('fetches class attendance report with EntityId (string UUID) and filters', async () => {
@@ -268,15 +267,15 @@ describe('reports API module with EntityId', () => {
 
   describe('fetchInstructorSessionsReport', () => {
     it('fetches instructor sessions report with EntityId (number)', async () => {
-      const instructorId = 800 as EntityId
+      const instructorId = '800'
 
       const mockResponse: InstructorSessionsReportDto = {
-        instructorId: 800 as EntityId,
+        instructorId: '800',
         instructorName: 'Dr. Smith',
         totalSessions: 50,
         sessions: [
           {
-            sessionId: 900 as EntityId,
+            sessionId: '900',
             sessionDate: '2024-01-25',
             subjectName: 'English',
             scheduleTitle: 'English 101',
@@ -298,9 +297,9 @@ describe('reports API module with EntityId', () => {
       const result = await reportsApi.fetchInstructorSessionsReport(instructorId)
 
       expect(api.get).toHaveBeenCalledWith('/reports/instructor-sessions/800', { params: {} })
-      expect(result.instructorId).toBe(800 as EntityId)
+      expect(result.instructorId).toBe('800')
       expect(result.sessions).toHaveLength(1)
-      expect(result.sessions[0].sessionId).toBe(900 as EntityId)
+      expect(result.sessions[0].sessionId).toBe('900')
     })
 
     it('fetches instructor sessions report with EntityId (string UUID) and filters', async () => {
@@ -344,20 +343,20 @@ describe('reports API module with EntityId', () => {
     })
   })
 
-  describe('ReportsFilter with EntityId', () => {
+  describe('reportsFilter with EntityId', () => {
     it('supports all EntityId filter fields', async () => {
-      const sectionId = 1000 as EntityId
+      const sectionId = '1000'
       const filters: ReportsFilter = {
         startDate: '2024-01-01',
         endDate: '2024-12-31',
-        sectionId: 1100 as EntityId,
-        studentId: 1200 as EntityId,
-        sessionId: 1300 as EntityId,
-        scheduleId: 1400 as EntityId,
+        sectionId: '1100',
+        studentId: '1200',
+        sessionId: '1300',
+        scheduleId: '1400',
       }
 
       const mockResponse: ClassAttendanceSummaryReportDto = {
-        sectionId: 1000 as EntityId,
+        sectionId: '1000',
         sectionName: 'Test Section',
         totalSessions: 10,
         totalPresent: 100,
@@ -408,10 +407,10 @@ describe('reports API module with EntityId', () => {
 
   describe('mixed ID types in attendance records', () => {
     it('handles mixed EntityId types in attendance record items', async () => {
-      const studentId = 1500 as EntityId
+      const studentId = '1500'
 
       const mockResponse: StudentAttendanceReportDto = {
-        studentId: 1500 as EntityId,
+        studentId: '1500',
         studentName: 'Mixed ID Student',
         studentNumber: 'S99999',
         totalSessions: 3,
@@ -422,8 +421,8 @@ describe('reports API module with EntityId', () => {
         attendancePercentage: 100,
         attendanceRecords: [
           {
-            id: 1600 as EntityId,
-            sessionId: 1700 as EntityId,
+            id: '1600',
+            sessionId: '1700',
             sessionDate: '2024-01-01',
             status: 'present',
             subjectName: 'Math',
@@ -449,8 +448,8 @@ describe('reports API module with EntityId', () => {
       const result = await reportsApi.fetchStudentAttendanceReport(studentId)
 
       expect(result.attendanceRecords).toHaveLength(2)
-      expect(result.attendanceRecords[0].id).toBe(1600 as EntityId)
-      expect(result.attendanceRecords[0].sessionId).toBe(1700 as EntityId)
+      expect(result.attendanceRecords[0].id).toBe('1600')
+      expect(result.attendanceRecords[0].sessionId).toBe('1700')
       expect(result.attendanceRecords[1].id).toBe('555e8400-e29b-41d4-a716-446655440018' as EntityId)
       expect(result.attendanceRecords[1].sessionId).toBe('666e8400-e29b-41d4-a716-446655440019' as EntityId)
     })

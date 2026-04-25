@@ -26,16 +26,16 @@ describe('instructors API', () => {
     vi.clearAllMocks()
   })
 
-  describe('normalizer functions prefer UUID over integer', () => {
-    it('normalizeSectionOverviewItem prefers UUID over integer ID', async () => {
+  describe('normalizer functions prefer canonical Id fields', () => {
+    it('normalizeSectionOverviewItem prefers canonical Id fields over legacy *Uuid fields', async () => {
       const mockResponse = {
         data: [
           {
-            sectionId: 1,
-            sectionUuid: 'section-uuid-123',
+            sectionId: 'section-id-123',
+            sectionUuid: 'legacy-section-uuid',
             sectionName: 'Section A',
-            courseId: 10,
-            courseUuid: 'course-uuid-456',
+            courseId: 'course-id-456',
+            courseUuid: 'legacy-course-uuid',
             courseName: 'Course 1',
             handledClassCount: 5,
             uniqueStudentCount: 30,
@@ -48,9 +48,8 @@ describe('instructors API', () => {
       const result = await getMySectionsOverview()
 
       expect(result).toHaveLength(1)
-      // Should prefer UUID over integer
-      expect(result[0].sectionId).toBe('section-uuid-123' as unknown as EntityId)
-      expect(result[0].courseId).toBe('course-uuid-456' as unknown as EntityId)
+      expect(result[0].sectionId).toBe('section-id-123' as unknown as EntityId)
+      expect(result[0].courseId).toBe('course-id-456' as unknown as EntityId)
       expect(result[0].sectionName).toBe('Section A')
       expect(result[0].courseName).toBe('Course 1')
     })
@@ -59,9 +58,9 @@ describe('instructors API', () => {
       const mockResponse = {
         data: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'Section A',
-            courseId: 10,
+            courseId: '10',
             courseName: 'Course 1',
             handledClassCount: 5,
             uniqueStudentCount: 30,
@@ -75,40 +74,40 @@ describe('instructors API', () => {
 
       expect(result).toHaveLength(1)
       // Should fall back to integer ID
-      expect(result[0].sectionId).toBe(1 as EntityId)
-      expect(result[0].courseId).toBe(10 as EntityId)
+      expect(result[0].sectionId).toBe('1')
+      expect(result[0].courseId).toBe('10')
     })
 
-    it('normalizeSectionDetail prefers UUID over integer ID', async () => {
+    it('normalizeSectionDetail prefers canonical Id fields over legacy *Uuid fields', async () => {
       const mockResponse = {
         data: {
-          sectionId: 1,
-          sectionUuid: 'section-uuid-123',
+          sectionId: 'section-id-123',
+          sectionUuid: 'legacy-section-uuid',
           sectionName: 'Section A',
-          courseId: 10,
-          courseUuid: 'course-uuid-456',
+          courseId: 'course-id-456',
+          courseUuid: 'legacy-course-uuid',
           courseName: 'Course 1',
           handledClassCount: 5,
           homeSectionStudentCount: 30,
           handledClasses: [
             {
-              subjectId: 100,
-              subjectUuid: 'subject-uuid-789',
+              subjectId: 'subject-id-789',
+              subjectUuid: 'legacy-subject-uuid',
               subjectName: 'Math',
               subjectCode: 'MATH101',
-              scheduleId: 200,
-              scheduleUuid: 'schedule-uuid-abc',
+              scheduleId: 'schedule-id-abc',
+              scheduleUuid: 'legacy-schedule-uuid',
               dayOfWeek: 'Monday',
               timeIn: '08:00',
               timeOut: '09:00',
-              classroomId: 300,
-              classroomUuid: 'classroom-uuid-def',
+              classroomId: 'classroom-id-def',
+              classroomUuid: 'legacy-classroom-uuid',
               classroomName: 'Room 101',
               studentCount: 25,
               students: [
                 {
-                  studentId: 1000,
-                  studentUuid: 'student-uuid-ghi',
+                  studentId: 'student-id-ghi',
+                  studentUuid: 'legacy-student-uuid',
                   firstname: 'John',
                   lastname: 'Doe',
                   isRegular: true,
@@ -119,8 +118,8 @@ describe('instructors API', () => {
           ],
           homeSectionStudents: [
             {
-              studentId: 2000,
-              studentUuid: 'student-uuid-jkl',
+              studentId: 'student-id-jkl',
+              studentUuid: 'legacy-student-uuid-jkl',
               firstname: 'Jane',
               lastname: 'Smith',
               isRegular: true,
@@ -132,51 +131,47 @@ describe('instructors API', () => {
 
       vi.mocked(api.get).mockResolvedValue(mockResponse as never)
 
-      const result = await getMySectionDetail(1 as EntityId)
+      const result = await getMySectionDetail('1')
 
-      // Section-level IDs should prefer UUID
-      expect(result.sectionId).toBe('section-uuid-123' as unknown as EntityId)
-      expect(result.courseId).toBe('course-uuid-456' as unknown as EntityId)
+      expect(result.sectionId).toBe('section-id-123' as unknown as EntityId)
+      expect(result.courseId).toBe('course-id-456' as unknown as EntityId)
 
-      // Handled class IDs should prefer UUID
       expect(result.handledClasses).toHaveLength(1)
       const handledClass = result.handledClasses[0] as InstructorHandledClassDetail
-      expect(handledClass.subjectId).toBe('subject-uuid-789' as unknown as EntityId)
-      expect(handledClass.scheduleId).toBe('schedule-uuid-abc' as unknown as EntityId)
-      expect(handledClass.classroomId).toBe('classroom-uuid-def' as unknown as EntityId)
+      expect(handledClass.subjectId).toBe('subject-id-789' as unknown as EntityId)
+      expect(handledClass.scheduleId).toBe('schedule-id-abc' as unknown as EntityId)
+      expect(handledClass.classroomId).toBe('classroom-id-def' as unknown as EntityId)
 
-      // Student IDs should prefer UUID
       expect(handledClass.students).toHaveLength(1)
-      expect(handledClass.students[0].studentId).toBe('student-uuid-ghi' as unknown as EntityId)
+      expect(handledClass.students[0].studentId).toBe('student-id-ghi' as unknown as EntityId)
 
-      // Home section student IDs should prefer UUID
       expect(result.homeSectionStudents).toHaveLength(1)
-      expect(result.homeSectionStudents[0].studentId).toBe('student-uuid-jkl' as unknown as EntityId)
+      expect(result.homeSectionStudents[0].studentId).toBe('student-id-jkl' as unknown as EntityId)
     })
 
-    it('normalizeStudentDetail prefers UUID over integer ID', async () => {
+    it('normalizeStudentDetail prefers canonical Id fields over legacy *Uuid fields', async () => {
       const mockResponse = {
         data: {
-          studentId: 1000,
-          studentUuid: 'student-uuid-123',
+          studentId: 'student-id-123',
+          studentUuid: 'legacy-student-uuid',
           firstname: 'John',
           lastname: 'Doe',
-          sectionId: 1,
-          sectionUuid: 'section-uuid-456',
+          sectionId: 'section-id-456',
+          sectionUuid: 'legacy-section-uuid',
           sectionName: 'Section A',
-          courseId: 10,
-          courseUuid: 'course-uuid-789',
+          courseId: 'course-id-789',
+          courseUuid: 'legacy-course-uuid',
           courseName: 'Course 1',
           isRegular: true,
           enrollmentType: 'Regular',
           enrollments: [
             {
-              subjectId: 100,
-              subjectUuid: 'subject-uuid-abc',
+              subjectId: 'subject-id-abc',
+              subjectUuid: 'legacy-subject-uuid',
               subjectName: 'Math',
               subjectCode: 'MATH101',
-              sectionId: 1,
-              sectionUuid: 'section-uuid-def',
+              sectionId: 'section-id-def',
+              sectionUuid: 'legacy-section-uuid-def',
               sectionName: 'Section A',
               enrollmentType: 'Regular',
             },
@@ -193,17 +188,15 @@ describe('instructors API', () => {
 
       vi.mocked(api.get).mockResolvedValue(mockResponse as never)
 
-      const result = await getMyStudentDetail(1000 as EntityId)
+      const result = await getMyStudentDetail('1000')
 
-      // Student-level IDs should prefer UUID
-      expect(result.studentId).toBe('student-uuid-123' as unknown as EntityId)
-      expect(result.sectionId).toBe('section-uuid-456' as unknown as EntityId)
-      expect(result.courseId).toBe('course-uuid-789' as unknown as EntityId)
+      expect(result.studentId).toBe('student-id-123' as unknown as EntityId)
+      expect(result.sectionId).toBe('section-id-456' as unknown as EntityId)
+      expect(result.courseId).toBe('course-id-789' as unknown as EntityId)
 
-      // Enrollment IDs should prefer UUID
       expect(result.enrollments).toHaveLength(1)
-      expect(result.enrollments[0].subjectId).toBe('subject-uuid-abc' as unknown as EntityId)
-      expect(result.enrollments[0].sectionId).toBe('section-uuid-def' as unknown as EntityId)
+      expect(result.enrollments[0].subjectId).toBe('subject-id-abc' as unknown as EntityId)
+      expect(result.enrollments[0].sectionId).toBe('section-id-def' as unknown as EntityId)
     })
   })
 
@@ -212,10 +205,10 @@ describe('instructors API', () => {
       const mockResponse = {
         data: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionUuid: 'section-uuid-123',
             sectionName: 'Section A',
-            courseId: 10,
+            courseId: '10',
             courseUuid: 'course-uuid-456',
             courseName: 'Course 1',
             handledClassCount: 5,
@@ -243,32 +236,32 @@ describe('instructors API', () => {
     it('section detail output does not contain *Uuid fields', async () => {
       const mockResponse = {
         data: {
-          sectionId: 1,
+          sectionId: '1',
           sectionUuid: 'section-uuid-123',
           sectionName: 'Section A',
-          courseId: 10,
+          courseId: '10',
           courseUuid: 'course-uuid-456',
           courseName: 'Course 1',
           handledClassCount: 5,
           homeSectionStudentCount: 30,
           handledClasses: [
             {
-              subjectId: 100,
+              subjectId: '100',
               subjectUuid: 'subject-uuid-789',
               subjectName: 'Math',
               subjectCode: 'MATH101',
-              scheduleId: 200,
+              scheduleId: '200',
               scheduleUuid: 'schedule-uuid-abc',
               dayOfWeek: 'Monday',
               timeIn: '08:00',
               timeOut: '09:00',
-              classroomId: 300,
+              classroomId: '300',
               classroomUuid: 'classroom-uuid-def',
               classroomName: 'Room 101',
               studentCount: 25,
               students: [
                 {
-                  studentId: 1000,
+                  studentId: '1000',
                   studentUuid: 'student-uuid-ghi',
                   firstname: 'John',
                   lastname: 'Doe',
@@ -284,7 +277,7 @@ describe('instructors API', () => {
 
       vi.mocked(api.get).mockResolvedValue(mockResponse as never)
 
-      const result = await getMySectionDetail(1 as EntityId)
+      const result = await getMySectionDetail('1')
 
       const section = result as InstructorSectionDetail & Record<string, unknown>
 
@@ -306,25 +299,25 @@ describe('instructors API', () => {
     it('student detail output does not contain *Uuid fields', async () => {
       const mockResponse = {
         data: {
-          studentId: 1000,
+          studentId: '1000',
           studentUuid: 'student-uuid-123',
           firstname: 'John',
           lastname: 'Doe',
-          sectionId: 1,
+          sectionId: '1',
           sectionUuid: 'section-uuid-456',
           sectionName: 'Section A',
-          courseId: 10,
+          courseId: '10',
           courseUuid: 'course-uuid-789',
           courseName: 'Course 1',
           isRegular: true,
           enrollmentType: 'Regular',
           enrollments: [
             {
-              subjectId: 100,
+              subjectId: '100',
               subjectUuid: 'subject-uuid-abc',
               subjectName: 'Math',
               subjectCode: 'MATH101',
-              sectionId: 1,
+              sectionId: '1',
               sectionUuid: 'section-uuid-def',
               sectionName: 'Section A',
               enrollmentType: 'Regular',
@@ -342,7 +335,7 @@ describe('instructors API', () => {
 
       vi.mocked(api.get).mockResolvedValue(mockResponse as never)
 
-      const result = await getMyStudentDetail(1000 as EntityId)
+      const result = await getMyStudentDetail('1000')
 
       const student = result as InstructorStudentDetail & Record<string, unknown>
 
@@ -380,15 +373,14 @@ describe('instructors API', () => {
       const result = await getMySectionsOverview()
 
       expect(result).toHaveLength(1)
-      // Should handle PascalCase and prefer UUID
-      expect(result[0].sectionId).toBe('section-uuid-123' as unknown as EntityId)
-      expect(result[0].courseId).toBe('course-uuid-456' as unknown as EntityId)
+      expect(result[0].sectionId).toBe('1' as unknown as EntityId)
+      expect(result[0].courseId).toBe('10' as unknown as EntityId)
     })
 
     it('handles mixed camelCase and PascalCase fields', async () => {
       const mockResponse = {
         data: {
-          sectionId: 1,
+          sectionId: '1',
           SectionUuid: 'section-uuid-123',
           sectionName: 'Section A',
           CourseId: 10,
@@ -403,11 +395,10 @@ describe('instructors API', () => {
 
       vi.mocked(api.get).mockResolvedValue(mockResponse as never)
 
-      const result = await getMySectionDetail(1 as EntityId)
+      const result = await getMySectionDetail('1')
 
-      // Should handle mixed casing and prefer UUID
-      expect(result.sectionId).toBe('section-uuid-123' as unknown as EntityId)
-      expect(result.courseId).toBe('course-uuid-456' as unknown as EntityId)
+      expect(result.sectionId).toBe('1' as unknown as EntityId)
+      expect(result.courseId).toBe('10' as unknown as EntityId)
       expect(result.sectionName).toBe('Section A')
       expect(result.courseName).toBe('Course 1')
     })

@@ -44,42 +44,42 @@ const mockSectionsOverview: InstructorSectionOverviewItem[] = [
 ]
 
 const mockSectionsWithStudents: InstructorSectionsWithStudentsResponseDto = {
-  instructorId: 1,
+  instructorId: '1',
   instructorFirstname: 'John',
   instructorLastname: 'Doe',
   sections: [
     {
-      sectionId: 10,
+      sectionId: '10',
       sectionName: 'BSCS 3A',
-      courseId: 5,
+      courseId: '5',
       courseName: 'Bachelor of Science in Computer Science',
       subjects: [
         {
-          subjectId: 20,
+          subjectId: '20',
           subjectName: 'Data Structures',
           subjectCode: 'CS301',
-          scheduleId: 100,
+          scheduleId: '100',
           dayOfWeek: 'Monday',
           timeIn: '08:00:00',
           timeOut: '10:00:00',
           classroomName: 'Room 101',
           students: [
             {
-              studentId: 50,
+              studentId: '50',
               firstname: 'Alice',
               lastname: 'Smith',
               isRegular: true,
               enrollmentType: 'Regular',
             },
             {
-              studentId: 51,
+              studentId: '51',
               firstname: 'Bob',
               lastname: 'Johnson',
               isRegular: false,
               enrollmentType: 'Irregular',
             },
             {
-              studentId: 52,
+              studentId: '52',
               firstname: 'Cara',
               lastname: 'Davis',
               isRegular: false,
@@ -304,30 +304,30 @@ describe('instructorClassesView', () => {
         ...mockSectionsWithStudents,
         sections: [
           {
-            sectionId: 10,
+            sectionId: '10',
             sectionName: 'BSCS 3A',
-            courseId: 5,
+            courseId: '5',
             courseName: 'Bachelor of Science in Computer Science',
             subjects: [
               {
-                subjectId: 20,
+                subjectId: '20',
                 subjectName: 'Data Structures',
                 subjectCode: 'CS301',
-                scheduleId: 100,
+                scheduleId: '100',
                 dayOfWeek: 'Monday',
                 timeIn: '08:00:00',
                 timeOut: '10:00:00',
                 classroomName: 'Room 101',
                 students: [
                   {
-                    studentId: 50,
+                    studentId: '50',
                     firstname: 'Alice',
                     lastname: 'Smith',
                     isRegular: true,
                     enrollmentType: 'Regular',
                   },
                   {
-                    studentId: 51,
+                    studentId: '51',
                     firstname: 'Bob',
                     lastname: 'Johnson',
                     isRegular: true,
@@ -338,30 +338,30 @@ describe('instructorClassesView', () => {
             ],
           },
           {
-            sectionId: 11,
+            sectionId: '11',
             sectionName: 'BSCS 3B',
-            courseId: 5,
+            courseId: '5',
             courseName: 'Bachelor of Science in Computer Science',
             subjects: [
               {
-                subjectId: 21,
+                subjectId: '21',
                 subjectName: 'Algorithms',
                 subjectCode: 'CS302',
-                scheduleId: 101,
+                scheduleId: '101',
                 dayOfWeek: 'Tuesday',
                 timeIn: '10:00:00',
                 timeOut: '12:00:00',
                 classroomName: 'Room 102',
                 students: [
                   {
-                    studentId: 51,
+                    studentId: '51',
                     firstname: 'Bob',
                     lastname: 'Johnson',
                     isRegular: false,
                     enrollmentType: 'Irregular',
                   },
                   {
-                    studentId: 52,
+                    studentId: '52',
                     firstname: 'Cara',
                     lastname: 'Davis',
                     isRegular: true,

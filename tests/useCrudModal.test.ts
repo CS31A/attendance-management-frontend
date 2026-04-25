@@ -6,7 +6,7 @@ import { ref } from 'vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 
 interface TestEntity {
-  id: number
+  id: string
   name: string
 }
 
@@ -19,8 +19,8 @@ function createTestOptions(overrides?: Record<string, unknown>) {
   const showModal = ref(false)
   const modalRef = ref<HandleErrorableModal | null>(null)
   const showToast = vi.fn()
-  const createFn = vi.fn(async () => ({ id: 1, name: 'Created' }))
-  const updateFn = vi.fn(async () => ({ id: 1, name: 'Updated' }))
+  const createFn = vi.fn(async () => ({ id: '1', name: 'Created' }))
+  const updateFn = vi.fn(async () => ({ id: '1', name: 'Updated' }))
   const onSuccess = vi.fn()
 
   return {
@@ -56,7 +56,7 @@ describe('useCrudModal', () => {
 
     it('update path calls updateFn(id, payload), shows success toast, closes modal, clears entity, and runs onSuccess', async () => {
       const options = createTestOptions()
-      const existingEntity: TestEntity = { id: 5, name: 'Existing' }
+      const existingEntity: TestEntity = { id: '5', name: 'Existing' }
       options.entity.value = { ...existingEntity }
 
       const { handleSave } = useCrudModal<TestPayload, TestEntity>(options)
@@ -64,7 +64,7 @@ describe('useCrudModal', () => {
       const payload: TestPayload = { name: 'Updated Entity' }
       await handleSave(payload)
 
-      expect(options.updateFn).toHaveBeenCalledWith(5, payload)
+      expect(options.updateFn).toHaveBeenCalledWith('5', payload)
       expect(options.updateFn).toHaveBeenCalledTimes(1)
       expect(options.createFn).not.toHaveBeenCalled()
       expect(options.showToast).toHaveBeenCalledWith('TestEntity updated successfully', 'success')
@@ -102,7 +102,7 @@ describe('useCrudModal', () => {
           throw new Error('Validation failed')
         }),
       })
-      options.entity.value = { id: 1, name: 'Existing' }
+      options.entity.value = { id: '1', name: 'Existing' }
 
       const { handleSave } = useCrudModal<TestPayload, TestEntity>(options)
       await handleSave({ name: 'Updated' })
@@ -191,7 +191,7 @@ describe('useCrudModal', () => {
   describe('openAddModal', () => {
     it('clears any selected entity and opens the modal', () => {
       const options = createTestOptions()
-      options.entity.value = { id: 1, name: 'Existing' }
+      options.entity.value = { id: '1', name: 'Existing' }
       options.showModal.value = false
 
       const { openAddModal } = useCrudModal<TestPayload, TestEntity>(options)
@@ -217,7 +217,7 @@ describe('useCrudModal', () => {
   describe('openEditModal', () => {
     it('clones the entity instead of keeping the original reference', () => {
       const options = createTestOptions()
-      const originalEntity: TestEntity = { id: 3, name: 'Original' }
+      const originalEntity: TestEntity = { id: '3', name: 'Original' }
       options.showModal.value = false
 
       const { openEditModal } = useCrudModal<TestPayload, TestEntity>(options)
@@ -230,9 +230,9 @@ describe('useCrudModal', () => {
 
     it('overwrites any previously selected entity', () => {
       const options = createTestOptions()
-      options.entity.value = { id: 1, name: 'Old' }
+      options.entity.value = { id: '1', name: 'Old' }
 
-      const newEntity: TestEntity = { id: 2, name: 'New' }
+      const newEntity: TestEntity = { id: '2', name: 'New' }
       const { openEditModal } = useCrudModal<TestPayload, TestEntity>(options)
       openEditModal(newEntity)
 
@@ -244,7 +244,7 @@ describe('useCrudModal', () => {
   describe('closeModal', () => {
     it('hides the modal and clears selected entity', () => {
       const options = createTestOptions()
-      options.entity.value = { id: 1, name: 'Selected' }
+      options.entity.value = { id: '1', name: 'Selected' }
       options.showModal.value = true
 
       const { closeModal } = useCrudModal<TestPayload, TestEntity>(options)
@@ -281,13 +281,13 @@ describe('useCrudModal', () => {
       expect(options.showModal.value).toBe(false)
       expect(options.onSuccess).toHaveBeenCalledTimes(1)
 
-      const existingEntity: TestEntity = { id: 10, name: 'Existing' }
+      const existingEntity: TestEntity = { id: '10', name: 'Existing' }
       openEditModal(existingEntity)
       expect(options.showModal.value).toBe(true)
       expect(options.entity.value).toEqual(existingEntity)
 
       await handleSave({ name: 'Updated' })
-      expect(options.updateFn).toHaveBeenCalledWith(10, { name: 'Updated' })
+      expect(options.updateFn).toHaveBeenCalledWith('10', { name: 'Updated' })
       expect(options.showToast).toHaveBeenLastCalledWith('TestEntity updated successfully', 'success')
       expect(options.onSuccess).toHaveBeenCalledTimes(2)
     })

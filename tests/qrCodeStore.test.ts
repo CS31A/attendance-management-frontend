@@ -13,7 +13,7 @@ vi.mock('@/utils/httpError')
 // Helper factory
 function createQrCode(overrides: Partial<QrCodeResponseDto> = {}): QrCodeResponseDto {
   return {
-    id: 1,
+    id: '1',
     qrHash: 'abc123',
     generatedAt: '2024-01-01T00:00:00Z',
     expiresAt: '2024-01-01T01:00:00Z',
@@ -88,7 +88,7 @@ describe('qrCodeStore', () => {
 
     it('clearSessionQrCodes resets sessionQrCodes state', () => {
       const store = useQrCodeStore()
-      store.sessionQrCodes = [createQrCode(), createQrCode({ id: 2 })]
+      store.sessionQrCodes = [createQrCode(), createQrCode({ id: '2' })]
       store.clearSessionQrCodes()
       expect(store.sessionQrCodes).toEqual([])
     })
@@ -97,7 +97,7 @@ describe('qrCodeStore', () => {
   describe('actions — success paths', () => {
     it('generateQrCode clears error, sets loading, maps API response into activeQrCode, and returns created object', async () => {
       const apiResponse = {
-        qrCodeId: 1,
+        qrCodeId: '1',
         qrHash: 'abc123',
         qrCodeImageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         generatedAt: '2024-01-01T00:00:00Z',
@@ -108,16 +108,16 @@ describe('qrCodeStore', () => {
       const store = useQrCodeStore()
       store.error = 'previous error'
 
-      const payload = { sessionId: 1, expirationMinutes: 30, maxUsage: 10 }
+      const payload = { sessionId: '1', expirationMinutes: 30, maxUsage: 10 }
       const result = await store.generateQrCode(payload)
 
       expect(store.error).toBe('')
       expect(store.loading).toBe(false)
       expect(store.activeQrCode).toEqual({
-        id: 1,
+        id: '1',
         qrHash: 'abc123',
         qrCodeData: apiResponse.qrCodeImageUrl,
-        sessionId: 1,
+        sessionId: '1',
         expirationMinutes: 30,
         maxUsage: 10,
         generatedAt: '2024-01-01T00:00:00Z',
@@ -129,7 +129,7 @@ describe('qrCodeStore', () => {
     })
 
     it('fetchQrCode loads metadata, then image, and stores merged result', async () => {
-      const metadata = createQrCode({ id: 1, qrHash: 'abc123' })
+      const metadata = createQrCode({ id: '1', qrHash: 'abc123' })
       const imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
       vi.mocked(qrCodeApi.getQrCodeById).mockResolvedValue(metadata as never)
       vi.mocked(qrCodeApi.getQrCodeImage).mockResolvedValue(imageData as never)
@@ -137,12 +137,12 @@ describe('qrCodeStore', () => {
       const store = useQrCodeStore()
       store.error = 'previous error'
 
-      const result = await store.fetchQrCode(1)
+      const result = await store.fetchQrCode('1')
 
       expect(store.error).toBe('')
       expect(store.loading).toBe(false)
-      expect(qrCodeApi.getQrCodeById).toHaveBeenCalledWith(1)
-      expect(qrCodeApi.getQrCodeImage).toHaveBeenCalledWith(1)
+      expect(qrCodeApi.getQrCodeById).toHaveBeenCalledWith('1')
+      expect(qrCodeApi.getQrCodeImage).toHaveBeenCalledWith('1')
       expect(store.activeQrCode).toEqual({
         ...metadata,
         qrCodeData: imageData,
@@ -151,13 +151,13 @@ describe('qrCodeStore', () => {
     })
 
     it('fetchSessionQrCodes populates sessionQrCodes', async () => {
-      const sessionQrCodes = [createQrCode(), createQrCode({ id: 2 })]
+      const sessionQrCodes = [createQrCode(), createQrCode({ id: '2' })]
       vi.mocked(qrCodeApi.getSessionQrCodes).mockResolvedValue(sessionQrCodes as never)
 
       const store = useQrCodeStore()
       store.error = 'previous error'
 
-      const result = await store.fetchSessionQrCodes(1)
+      const result = await store.fetchSessionQrCodes('1')
 
       expect(store.error).toBe('')
       expect(store.loading).toBe(false)
@@ -175,14 +175,14 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      const result = await store.fetchScanHistory(1)
+      const result = await store.fetchScanHistory('1')
 
       expect(store.scanHistory).toEqual(history)
       expect(result).toEqual(history)
     })
 
     it('revokeQrCode updates matching activeQrCode and returns API response', async () => {
-      const activeQrCode = createQrCode({ id: 1, isActive: true })
+      const activeQrCode = createQrCode({ id: '1', isActive: true })
       const revokedResponse = { ...activeQrCode, isActive: false }
       vi.mocked(qrCodeApi.revokeQrCodeById).mockResolvedValue(revokedResponse as never)
 
@@ -190,11 +190,11 @@ describe('qrCodeStore', () => {
       store.activeQrCode = activeQrCode
       store.error = 'previous error'
 
-      const result = await store.revokeQrCode(1, 'Test reason')
+      const result = await store.revokeQrCode('1', 'Test reason')
 
       expect(store.error).toBe('')
       expect(store.loading).toBe(false)
-      expect(qrCodeApi.revokeQrCodeById).toHaveBeenCalledWith(1, { reason: 'Test reason' })
+      expect(qrCodeApi.revokeQrCodeById).toHaveBeenCalledWith('1', { reason: 'Test reason' })
       expect(store.activeQrCode).toEqual(revokedResponse)
       expect(result).toEqual(revokedResponse)
     })
@@ -208,7 +208,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      await expect(store.generateQrCode({ sessionId: 1 })).rejects.toThrow(testError)
+      await expect(store.generateQrCode({ sessionId: '1' })).rejects.toThrow(testError)
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Error generating QR code')
       expect(store.error).toBe('Error generating QR code: Generation failed')
@@ -222,7 +222,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      await expect(store.fetchQrCode(1)).rejects.toThrow(testError)
+      await expect(store.fetchQrCode('1')).rejects.toThrow(testError)
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Error fetching QR code')
       expect(store.error).toBe('Error fetching QR code: Not found')
@@ -236,7 +236,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      await expect(store.fetchSessionQrCodes(1)).rejects.toThrow(testError)
+      await expect(store.fetchSessionQrCodes('1')).rejects.toThrow(testError)
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Error fetching session QR codes')
       expect(store.error).toBe('Error fetching session QR codes: Session not found')
@@ -251,7 +251,7 @@ describe('qrCodeStore', () => {
       const store = useQrCodeStore()
       store.isPolling = false
 
-      await store.fetchScanHistory(1)
+      await store.fetchScanHistory('1')
 
       expect(console.error).toHaveBeenCalledWith('Error fetching scan history:', testError)
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Error fetching history')
@@ -266,7 +266,7 @@ describe('qrCodeStore', () => {
       store.isPolling = true
       store.error = 'previous error'
 
-      await store.fetchScanHistory(1)
+      await store.fetchScanHistory('1')
 
       expect(console.error).toHaveBeenCalledWith('Error fetching scan history:', testError)
       expect(store.error).toBe('previous error') // Error should not be set during polling
@@ -278,9 +278,9 @@ describe('qrCodeStore', () => {
       vi.mocked(getErrorMessage).mockReturnValue('Error revoking QR code: Revocation failed')
 
       const store = useQrCodeStore()
-      store.activeQrCode = createQrCode({ id: 1 })
+      store.activeQrCode = createQrCode({ id: '1' })
 
-      await expect(store.revokeQrCode(1)).rejects.toThrow(testError)
+      await expect(store.revokeQrCode('1')).rejects.toThrow(testError)
 
       expect(getErrorMessage).toHaveBeenCalledWith(testError, 'Error revoking QR code')
       expect(store.error).toBe('Error revoking QR code: Revocation failed')
@@ -291,7 +291,7 @@ describe('qrCodeStore', () => {
   describe('edge cases', () => {
     it('generateQrCode coerces expirationMinutes from string value to number', async () => {
       const apiResponse = {
-        qrCodeId: 1,
+        qrCodeId: '1',
         qrHash: 'abc123',
         qrCodeImageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         generatedAt: '2024-01-01T00:00:00Z',
@@ -301,7 +301,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      const payload = { sessionId: 1, expirationMinutes: '30' as never, maxUsage: 10 }
+      const payload = { sessionId: '1', expirationMinutes: '30' as never, maxUsage: 10 }
       await store.generateQrCode(payload)
 
       expect(store.activeQrCode?.expirationMinutes).toBe(30)
@@ -309,7 +309,7 @@ describe('qrCodeStore', () => {
 
     it('generateQrCode coerces maxUsage from string value to number', async () => {
       const apiResponse = {
-        qrCodeId: 1,
+        qrCodeId: '1',
         qrHash: 'abc123',
         qrCodeImageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         generatedAt: '2024-01-01T00:00:00Z',
@@ -319,7 +319,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      const payload = { sessionId: 1, expirationMinutes: 30, maxUsage: '10' as never }
+      const payload = { sessionId: '1', expirationMinutes: 30, maxUsage: '10' as never }
       await store.generateQrCode(payload)
 
       expect(store.activeQrCode?.maxUsage).toBe(10)
@@ -327,7 +327,7 @@ describe('qrCodeStore', () => {
 
     it('generateQrCode leaves optional numeric fields undefined when omitted', async () => {
       const apiResponse = {
-        qrCodeId: 1,
+        qrCodeId: '1',
         qrHash: 'abc123',
         qrCodeImageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         generatedAt: '2024-01-01T00:00:00Z',
@@ -337,7 +337,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      const payload = { sessionId: 1 }
+      const payload = { sessionId: '1' }
       await store.generateQrCode(payload)
 
       expect(store.activeQrCode?.expirationMinutes).toBeUndefined()
@@ -346,7 +346,7 @@ describe('qrCodeStore', () => {
 
     it('generateQrCode leaves optional numeric fields undefined when null', async () => {
       const apiResponse = {
-        qrCodeId: 1,
+        qrCodeId: '1',
         qrHash: 'abc123',
         qrCodeImageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         generatedAt: '2024-01-01T00:00:00Z',
@@ -356,7 +356,7 @@ describe('qrCodeStore', () => {
 
       const store = useQrCodeStore()
 
-      const payload = { sessionId: 1, expirationMinutes: null, maxUsage: null }
+      const payload = { sessionId: '1', expirationMinutes: null, maxUsage: null }
       await store.generateQrCode(payload)
 
       expect(store.activeQrCode?.expirationMinutes).toBeUndefined()
@@ -364,14 +364,14 @@ describe('qrCodeStore', () => {
     })
 
     it('fetchQrCode image fetch failure keeps metadata result and does not fail the whole action', async () => {
-      const metadata = createQrCode({ id: 1, qrHash: 'abc123' })
+      const metadata = createQrCode({ id: '1', qrHash: 'abc123' })
       const imageError = new Error('Image fetch failed')
       vi.mocked(qrCodeApi.getQrCodeById).mockResolvedValue(metadata as never)
       vi.mocked(qrCodeApi.getQrCodeImage).mockRejectedValue(imageError)
 
       const store = useQrCodeStore()
 
-      const result = await store.fetchQrCode(1)
+      const result = await store.fetchQrCode('1')
 
       expect(console.error).toHaveBeenCalledWith('Failed to fetch QR code image:', imageError)
       expect(store.activeQrCode).toEqual(metadata)
@@ -379,14 +379,14 @@ describe('qrCodeStore', () => {
     })
 
     it('revokeQrCode with non-matching active id returns API response but leaves current active QR code unchanged', async () => {
-      const activeQrCode = createQrCode({ id: 1, isActive: true })
-      const revokedResponse = createQrCode({ id: 2, isActive: false })
+      const activeQrCode = createQrCode({ id: '1', isActive: true })
+      const revokedResponse = createQrCode({ id: '2', isActive: false })
       vi.mocked(qrCodeApi.revokeQrCodeById).mockResolvedValue(revokedResponse as never)
 
       const store = useQrCodeStore()
       store.activeQrCode = activeQrCode
 
-      const result = await store.revokeQrCode(2, 'Test reason')
+      const result = await store.revokeQrCode('2', 'Test reason')
 
       expect(result).toEqual(revokedResponse)
       expect(store.activeQrCode).toEqual(activeQrCode) // Should remain unchanged

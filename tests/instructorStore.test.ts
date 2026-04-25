@@ -11,7 +11,7 @@ function createInstructorData(
   overrides: Partial<InstructorSectionsWithStudentsResponseDto> = {},
 ): InstructorSectionsWithStudentsResponseDto {
   return {
-    instructorId: 1,
+    instructorId: '1',
     instructorFirstname: 'John',
     instructorLastname: 'Doe',
     sections: [],
@@ -46,9 +46,9 @@ describe('instructorStore', () => {
       const mockData = createInstructorData({
         sections: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'BSCS 3A',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [],
           },
@@ -71,7 +71,7 @@ describe('instructorStore', () => {
       store.instructorData = createInstructorData()
 
       expect(store.instructorInfo).toEqual({
-        id: 1,
+        id: '1',
         firstname: 'John',
         lastname: 'Doe',
         fullName: 'John Doe',
@@ -83,16 +83,16 @@ describe('instructorStore', () => {
       store.instructorData = createInstructorData({
         sections: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'BSCS 3A',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [],
           },
           {
-            sectionId: 2,
+            sectionId: '2',
             sectionName: 'BSCS 3B',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [],
           },
@@ -107,30 +107,30 @@ describe('instructorStore', () => {
       store.instructorData = createInstructorData({
         sections: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'BSCS 3A',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [
               {
-                subjectId: 1,
+                subjectId: '1',
                 subjectName: 'Data Structures',
                 subjectCode: 'CS301',
-                scheduleId: 1,
+                scheduleId: '1',
                 dayOfWeek: 'Monday',
                 timeIn: '08:00:00',
                 timeOut: '10:00:00',
                 classroomName: 'Room 101',
                 students: [
                   {
-                    studentId: 1,
+                    studentId: '1',
                     firstname: 'Alice',
                     lastname: 'Smith',
                     isRegular: true,
                     enrollmentType: 'Regular',
                   },
                   {
-                    studentId: 2,
+                    studentId: '2',
                     firstname: 'Bob',
                     lastname: 'Johnson',
                     isRegular: false,
@@ -141,23 +141,23 @@ describe('instructorStore', () => {
             ],
           },
           {
-            sectionId: 2,
+            sectionId: '2',
             sectionName: 'BSCS 3B',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [
               {
-                subjectId: 2,
+                subjectId: '2',
                 subjectName: 'Algorithms',
                 subjectCode: 'CS302',
-                scheduleId: 2,
+                scheduleId: '2',
                 dayOfWeek: 'Tuesday',
                 timeIn: '10:00:00',
                 timeOut: '12:00:00',
                 classroomName: 'Room 102',
                 students: [
                   {
-                    studentId: 3,
+                    studentId: '3',
                     firstname: 'Charlie',
                     lastname: 'Brown',
                     isRegular: true,
@@ -178,23 +178,23 @@ describe('instructorStore', () => {
       store.instructorData = createInstructorData({
         sections: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'CS21A',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [
               {
-                subjectId: 1,
+                subjectId: '1',
                 subjectName: 'Calculus Based Physics 2',
                 subjectCode: 'CBP101',
-                scheduleId: 1,
+                scheduleId: '1',
                 dayOfWeek: 'Sunday',
                 timeIn: '12:30:00',
                 timeOut: '13:30:00',
                 classroomName: 'Room 202',
                 students: [
                   {
-                    studentId: 20,
+                    studentId: '20',
                     firstname: 'Test',
                     lastname: 'User',
                     isRegular: true,
@@ -203,17 +203,17 @@ describe('instructorStore', () => {
                 ],
               },
               {
-                subjectId: 2,
+                subjectId: '2',
                 subjectName: 'Readings in Philippine History',
                 subjectCode: 'FIL205',
-                scheduleId: 2,
+                scheduleId: '2',
                 dayOfWeek: 'Monday',
                 timeIn: '10:30:00',
                 timeOut: '12:00:00',
                 classroomName: 'Room 205',
                 students: [
                   {
-                    studentId: 20,
+                    studentId: '20',
                     firstname: 'Test',
                     lastname: 'User',
                     isRegular: true,
@@ -234,30 +234,30 @@ describe('instructorStore', () => {
       store.instructorData = createInstructorData({
         sections: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'CS21A',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [
               {
-                subjectId: 1,
+                subjectId: '1',
                 subjectName: 'Data Structures',
                 subjectCode: 'CS301',
-                scheduleId: 1,
+                scheduleId: '1',
                 dayOfWeek: 'Monday',
                 timeIn: '08:00:00',
                 timeOut: '10:00:00',
                 classroomName: 'Room 101',
                 students: [
                   {
-                    studentId: 100,
+                    studentId: '100',
                     firstname: 'Alice',
                     lastname: 'Smith',
                     isRegular: true,
                     enrollmentType: 'Regular',
                   },
                   {
-                    studentId: 101,
+                    studentId: '101',
                     firstname: 'Bob',
                     lastname: 'Johnson',
                     isRegular: true,
@@ -268,30 +268,30 @@ describe('instructorStore', () => {
             ],
           },
           {
-            sectionId: 2,
+            sectionId: '2',
             sectionName: 'CS21B',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [
               {
-                subjectId: 2,
+                subjectId: '2',
                 subjectName: 'Algorithms',
                 subjectCode: 'CS302',
-                scheduleId: 2,
+                scheduleId: '2',
                 dayOfWeek: 'Tuesday',
                 timeIn: '10:00:00',
                 timeOut: '12:00:00',
                 classroomName: 'Room 102',
                 students: [
                   {
-                    studentId: 101,
+                    studentId: '101',
                     firstname: 'Bob',
                     lastname: 'Johnson',
                     isRegular: false,
                     enrollmentType: 'Irregular',
                   },
                   {
-                    studentId: 102,
+                    studentId: '102',
                     firstname: 'Charlie',
                     lastname: 'Brown',
                     isRegular: true,
@@ -332,9 +332,9 @@ describe('instructorStore', () => {
       const mockData = createInstructorData({
         sections: [
           {
-            sectionId: 1,
+            sectionId: '1',
             sectionName: 'BSCS 3A',
-            courseId: 1,
+            courseId: '1',
             courseName: 'Computer Science',
             subjects: [],
           },

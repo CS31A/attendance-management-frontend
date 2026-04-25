@@ -3,33 +3,33 @@ import { parseStudentRouteParam, resolveStudentProfileId } from '@/utils/student
 
 describe('studentRoute utilities', () => {
   describe('resolveStudentProfileId', () => {
-    it('returns the numeric student profile id for student users', () => {
+    it('returns the student profile id for student users without numeric coercion', () => {
       expect(resolveStudentProfileId({
         role: 'Student',
-        profileId: 42,
+        profileId: '550e8400-e29b-41d4-a716-446655440000',
         userId: 'student-user-id',
-      })).toBe(42)
+      })).toBe('550e8400-e29b-41d4-a716-446655440000')
     })
 
-    it('accepts string profile ids and normalizes them to numbers', () => {
+    it('accepts trimmed string profile ids', () => {
       expect(resolveStudentProfileId({
         role: 'Student',
-        profileId: '42',
-      })).toBe(42)
+        profileId: ' 550e8400-e29b-41d4-a716-446655440001 ',
+      })).toBe('550e8400-e29b-41d4-a716-446655440001')
     })
 
-    it('rejects non-integer and non-positive profile ids', () => {
+    it('rejects blank or non-string profile ids', () => {
       expect(resolveStudentProfileId({
         role: 'Student',
-        profileId: 42.5,
+        profileId: 42.5 as unknown as string,
       })).toBeNull()
       expect(resolveStudentProfileId({
         role: 'Student',
-        profileId: '0',
+        profileId: '   ',
       })).toBeNull()
       expect(resolveStudentProfileId({
         role: 'Student',
-        profileId: -3,
+        profileId: -3 as unknown as string,
       })).toBeNull()
     })
 
@@ -44,26 +44,25 @@ describe('studentRoute utilities', () => {
     it('returns null for non-student users', () => {
       expect(resolveStudentProfileId({
         role: 'Instructor',
-        profileId: 42,
+        profileId: '42',
       })).toBeNull()
     })
   })
 
   describe('parseStudentRouteParam', () => {
-    it('parses numeric route params', () => {
-      expect(parseStudentRouteParam('42')).toBe(42)
-      expect(parseStudentRouteParam(42)).toBe(42)
+    it('returns string route params as-is after trimming', () => {
+      expect(parseStudentRouteParam('550e8400-e29b-41d4-a716-446655440010')).toBe('550e8400-e29b-41d4-a716-446655440010')
+      expect(parseStudentRouteParam(' 550e8400-e29b-41d4-a716-446655440011 ')).toBe('550e8400-e29b-41d4-a716-446655440011')
     })
 
-    it('rejects non-numeric route params', () => {
-      expect(parseStudentRouteParam('student-user-id')).toBeNull()
+    it('rejects non-string route params', () => {
+      expect(parseStudentRouteParam(42 as unknown as string)).toBeNull()
       expect(parseStudentRouteParam(undefined)).toBeNull()
     })
 
-    it('rejects non-integer and non-positive route params', () => {
-      expect(parseStudentRouteParam('42.5')).toBeNull()
-      expect(parseStudentRouteParam(0)).toBeNull()
-      expect(parseStudentRouteParam('-1')).toBeNull()
+    it('rejects blank route params', () => {
+      expect(parseStudentRouteParam('   ')).toBeNull()
+      expect(parseStudentRouteParam(0 as unknown as string)).toBeNull()
     })
   })
 })

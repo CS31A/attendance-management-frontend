@@ -1,10 +1,11 @@
+import type { EntityId } from '../src/types'
 import type { HandleErrorableModal } from '../src/types/ui'
 import { describe, expect, it } from 'vitest'
 import { isRef } from 'vue'
 import { useModalState } from '../src/composables/useModalState'
 
 interface TestEntity {
-  id: number
+  id: EntityId
   name: string
 }
 
@@ -21,14 +22,14 @@ describe('useModalState', () => {
     const { showModal, selectedEntity, modalRef } = useModalState<TestEntity>()
 
     showModal.value = true
-    selectedEntity.value = { id: 1, name: 'Test' }
+    selectedEntity.value = { id: '1', name: 'Test' }
     const handleError = (msg?: string) => {
       console.error(msg)
     }
     modalRef.value = { handleError }
 
     expect(showModal.value).toBe(true)
-    expect(selectedEntity.value).toEqual({ id: 1, name: 'Test' })
+    expect(selectedEntity.value).toEqual({ id: '1', name: 'Test' })
     expect(modalRef.value).toBeDefined()
     expect(typeof modalRef.value?.handleError).toBe('function')
   })
@@ -44,8 +45,8 @@ describe('useModalState', () => {
   it('allows entity ref to accept typed values', () => {
     const { selectedEntity } = useModalState<TestEntity>()
 
-    selectedEntity.value = { id: 1, name: 'Test Entity' }
-    expect(selectedEntity.value?.id).toBe(1)
+    selectedEntity.value = { id: '1', name: 'Test Entity' }
+    expect(selectedEntity.value?.id).toBe('1')
     expect(selectedEntity.value?.name).toBe('Test Entity')
 
     selectedEntity.value = null
@@ -86,10 +87,10 @@ describe('useModalState', () => {
     const modal2 = useModalState<TestEntity>()
 
     modal1.showModal.value = true
-    modal1.selectedEntity.value = { id: 1, name: 'First' }
+    modal1.selectedEntity.value = { id: '1', name: 'First' }
 
     modal2.showModal.value = false
-    modal2.selectedEntity.value = { id: 2, name: 'Second' }
+    modal2.selectedEntity.value = { id: '2', name: 'Second' }
 
     expect(modal1.showModal.value).toBe(true)
     expect(modal1.selectedEntity.value?.name).toBe('First')

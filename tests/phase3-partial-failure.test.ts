@@ -21,9 +21,9 @@ describe('phase 3: Partial-failure behavior and user clarity', () => {
         throw new Error('Network error')
       }
       return {
-        id: callCount,
-        sessionId: 1,
-        studentId: callCount,
+        id: String(callCount),
+        sessionId: '1',
+        studentId: String(callCount),
         status: 'present',
         notes: '',
         createdAt: new Date().toISOString(),
@@ -33,11 +33,11 @@ describe('phase 3: Partial-failure behavior and user clarity', () => {
 
     try {
       await store.submitAttendance({
-        sessionId: 1,
+        sessionId: '1',
         records: [
-          { studentId: 1, status: 'present', notes: '' },
-          { studentId: 2, status: 'present', notes: '' },
-          { studentId: 3, status: 'present', notes: '' },
+          { studentId: '1', status: 'present', notes: '' },
+          { studentId: '2', status: 'present', notes: '' },
+          { studentId: '3', status: 'present', notes: '' },
         ],
       })
     }
@@ -58,9 +58,9 @@ describe('phase 3: Partial-failure behavior and user clarity', () => {
 
     try {
       await store.submitAttendance({
-        sessionId: 1,
+        sessionId: '1',
         records: [
-          { studentId: 1, status: 'present', notes: '' },
+          { studentId: '1', status: 'present', notes: '' },
         ],
       })
     }
@@ -84,9 +84,9 @@ describe('phase 3: Partial-failure behavior and user clarity', () => {
         throw new Error('Database error')
       }
       return {
-        id: callCount,
-        sessionId: 1,
-        studentId: callCount,
+        id: String(callCount),
+        sessionId: '1',
+        studentId: String(callCount),
         status: 'present',
         notes: '',
         createdAt: new Date().toISOString(),
@@ -96,12 +96,12 @@ describe('phase 3: Partial-failure behavior and user clarity', () => {
 
     try {
       await store.submitAttendance({
-        sessionId: 1,
+        sessionId: '1',
         records: [
-          { studentId: 1, status: 'present', notes: '' },
-          { studentId: 2, status: 'present', notes: '' },
-          { studentId: 3, status: 'present', notes: '' },
-          { studentId: 4, status: 'present', notes: '' },
+          { studentId: '1', status: 'present', notes: '' },
+          { studentId: '2', status: 'present', notes: '' },
+          { studentId: '3', status: 'present', notes: '' },
+          { studentId: '4', status: 'present', notes: '' },
         ],
       })
     }

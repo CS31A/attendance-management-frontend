@@ -1,4 +1,5 @@
 import type { EnrollmentDto } from '@/api/enrollments'
+import type { EntityId } from '@/types'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { reactive } from 'vue'
@@ -106,7 +107,7 @@ describe('sectionEnrollmentsView', () => {
     route.params.sectionId = '1'
     enrollmentStore.getSectionStudents = []
     getSection.mockResolvedValue({
-      id: 1,
+      id: '1',
       name: 'Test Section',
     })
     fetchSectionStudents.mockResolvedValue([])
@@ -134,7 +135,7 @@ describe('sectionEnrollmentsView', () => {
   })
 
   it('rejects invalid sectionId params and does not call data loaders', async () => {
-    route.params.sectionId = '42.5'
+    route.params.sectionId = ''
 
     const wrapper = mountView()
     await flushPromises()
@@ -147,37 +148,37 @@ describe('sectionEnrollmentsView', () => {
   it('reloads section data when the sectionId route param changes', async () => {
     getSection
       .mockResolvedValueOnce({
-        id: 1,
+        id: '1',
         name: 'Section One',
       })
       .mockResolvedValueOnce({
-        id: 2,
+        id: '2',
         name: 'Section Two',
       })
 
     const wrapper = mountView()
     await flushPromises()
 
-    expect(getSection).toHaveBeenNthCalledWith(1, 1)
-    expect(fetchSectionStudents).toHaveBeenNthCalledWith(1, 1)
+    expect(getSection).toHaveBeenNthCalledWith(1, '1')
+    expect(fetchSectionStudents).toHaveBeenNthCalledWith(1, '1')
     expect(wrapper.text()).toContain('Section One')
 
     route.params.sectionId = '2'
     await flushPromises()
 
-    expect(getSection).toHaveBeenNthCalledWith(2, 2)
-    expect(fetchSectionStudents).toHaveBeenNthCalledWith(2, 2)
+    expect(getSection).toHaveBeenNthCalledWith(2, '2')
+    expect(fetchSectionStudents).toHaveBeenNthCalledWith(2, '2')
     expect(wrapper.text()).toContain('Section Two')
   })
 
   it('queues rapid sectionId changes and resolves to the latest section data', async () => {
-    const firstSectionRequest = createDeferred<{ id: number, name: string }>()
+    const firstSectionRequest = createDeferred<{ id: EntityId, name: string }>()
     const firstStudentsRequest = createDeferred<EnrollmentDto[]>()
 
     getSection
       .mockImplementationOnce(() => firstSectionRequest.promise)
       .mockResolvedValueOnce({
-        id: 2,
+        id: '2',
         name: 'Section Two',
       })
 
@@ -194,7 +195,7 @@ describe('sectionEnrollmentsView', () => {
     expect(getSection).toHaveBeenCalledTimes(1)
 
     firstSectionRequest.resolve({
-      id: 1,
+      id: '1',
       name: 'Section One',
     })
     firstStudentsRequest.resolve([])
@@ -203,16 +204,16 @@ describe('sectionEnrollmentsView', () => {
     await flushPromises()
 
     expect(getSection).toHaveBeenCalledTimes(2)
-    expect(getSection).toHaveBeenNthCalledWith(2, 2)
-    expect(fetchSectionStudents).toHaveBeenNthCalledWith(2, 2)
+    expect(getSection).toHaveBeenNthCalledWith(2, '2')
+    expect(fetchSectionStudents).toHaveBeenNthCalledWith(2, '2')
     expect(wrapper.text()).toContain('Section Two')
   })
 
   it('filters enrolled students by the search query', async () => {
     enrollmentStore.getSectionStudents = [
       {
-        id: 1,
-        enrollmentId: 101,
+        id: '1',
+        enrollmentId: '101',
         studentFirstname: 'Ada',
         studentLastname: 'Lovelace',
         studentId: '2026-0001',
@@ -220,8 +221,8 @@ describe('sectionEnrollmentsView', () => {
         status: 'Active',
       },
       {
-        id: 2,
-        enrollmentId: 102,
+        id: '2',
+        enrollmentId: '102',
         studentFirstname: 'Grace',
         studentLastname: 'Hopper',
         studentId: '2026-0002',
@@ -242,8 +243,8 @@ describe('sectionEnrollmentsView', () => {
   it('calls drop and re-enroll actions for the matching rows', async () => {
     enrollmentStore.getSectionStudents = [
       {
-        id: 3,
-        enrollmentId: 201,
+        id: '3',
+        enrollmentId: '201',
         studentFirstname: 'Ada',
         studentLastname: 'Lovelace',
         studentId: '2026-0001',
@@ -251,8 +252,8 @@ describe('sectionEnrollmentsView', () => {
         status: 'Active',
       },
       {
-        id: 4,
-        enrollmentId: 202,
+        id: '4',
+        enrollmentId: '202',
         studentFirstname: 'Grace',
         studentLastname: 'Hopper',
         studentId: '2026-0002',
@@ -268,8 +269,8 @@ describe('sectionEnrollmentsView', () => {
     await wrapper.find('button[title="Re-enroll Student"]').trigger('click')
 
     expect(confirmMock).toHaveBeenCalledWith('Are you sure you want to drop this student?')
-    expect(dropStudent).toHaveBeenCalledWith(201, 1)
-    expect(reenrollStudent).toHaveBeenCalledWith(202, 1)
+    expect(dropStudent).toHaveBeenCalledWith('201', '1')
+    expect(reenrollStudent).toHaveBeenCalledWith('202', '1')
   })
 
   it('opens the add enrollment modal and refreshes enrollments after a success event', async () => {
@@ -287,7 +288,7 @@ describe('sectionEnrollmentsView', () => {
     await flushPromises()
 
     expect(fetchSectionStudents).toHaveBeenCalledTimes(2)
-    expect(fetchSectionStudents).toHaveBeenLastCalledWith(1)
+    expect(fetchSectionStudents).toHaveBeenLastCalledWith('1')
     expect(wrapper.text()).toContain('Student enrolled successfully')
     expect(wrapper.find('[data-test="add-enrollment-modal"]').exists()).toBe(false)
   })

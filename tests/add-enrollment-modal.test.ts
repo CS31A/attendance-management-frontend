@@ -14,7 +14,7 @@ const enrollmentStore = {
 const userStore = {
   fetchUsers,
   students: [
-    { id: 11, firstName: 'Ada', lastName: 'Lovelace', studentId: '2026-0001' },
+    { id: '11', firstName: 'Ada', lastName: 'Lovelace', studentId: '2026-0001' },
   ],
   loading: false,
   error: '',
@@ -23,8 +23,8 @@ const userStore = {
 const subjectStore = {
   fetchSubjects,
   sortedSubjects: [
-    { id: 7, name: 'Discrete Mathematics' },
-    { id: 9, name: 'Operating Systems' },
+    { id: '7', name: 'Discrete Mathematics' },
+    { id: '9', name: 'Operating Systems' },
   ],
   loading: false,
   error: '',
@@ -64,7 +64,7 @@ describe('addEnrollmentModal', () => {
     const wrapper = mount(AddEnrollmentModal, {
       props: {
         section: {
-          id: 3,
+          id: '3',
           name: 'CS31A',
         },
       },
@@ -100,9 +100,9 @@ describe('addEnrollmentModal', () => {
     await wrapper.find('.btn-submit').trigger('click')
 
     expect(enrollStudent).toHaveBeenCalledWith({
-      studentId: 11,
-      sectionId: 3,
-      subjectId: 7,
+      studentId: '11',
+      sectionId: '3',
+      subjectId: '7',
       enrollmentType: 'Regular',
       academicYear: new Date().getFullYear().toString(),
       semester: '1st',
@@ -121,9 +121,9 @@ describe('addEnrollmentModal', () => {
     await wrapper.find('.btn-submit').trigger('click')
 
     expect(enrollStudent).toHaveBeenCalledWith({
-      studentId: 11,
-      sectionId: 3,
-      subjectId: 7,
+      studentId: '11',
+      sectionId: '3',
+      subjectId: '7',
       enrollmentType: 'Retake',
       academicYear: new Date().getFullYear().toString(),
       semester: '1st',

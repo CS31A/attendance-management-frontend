@@ -1,12 +1,11 @@
 import type { SessionResponseDto } from '@/api/sessions'
-import type { EntityId } from '@/types'
 import { describe, expect, it } from 'vitest'
 import { canStartSession } from '@/api/sessions'
 import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
 
 function createSession(overrides: Partial<SessionResponseDto> = {}): SessionResponseDto {
   return {
-    id: 1 as EntityId,
+    id: '1',
     status: 'not_started',
     sessionDate: '2026-04-19T00:00:00',
     ...overrides,

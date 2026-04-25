@@ -74,7 +74,7 @@ function createMockUserProfile() {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     instructorProfile: {
-      id: 1,
+      id: '1',
       firstname: 'Test',
       lastname: 'Instructor',
     },

@@ -360,14 +360,14 @@ describe('courseStore', () => {
 
   describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
     it('updateCourse finds course by number ID', async () => {
-      const existingCourse = createCourse({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedCourse = createCourse({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingCourse = createCourse({ id: '1', name: 'Old Name' })
+      const updatedCourse = createCourse({ id: '1', name: 'Updated Name' })
       vi.mocked(courseApi.updateCourse).mockResolvedValue({ data: updatedCourse } as never)
 
       const store = useCourseStore()
       store.courses = [existingCourse]
 
-      const result = await store.updateCourse(1 as EntityId, { name: 'Updated Name' } as CoursePayload)
+      const result = await store.updateCourse('1', { name: 'Updated Name' } as CoursePayload)
 
       expect(result).toEqual(updatedCourse)
       expect(store.courses[0]).toEqual(updatedCourse)
@@ -388,8 +388,8 @@ describe('courseStore', () => {
     })
 
     it('updateCourse finds course with mixed ID types (store has number, search with string)', async () => {
-      const existingCourse = createCourse({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedCourse = createCourse({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingCourse = createCourse({ id: '1', name: 'Old Name' })
+      const updatedCourse = createCourse({ id: '1', name: 'Updated Name' })
       vi.mocked(courseApi.updateCourse).mockResolvedValue({ data: updatedCourse } as never)
 
       const store = useCourseStore()
@@ -405,12 +405,12 @@ describe('courseStore', () => {
       vi.mocked(courseApi.deleteCourse).mockResolvedValue({} as never)
 
       const store = useCourseStore()
-      store.courses = [createCourse({ id: 1 as EntityId }), createCourse({ id: 2 as EntityId })]
+      store.courses = [createCourse({ id: '1' }), createCourse({ id: '2' })]
 
-      await store.deleteCourse(1 as EntityId)
+      await store.deleteCourse('1')
 
       expect(store.courses).toHaveLength(1)
-      expect(store.courses[0].id).toBe(2 as EntityId)
+      expect(store.courses[0].id).toBe('2')
     })
 
     it('deleteCourse removes course by string ID', async () => {
@@ -432,12 +432,12 @@ describe('courseStore', () => {
       vi.mocked(courseApi.deleteCourse).mockResolvedValue({} as never)
 
       const store = useCourseStore()
-      store.courses = [createCourse({ id: 1 as EntityId }), createCourse({ id: 2 as EntityId })]
+      store.courses = [createCourse({ id: '1' }), createCourse({ id: '2' })]
 
       await store.deleteCourse('1' as EntityId)
 
       expect(store.courses).toHaveLength(1)
-      expect(store.courses[0].id).toBe(2 as EntityId)
+      expect(store.courses[0].id).toBe('2')
     })
   })
 })

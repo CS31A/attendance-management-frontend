@@ -5,7 +5,7 @@ import StudentDetailView from '@/views/StudentDetailView.vue'
 
 const route = reactive({
   params: {
-    studentId: '1',
+    studentId: '550e8400-e29b-41d4-a716-446655440001',
   },
 })
 
@@ -18,22 +18,22 @@ const userStore = {
   getUsers: [
     {
       role: 'Student',
-      profileId: 1,
+      profileId: '550e8400-e29b-41d4-a716-446655440001',
       firstName: 'Ada',
       lastName: 'Lovelace',
       email: 'ada@example.com',
       createdAt: '2026-04-20T00:00:00Z',
-      sectionId: 7,
+      sectionId: '770e8400-e29b-41d4-a716-446655440007',
       isRegular: true,
     },
     {
       role: 'Student',
-      profileId: 2,
+      profileId: '550e8400-e29b-41d4-a716-446655440002',
       firstName: 'Grace',
       lastName: 'Hopper',
       email: 'grace@example.com',
       createdAt: '2026-04-21T00:00:00Z',
-      sectionId: 8,
+      sectionId: '770e8400-e29b-41d4-a716-446655440008',
       isRegular: false,
     },
   ],
@@ -84,7 +84,7 @@ function mountView() {
   return wrapper
 }
 
-function createReport(studentId: number, studentName: string) {
+function createReport(studentId: string, studentName: string) {
   return {
     studentId,
     studentName,
@@ -101,13 +101,13 @@ function createReport(studentId: number, studentName: string) {
 
 describe('student detail view', () => {
   beforeEach(() => {
-    route.params.studentId = '1'
+    route.params.studentId = '550e8400-e29b-41d4-a716-446655440001'
     push.mockReset()
     fetchUsers.mockReset()
     fetchStudentEnrollments.mockReset()
     fetchStudentAttendanceReport.mockReset()
 
-    fetchStudentEnrollments.mockImplementation(async (studentId: number) => [
+    fetchStudentEnrollments.mockImplementation(async (studentId: string) => [
       {
         enrollmentId: studentId,
         sectionName: `Section ${studentId}`,
@@ -116,8 +116,8 @@ describe('student detail view', () => {
       },
     ])
 
-    fetchStudentAttendanceReport.mockImplementation(async (studentId: number) =>
-      createReport(studentId, studentId === 1 ? 'Ada Lovelace' : 'Grace Hopper'),
+    fetchStudentAttendanceReport.mockImplementation(async (studentId: string) =>
+      createReport(studentId, studentId === '550e8400-e29b-41d4-a716-446655440001' ? 'Ada Lovelace' : 'Grace Hopper'),
     )
   })
 
@@ -131,20 +131,20 @@ describe('student detail view', () => {
     const wrapper = mountView()
     await flushPromises()
 
-    expect(fetchStudentEnrollments).toHaveBeenNthCalledWith(1, 1)
-    expect(fetchStudentAttendanceReport).toHaveBeenNthCalledWith(1, 1)
+    expect(fetchStudentEnrollments).toHaveBeenNthCalledWith(1, '550e8400-e29b-41d4-a716-446655440001')
+    expect(fetchStudentAttendanceReport).toHaveBeenNthCalledWith(1, '550e8400-e29b-41d4-a716-446655440001')
     expect(wrapper.text()).toContain('Ada Lovelace')
 
-    route.params.studentId = '2'
+    route.params.studentId = '550e8400-e29b-41d4-a716-446655440002'
     await flushPromises()
 
-    expect(fetchStudentEnrollments).toHaveBeenNthCalledWith(2, 2)
-    expect(fetchStudentAttendanceReport).toHaveBeenNthCalledWith(2, 2)
+    expect(fetchStudentEnrollments).toHaveBeenNthCalledWith(2, '550e8400-e29b-41d4-a716-446655440002')
+    expect(fetchStudentAttendanceReport).toHaveBeenNthCalledWith(2, '550e8400-e29b-41d4-a716-446655440002')
     expect(wrapper.text()).toContain('Grace Hopper')
   })
 
-  it('shows an invalid link error for non-positive or non-integer route ids', async () => {
-    route.params.studentId = '42.5'
+  it('shows an invalid link error for blank route ids', async () => {
+    route.params.studentId = '   '
 
     const wrapper = mountView()
     await flushPromises()

@@ -42,15 +42,15 @@ describe('enrollment store issue fixes', () => {
 
   it('dropStudent keeps API-refreshed section students when sectionId is provided', async () => {
     const store = useEnrollmentStore()
-    const droppedEnrollmentId: EntityId = 10
-    const sectionId: EntityId = 1
+    const droppedEnrollmentId: EntityId = '10'
+    const sectionId: EntityId = '1'
     const refreshedStudents: EnrollmentDto[] = [
-      { id: 1, enrollmentId: 10, firstName: 'Ada', lastName: 'Lovelace' },
-      { id: 2, enrollmentId: 11, firstName: 'Alan', lastName: 'Turing' },
+      { id: '1', enrollmentId: '10', firstName: 'Ada', lastName: 'Lovelace' },
+      { id: '2', enrollmentId: '11', firstName: 'Alan', lastName: 'Turing' },
     ]
 
     store.sectionStudents = [
-      { id: 1, enrollmentId: 10, firstName: 'Stale', lastName: 'Student' },
+      { id: '1', enrollmentId: '10', firstName: 'Stale', lastName: 'Student' },
     ]
 
     vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue(createAxiosResponse({}))
@@ -63,11 +63,11 @@ describe('enrollment store issue fixes', () => {
 
   it('dropStudent filters local state only when sectionId is not provided', async () => {
     const store = useEnrollmentStore()
-    const droppedEnrollmentId: EntityId = 22
+    const droppedEnrollmentId: EntityId = '22'
 
     store.sectionStudents = [
-      { id: 1, enrollmentId: 21, firstName: 'Grace', lastName: 'Hopper' },
-      { id: 2, enrollmentId: 22, firstName: 'Katherine', lastName: 'Johnson' },
+      { id: '1', enrollmentId: '21', firstName: 'Grace', lastName: 'Hopper' },
+      { id: '2', enrollmentId: '22', firstName: 'Katherine', lastName: 'Johnson' },
     ]
 
     vi.mocked(enrollmentsApi.dropStudent).mockResolvedValue(createAxiosResponse({}))
@@ -75,7 +75,7 @@ describe('enrollment store issue fixes', () => {
     await store.dropStudent(droppedEnrollmentId)
 
     expect(store.sectionStudents).toEqual([
-      { id: 1, enrollmentId: 21, firstName: 'Grace', lastName: 'Hopper' },
+      { id: '1', enrollmentId: '21', firstName: 'Grace', lastName: 'Hopper' },
     ])
   })
 
@@ -87,18 +87,18 @@ describe('enrollment store issue fixes', () => {
     vi.mocked(enrollmentsApi.getSectionStudents).mockImplementation(() => sectionDeferred.promise)
     vi.mocked(enrollmentsApi.getStudentEnrollments).mockImplementation(() => studentDeferred.promise)
 
-    const sectionRequest = store.fetchSectionStudents(1)
-    const studentRequest = store.fetchStudentEnrollments(2)
+    const sectionRequest = store.fetchSectionStudents('1')
+    const studentRequest = store.fetchStudentEnrollments('2')
 
     expect(store.isLoading).toBe(true)
 
-    sectionDeferred.resolve(createAxiosResponse([{ id: 101, enrollmentId: 901 }]))
+    sectionDeferred.resolve(createAxiosResponse([{ id: '101', enrollmentId: '901' }]))
     await sectionRequest
     expect(store.isLoading).toBe(true)
 
     studentDeferred.resolve(createAxiosResponse({
-      studentId: 2,
-      enrollments: [{ id: 102, enrollmentId: 902 }],
+      studentId: '2',
+      enrollments: [{ id: '102', enrollmentId: '902' }],
     }))
     await studentRequest
     expect(store.isLoading).toBe(false)
@@ -107,13 +107,13 @@ describe('enrollment store issue fixes', () => {
   describe('error paths', () => {
     it('dropStudent with sectionId preserves local state on API failure', async () => {
       const store = useEnrollmentStore()
-      const droppedEnrollmentId: EntityId = 10
-      const sectionId: EntityId = 1
+      const droppedEnrollmentId: EntityId = '10'
+      const sectionId: EntityId = '1'
       const apiError = new Error('Drop failed')
 
       const originalStudents = [
-        { id: 1, enrollmentId: 10, firstName: 'Ada', lastName: 'Lovelace' },
-        { id: 2, enrollmentId: 11, firstName: 'Alan', lastName: 'Turing' },
+        { id: '1', enrollmentId: '10', firstName: 'Ada', lastName: 'Lovelace' },
+        { id: '2', enrollmentId: '11', firstName: 'Alan', lastName: 'Turing' },
       ]
       store.sectionStudents = [...originalStudents]
 
@@ -126,12 +126,12 @@ describe('enrollment store issue fixes', () => {
 
     it('dropStudent without sectionId preserves local state on API failure', async () => {
       const store = useEnrollmentStore()
-      const droppedEnrollmentId: EntityId = 22
+      const droppedEnrollmentId: EntityId = '22'
       const apiError = new Error('Drop failed')
 
       const originalStudents = [
-        { id: 1, enrollmentId: 21, firstName: 'Grace', lastName: 'Hopper' },
-        { id: 2, enrollmentId: 22, firstName: 'Katherine', lastName: 'Johnson' },
+        { id: '1', enrollmentId: '21', firstName: 'Grace', lastName: 'Hopper' },
+        { id: '2', enrollmentId: '22', firstName: 'Katherine', lastName: 'Johnson' },
       ]
       store.sectionStudents = [...originalStudents]
 
@@ -144,12 +144,12 @@ describe('enrollment store issue fixes', () => {
 
     it('dropStudent with sectionId preserves local state when refresh API fails', async () => {
       const store = useEnrollmentStore()
-      const droppedEnrollmentId: EntityId = 10
-      const sectionId: EntityId = 1
+      const droppedEnrollmentId: EntityId = '10'
+      const sectionId: EntityId = '1'
       const refreshError = new Error('Refresh failed')
 
       const originalStudents = [
-        { id: 1, enrollmentId: 10, firstName: 'Ada', lastName: 'Lovelace' },
+        { id: '1', enrollmentId: '10', firstName: 'Ada', lastName: 'Lovelace' },
       ]
       store.sectionStudents = [...originalStudents]
 
@@ -167,7 +167,7 @@ describe('enrollment store issue fixes', () => {
 
       vi.mocked(enrollmentsApi.getSectionStudents).mockRejectedValue(apiError)
 
-      await expect(store.fetchSectionStudents(1)).rejects.toThrow('Fetch failed')
+      await expect(store.fetchSectionStudents('1')).rejects.toThrow('Fetch failed')
 
       expect(store.loading).toBe(false)
     })
@@ -178,7 +178,7 @@ describe('enrollment store issue fixes', () => {
 
       vi.mocked(enrollmentsApi.getStudentEnrollments).mockRejectedValue(apiError)
 
-      await expect(store.fetchStudentEnrollments(1)).rejects.toThrow('Fetch failed')
+      await expect(store.fetchStudentEnrollments('1')).rejects.toThrow('Fetch failed')
 
       expect(store.loading).toBe(false)
     })
@@ -191,8 +191,8 @@ describe('enrollment store issue fixes', () => {
       vi.mocked(enrollmentsApi.getSectionStudents).mockImplementation(() => sectionDeferred.promise)
       vi.mocked(enrollmentsApi.getStudentEnrollments).mockImplementation(() => studentDeferred.promise)
 
-      const sectionRequest = store.fetchSectionStudents(1)
-      const studentRequest = store.fetchStudentEnrollments(2)
+      const sectionRequest = store.fetchSectionStudents('1')
+      const studentRequest = store.fetchStudentEnrollments('2')
 
       expect(store.isLoading).toBe(true)
 
@@ -202,8 +202,8 @@ describe('enrollment store issue fixes', () => {
       expect(store.isLoading).toBe(true)
 
       studentDeferred.resolve(createAxiosResponse({
-        studentId: 2,
-        enrollments: [{ id: 102, enrollmentId: 902 }],
+        studentId: '2',
+        enrollments: [{ id: '102', enrollmentId: '902' }],
       }))
       await studentRequest
       expect(store.isLoading).toBe(false)

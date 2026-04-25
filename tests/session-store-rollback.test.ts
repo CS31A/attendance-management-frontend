@@ -49,7 +49,7 @@ const todaySessionDate = toLocalDateStart(new Date())
 
 function createSession(overrides: Partial<SessionResponseDto>): SessionResponseDto {
   return {
-    id: 1,
+    id: '1',
     status: 'not_started',
     sessionDate: todaySessionDate,
     rowVersion: 'row-version-1',
@@ -68,12 +68,12 @@ describe('session store rollback snapshots', () => {
   describe('success paths', () => {
     it('startSession updates session status to active on successful API call', async () => {
       const store = useSessionStore()
-      const updatedSession = createSession({ id: 11, status: 'active' })
+      const updatedSession = createSession({ id: '11', status: 'active' })
       vi.mocked(apiStartSession).mockResolvedValue(updatedSession)
 
-      store.sessions = [createSession({ id: 11, status: 'not_started' })]
+      store.sessions = [createSession({ id: '11', status: 'not_started' })]
 
-      const result = await store.startSession(11)
+      const result = await store.startSession('11')
 
       expect(result).toEqual(updatedSession)
       expect(store.sessions[0]?.status).toBe('active')
@@ -82,12 +82,12 @@ describe('session store rollback snapshots', () => {
 
     it('endSession updates session status to ended on successful API call', async () => {
       const store = useSessionStore()
-      const updatedSession = createSession({ id: 22, status: 'ended' })
+      const updatedSession = createSession({ id: '22', status: 'ended' })
       vi.mocked(apiEndSession).mockResolvedValue(updatedSession)
 
-      store.sessions = [createSession({ id: 22, status: 'active' })]
+      store.sessions = [createSession({ id: '22', status: 'active' })]
 
-      const result = await store.endSession(22)
+      const result = await store.endSession('22')
 
       expect(result).toEqual(updatedSession)
       expect(store.sessions[0]?.status).toBe('ended')
@@ -96,15 +96,15 @@ describe('session store rollback snapshots', () => {
 
     it('updateSessionRoom updates actualRoomId on successful API call', async () => {
       const store = useSessionStore()
-      const updatedSession = createSession({ id: 33, status: 'active', actualRoomId: 202 })
+      const updatedSession = createSession({ id: '33', status: 'active', actualRoomId: '202' })
       vi.mocked(apiUpdateSessionRoom).mockResolvedValue(updatedSession)
 
-      store.sessions = [createSession({ id: 33, status: 'active', actualRoomId: 101 })]
+      store.sessions = [createSession({ id: '33', status: 'active', actualRoomId: '101' })]
 
-      const result = await store.updateSessionRoom(33, { actualRoomId: 202 })
+      const result = await store.updateSessionRoom('33', { actualRoomId: '202' })
 
       expect(result).toEqual(updatedSession)
-      expect(store.sessions[0]?.actualRoomId).toBe(202)
+      expect(store.sessions[0]?.actualRoomId).toBe('202')
       expect(store.sessions[0]?.rowVersion).toBe(updatedSession.rowVersion)
     })
   })
@@ -114,10 +114,10 @@ describe('session store rollback snapshots', () => {
     const deferred = createDeferred<SessionResponseDto>()
     const apiError = new Error('start failed')
 
-    store.sessions = [createSession({ id: 11, status: 'not_started' })]
+    store.sessions = [createSession({ id: '11', status: 'not_started' })]
     vi.mocked(apiStartSession).mockImplementation(async () => await deferred.promise)
 
-    const startPromise = store.startSession(11)
+    const startPromise = store.startSession('11')
 
     store.sessions[0]!.status = 'active'
     deferred.reject(apiError)
@@ -131,10 +131,10 @@ describe('session store rollback snapshots', () => {
     const deferred = createDeferred<SessionResponseDto>()
     const apiError = new Error('end failed')
 
-    store.sessions = [createSession({ id: 22, status: 'active' })]
+    store.sessions = [createSession({ id: '22', status: 'active' })]
     vi.mocked(apiEndSession).mockImplementation(async () => await deferred.promise)
 
-    const endPromise = store.endSession(22)
+    const endPromise = store.endSession('22')
 
     store.sessions[0]!.status = 'ended'
     deferred.reject(apiError)
@@ -148,15 +148,15 @@ describe('session store rollback snapshots', () => {
     const deferred = createDeferred<SessionResponseDto>()
     const apiError = new Error('room update failed')
 
-    store.sessions = [createSession({ id: 33, status: 'active', actualRoomId: 101 })]
+    store.sessions = [createSession({ id: '33', status: 'active', actualRoomId: '101' })]
     vi.mocked(apiUpdateSessionRoom).mockImplementation(async () => await deferred.promise)
 
-    const updatePromise = store.updateSessionRoom(33, { actualRoomId: 202 })
+    const updatePromise = store.updateSessionRoom('33', { actualRoomId: '202' })
 
-    store.sessions[0]!.actualRoomId = 303
+    store.sessions[0]!.actualRoomId = '303'
     deferred.reject(apiError)
 
     await expect(updatePromise).rejects.toThrow('room update failed')
-    expect(store.sessions[0]?.actualRoomId).toBe(101)
+    expect(store.sessions[0]?.actualRoomId).toBe('101')
   })
 })

@@ -80,13 +80,13 @@ describe('userStore with EntityId (mixed types)', () => {
     it('handles users with number EntityId', async () => {
       const mockUsers = [
         {
-          userId: 1 as EntityId,
+          userId: '1',
           username: 'user1',
           email: 'user1@example.com',
           role: ROLES.INSTRUCTOR,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          instructorProfile: createMockApiUserProfile({ id: 101 as EntityId, firstname: 'User', lastname: 'One' }),
+          instructorProfile: createMockApiUserProfile({ id: '101', firstname: 'User', lastname: 'One' }),
         },
       ]
       vi.mocked(api.get).mockResolvedValue(createAxiosResponse(mockUsers) as never)
@@ -95,8 +95,8 @@ describe('userStore with EntityId (mixed types)', () => {
       await store.fetchUsers()
 
       expect(store.users).toHaveLength(1)
-      expect(store.users[0].userId).toBe(1 as EntityId)
-      expect(store.users[0].profileId).toBe(101 as EntityId)
+      expect(store.users[0].userId).toBe('1')
+      expect(store.users[0].profileId).toBe('101')
     })
 
     it('handles users with string UUID EntityId', async () => {
@@ -131,13 +131,13 @@ describe('userStore with EntityId (mixed types)', () => {
     it('handles mixed number and string EntityId in same response', async () => {
       const mockUsers = [
         {
-          userId: 1 as EntityId,
+          userId: '1',
           username: 'user1',
           email: 'user1@example.com',
           role: ROLES.ADMIN,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          adminProfile: createMockApiUserProfile({ id: 101 as EntityId, firstname: 'Admin', lastname: 'User' }),
+          adminProfile: createMockApiUserProfile({ id: '101', firstname: 'Admin', lastname: 'User' }),
         },
         {
           userId: '880e8400-e29b-41d4-a716-446655440003' as EntityId,
@@ -159,8 +159,8 @@ describe('userStore with EntityId (mixed types)', () => {
       await store.fetchUsers()
 
       expect(store.users).toHaveLength(2)
-      expect(store.users[0].userId).toBe(1 as EntityId)
-      expect(store.users[0].profileId).toBe(101 as EntityId)
+      expect(store.users[0].userId).toBe('1')
+      expect(store.users[0].profileId).toBe('101')
       expect(store.users[1].userId).toBe('880e8400-e29b-41d4-a716-446655440003' as EntityId)
       expect(store.users[1].profileId).toBe('990e8400-e29b-41d4-a716-446655440004' as EntityId)
     })
@@ -169,15 +169,15 @@ describe('userStore with EntityId (mixed types)', () => {
   describe('updateUser with EntityId', () => {
     it('updates user with number EntityId', async () => {
       const store = useUserStore()
-      store.users = [createMockApiUser({ userId: 1 as EntityId, role: ROLES.INSTRUCTOR, profileId: 101 as EntityId }) as ApiUser]
+      store.users = [createMockApiUser({ userId: '1', role: ROLES.INSTRUCTOR, profileId: '101' }) as ApiUser]
 
       const userData = { firstName: 'Updated' }
       vi.mocked(api.patch).mockResolvedValue({ data: { ...store.users[0], firstName: 'Updated' } } as never)
 
-      const result = await store.updateUser(1 as EntityId, userData)
+      const result = await store.updateUser('1', userData)
 
       expect(result.success).toBe(true)
-      expect(api.patch).toHaveBeenCalledWith('/instructors/101', userData)
+      expect(api.patch).toHaveBeenCalledWith('/account/admin/users/1', userData)
     })
 
     it('updates user with string UUID EntityId', async () => {
@@ -193,7 +193,7 @@ describe('userStore with EntityId (mixed types)', () => {
       const result = await store.updateUser(userId, userData)
 
       expect(result.success).toBe(true)
-      expect(api.patch).toHaveBeenCalledWith('/students/222e8400-e29b-41d4-a716-446655440006', userData)
+      expect(api.patch).toHaveBeenCalledWith('/account/admin/users/111e8400-e29b-41d4-a716-446655440005', userData)
     })
   })
 
@@ -202,9 +202,9 @@ describe('userStore with EntityId (mixed types)', () => {
       vi.mocked(api.patch).mockResolvedValue({} as never)
 
       const store = useUserStore()
-      store.users = [createMockApiUser({ userId: 2 as EntityId }) as ApiUser]
+      store.users = [createMockApiUser({ userId: '2' }) as ApiUser]
 
-      const result = await store.softDeleteUser(2 as EntityId)
+      const result = await store.softDeleteUser('2')
 
       expect(result.success).toBe(true)
       expect(store.users[0].isDeleted).toBe(true)
@@ -231,9 +231,9 @@ describe('userStore with EntityId (mixed types)', () => {
       vi.mocked(api.patch).mockResolvedValue({} as never)
 
       const store = useUserStore()
-      store.users = [createMockApiUser({ userId: 3 as EntityId, isDeleted: true, deletedAt: '2024-01-01' }) as ApiUser]
+      store.users = [createMockApiUser({ userId: '3', isDeleted: true, deletedAt: '2024-01-01' }) as ApiUser]
 
-      const result = await store.restoreUser(3 as EntityId)
+      const result = await store.restoreUser('3')
 
       expect(result.success).toBe(true)
       expect(store.users[0].isDeleted).toBe(false)
@@ -263,15 +263,15 @@ describe('userStore with EntityId (mixed types)', () => {
 
       const store = useUserStore()
       store.users = [
-        createMockApiUser({ userId: 4 as EntityId }) as ApiUser,
-        createMockApiUser({ userId: 5 as EntityId }) as ApiUser,
+        createMockApiUser({ userId: '4' }) as ApiUser,
+        createMockApiUser({ userId: '5' }) as ApiUser,
       ]
 
-      const result = await store.hardDeleteUser(4 as EntityId)
+      const result = await store.hardDeleteUser('4')
 
       expect(result.success).toBe(true)
       expect(store.users).toHaveLength(1)
-      expect(store.users[0].userId).toBe(5 as EntityId)
+      expect(store.users[0].userId).toBe('5')
       expect(api.delete).toHaveBeenCalledWith('/users/4')
     })
 
@@ -301,7 +301,7 @@ describe('userStore with EntityId (mixed types)', () => {
       const store = useUserStore()
       store.users = [
         createMockApiUser({
-          userId: 1 as EntityId,
+          userId: '1',
           firstName: 'John',
           lastName: 'Doe',
           email: 'john@example.com',
@@ -319,7 +319,7 @@ describe('userStore with EntityId (mixed types)', () => {
       const filtered = store.filteredUsers('john', 'All Roles')
 
       expect(filtered).toHaveLength(1)
-      expect(filtered[0].userId).toBe(1 as EntityId)
+      expect(filtered[0].userId).toBe('1')
       expect(filtered[0].firstName).toBe('John')
     })
   })

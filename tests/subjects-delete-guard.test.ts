@@ -19,7 +19,7 @@ function createConflictError(message: string) {
   return error
 }
 
-function createSubject(id = 1, name = 'Test Subject', code = 'SUB101'): SubjectDto {
+function createSubject(id = '1', name = 'Test Subject', code = 'SUB101'): SubjectDto {
   return { id, name, code }
 }
 
@@ -40,11 +40,11 @@ describe('subjects delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSubject(1)
+    await flow.handleDeleteSubject('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.subjectToDelete.value?.id).toBe(1)
+    expect(flow.subjectToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
@@ -60,7 +60,7 @@ describe('subjects delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSubject(1)
+    await flow.handleDeleteSubject('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.subjectToDelete.value).toBeNull()
@@ -81,7 +81,7 @@ describe('subjects delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSubject(1)
+    await flow.handleDeleteSubject('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.subjectToDelete.value).toBeNull()
@@ -102,7 +102,7 @@ describe('subjects delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSubject(1)
+    await flow.handleDeleteSubject('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.toast.message).toBe('Cannot delete: Subject has schedules assigned. Remove schedules first.')
@@ -122,11 +122,11 @@ describe('subjects delete guard regression', () => {
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteSubject(1)
+    await flow.handleDeleteSubject('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.subjectToDelete.value?.id).toBe(1)
+    expect(flow.subjectToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify subject dependencies. Server will validate the delete request.')
@@ -161,7 +161,7 @@ describe('subjects delete guard regression', () => {
     const onDeleteSuccess = vi.fn()
     const subjectsStore = {
       subjects: [subject],
-      deleteSubject: vi.fn().mockImplementation(async (id: number) => {
+      deleteSubject: vi.fn().mockImplementation(async (id: string) => {
         subjectsStore.subjects = subjectsStore.subjects.filter(current => current.id !== id)
       }),
     }
@@ -200,7 +200,7 @@ describe('subjects delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSubject(1)
+      await flow.handleDeleteSubject('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
       expect(flow.subjectToDelete.value).toBeNull()
@@ -228,11 +228,11 @@ describe('subjects delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSubject(1)
+      await flow.handleDeleteSubject('1')
 
       expect(flow.isDeletionChecking.value).toBe(false)
       expect(flow.showDeleteModal.value).toBe(true)
-      expect(flow.subjectToDelete.value?.id).toBe(1)
+      expect(flow.subjectToDelete.value?.id).toBe('1')
       expect(externalShowToast).toHaveBeenCalledWith(
         'Warning: Could not verify subject dependencies. Server will validate the delete request.',
         'warning',

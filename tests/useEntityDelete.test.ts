@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useEntityDelete } from '@/composables/useEntityDelete'
 
 interface TestEntity {
-  id: number
+  id: string
   name: string
 }
 
 function createTestOptions(overrides?: Record<string, unknown>) {
   const entities: TestEntity[] = [
-    { id: 1, name: 'Entity 1' },
-    { id: 2, name: 'Entity 2' },
+    { id: '1', name: 'Entity 1' },
+    { id: '2', name: 'Entity 2' },
   ]
 
   const findEntity = vi.fn(id => entities.find(e => e.id === id))
@@ -44,22 +44,22 @@ describe('useEntityDelete', () => {
     const options = createTestOptions()
     const { showDeleteModal, entityToDelete, openDelete } = useEntityDelete(options)
 
-    openDelete(1)
+    openDelete('1')
 
     expect(showDeleteModal.value).toBe(true)
-    expect(entityToDelete.value).toEqual({ id: 1, name: 'Entity 1' })
-    expect(options.findEntity).toHaveBeenCalledWith(1)
+    expect(entityToDelete.value).toEqual({ id: '1', name: 'Entity 1' })
+    expect(options.findEntity).toHaveBeenCalledWith('1')
   })
 
   it('no-ops when openDelete cannot find the entity', () => {
     const options = createTestOptions({ findEntity: vi.fn(() => undefined) })
     const { showDeleteModal, entityToDelete, openDelete } = useEntityDelete(options)
 
-    openDelete(999)
+    openDelete('999')
 
     expect(showDeleteModal.value).toBe(false)
     expect(entityToDelete.value).toBeNull()
-    expect(options.findEntity).toHaveBeenCalledWith(999)
+    expect(options.findEntity).toHaveBeenCalledWith('999')
   })
 
   it('no-ops when confirmDelete is called with no entity selected', async () => {
@@ -76,13 +76,13 @@ describe('useEntityDelete', () => {
     const options = createTestOptions()
     const { showDeleteModal, entityToDelete, isDeleting, openDelete, confirmDelete } = useEntityDelete(options)
 
-    openDelete(1)
+    openDelete('1')
     await confirmDelete()
 
-    expect(options.deleteEntity).toHaveBeenCalledWith(1)
-    expect(options.getSuccessMessage).toHaveBeenCalledWith({ id: 1, name: 'Entity 1' })
+    expect(options.deleteEntity).toHaveBeenCalledWith('1')
+    expect(options.getSuccessMessage).toHaveBeenCalledWith({ id: '1', name: 'Entity 1' })
     expect(options.showToast).toHaveBeenCalledWith('Entity 1 deleted successfully', 'success')
-    expect(options.onDeleteSuccess).toHaveBeenCalledWith({ id: 1, name: 'Entity 1' })
+    expect(options.onDeleteSuccess).toHaveBeenCalledWith({ id: '1', name: 'Entity 1' })
     expect(showDeleteModal.value).toBe(false)
     expect(entityToDelete.value).toBeNull()
     expect(isDeleting.value).toBe(false)
@@ -97,15 +97,15 @@ describe('useEntityDelete', () => {
     })
     const { showDeleteModal, entityToDelete, isDeleting, openDelete, confirmDelete } = useEntityDelete(options)
 
-    openDelete(1)
+    openDelete('1')
     await confirmDelete()
 
-    expect(options.deleteEntity).toHaveBeenCalledWith(1)
+    expect(options.deleteEntity).toHaveBeenCalledWith('1')
     expect(options.getErrorMessage).toHaveBeenCalledWith(deleteError)
     expect(options.showToast).toHaveBeenCalledWith('Delete failed', 'error')
     expect(options.onDeleteSuccess).not.toHaveBeenCalled()
     expect(showDeleteModal.value).toBe(true)
-    expect(entityToDelete.value).toEqual({ id: 1, name: 'Entity 1' })
+    expect(entityToDelete.value).toEqual({ id: '1', name: 'Entity 1' })
     expect(isDeleting.value).toBe(false)
   })
 
@@ -113,7 +113,7 @@ describe('useEntityDelete', () => {
     const options = createTestOptions()
     const { showDeleteModal, entityToDelete, openDelete, cancelDelete } = useEntityDelete(options)
 
-    openDelete(1)
+    openDelete('1')
     cancelDelete()
 
     expect(showDeleteModal.value).toBe(false)
@@ -134,7 +134,7 @@ describe('useEntityDelete', () => {
     })
     const { openDelete, confirmDelete } = useEntityDelete(options)
 
-    openDelete(1)
+    openDelete('1')
 
     const firstDelete = confirmDelete()
     await vi.advanceTimersByTimeAsync(0)

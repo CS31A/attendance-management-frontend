@@ -46,9 +46,9 @@ interface Deferred<T> {
 // Helper factory
 function createAttendanceRecord(overrides: Partial<AttendanceResponseDto> = {}): AttendanceResponseDto {
   return {
-    id: 1,
-    studentId: 1,
-    sessionId: 1,
+    id: '1',
+    studentId: '1',
+    sessionId: '1',
     status: 'present',
     ...overrides,
   }
@@ -56,9 +56,9 @@ function createAttendanceRecord(overrides: Partial<AttendanceResponseDto> = {}):
 
 function createSessionAttendanceRecord(overrides: Partial<SessionAttendanceResponseDto> = {}): SessionAttendanceResponseDto {
   return {
-    id: 1,
-    studentId: 1,
-    sessionId: 1,
+    id: '1',
+    studentId: '1',
+    sessionId: '1',
     status: 'present',
     ...overrides,
   }
@@ -86,9 +86,9 @@ describe('attendanceStore', () => {
     it('recordsByStatus filters by status', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 1, status: 'present' }),
-        createSessionAttendanceRecord({ id: 2, studentId: 2, status: 'absent' }),
-        createSessionAttendanceRecord({ id: 3, studentId: 3, status: 'present' }),
+        createSessionAttendanceRecord({ id: '1', studentId: '1', status: 'present' }),
+        createSessionAttendanceRecord({ id: '2', studentId: '2', status: 'absent' }),
+        createSessionAttendanceRecord({ id: '3', studentId: '3', status: 'present' }),
       ]
       expect(store.recordsByStatus('present')).toHaveLength(2)
       expect(store.recordsByStatus('absent')).toHaveLength(1)
@@ -98,9 +98,9 @@ describe('attendanceStore', () => {
     it('presentRecords returns present students', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, status: 'present' }),
-        createSessionAttendanceRecord({ id: 2, status: 'absent' }),
-        createSessionAttendanceRecord({ id: 3, status: 'present' }),
+        createSessionAttendanceRecord({ id: '1', status: 'present' }),
+        createSessionAttendanceRecord({ id: '2', status: 'absent' }),
+        createSessionAttendanceRecord({ id: '3', status: 'present' }),
       ]
       expect(store.presentRecords).toHaveLength(2)
       expect(store.presentRecords.every(r => r.status === 'present')).toBe(true)
@@ -109,9 +109,9 @@ describe('attendanceStore', () => {
     it('absentRecords returns absent students', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, status: 'present' }),
-        createSessionAttendanceRecord({ id: 2, status: 'absent' }),
-        createSessionAttendanceRecord({ id: 3, status: 'absent' }),
+        createSessionAttendanceRecord({ id: '1', status: 'present' }),
+        createSessionAttendanceRecord({ id: '2', status: 'absent' }),
+        createSessionAttendanceRecord({ id: '3', status: 'absent' }),
       ]
       expect(store.absentRecords).toHaveLength(2)
       expect(store.absentRecords.every(r => r.status === 'absent')).toBe(true)
@@ -120,9 +120,9 @@ describe('attendanceStore', () => {
     it('lateRecords returns late students', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, status: 'late' }),
-        createSessionAttendanceRecord({ id: 2, status: 'present' }),
-        createSessionAttendanceRecord({ id: 3, status: 'late' }),
+        createSessionAttendanceRecord({ id: '1', status: 'late' }),
+        createSessionAttendanceRecord({ id: '2', status: 'present' }),
+        createSessionAttendanceRecord({ id: '3', status: 'late' }),
       ]
       expect(store.lateRecords).toHaveLength(2)
       expect(store.lateRecords.every(r => r.status === 'late')).toBe(true)
@@ -131,9 +131,9 @@ describe('attendanceStore', () => {
     it('excusedRecords returns excused students', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, status: 'excused' }),
-        createSessionAttendanceRecord({ id: 2, status: 'present' }),
-        createSessionAttendanceRecord({ id: 3, status: 'excused' }),
+        createSessionAttendanceRecord({ id: '1', status: 'excused' }),
+        createSessionAttendanceRecord({ id: '2', status: 'present' }),
+        createSessionAttendanceRecord({ id: '3', status: 'excused' }),
       ]
       expect(store.excusedRecords).toHaveLength(2)
       expect(store.excusedRecords.every(r => r.status === 'excused')).toBe(true)
@@ -142,10 +142,10 @@ describe('attendanceStore', () => {
     it('sessionStats calculates statistics', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, status: 'present' }),
-        createSessionAttendanceRecord({ id: 2, status: 'absent' }),
-        createSessionAttendanceRecord({ id: 3, status: 'present' }),
-        createSessionAttendanceRecord({ id: 4, status: 'late' }),
+        createSessionAttendanceRecord({ id: '1', status: 'present' }),
+        createSessionAttendanceRecord({ id: '2', status: 'absent' }),
+        createSessionAttendanceRecord({ id: '3', status: 'present' }),
+        createSessionAttendanceRecord({ id: '4', status: 'late' }),
       ]
       const stats = store.sessionStats
       expect(stats).toBeDefined()
@@ -158,12 +158,12 @@ describe('attendanceStore', () => {
     it('getRecordByStudentId returns record by student ID', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 1 }),
-        createSessionAttendanceRecord({ id: 2, studentId: 2 }),
+        createSessionAttendanceRecord({ id: '1', studentId: '1' }),
+        createSessionAttendanceRecord({ id: '2', studentId: '2' }),
       ]
-      expect(store.getRecordByStudentId(1 as EntityId)).toEqual(store.sessionAttendance[0])
-      expect(store.getRecordByStudentId(2 as EntityId)).toEqual(store.sessionAttendance[1])
-      expect(store.getRecordByStudentId(99 as EntityId)).toBeUndefined()
+      expect(store.getRecordByStudentId('1')).toEqual(store.sessionAttendance[0])
+      expect(store.getRecordByStudentId('2')).toEqual(store.sessionAttendance[1])
+      expect(store.getRecordByStudentId('99')).toBeUndefined()
     })
 
     it('hasAttendanceData returns true when session has records', () => {
@@ -182,8 +182,8 @@ describe('attendanceStore', () => {
   describe('actions — success paths', () => {
     it('fetchAllAttendance stores API data in attendanceRecords', async () => {
       const mockRecords = [
-        createAttendanceRecord({ id: 1 }),
-        createAttendanceRecord({ id: 2 }),
+        createAttendanceRecord({ id: '1' }),
+        createAttendanceRecord({ id: '2' }),
       ]
       vi.mocked(apiFetchAllAttendance).mockResolvedValue(mockRecords)
 
@@ -196,11 +196,11 @@ describe('attendanceStore', () => {
     })
 
     it('fetchAttendanceById stores API data in currentRecord', async () => {
-      const mockRecord = createAttendanceRecord({ id: 1 })
+      const mockRecord = createAttendanceRecord({ id: '1' })
       vi.mocked(apiFetchAttendanceById).mockResolvedValue(mockRecord)
 
       const store = useAttendanceStore()
-      const result = await store.fetchAttendanceById(1 as EntityId)
+      const result = await store.fetchAttendanceById('1')
 
       expect(store.currentRecord).toEqual(mockRecord)
       expect(result).toEqual(mockRecord)
@@ -209,18 +209,18 @@ describe('attendanceStore', () => {
 
     it('fetchSessionAttendance stores session data, sets currentSessionId, clears stale syncWarning', async () => {
       const mockSessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, sessionId: 55 }),
-        createSessionAttendanceRecord({ id: 2, sessionId: 55 }),
+        createSessionAttendanceRecord({ id: '1', sessionId: '55' }),
+        createSessionAttendanceRecord({ id: '2', sessionId: '55' }),
       ]
       vi.mocked(apiFetchSessionAttendance).mockResolvedValue(mockSessionAttendance)
 
       const store = useAttendanceStore()
       store.syncWarning = 'stale warning'
 
-      const result = await store.fetchSessionAttendance(55 as EntityId)
+      const result = await store.fetchSessionAttendance('55')
 
       expect(store.sessionAttendance).toEqual(mockSessionAttendance)
-      expect(store.currentSessionId).toBe(55 as EntityId)
+      expect(store.currentSessionId).toBe('55')
       expect(store.syncWarning).toBeNull()
       expect(result).toEqual(mockSessionAttendance)
       expect(store.loading).toBe(false)
@@ -234,31 +234,31 @@ describe('attendanceStore', () => {
 
       const store = useAttendanceStore()
       store.sessionAttendance = [createSessionAttendanceRecord()]
-      store.currentSessionId = 1 as EntityId
+      store.currentSessionId = '1'
 
-      const result = await store.fetchSessionAttendance(55 as EntityId)
+      const result = await store.fetchSessionAttendance('55')
 
       expect(result).toEqual([])
       expect(store.sessionAttendance).toEqual([])
-      expect(store.currentSessionId).toBe(55 as EntityId)
+      expect(store.currentSessionId).toBe('55')
       expect(store.loading).toBe(false)
     })
 
     it('fetchStudentAttendance returns API data without mutating unrelated state', async () => {
       const mockRecords = [
-        createAttendanceRecord({ id: 1, studentId: 1 }),
-        createAttendanceRecord({ id: 2, studentId: 1 }),
+        createAttendanceRecord({ id: '1', studentId: '1' }),
+        createAttendanceRecord({ id: '2', studentId: '1' }),
       ]
       vi.mocked(apiFetchStudentAttendance).mockResolvedValue(mockRecords)
 
       const store = useAttendanceStore()
-      store.attendanceRecords = [createAttendanceRecord({ id: 99 })]
+      store.attendanceRecords = [createAttendanceRecord({ id: '99' })]
       store.sessionAttendance = [createSessionAttendanceRecord()]
 
-      const result = await store.fetchStudentAttendance(1 as EntityId)
+      const result = await store.fetchStudentAttendance('1')
 
       expect(result).toEqual(mockRecords)
-      expect(store.attendanceRecords).toEqual([createAttendanceRecord({ id: 99 })])
+      expect(store.attendanceRecords).toEqual([createAttendanceRecord({ id: '99' })])
       expect(store.sessionAttendance).toEqual([createSessionAttendanceRecord()])
       expect(store.loading).toBe(false)
     })
@@ -281,24 +281,24 @@ describe('attendanceStore', () => {
 
     it('submitAttendance updates local sessionAttendance when currentSessionId matches', async () => {
       vi.mocked(createAttendance).mockResolvedValue(
-        createAttendanceRecord({ id: 101, studentId: 1, sessionId: 55, status: 'present' }),
+        createAttendanceRecord({ id: '101', studentId: '1', sessionId: '55', status: 'present' }),
       )
       vi.mocked(updateAttendance).mockResolvedValue(
-        createAttendanceRecord({ id: 102, studentId: 2, sessionId: 55, status: 'absent' }),
+        createAttendanceRecord({ id: '102', studentId: '2', sessionId: '55', status: 'absent' }),
       )
 
       const store = useAttendanceStore()
-      store.currentSessionId = 55 as EntityId
+      store.currentSessionId = '55'
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 1, status: 'absent' }),
-        createSessionAttendanceRecord({ id: 2, studentId: 2, status: 'present' }),
+        createSessionAttendanceRecord({ id: '1', studentId: '1', status: 'absent' }),
+        createSessionAttendanceRecord({ id: '2', studentId: '2', status: 'present' }),
       ]
 
       const result = await store.submitAttendance({
-        sessionId: 55,
+        sessionId: '55',
         records: [
-          { studentId: 1, status: 'present' },
-          { id: 102, studentId: 2, status: 'absent' },
+          { studentId: '1', status: 'present' },
+          { id: '102', studentId: '2', status: 'absent' },
         ],
       })
 
@@ -309,18 +309,18 @@ describe('attendanceStore', () => {
     })
 
     it('updateAttendanceRecord updates matching local record and maps lowercase status to backend casing', async () => {
-      const updatedRecord = createAttendanceRecord({ id: 1, status: 'late' })
+      const updatedRecord = createAttendanceRecord({ id: '1', status: 'late' })
       vi.mocked(updateAttendance).mockResolvedValue(updatedRecord)
 
       const store = useAttendanceStore()
-      store.currentSessionId = 1 as EntityId
-      store.sessionAttendance = [createSessionAttendanceRecord({ id: 1, status: 'present' })]
+      store.currentSessionId = '1'
+      store.sessionAttendance = [createSessionAttendanceRecord({ id: '1', status: 'present' })]
 
-      const result = await store.updateAttendanceRecord(1 as EntityId, { status: 'late' })
+      const result = await store.updateAttendanceRecord('1', { status: 'late' })
 
       expect(result).toEqual(updatedRecord)
       expect(store.sessionAttendance[0].status).toBe('late')
-      expect(updateAttendance).toHaveBeenCalledWith(1 as EntityId, {
+      expect(updateAttendance).toHaveBeenCalledWith('1', {
         status: 'Late',
       })
       expect(store.loading).toBe(false)
@@ -331,14 +331,14 @@ describe('attendanceStore', () => {
 
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1 }),
-        createSessionAttendanceRecord({ id: 2 }),
+        createSessionAttendanceRecord({ id: '1' }),
+        createSessionAttendanceRecord({ id: '2' }),
       ]
 
-      await store.deleteAttendanceRecord(1 as EntityId)
+      await store.deleteAttendanceRecord('1')
 
       expect(store.sessionAttendance).toHaveLength(1)
-      expect(store.sessionAttendance[0].id).toBe(2)
+      expect(store.sessionAttendance[0].id).toBe('2')
       expect(store.loading).toBe(false)
     })
 
@@ -353,7 +353,7 @@ describe('attendanceStore', () => {
       const promise1 = store.fetchAllAttendance()
       expect(store.loading).toBe(true)
 
-      const promise2 = store.fetchAttendanceById(1 as EntityId)
+      const promise2 = store.fetchAttendanceById('1')
       expect(store.loading).toBe(true)
 
       deferred1.resolve([createAttendanceRecord()])
@@ -369,9 +369,9 @@ describe('attendanceStore', () => {
   describe('local-only actions', () => {
     it('updateLocalStatus updates record status locally', () => {
       const store = useAttendanceStore()
-      store.sessionAttendance = [createSessionAttendanceRecord({ id: 1, status: 'present' })]
+      store.sessionAttendance = [createSessionAttendanceRecord({ id: '1', status: 'present' })]
 
-      store.updateLocalStatus(1 as EntityId, 'absent')
+      store.updateLocalStatus('1', 'absent')
 
       expect(store.sessionAttendance[0].status).toBe('absent')
     })
@@ -379,9 +379,9 @@ describe('attendanceStore', () => {
     it('markAllAs sets all records to specified status', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, status: 'present' }),
-        createSessionAttendanceRecord({ id: 2, status: 'absent' }),
-        createSessionAttendanceRecord({ id: 3, status: 'late' }),
+        createSessionAttendanceRecord({ id: '1', status: 'present' }),
+        createSessionAttendanceRecord({ id: '2', status: 'absent' }),
+        createSessionAttendanceRecord({ id: '3', status: 'late' }),
       ]
 
       store.markAllAs('present')
@@ -392,7 +392,7 @@ describe('attendanceStore', () => {
     it('clearSessionAttendance clears session data and currentSessionId', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [createSessionAttendanceRecord()]
-      store.currentSessionId = 1 as EntityId
+      store.currentSessionId = '1'
 
       store.clearSessionAttendance()
 
@@ -424,7 +424,7 @@ describe('attendanceStore', () => {
       store.sessionAttendance = [createSessionAttendanceRecord()]
       store.currentRecord = createAttendanceRecord()
       store.summary = { total: 10 } as AttendanceSummaryDto
-      store.currentSessionId = 1 as EntityId
+      store.currentSessionId = '1'
       store.syncWarning = 'warning'
 
       store.resetStore()
@@ -441,13 +441,13 @@ describe('attendanceStore', () => {
 
   describe('entityId mixed type handling', () => {
     it('applies updates by ID match (number vs string)', async () => {
-      const updatedRecord = createAttendanceRecord({ id: '1' as unknown as number, studentId: 10, sessionId: 100, status: 'present' })
+      const updatedRecord = createAttendanceRecord({ id: '1', studentId: '10', sessionId: '100', status: 'present' })
       vi.mocked(updateAttendance).mockResolvedValue(updatedRecord)
 
       const store = useAttendanceStore()
-      store.currentSessionId = 100 as EntityId
+      store.currentSessionId = '100'
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 10, sessionId: 100, status: 'absent' }),
+        createSessionAttendanceRecord({ id: '1', studentId: '10', sessionId: '100', status: 'absent' }),
       ]
 
       // Update with string ID should match number ID via entityIdsMatch
@@ -457,22 +457,22 @@ describe('attendanceStore', () => {
     })
 
     it('applies updates by studentId match (number vs string)', async () => {
-      const updatedRecord = createAttendanceRecord({ id: 2, studentId: '10' as unknown as number, sessionId: 100, status: 'present' })
+      const updatedRecord = createAttendanceRecord({ id: '2', studentId: '10', sessionId: '100', status: 'present' })
       vi.mocked(createAttendance).mockResolvedValue(updatedRecord)
       vi.mocked(apiFetchSessionAttendance).mockResolvedValue([
-        createSessionAttendanceRecord({ id: 1, studentId: 10, sessionId: 100, status: 'present' }),
+        createSessionAttendanceRecord({ id: '1', studentId: '10', sessionId: '100', status: 'present' }),
       ])
 
       const store = useAttendanceStore()
-      store.currentSessionId = 100 as EntityId
+      store.currentSessionId = '100'
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 10, sessionId: 100, status: 'absent' }),
+        createSessionAttendanceRecord({ id: '1', studentId: '10', sessionId: '100', status: 'absent' }),
       ]
 
       // Submit with string studentId should match number studentId via entityIdsMatch
       await store.submitAttendance({
-        sessionId: 100,
-        records: [{ studentId: '10' as unknown as number, status: 'present' }],
+        sessionId: '100',
+        records: [{ studentId: '10', status: 'present' }],
       })
 
       // Background refresh will update the state
@@ -483,21 +483,21 @@ describe('attendanceStore', () => {
     it('finds attendance by mixed ID types', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 10 }),
-        createSessionAttendanceRecord({ id: 2, studentId: 20 }),
+        createSessionAttendanceRecord({ id: '1', studentId: '10' }),
+        createSessionAttendanceRecord({ id: '2', studentId: '20' }),
       ]
 
       // Find by string ID when stored as number
       expect(store.getRecordByStudentId('10' as unknown as EntityId)).toEqual(store.sessionAttendance[0])
       // Find by number ID when stored as number
-      expect(store.getRecordByStudentId(20 as EntityId)).toEqual(store.sessionAttendance[1])
+      expect(store.getRecordByStudentId('20')).toEqual(store.sessionAttendance[1])
     })
 
     it('updateLocalStatus works with mixed ID types', () => {
       const store = useAttendanceStore()
       store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: 1, studentId: 1, status: 'present' }),
-        createSessionAttendanceRecord({ id: 2, studentId: 2, status: 'absent' }),
+        createSessionAttendanceRecord({ id: '1', studentId: '1', status: 'present' }),
+        createSessionAttendanceRecord({ id: '2', studentId: '2', status: 'absent' }),
       ]
 
       // Update with string studentId should match number studentId via entityIdsMatch
@@ -510,9 +510,9 @@ describe('attendanceStore', () => {
     it('handles string IDs in mock data', () => {
       const store = useAttendanceStore()
       const stringIdRecord = createSessionAttendanceRecord({
-        id: 'uuid-123' as unknown as number,
-        studentId: 'student-uuid' as unknown as number,
-        sessionId: 'session-uuid' as unknown as number,
+        id: 'uuid-123',
+        studentId: 'student-uuid',
+        sessionId: 'session-uuid',
         status: 'present',
       })
 
@@ -540,7 +540,7 @@ describe('attendanceStore', () => {
 
       const store = useAttendanceStore()
 
-      await expect(store.fetchAttendanceById(1 as EntityId)).rejects.toThrow(error)
+      await expect(store.fetchAttendanceById('1')).rejects.toThrow(error)
       expect(store.loading).toBe(false)
     })
 
@@ -550,7 +550,7 @@ describe('attendanceStore', () => {
 
       const store = useAttendanceStore()
 
-      await expect(store.fetchStudentAttendance(1 as EntityId)).rejects.toThrow(error)
+      await expect(store.fetchStudentAttendance('1')).rejects.toThrow(error)
       expect(store.loading).toBe(false)
     })
 
@@ -571,14 +571,14 @@ describe('attendanceStore', () => {
       vi.mocked(getErrorStatus).mockReturnValue(500)
 
       const store = useAttendanceStore()
-      const originalAttendance = [createSessionAttendanceRecord({ id: 1 })]
+      const originalAttendance = [createSessionAttendanceRecord({ id: '1' })]
       store.sessionAttendance = [...originalAttendance]
-      store.currentSessionId = 1 as EntityId
+      store.currentSessionId = '1'
 
-      await expect(store.fetchSessionAttendance(55 as EntityId)).rejects.toThrow(error)
+      await expect(store.fetchSessionAttendance('55')).rejects.toThrow(error)
 
       // currentSessionId is set before the try block, so it will be updated
-      expect(store.currentSessionId).toBe(55 as EntityId)
+      expect(store.currentSessionId).toBe('55')
       // sessionAttendance should be preserved on non-404 error
       expect(store.sessionAttendance).toEqual(originalAttendance)
       expect(store.loading).toBe(false)
@@ -589,11 +589,11 @@ describe('attendanceStore', () => {
       vi.mocked(updateAttendance).mockRejectedValue(error)
 
       const store = useAttendanceStore()
-      const originalRecord = createSessionAttendanceRecord({ id: 1, status: 'present' })
+      const originalRecord = createSessionAttendanceRecord({ id: '1', status: 'present' })
       store.sessionAttendance = [originalRecord]
-      store.currentSessionId = 1 as EntityId
+      store.currentSessionId = '1'
 
-      await expect(store.updateAttendanceRecord(1 as EntityId, { status: 'late' })).rejects.toThrow(error)
+      await expect(store.updateAttendanceRecord('1', { status: 'late' })).rejects.toThrow(error)
 
       expect(store.sessionAttendance[0]).toEqual(originalRecord)
       expect(store.loading).toBe(false)
@@ -605,12 +605,12 @@ describe('attendanceStore', () => {
 
       const store = useAttendanceStore()
       const originalRecords = [
-        createSessionAttendanceRecord({ id: 1 }),
-        createSessionAttendanceRecord({ id: 2 }),
+        createSessionAttendanceRecord({ id: '1' }),
+        createSessionAttendanceRecord({ id: '2' }),
       ]
       store.sessionAttendance = [...originalRecords]
 
-      await expect(store.deleteAttendanceRecord(1 as EntityId)).rejects.toThrow(error)
+      await expect(store.deleteAttendanceRecord('1')).rejects.toThrow(error)
 
       expect(store.sessionAttendance).toEqual(originalRecords)
       expect(store.loading).toBe(false)
@@ -622,11 +622,11 @@ describe('attendanceStore', () => {
       vi.mocked(updateAttendance).mockResolvedValue(createAttendanceRecord())
 
       const store = useAttendanceStore()
-      store.currentSessionId = 55 as EntityId
+      store.currentSessionId = '55'
 
       await store.submitAttendance({
-        sessionId: 55,
-        records: [{ studentId: 1, status: 'present' }],
+        sessionId: '55',
+        records: [{ studentId: '1', status: 'present' }],
       })
 
       // Wait for background refresh to complete
@@ -641,17 +641,17 @@ describe('attendanceStore', () => {
       vi.mocked(updateAttendance).mockResolvedValue(createAttendanceRecord())
 
       const store = useAttendanceStore()
-      store.currentSessionId = 55 as EntityId
+      store.currentSessionId = '55'
 
       const submitPromise = store.submitAttendance({
-        sessionId: 55,
-        records: [{ studentId: 1, status: 'present' }],
+        sessionId: '55',
+        records: [{ studentId: '1', status: 'present' }],
       })
 
       // Change session before refresh completes
-      store.currentSessionId = 99 as EntityId
+      store.currentSessionId = '99'
 
-      deferred.resolve([createSessionAttendanceRecord({ sessionId: 99 })])
+      deferred.resolve([createSessionAttendanceRecord({ sessionId: '99' })])
       await submitPromise
 
       // Session attendance should not be updated since session changed
@@ -659,17 +659,17 @@ describe('attendanceStore', () => {
     })
 
     it('updateAttendanceRecord with missing local record returns API result without calling applyAttendanceUpdates', async () => {
-      const updatedRecord = createAttendanceRecord({ id: 99, studentId: 99, sessionId: 99, status: 'late' })
+      const updatedRecord = createAttendanceRecord({ id: '99', studentId: '99', sessionId: '99', status: 'late' })
       vi.mocked(updateAttendance).mockResolvedValue(updatedRecord)
       // Mock background refresh to succeed without changing state
       vi.mocked(apiFetchSessionAttendance).mockResolvedValue([])
 
       const store = useAttendanceStore()
-      const originalAttendance = [createSessionAttendanceRecord({ id: 1, studentId: 1, sessionId: 1 })]
+      const originalAttendance = [createSessionAttendanceRecord({ id: '1', studentId: '1', sessionId: '1' })]
       store.sessionAttendance = [...originalAttendance]
-      store.currentSessionId = 1 as EntityId
+      store.currentSessionId = '1'
 
-      const result = await store.updateAttendanceRecord(99 as EntityId, { status: 'late' })
+      const result = await store.updateAttendanceRecord('99', { status: 'late' })
 
       expect(result).toEqual(updatedRecord)
       // Since recordIndex === -1 (no local match), applyAttendanceUpdates is not called

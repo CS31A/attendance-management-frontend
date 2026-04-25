@@ -282,14 +282,14 @@ describe('subjectStore', () => {
 
   describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
     it('updateSubject finds subject by number ID', async () => {
-      const existingSubject = createSubject({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedSubject = createSubject({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingSubject = createSubject({ id: '1', name: 'Old Name' })
+      const updatedSubject = createSubject({ id: '1', name: 'Updated Name' })
       vi.mocked(subjectApi.updateSubject).mockResolvedValue({ data: updatedSubject } as never)
 
       const store = useSubjectStore()
       store.subjects = [existingSubject]
 
-      const result = await store.updateSubject(1 as EntityId, { name: 'Updated Name' } as SubjectPayload)
+      const result = await store.updateSubject('1', { name: 'Updated Name' } as SubjectPayload)
 
       expect(result).toEqual(updatedSubject)
       expect(store.subjects[0]).toEqual(updatedSubject)
@@ -310,8 +310,8 @@ describe('subjectStore', () => {
     })
 
     it('updateSubject finds subject with mixed ID types (store has number, search with string)', async () => {
-      const existingSubject = createSubject({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedSubject = createSubject({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingSubject = createSubject({ id: '1', name: 'Old Name' })
+      const updatedSubject = createSubject({ id: '1', name: 'Updated Name' })
       vi.mocked(subjectApi.updateSubject).mockResolvedValue({ data: updatedSubject } as never)
 
       const store = useSubjectStore()
@@ -327,12 +327,12 @@ describe('subjectStore', () => {
       vi.mocked(subjectApi.deleteSubject).mockResolvedValue({} as never)
 
       const store = useSubjectStore()
-      store.subjects = [createSubject({ id: 1 as EntityId }), createSubject({ id: 2 as EntityId })]
+      store.subjects = [createSubject({ id: '1' }), createSubject({ id: '2' })]
 
-      await store.deleteSubject(1 as EntityId)
+      await store.deleteSubject('1')
 
       expect(store.subjects).toHaveLength(1)
-      expect(store.subjects[0].id).toBe(2 as EntityId)
+      expect(store.subjects[0].id).toBe('2')
     })
 
     it('deleteSubject removes subject by string ID', async () => {
@@ -354,12 +354,12 @@ describe('subjectStore', () => {
       vi.mocked(subjectApi.deleteSubject).mockResolvedValue({} as never)
 
       const store = useSubjectStore()
-      store.subjects = [createSubject({ id: 1 as EntityId }), createSubject({ id: 2 as EntityId })]
+      store.subjects = [createSubject({ id: '1' }), createSubject({ id: '2' })]
 
       await store.deleteSubject('1' as EntityId)
 
       expect(store.subjects).toHaveLength(1)
-      expect(store.subjects[0].id).toBe(2 as EntityId)
+      expect(store.subjects[0].id).toBe('2')
     })
   })
 })

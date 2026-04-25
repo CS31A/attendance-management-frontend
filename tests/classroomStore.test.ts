@@ -361,14 +361,14 @@ describe('classroomStore', () => {
 
   describe('entityId compatibility (Requirements 11.1, 11.4, 11.5, 11.8)', () => {
     it('updateClassroom finds classroom by number ID', async () => {
-      const existingClassroom = createClassroom({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedClassroom = createClassroom({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingClassroom = createClassroom({ id: '1', name: 'Old Name' })
+      const updatedClassroom = createClassroom({ id: '1', name: 'Updated Name' })
       vi.mocked(classroomApi.updateClassroom).mockResolvedValue({ data: updatedClassroom } as never)
 
       const store = useClassroomStore()
       store.classrooms = [existingClassroom]
 
-      const result = await store.updateClassroom(1 as EntityId, { name: 'Updated Name' } as ClassroomPayload)
+      const result = await store.updateClassroom('1', { name: 'Updated Name' } as ClassroomPayload)
 
       expect(result).toEqual(updatedClassroom)
       expect(store.classrooms[0]).toEqual(updatedClassroom)
@@ -389,8 +389,8 @@ describe('classroomStore', () => {
     })
 
     it('updateClassroom finds classroom with mixed ID types (store has number, search with string)', async () => {
-      const existingClassroom = createClassroom({ id: 1 as EntityId, name: 'Old Name' })
-      const updatedClassroom = createClassroom({ id: 1 as EntityId, name: 'Updated Name' })
+      const existingClassroom = createClassroom({ id: '1', name: 'Old Name' })
+      const updatedClassroom = createClassroom({ id: '1', name: 'Updated Name' })
       vi.mocked(classroomApi.updateClassroom).mockResolvedValue({ data: updatedClassroom } as never)
 
       const store = useClassroomStore()
@@ -406,12 +406,12 @@ describe('classroomStore', () => {
       vi.mocked(classroomApi.deleteClassroom).mockResolvedValue({} as never)
 
       const store = useClassroomStore()
-      store.classrooms = [createClassroom({ id: 1 as EntityId }), createClassroom({ id: 2 as EntityId })]
+      store.classrooms = [createClassroom({ id: '1' }), createClassroom({ id: '2' })]
 
-      await store.deleteClassroom(1 as EntityId)
+      await store.deleteClassroom('1')
 
       expect(store.classrooms).toHaveLength(1)
-      expect(store.classrooms[0].id).toBe(2 as EntityId)
+      expect(store.classrooms[0].id).toBe('2')
     })
 
     it('deleteClassroom removes classroom by string ID', async () => {
@@ -433,12 +433,12 @@ describe('classroomStore', () => {
       vi.mocked(classroomApi.deleteClassroom).mockResolvedValue({} as never)
 
       const store = useClassroomStore()
-      store.classrooms = [createClassroom({ id: 1 as EntityId }), createClassroom({ id: 2 as EntityId })]
+      store.classrooms = [createClassroom({ id: '1' }), createClassroom({ id: '2' })]
 
       await store.deleteClassroom('1' as EntityId)
 
       expect(store.classrooms).toHaveLength(1)
-      expect(store.classrooms[0].id).toBe(2 as EntityId)
+      expect(store.classrooms[0].id).toBe('2')
     })
   })
 })

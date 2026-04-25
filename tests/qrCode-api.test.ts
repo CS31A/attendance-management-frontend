@@ -1,5 +1,5 @@
-import type { EntityId } from '@/types'
 import type { QrCodePayload, QrCodeResponseDto } from '@/api/qrCode'
+import type { EntityId } from '@/types'
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -16,14 +16,14 @@ describe('qrCode API module with EntityId', () => {
   describe('generateQrCode', () => {
     it('generates QR code with EntityId sessionId (number)', async () => {
       const payload: QrCodePayload = {
-        sessionId: 123 as EntityId,
+        sessionId: '123',
         expirationMinutes: 30,
         maxUsage: 10,
       }
 
       const mockResponse: QrCodeResponseDto = {
-        id: 456 as EntityId,
-        qrCodeId: 456 as EntityId,
+        id: '456',
+        qrCodeId: '456',
         qrHash: 'abc123def456',
         qrCodeImage: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         generatedAt: '2024-01-01T00:00:00Z',
@@ -37,8 +37,8 @@ describe('qrCode API module with EntityId', () => {
       const result = await qrCodeApi.generateQrCode(payload)
 
       expect(api.post).toHaveBeenCalledWith('/QrCode/generate', payload)
-      expect(result.id).toBe(456 as EntityId)
-      expect(result.qrCodeId).toBe(456 as EntityId)
+      expect(result.id).toBe('456')
+      expect(result.qrCodeId).toBe('456')
       expect(result.qrHash).toBe('abc123def456')
       expect(result.qrCodeImageUrl).toBe('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
     })
@@ -71,11 +71,11 @@ describe('qrCode API module with EntityId', () => {
 
     it('converts base64 image to data URL', async () => {
       const payload: QrCodePayload = {
-        sessionId: 1 as EntityId,
+        sessionId: '1',
       }
 
       const mockResponse: QrCodeResponseDto = {
-        id: 1 as EntityId,
+        id: '1',
         qrCodeImage: 'base64ImageData',
       }
 
@@ -89,11 +89,11 @@ describe('qrCode API module with EntityId', () => {
 
   describe('getQrCodeById', () => {
     it('fetches QR code by EntityId (number)', async () => {
-      const qrCodeId = 123 as EntityId
+      const qrCodeId = '123'
 
       const mockResponse: QrCodeResponseDto = {
-        id: 123 as EntityId,
-        qrCodeId: 123 as EntityId,
+        id: '123',
+        qrCodeId: '123',
         qrHash: 'abc123',
         isActive: true,
         usageCount: 5,
@@ -104,8 +104,8 @@ describe('qrCode API module with EntityId', () => {
       const result = await qrCodeApi.getQrCodeById(qrCodeId)
 
       expect(api.get).toHaveBeenCalledWith('/QrCode/123')
-      expect(result.id).toBe(123 as EntityId)
-      expect(result.qrCodeId).toBe(123 as EntityId)
+      expect(result.id).toBe('123')
+      expect(result.qrCodeId).toBe('123')
       expect(result.qrHash).toBe('abc123')
     })
 
@@ -132,10 +132,10 @@ describe('qrCode API module with EntityId', () => {
 
   describe('fetchQrCode', () => {
     it('is an alias for getQrCodeById', async () => {
-      const qrCodeId = 456 as EntityId
+      const qrCodeId = '456'
 
       const mockResponse: QrCodeResponseDto = {
-        id: 456 as EntityId,
+        id: '456',
         qrHash: 'test123',
       }
 
@@ -144,18 +144,18 @@ describe('qrCode API module with EntityId', () => {
       const result = await qrCodeApi.fetchQrCode(qrCodeId)
 
       expect(api.get).toHaveBeenCalledWith('/QrCode/456')
-      expect(result.id).toBe(456 as EntityId)
+      expect(result.id).toBe('456')
     })
   })
 
   describe('revokeQrCodeById', () => {
     it('revokes QR code by EntityId (number)', async () => {
-      const qrCodeId = 789 as EntityId
+      const qrCodeId = '789'
       const payload = { reason: 'Session ended' }
 
       const mockResponse: QrCodeResponseDto = {
-        id: 789 as EntityId,
-        qrCodeId: 789 as EntityId,
+        id: '789',
+        qrCodeId: '789',
         qrHash: 'abc123',
         isActive: false,
       }
@@ -165,7 +165,7 @@ describe('qrCode API module with EntityId', () => {
       const result = await qrCodeApi.revokeQrCodeById(qrCodeId, payload)
 
       expect(api.patch).toHaveBeenCalledWith('/QrCode/789/revoke', payload)
-      expect(result.id).toBe(789 as EntityId)
+      expect(result.id).toBe('789')
       expect(result.isActive).toBe(false)
     })
 
@@ -190,10 +190,10 @@ describe('qrCode API module with EntityId', () => {
     })
 
     it('revokes QR code without payload', async () => {
-      const qrCodeId = 100 as EntityId
+      const qrCodeId = '100'
 
       const mockResponse: QrCodeResponseDto = {
-        id: 100 as EntityId,
+        id: '100',
         isActive: false,
       }
 
@@ -208,11 +208,11 @@ describe('qrCode API module with EntityId', () => {
 
   describe('reactivateQrCodeById', () => {
     it('reactivates QR code by EntityId (number)', async () => {
-      const qrCodeId = 200 as EntityId
+      const qrCodeId = '200'
 
       const mockResponse: QrCodeResponseDto = {
-        id: 200 as EntityId,
-        qrCodeId: 200 as EntityId,
+        id: '200',
+        qrCodeId: '200',
         qrHash: 'reactivated123',
         isActive: true,
       }
@@ -222,7 +222,7 @@ describe('qrCode API module with EntityId', () => {
       const result = await qrCodeApi.reactivateQrCodeById(qrCodeId)
 
       expect(api.patch).toHaveBeenCalledWith('/QrCode/200/reactivate')
-      expect(result.id).toBe(200 as EntityId)
+      expect(result.id).toBe('200')
       expect(result.isActive).toBe(true)
     })
 
@@ -248,18 +248,18 @@ describe('qrCode API module with EntityId', () => {
 
   describe('getSessionQrCodes', () => {
     it('fetches QR codes for session with EntityId (number)', async () => {
-      const sessionId = 300 as EntityId
+      const sessionId = '300'
 
       const mockResponse: QrCodeResponseDto[] = [
         {
-          id: 1 as EntityId,
-          qrCodeId: 1 as EntityId,
+          id: '1',
+          qrCodeId: '1',
           qrHash: 'qr1',
           isActive: true,
         },
         {
-          id: 2 as EntityId,
-          qrCodeId: 2 as EntityId,
+          id: '2',
+          qrCodeId: '2',
           qrHash: 'qr2',
           isActive: false,
         },
@@ -271,8 +271,8 @@ describe('qrCode API module with EntityId', () => {
 
       expect(api.get).toHaveBeenCalledWith('/QrCode/session/300')
       expect(result).toHaveLength(2)
-      expect(result[0].id).toBe(1 as EntityId)
-      expect(result[1].id).toBe(2 as EntityId)
+      expect(result[0].id).toBe('1')
+      expect(result[1].id).toBe('2')
     })
 
     it('fetches QR codes for session with EntityId (string UUID)', async () => {
@@ -299,7 +299,7 @@ describe('qrCode API module with EntityId', () => {
 
   describe('getScanHistoryById', () => {
     it('fetches scan history by EntityId (number)', async () => {
-      const qrCodeId = 400 as EntityId
+      const qrCodeId = '400'
 
       const mockResponse = {
         qrCodeInfo: {
@@ -316,8 +316,8 @@ describe('qrCode API module with EntityId', () => {
         scans: {
           items: [
             {
-              id: 1 as EntityId,
-              studentId: 100 as EntityId,
+              id: '1',
+              studentId: '100',
               studentName: 'John Doe',
               scannedAt: '2024-01-01T00:10:00Z',
               status: 'present',
@@ -335,7 +335,7 @@ describe('qrCode API module with EntityId', () => {
       expect(result.qrCodeInfo?.scheduleTitle).toBe('Math 101')
       expect(result.scanStatistics?.totalScans).toBe(10)
       expect(result.scans?.items).toHaveLength(1)
-      expect(result.scans?.items?.[0].studentId).toBe(100 as EntityId)
+      expect(result.scans?.items?.[0].studentId).toBe('100')
     })
 
     it('fetches scan history by EntityId (string UUID) with pagination', async () => {
@@ -377,19 +377,19 @@ describe('qrCode API module with EntityId', () => {
     it('handles mixed number and string EntityId in same test', async () => {
       // Generate with number ID
       const generatePayload: QrCodePayload = {
-        sessionId: 500 as EntityId,
+        sessionId: '500',
       }
 
       const generateResponse: QrCodeResponseDto = {
-        id: 600 as EntityId,
-        qrCodeId: 600 as EntityId,
+        id: '600',
+        qrCodeId: '600',
         qrHash: 'mixed123',
       }
 
       vi.mocked(api.post).mockResolvedValue({ data: generateResponse } as never)
 
       const generated = await qrCodeApi.generateQrCode(generatePayload)
-      expect(generated.id).toBe(600 as EntityId)
+      expect(generated.id).toBe('600')
 
       // Fetch with string UUID
       const fetchId = '555e8400-e29b-41d4-a716-446655440009' as EntityId

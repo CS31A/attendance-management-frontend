@@ -23,7 +23,7 @@ function createConflictError(message: string) {
   return error
 }
 
-function createSection(id = 1, name = 'Test Section'): SectionDto {
+function createSection(id = '1', name = 'Test Section'): SectionDto {
   return { id, name }
 }
 
@@ -48,11 +48,11 @@ describe('sections delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSection(1)
+    await flow.handleDeleteSection('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.sectionToDelete.value?.id).toBe(1)
+    expect(flow.sectionToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
@@ -69,7 +69,7 @@ describe('sections delete guard regression', () => {
       },
     })
 
-    await flow.handleDeleteSection(1)
+    await flow.handleDeleteSection('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.sectionToDelete.value).toBeNull()
@@ -93,11 +93,11 @@ describe('sections delete guard regression', () => {
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteSection(1)
+    await flow.handleDeleteSection('1')
 
     expect(flow.isDeletionChecking.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.sectionToDelete.value?.id).toBe(1)
+    expect(flow.sectionToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify section dependencies. Server will validate the delete request.')
@@ -132,7 +132,7 @@ describe('sections delete guard regression', () => {
     const onDeleteSuccess = vi.fn()
     const sectionsStore = {
       sections: [section],
-      deleteSection: vi.fn().mockImplementation(async (id: number) => {
+      deleteSection: vi.fn().mockImplementation(async (id: string) => {
         sectionsStore.sections = sectionsStore.sections.filter(current => current.id !== id)
       }),
     }
@@ -158,7 +158,7 @@ describe('sections delete guard regression', () => {
 
   it('propagates 409 error with status code for conflict handling', async () => {
     const sectionStore = useSectionStore()
-    const sectionId = 1
+    const sectionId = '1'
     const conflictMessage = 'Cannot delete: Section has schedules assigned. Remove schedules first.'
 
     sectionStore.sections = [{ id: sectionId, name: 'Test Section' }]
@@ -181,7 +181,7 @@ describe('sections delete guard regression', () => {
 
   it('removes section from store only on successful delete', async () => {
     const sectionStore = useSectionStore()
-    const sectionId = 1
+    const sectionId = '1'
 
     sectionStore.sections = [{ id: sectionId, name: 'Test Section' }]
     api.delete = async () => ({ status: 204, data: {} }) as never
@@ -207,7 +207,7 @@ describe('sections delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSection(1)
+      await flow.handleDeleteSection('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
       expect(flow.sectionToDelete.value).toBeNull()
@@ -236,11 +236,11 @@ describe('sections delete guard regression', () => {
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSection(1)
+      await flow.handleDeleteSection('1')
 
       expect(flow.isDeletionChecking.value).toBe(false)
       expect(flow.showDeleteModal.value).toBe(true)
-      expect(flow.sectionToDelete.value?.id).toBe(1)
+      expect(flow.sectionToDelete.value?.id).toBe('1')
       expect(externalShowToast).toHaveBeenCalledWith(
         'Warning: Could not verify section dependencies. Server will validate the delete request.',
         'warning',
@@ -256,7 +256,7 @@ describe('sections delete guard regression', () => {
       const section = createSection()
       const sectionsStore = {
         sections: [section],
-        deleteSection: vi.fn().mockImplementation(async (id: number) => {
+        deleteSection: vi.fn().mockImplementation(async (id: string) => {
           sectionsStore.sections = sectionsStore.sections.filter((current: SectionDto) => current.id !== id)
         }),
       }
