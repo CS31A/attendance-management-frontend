@@ -17,6 +17,12 @@ const emit = defineEmits<{
   enroll: []
   delete: [fingerprintId: EntityId]
 }>()
+
+function handleDelete(fingerprintId: EntityId) {
+  if (confirm('Are you sure you want to delete this fingerprint? This action cannot be undone.')) {
+    emit('delete', fingerprintId)
+  }
+}
 </script>
 
 <template>
@@ -42,13 +48,13 @@ const emit = defineEmits<{
         </div>
       </div>
       <div v-else class="empty">
-        <Fingerprint :size="32" class="text-gray-300" />
+        <Fingerprint :size="32" class="empty-icon" />
         <p>No fingerprint enrolled</p>
       </div>
     </div>
 
     <div class="card-actions">
-      <button v-if="fingerprint" class="btn-danger" @click="emit('delete', fingerprint.id)">
+      <button v-if="fingerprint" class="btn-danger" @click="handleDelete(fingerprint.id)">
         <Trash2 :size="16" />
         Delete
       </button>
@@ -62,7 +68,7 @@ const emit = defineEmits<{
 
 <style scoped>
 .fingerprint-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-gray-200);
   border-radius: 0.75rem;
   padding: 1.25rem;
   background: white;
@@ -80,7 +86,7 @@ const emit = defineEmits<{
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-gray-800);
 }
 
 .card-body {
@@ -101,7 +107,7 @@ const emit = defineEmits<{
 
 .label {
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-gray-500);
   min-width: 60px;
 }
 
@@ -115,8 +121,8 @@ const emit = defineEmits<{
 }
 
 .badge-success {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--color-success-bg);
+  color: var(--color-success-dark);
 }
 
 .empty {
@@ -125,7 +131,11 @@ const emit = defineEmits<{
   align-items: center;
   gap: 0.5rem;
   padding: 1.5rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
+}
+
+.empty-icon {
+  color: var(--color-gray-300);
 }
 
 .card-actions {
@@ -138,7 +148,7 @@ const emit = defineEmits<{
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--color-primary, #3b82f6);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -152,9 +162,9 @@ const emit = defineEmits<{
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-light);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -162,6 +172,6 @@ const emit = defineEmits<{
 }
 
 .btn-danger:hover {
-  background: #fee2e2;
+  background: var(--color-error-bg);
 }
 </style>

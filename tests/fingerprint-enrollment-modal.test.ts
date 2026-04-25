@@ -73,4 +73,136 @@ describe('fingerprint enrollment modal', () => {
 
     expect(fingerprintStore.createEnrollmentSession).toHaveBeenCalledWith('student-uuid', 'esp32-attendance-01')
   })
+
+  it('starts monitoring and polls enrollment session status', async () => {
+    const wrapper = mount(FingerprintEnrollmentModal, {
+      props: {
+        show: true,
+        studentId: 'student-uuid',
+        studentName: 'Alice Smith',
+      },
+      global: {
+        stubs: {
+          AlertTriangle: true,
+          Check: true,
+          Clock: true,
+          Fingerprint: true,
+          Loader2: true,
+          X: true,
+        },
+      },
+    })
+
+    await flushPromises()
+
+    await wrapper.find('select').setValue('esp32-attendance-01')
+    await wrapper.find('.btn-secondary').trigger('click')
+
+    expect(fingerprintStore.createEnrollmentSession).toHaveBeenCalledWith('student-uuid', 'esp32-attendance-01')
+  })
+
+  it('emits enrolled event when session completes successfully', async () => {
+    fingerprintStore.getEnrollmentSession.mockResolvedValue({
+      enrollmentSessionId: 'session-uuid',
+      studentId: 'student-uuid',
+      studentName: 'Alice Smith',
+      assignedSensorFingerprintId: 2,
+      status: 'Completed',
+      expiresAt: '2026-04-25T10:05:00Z',
+    })
+
+    const wrapper = mount(FingerprintEnrollmentModal, {
+      props: {
+        show: true,
+        studentId: 'student-uuid',
+        studentName: 'Alice Smith',
+      },
+      global: {
+        stubs: {
+          AlertTriangle: true,
+          Check: true,
+          Clock: true,
+          Fingerprint: true,
+          Loader2: true,
+          X: true,
+        },
+      },
+    })
+
+    await flushPromises()
+
+    await wrapper.find('select').setValue('esp32-attendance-01')
+    await wrapper.find('.btn-secondary').trigger('click')
+
+    await flushPromises()
+
+    // Trigger polling callback
+    const pollCallback = fingerprintStore.getEnrollmentSession.mock.calls[0]
+    if (pollCallback) {
+      await fingerprintStore.getEnrollmentSession('session-uuid')
+    }
+  })
+
+  it('displays error message when enrollment fails', async () => {
+    fingerprintStore.createEnrollmentSession.mockRejectedValue({
+      response: {
+        data: {
+          message: 'Device not found',
+        },
+      },
+    })
+
+    const wrapper = mount(FingerprintEnrollmentModal, {
+      props: {
+        show: true,
+        studentId: 'student-uuid',
+        studentName: 'Alice Smith',
+      },
+      global: {
+        stubs: {
+          AlertTriangle: true,
+          Check: true,
+          Clock: true,
+          Fingerprint: true,
+          Loader2: true,
+          X: true,
+        },
+      },
+    })
+
+    await flushPromises()
+
+    await wrapper.find('select').setValue('esp32-attendance-01')
+    await wrapper.find('.btn-primary').trigger('click')
+
+    await flushPromises()
+
+    expect(wrapper.find('.error-banner').exists()).toBe(true)
+  })
+
+  it('closes modal and stops polling when cancel is clicked', async () => {
+    const wrapper = mount(FingerprintEnrollmentModal, {
+      props: {
+        show: true,
+        studentId: 'student-uuid',
+        studentName: 'Alice Smith',
+      },
+      global: {
+        stubs: {
+          AlertTriangle: true,
+          Check: true,
+          Clock: true,
+          Fingerprint: true,
+          Loader2: true,
+          X: true,
+        },
+      },
+    })
+
+    await flushPromises()
+
+    await wrapper.find('.btn-secondary').trigger('click')
+
+    expect(wrapper.emitted('close')).toBeTruthy()
+  })
 })

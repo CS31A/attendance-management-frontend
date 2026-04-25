@@ -7,7 +7,6 @@ export const useFingerprintStore = defineStore('fingerprintStore', () => {
   const devices = ref<fingerprintApi.FingerprintDeviceDto[]>([])
   const loadingCount = ref(0)
   const loading = computed(() => loadingCount.value > 0)
-  const error = ref('')
 
   function beginLoading() {
     loadingCount.value += 1
@@ -57,7 +56,6 @@ export const useFingerprintStore = defineStore('fingerprintStore', () => {
   return {
     devices,
     loading,
-    error,
     fetchDevices,
     createEnrollmentSession,
     getEnrollmentSession,

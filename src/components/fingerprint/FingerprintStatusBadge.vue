@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import type { EntityId } from '@/types'
 import { Fingerprint } from 'lucide-vue-next'
 
 defineProps<{
   hasFingerprint: boolean
-  studentId: EntityId
 }>()
 
 const emit = defineEmits<{
@@ -17,11 +15,12 @@ const emit = defineEmits<{
     type="button"
     class="fingerprint-status-btn"
     :class="{ enrolled: hasFingerprint }"
+    :aria-label="hasFingerprint ? 'Fingerprint enrolled' : 'Enroll fingerprint'"
     @click.stop="emit('click')"
   >
     <Fingerprint
       :size="20"
-      :class="hasFingerprint ? 'text-green-500' : 'text-gray-400'"
+      :class="hasFingerprint ? 'enrolled' : 'not-enrolled'"
     />
   </button>
 </template>
@@ -46,5 +45,21 @@ const emit = defineEmits<{
 
 .fingerprint-status-btn.enrolled:hover {
   background: rgba(34, 197, 94, 0.1);
+}
+
+.enrolled {
+  color: var(--color-success);
+}
+
+.not-enrolled {
+  color: var(--color-gray-400);
+}
+
+.enrolled {
+  color: var(--color-success);
+}
+
+.not-enrolled {
+  color: var(--color-gray-400);
 }
 </style>

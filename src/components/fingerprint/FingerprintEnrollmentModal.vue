@@ -237,7 +237,7 @@ function handleClose() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, var(--color-primary, #3b82f6) 0%, var(--color-primary-light, #60a5fa) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   color: white;
 }
 
@@ -270,13 +270,13 @@ function handleClose() {
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   padding: 0.75rem;
-  background: #f8fafc;
+  background: var(--color-gray-50);
   border-radius: 0.5rem;
 }
 
 .student-name {
   font-weight: 500;
-  color: #1e293b;
+  color: var(--color-gray-800);
 }
 
 .field {
@@ -287,34 +287,34 @@ function handleClose() {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-gray-700);
   margin-bottom: 0.5rem;
 }
 
 .field select {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   background: white;
 }
 
 .field select:disabled {
-  background: #f3f4f6;
+  background: var(--color-gray-100);
   cursor: not-allowed;
 }
 
 .hint {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin-top: 0.25rem;
 }
 
 .monitor-panel {
   margin-bottom: 1.25rem;
   padding: 1rem;
-  background: #f8fafc;
+  background: var(--color-gray-50);
   border-radius: 0.5rem;
 }
 
@@ -329,30 +329,30 @@ function handleClose() {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .step.active {
-  color: #1e293b;
+  color: var(--color-gray-800);
   font-weight: 500;
 }
 
 .step.complete {
-  color: #059669;
+  color: var(--color-success-dark);
 }
 
 .success-icon {
-  color: #059669;
+  color: var(--color-success-dark);
 }
 
 .error-icon {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .failure-reason {
   margin-top: 0.75rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .error-banner {
@@ -360,16 +360,16 @@ function handleClose() {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-light);
   border-radius: 0.5rem;
-  color: #dc2626;
+  color: var(--color-error);
   font-size: 0.875rem;
 }
 
 .modal-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
@@ -377,7 +377,7 @@ function handleClose() {
 
 .btn-primary {
   padding: 0.5rem 1rem;
-  background: var(--color-primary, #3b82f6);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -397,8 +397,8 @@ function handleClose() {
 .btn-secondary {
   padding: 0.5rem 1rem;
   background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;

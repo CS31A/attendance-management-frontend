@@ -85,6 +85,7 @@ async function handleDeleteFingerprint(fingerprintId: EntityId) {
   }
   catch (err) {
     console.error('Failed to delete fingerprint:', err)
+    showToast('Failed to delete fingerprint. Please try again.', 'error')
   }
 }
 
@@ -97,6 +98,7 @@ function handleEnrollmentSuccess() {
 
 function handleEnrollmentError(message: string) {
   console.error('Enrollment error:', message)
+  showToast(message, 'error')
 }
 
 async function loadStudentDetail() {

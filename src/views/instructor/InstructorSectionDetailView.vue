@@ -119,6 +119,7 @@ function handleEnrollmentSuccess() {
 
 function handleEnrollmentError(message: string) {
   console.error('Enrollment error:', message)
+  showToast(message, 'error')
 }
 
 async function loadSectionDetail() {
@@ -287,7 +288,6 @@ onUnmounted(() => {
                       <td>
                         <FingerprintStatusBadge
                           :has-fingerprint="student.hasFingerprint"
-                          :student-id="student.studentId"
                           @click.stop="openEnrollmentModal({ studentId: student.studentId, name: `${student.firstname} ${student.lastname}` })"
                         />
                         {{ student.firstname }} {{ student.lastname }}
@@ -344,7 +344,6 @@ onUnmounted(() => {
                 <td>
                   <FingerprintStatusBadge
                     :has-fingerprint="student.hasFingerprint"
-                    :student-id="student.studentId"
                     @click.stop="openEnrollmentModal({ studentId: student.studentId, name: `${student.firstname} ${student.lastname}` })"
                   />
                   {{ student.firstname }} {{ student.lastname }}
