@@ -134,7 +134,7 @@ watch(() => props.section.id, () => {
                 Select Student
               </option>
               <option v-for="student in availableStudents" :key="student.userId || student.id" :value="student.userId || student.id">
-                {{ student.lastName }}, {{ student.firstName }} ({{ student.userId || student.id }})
+                {{ student.lastName }}, {{ student.firstName }}
               </option>
             </select>
           </div>
@@ -179,9 +179,6 @@ watch(() => props.section.id, () => {
               </option>
               <option value="2nd">
                 2nd
-              </option>
-              <option value="Summer">
-                Summer
               </option>
             </select>
           </div>
