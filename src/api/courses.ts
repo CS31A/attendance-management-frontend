@@ -1,11 +1,14 @@
 import type { AxiosResponse } from 'axios'
 import type { EntityId } from '@/types'
 import api from '@/api'
+import { normalizePublicEntityId } from '@/utils/entityIdNormalization'
 
 const COURSE_ENDPOINT = '/Course'
 
 export interface CourseDto {
   id: EntityId
+  uuid?: EntityId
+  numericId?: number
   name?: string
   [key: string]: unknown
 }
@@ -17,8 +20,10 @@ export default {
    * Get all courses
    * GET /api/Course
    */
-  getAllCourses(): Promise<AxiosResponse<CourseDto[]>> {
-    return api.get<CourseDto[]>(COURSE_ENDPOINT)
+  async getAllCourses(): Promise<AxiosResponse<CourseDto[]>> {
+    const response = await api.get<CourseDto[]>(COURSE_ENDPOINT)
+    response.data = normalizePublicEntityId(response.data)
+    return response
   },
 
   /**

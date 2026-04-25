@@ -3,6 +3,7 @@ import type { EntityId } from '@/types'
 import { AlertTriangle, BookOpen, Loader2, X } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useCourseStore } from '@/stores/courseStore'
+import { getPublicEntityId } from '@/utils/entityIdNormalization'
 
 const props = defineProps<{
   section?: {
@@ -134,7 +135,7 @@ defineExpose({ handleError })
             <option value="" disabled>
               Select a course
             </option>
-            <option v-for="course in courseStore.sortedCourses" :key="course.id" :value="course.id">
+            <option v-for="course in courseStore.sortedCourses" :key="getPublicEntityId(course)" :value="getPublicEntityId(course)">
               {{ course.name }}
             </option>
           </select>

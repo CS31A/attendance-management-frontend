@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, GraduationCap, Loader2, User, X } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useSectionStore } from '@/stores/sectionStore'
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -8,6 +9,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update', 'cancel'])
+
+const sectionStore = useSectionStore()
 
 // Form data
 const email = ref('')
@@ -20,6 +23,10 @@ const sectionId = ref('')
 const department = ref('')
 const errorMessage = ref('')
 const passwordMismatchError = ref('')
+
+const sortedSections = computed(() =>
+  [...sectionStore.sections].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
+)
 
 // Load user data when component mounts
 watch(() => props.user, (newUser) => {
@@ -63,6 +70,12 @@ watch([password, confirmPassword], () => {
   }
   else {
     passwordMismatchError.value = ''
+  }
+})
+
+onMounted(async () => {
+  if (sectionStore.sections.length === 0) {
+    await sectionStore.fetchSections()
   }
 })
 
@@ -209,13 +222,20 @@ defineExpose({ handleError })
         <!-- Section ID Field (for Students only) -->
         <div v-if="role === 'Student'" class="form-group">
           <label>Section *</label>
-          <input
+          <select
             v-model="sectionId"
-            type="text"
-            placeholder="Enter section (e.g., 3, 4, 5, CS101, MATH201...)"
             required
           >
-          <small class="helper-text info">Required for students</small>
+            <option value="" disabled>
+              Select a section
+            </option>
+            <option v-for="section in sortedSections" :key="section.id" :value="section.id">
+              {{ section.name || `Section ${section.id}` }}
+            </option>
+          </select>
+          <small v-if="sectionStore.loading" class="helper-text info">Loading sections...</small>
+          <small v-else-if="sortedSections.length === 0" class="helper-text error">No sections available</small>
+          <small v-else class="helper-text info">Required for students</small>
         </div>
 
         <div v-if="role === 'Instructor'" class="form-group">

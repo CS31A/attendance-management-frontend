@@ -3,6 +3,7 @@ import { AlertTriangle, MapPin, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import classroomApi from '@/api/classrooms'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
+import { getPublicEntityId } from '@/utils/entityIdNormalization'
 
 defineProps({
   session: {
@@ -153,8 +154,8 @@ onMounted(() => {
             </option>
             <option
               v-for="classroom in classrooms"
-              :key="classroom.id"
-              :value="classroom.id"
+              :key="getPublicEntityId(classroom)"
+              :value="getPublicEntityId(classroom)"
             >
               {{ classroom.name }}
               <template v-if="classroom.building">

@@ -8,6 +8,7 @@ import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import classroomApi from '@/api/classrooms'
 import { getScheduleById } from '@/api/schedules'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
+import { getPublicEntityId } from '@/utils/entityIdNormalization'
 
 const props = defineProps<{
   session: SessionResponseDto
@@ -213,8 +214,8 @@ watch(() => props.session?.scheduleId, (newScheduleId) => {
             </option>
             <option
               v-for="classroom in classrooms"
-              :key="classroom.id"
-              :value="classroom.id"
+              :key="getPublicEntityId(classroom)"
+              :value="getPublicEntityId(classroom)"
             >
               {{ classroom.name }}
               <template v-if="classroom.building">
