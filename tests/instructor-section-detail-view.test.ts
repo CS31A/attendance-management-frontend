@@ -57,6 +57,7 @@ const mockSectionDetail: InstructorSectionDetail = {
           lastname: 'Smith',
           isRegular: true,
           enrollmentType: 'Regular',
+          hasFingerprint: false,
         },
         {
           studentId: '00000000-0000-0000-0000-000000000051',
@@ -64,6 +65,7 @@ const mockSectionDetail: InstructorSectionDetail = {
           lastname: 'Johnson',
           isRegular: false,
           enrollmentType: 'Irregular',
+          hasFingerprint: false,
         },
         {
           studentId: '00000000-0000-0000-0000-000000000052',
@@ -71,6 +73,7 @@ const mockSectionDetail: InstructorSectionDetail = {
           lastname: 'Davis',
           isRegular: false,
           enrollmentType: 'Retake',
+          hasFingerprint: false,
         },
       ],
     },
@@ -82,6 +85,7 @@ const mockSectionDetail: InstructorSectionDetail = {
       lastname: 'Smith',
       isRegular: true,
       enrollmentType: 'Regular',
+      hasFingerprint: false,
     },
     {
       studentId: '00000000-0000-0000-0000-000000000053',
@@ -89,6 +93,7 @@ const mockSectionDetail: InstructorSectionDetail = {
       lastname: 'Lee',
       isRegular: true,
       enrollmentType: 'Regular',
+      hasFingerprint: false,
     },
   ],
 }
