@@ -352,18 +352,16 @@ describe('instructors API', () => {
   })
 
   describe('entityId type is used throughout', () => {
-    it('handles PascalCase backend response fields', async () => {
+    it('handles clean camelCase backend response fields', async () => {
       const mockResponse = {
         data: [
           {
-            SectionId: 1,
-            SectionUuid: 'section-uuid-123',
-            SectionName: 'Section A',
-            CourseId: 10,
-            CourseUuid: 'course-uuid-456',
-            CourseName: 'Course 1',
-            HandledClassCount: 5,
-            UniqueStudentCount: 30,
+            sectionId: 'section-id-123',
+            sectionName: 'Section A',
+            courseId: 'course-id-456',
+            courseName: 'Course 1',
+            handledClassCount: 5,
+            uniqueStudentCount: 30,
           },
         ],
       }
@@ -373,32 +371,32 @@ describe('instructors API', () => {
       const result = await getMySectionsOverview()
 
       expect(result).toHaveLength(1)
-      expect(result[0].sectionId).toBe('1' as unknown as EntityId)
-      expect(result[0].courseId).toBe('10' as unknown as EntityId)
+      expect(result[0].sectionId).toBe('section-id-123' as unknown as EntityId)
+      expect(result[0].courseId).toBe('course-id-456' as unknown as EntityId)
+      expect(result[0].sectionName).toBe('Section A')
+      expect(result[0].courseName).toBe('Course 1')
     })
 
-    it('handles mixed camelCase and PascalCase fields', async () => {
+    it('handles clean camelCase section detail fields', async () => {
       const mockResponse = {
         data: {
-          sectionId: '1',
-          SectionUuid: 'section-uuid-123',
+          sectionId: 'section-id-123',
           sectionName: 'Section A',
-          CourseId: 10,
-          courseUuid: 'course-uuid-456',
-          CourseName: 'Course 1',
+          courseId: 'course-id-456',
+          courseName: 'Course 1',
           handledClassCount: 5,
-          HomeSectionStudentCount: 30,
+          homeSectionStudentCount: 30,
           handledClasses: [],
-          HomeSectionStudents: [],
+          homeSectionStudents: [],
         },
       }
 
       vi.mocked(api.get).mockResolvedValue(mockResponse as never)
 
-      const result = await getMySectionDetail('1')
+      const result = await getMySectionDetail('section-id-123')
 
-      expect(result.sectionId).toBe('1' as unknown as EntityId)
-      expect(result.courseId).toBe('10' as unknown as EntityId)
+      expect(result.sectionId).toBe('section-id-123' as unknown as EntityId)
+      expect(result.courseId).toBe('course-id-456' as unknown as EntityId)
       expect(result.sectionName).toBe('Section A')
       expect(result.courseName).toBe('Course 1')
     })
@@ -407,9 +405,9 @@ describe('instructors API', () => {
       const mockResponse = {
         data: [
           {
-            sectionUuid: 'section-uuid-123',
+            sectionId: 'section-id-123',
             sectionName: 'Section A',
-            courseUuid: 'course-uuid-456',
+            courseId: 'course-id-456',
             courseName: 'Course 1',
             handledClassCount: 5,
             uniqueStudentCount: 30,
@@ -424,9 +422,8 @@ describe('instructors API', () => {
       expect(result).toHaveLength(1)
       const section = result[0]
 
-      // Verify all ID fields are EntityId type (string or number)
-      expect(typeof section.sectionId === 'string' || typeof section.sectionId === 'number').toBe(true)
-      expect(typeof section.courseId === 'string' || typeof section.courseId === 'number').toBe(true)
+      expect(section.sectionId).toBe('section-id-123')
+      expect(section.courseId).toBe('course-id-456')
     })
   })
 })
