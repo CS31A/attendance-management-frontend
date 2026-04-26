@@ -333,7 +333,7 @@ defineExpose({ handleError })
           <label>Section *</label>
           <select
             v-model="sectionId"
-            class="form-input"
+            class="section-select"
             required
           >
             <option value="" disabled>
