@@ -666,7 +666,6 @@ watch(sectionId, (nextSectionId) => {
     align-items: stretch;
   }
 
-
   .data-table {
     font-size: 0.85rem;
   }
