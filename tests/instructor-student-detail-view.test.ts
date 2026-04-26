@@ -66,6 +66,7 @@ const mockStudentDetail: InstructorStudentDetail = {
     lateCount: 1,
     attendanceRate: 95.0,
   },
+  fingerprint: null,
 }
 
 const mountedWrappers: ReturnType<typeof mount>[] = []

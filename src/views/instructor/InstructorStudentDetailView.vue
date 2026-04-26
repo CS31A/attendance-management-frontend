@@ -5,17 +5,22 @@ import { AlertTriangle, ArrowLeft, RefreshCw, User } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
+import FingerprintManageCard from '@/components/fingerprint/FingerprintManageCard.vue'
 import { useToast } from '@/composables/useToast'
+import { useFingerprintStore } from '@/stores/fingerprintStore'
 import { useInstructorStore } from '@/stores/instructorStore'
 import { getErrorMessage } from '@/utils/httpError'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+const FingerprintEnrollmentModal = defineAsyncComponent(() => import('@/components/fingerprint/FingerprintEnrollmentModal.vue'))
 
 const route = useRoute()
 const router = useRouter()
 const instructorStore = useInstructorStore()
+const fingerprintStore = useFingerprintStore()
 
 const errorMessage = ref('')
+const showEnrollmentModal = ref(false)
 
 const studentDetail = computed(() => instructorStore.currentStudentDetail)
 const loading = computed(() => instructorStore.loading)
@@ -68,6 +73,32 @@ function goBack() {
   else {
     router.push('/instructor/classes')
   }
+}
+
+async function handleDeleteFingerprint(fingerprintId: EntityId) {
+  try {
+    await fingerprintStore.deleteFingerprint(fingerprintId)
+    // Refresh student detail
+    if (route.params.studentId) {
+      await instructorStore.fetchStudentDetail(route.params.studentId as string)
+    }
+  }
+  catch (err) {
+    console.error('Failed to delete fingerprint:', err)
+    showToast('Failed to delete fingerprint. Please try again.', 'error')
+  }
+}
+
+function handleEnrollmentSuccess() {
+  showEnrollmentModal.value = false
+  if (route.params.studentId) {
+    instructorStore.fetchStudentDetail(route.params.studentId as string)
+  }
+}
+
+function handleEnrollmentError(message: string) {
+  console.error('Enrollment error:', message)
+  showToast(message, 'error')
 }
 
 async function loadStudentDetail() {
@@ -154,6 +185,14 @@ onUnmounted(() => {
             {{ getEnrollmentType(studentDetail.enrollmentType) }}
           </span>
         </div>
+        <div class="identity-fingerprint">
+          <FingerprintManageCard
+            v-if="instructorStore.currentStudentDetail"
+            :fingerprint="instructorStore.currentStudentDetail.fingerprint"
+            @enroll="showEnrollmentModal = true"
+            @delete="handleDeleteFingerprint"
+          />
+        </div>
       </div>
 
       <div class="detail-card">
@@ -220,6 +259,16 @@ onUnmounted(() => {
         </div>
       </div>
     </template>
+
+    <FingerprintEnrollmentModal
+      v-if="showEnrollmentModal && instructorStore.currentStudentDetail"
+      :show="showEnrollmentModal"
+      :student-id="instructorStore.currentStudentDetail.studentId"
+      :student-name="`${instructorStore.currentStudentDetail.firstname} ${instructorStore.currentStudentDetail.lastname}`"
+      @close="showEnrollmentModal = false"
+      @enrolled="handleEnrollmentSuccess"
+      @error="handleEnrollmentError"
+    />
 
     <Toast
       :show="toast.show"

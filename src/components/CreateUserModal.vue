@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { EntityId } from '@/types'
 import { AlertTriangle, Eye, EyeOff, GraduationCap, Loader2, Shield, User, X } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import { useSectionStore } from '@/stores/sectionStore'
 
 type UiRole = 'Admin' | 'Instructor' | 'Student'
 
@@ -26,6 +27,7 @@ const emit = defineEmits<{
 
 // Get auth store to determine role restrictions
 const authStore = useAuthStore()
+const sectionStore = useSectionStore()
 
 // Computed property to determine available roles based on current user's role
 const availableRoles = computed<UiRole[]>(() => {
@@ -57,6 +59,9 @@ const showConfirmPassword = ref(false)
 // Computed properties
 const modalTitle = computed(() => 'Create User')
 const submitButtonText = computed(() => 'Create Account')
+const sortedSections = computed(() =>
+  [...sectionStore.sections].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
+)
 
 const isFormValid = computed(() => {
   if (!username.value?.trim() || !role.value || !availableRoles.value.includes(role.value))
@@ -93,6 +98,12 @@ watch(availableRoles, (newAvailableRoles) => {
     role.value = 'Student'
   }
 }, { immediate: true })
+
+onMounted(async () => {
+  if (sectionStore.sections.length === 0) {
+    await sectionStore.fetchSections()
+  }
+})
 
 // Main form submission
 function createUser() {
@@ -320,14 +331,21 @@ defineExpose({ handleError })
         <!-- Section ID Field (for Students only) -->
         <div v-if="role === 'Student'" class="form-group">
           <label>Section *</label>
-          <input
+          <select
             v-model="sectionId"
-            type="text"
             class="form-input"
-            placeholder="Enter section (e.g., 3, 4, 5, CS101, MATH201...)"
             required
           >
-          <small class="helper-text info">Required for students (enter any valid section)</small>
+            <option value="" disabled>
+              Select a section
+            </option>
+            <option v-for="section in sortedSections" :key="section.id" :value="section.id">
+              {{ section.name || `Section ${section.id}` }}
+            </option>
+          </select>
+          <small v-if="sectionStore.loading" class="helper-text info">Loading sections...</small>
+          <small v-else-if="sortedSections.length === 0" class="helper-text error">No sections available</small>
+          <small v-else class="helper-text info">Required for students</small>
         </div>
 
         <!-- Actions -->

@@ -199,6 +199,9 @@ function normalizeHandledClassStudent(payload: Record<string, unknown>) {
     lastname: (payload.lastname as string) ?? '',
     isRegular: (payload.isRegular as boolean) ?? false,
     enrollmentType: (payload.enrollmentType as string) ?? 'Regular',
+    hasFingerprint: (payload.hasFingerprint as boolean) ?? false,
+    fingerprintDeviceId: payload.fingerprintDeviceId ? String(payload.fingerprintDeviceId as EntityId) : undefined,
+    fingerprintDeviceName: (payload.fingerprintDeviceName as string) ?? undefined,
   }
 }
 
@@ -209,6 +212,9 @@ function normalizeHomeSectionStudent(payload: Record<string, unknown>) {
     lastname: (payload.lastname as string) ?? '',
     isRegular: (payload.isRegular as boolean) ?? false,
     enrollmentType: (payload.enrollmentType as string) ?? 'Regular',
+    hasFingerprint: (payload.hasFingerprint as boolean) ?? false,
+    fingerprintDeviceId: payload.fingerprintDeviceId ? String(payload.fingerprintDeviceId as EntityId) : undefined,
+    fingerprintDeviceName: (payload.fingerprintDeviceName as string) ?? undefined,
   }
 }
 
@@ -228,6 +234,21 @@ function normalizeStudentDetail(payload: Record<string, unknown>): InstructorStu
     enrollmentType: (payload.enrollmentType as string) ?? 'Regular',
     enrollments: (enrollments as Record<string, unknown>[]).map(enrollment => normalizeStudentEnrollment(enrollment)),
     attendanceSummary: normalizeStudentAttendanceSummary(attendanceSummary as Record<string, unknown>),
+    fingerprint: normalizeStudentFingerprint(payload.fingerprint as Record<string, unknown> | null),
+  }
+}
+
+function normalizeStudentFingerprint(payload: Record<string, unknown> | null | undefined) {
+  if (!payload) {
+    return null
+  }
+
+  return {
+    id: String((payload.id as EntityId) ?? '0'),
+    deviceId: String((payload.deviceId as EntityId) ?? '0'),
+    deviceName: (payload.deviceName as string) ?? '',
+    deviceLocation: (payload.deviceLocation as string) ?? '',
+    enrolledAt: (payload.enrolledAt as string) ?? '',
   }
 }
 

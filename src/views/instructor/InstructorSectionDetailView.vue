@@ -5,11 +5,13 @@ import { AlertTriangle, ArrowLeft, BookOpen, ChevronDown, ChevronUp, RefreshCw, 
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
+import FingerprintStatusBadge from '@/components/fingerprint/FingerprintStatusBadge.vue'
 import { useToast } from '@/composables/useToast'
 import { useInstructorStore } from '@/stores/instructorStore'
 import { getErrorMessage } from '@/utils/httpError'
 
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+const FingerprintEnrollmentModal = defineAsyncComponent(() => import('@/components/fingerprint/FingerprintEnrollmentModal.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -25,6 +27,9 @@ const expandedClasses = ref<Set<EntityId>>(new Set())
 const sectionDetail = computed(() => instructorStore.currentSectionDetail)
 const loading = computed(() => instructorStore.loading)
 const isInvalidSectionLink = ref(false)
+
+const showEnrollmentModal = ref(false)
+const selectedStudent = ref<{ studentId: EntityId, name: string } | null>(null)
 
 // Extract sectionId from route params as EntityId (string from router)
 const sectionId = computed(() => {
@@ -96,6 +101,25 @@ function navigateToStudent(studentId: EntityId) {
 
 function goBack() {
   router.push('/instructor/classes')
+}
+
+function openEnrollmentModal(student: { studentId: EntityId, name: string }) {
+  selectedStudent.value = student
+  showEnrollmentModal.value = true
+}
+
+function handleEnrollmentSuccess() {
+  showEnrollmentModal.value = false
+  selectedStudent.value = null
+  // Refresh section detail to update hasFingerprint status
+  if (route.params.sectionId) {
+    instructorStore.fetchSectionDetail(route.params.sectionId as string)
+  }
+}
+
+function handleEnrollmentError(message: string) {
+  console.error('Enrollment error:', message)
+  showToast(message, 'error')
 }
 
 async function loadSectionDetail() {
@@ -261,7 +285,13 @@ onUnmounted(() => {
                       @click="navigateToStudent(student.studentId)"
                     >
                       <td>{{ student.studentId }}</td>
-                      <td>{{ student.firstname }} {{ student.lastname }}</td>
+                      <td>
+                        <FingerprintStatusBadge
+                          :has-fingerprint="student.hasFingerprint"
+                          @click.stop="openEnrollmentModal({ studentId: student.studentId, name: `${student.firstname} ${student.lastname}` })"
+                        />
+                        {{ student.firstname }} {{ student.lastname }}
+                      </td>
                       <td>
                         <span class="status-badge" :class="getStudentStatusClass(student)">
                           {{ getEnrollmentType(student) }}
@@ -311,7 +341,13 @@ onUnmounted(() => {
                 @click="navigateToStudent(student.studentId)"
               >
                 <td>{{ student.studentId }}</td>
-                <td>{{ student.firstname }} {{ student.lastname }}</td>
+                <td>
+                  <FingerprintStatusBadge
+                    :has-fingerprint="student.hasFingerprint"
+                    @click.stop="openEnrollmentModal({ studentId: student.studentId, name: `${student.firstname} ${student.lastname}` })"
+                  />
+                  {{ student.firstname }} {{ student.lastname }}
+                </td>
                 <td>
                   <span class="status-badge" :class="getStudentStatusClass(student)">
                     {{ getEnrollmentType(student) }}
@@ -330,6 +366,16 @@ onUnmounted(() => {
       :type="toast.type"
       :duration="toast.duration"
       @close="closeToast"
+    />
+
+    <FingerprintEnrollmentModal
+      v-if="showEnrollmentModal && selectedStudent"
+      :show="showEnrollmentModal"
+      :student-id="selectedStudent.studentId"
+      :student-name="selectedStudent.name"
+      @close="showEnrollmentModal = false; selectedStudent = null"
+      @enrolled="handleEnrollmentSuccess"
+      @error="handleEnrollmentError"
     />
   </div>
 </template>

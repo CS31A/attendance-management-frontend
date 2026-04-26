@@ -1,11 +1,14 @@
 import type { AxiosResponse } from 'axios'
 import type { EntityId } from '@/types'
 import api from '@/api'
+import { normalizePublicEntityId } from '@/utils/entityIdNormalization'
 
 const CLASSROOM_ENDPOINT = '/classrooms'
 
 export interface ClassroomDto {
   id: EntityId
+  uuid?: EntityId
+  numericId?: number
   name?: string
   [key: string]: unknown
 }
@@ -17,8 +20,10 @@ export default {
    * Get all classrooms
    * GET /api/classrooms
    */
-  getAllClassrooms(): Promise<AxiosResponse<ClassroomDto[]>> {
-    return api.get<ClassroomDto[]>(CLASSROOM_ENDPOINT)
+  async getAllClassrooms(): Promise<AxiosResponse<ClassroomDto[]>> {
+    const response = await api.get<ClassroomDto[]>(CLASSROOM_ENDPOINT)
+    response.data = normalizePublicEntityId(response.data)
+    return response
   },
 
   /**

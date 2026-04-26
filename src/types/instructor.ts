@@ -74,6 +74,9 @@ export interface InstructorHandledClassStudent {
   lastname: string
   isRegular: boolean
   enrollmentType: string
+  hasFingerprint: boolean
+  fingerprintDeviceId?: EntityId
+  fingerprintDeviceName?: string
 }
 
 export interface InstructorHandledClassDetail {
@@ -96,6 +99,9 @@ export interface InstructorHomeSectionStudent {
   lastname: string
   isRegular: boolean
   enrollmentType: string
+  hasFingerprint: boolean
+  fingerprintDeviceId?: EntityId
+  fingerprintDeviceName?: string
 }
 
 export interface InstructorSectionDetail {
@@ -138,4 +144,11 @@ export interface InstructorStudentDetail {
   enrollmentType: string
   enrollments: InstructorStudentEnrollment[]
   attendanceSummary: InstructorStudentAttendanceSummary
+  fingerprint: {
+    id: EntityId
+    deviceId: EntityId
+    deviceName: string
+    deviceLocation: string
+    enrolledAt: string
+  } | null
 }

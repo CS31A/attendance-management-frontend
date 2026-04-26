@@ -25,6 +25,7 @@ import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
+import { getPublicEntityId } from '@/utils/entityIdNormalization'
 import { matchesSearchQuery } from '@/utils/search'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
@@ -92,7 +93,7 @@ const scheduleFields: FormFieldConfig[] = [
       const response = await subjectApi.getAllSubjects()
       const subjects = extractResponseData(response)
       return subjects.map((s: SubjectDto) => ({
-        value: s.id,
+        value: getPublicEntityId(s),
         label: `${s.name} (${s.code})`,
       }))
     },
@@ -108,7 +109,7 @@ const scheduleFields: FormFieldConfig[] = [
       const response = await classroomApi.getAllClassrooms()
       const classrooms = extractResponseData(response)
       return classrooms.map((c: ClassroomDto) => ({
-        value: c.id,
+        value: getPublicEntityId(c),
         label: c.name || 'Unnamed Classroom',
       }))
     },

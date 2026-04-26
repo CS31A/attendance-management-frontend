@@ -14,7 +14,7 @@ const enrollmentStore = {
 const userStore = {
   fetchUsers,
   students: [
-    { id: '11', firstName: 'Ada', lastName: 'Lovelace', studentId: '2026-0001' },
+    { userId: 'user-uuid', profileId: 'student-profile-uuid', firstName: 'Ada', lastName: 'Lovelace', studentId: '2026-0001' },
   ],
   loading: false,
   error: '',
@@ -23,7 +23,7 @@ const userStore = {
 const subjectStore = {
   fetchSubjects,
   sortedSubjects: [
-    { id: '7', name: 'Discrete Mathematics' },
+    { id: 7, uuid: 'subject-uuid', name: 'Discrete Mathematics' },
     { id: '9', name: 'Operating Systems' },
   ],
   loading: false,
@@ -95,14 +95,14 @@ describe('addEnrollmentModal', () => {
     const selects = wrapper.findAll('select')
     expect(wrapper.text()).toContain('Discrete Mathematics')
 
-    await selects[0].setValue('11')
-    await selects[1].setValue('7')
+    await selects[0].setValue('student-profile-uuid')
+    await selects[1].setValue('subject-uuid')
     await wrapper.find('.btn-submit').trigger('click')
 
     expect(enrollStudent).toHaveBeenCalledWith({
-      studentId: '11',
+      studentId: 'student-profile-uuid',
       sectionId: '3',
-      subjectId: '7',
+      subjectId: 'subject-uuid',
       enrollmentType: 'Regular',
       academicYear: new Date().getFullYear().toString(),
       semester: '1st',
@@ -115,15 +115,15 @@ describe('addEnrollmentModal', () => {
     await flushPromises()
 
     const selects = wrapper.findAll('select')
-    await selects[0].setValue('11')
-    await selects[1].setValue('7')
+    await selects[0].setValue('student-profile-uuid')
+    await selects[1].setValue('subject-uuid')
     await selects[2].setValue('Retake')
     await wrapper.find('.btn-submit').trigger('click')
 
     expect(enrollStudent).toHaveBeenCalledWith({
-      studentId: '11',
+      studentId: 'student-profile-uuid',
       sectionId: '3',
-      subjectId: '7',
+      subjectId: 'subject-uuid',
       enrollmentType: 'Retake',
       academicYear: new Date().getFullYear().toString(),
       semester: '1st',

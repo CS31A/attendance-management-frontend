@@ -6,6 +6,7 @@ import { computed, ref, watch } from 'vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useSubjectStore } from '@/stores/subjectStore'
 import { useUserStore } from '@/stores/userStore'
+import { getPublicEntityId } from '@/utils/entityIdNormalization'
 
 const props = defineProps<{
   section: SectionDto
@@ -39,6 +40,10 @@ const isLoading = computed(() =>
   || loadingStudents.value
   || loadingSubjects.value,
 )
+
+function getStudentProfileId(student: Record<string, unknown>): EntityId {
+  return typeof student.profileId === 'string' ? student.profileId : getPublicEntityId(student)
+}
 
 // Methods
 async function loadDropdownData() {
@@ -133,7 +138,7 @@ watch(() => props.section.id, () => {
               <option value="" disabled>
                 Select Student
               </option>
-              <option v-for="student in availableStudents" :key="student.userId || student.id" :value="student.userId || student.id">
+              <option v-for="student in availableStudents" :key="getStudentProfileId(student)" :value="getStudentProfileId(student)">
                 {{ student.lastName }}, {{ student.firstName }}
               </option>
             </select>
@@ -145,7 +150,7 @@ watch(() => props.section.id, () => {
               <option value="" disabled>
                 Select Subject
               </option>
-              <option v-for="subject in availableSubjects" :key="subject.id" :value="subject.id">
+              <option v-for="subject in availableSubjects" :key="getPublicEntityId(subject)" :value="getPublicEntityId(subject)">
                 {{ subject.name || `Subject ${subject.id}` }}
               </option>
             </select>
