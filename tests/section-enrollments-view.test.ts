@@ -234,7 +234,12 @@ describe('sectionEnrollmentsView', () => {
     const wrapper = mountView()
     await flushPromises()
 
-    await wrapper.find('input.search-input').setValue('ada')
+    const searchInput = wrapper.find('input.live-search-input')
+    await searchInput.setValue('ada')
+
+    // ManagementSearchBar uses a 300ms debounce
+    await new Promise(resolve => setTimeout(resolve, 310))
+    await flushPromises()
 
     expect(wrapper.text()).toContain('Lovelace, Ada')
     expect(wrapper.text()).not.toContain('Hopper, Grace')

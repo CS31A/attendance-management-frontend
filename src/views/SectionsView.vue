@@ -16,23 +16,42 @@ import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
 import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
 import { useToast } from '@/composables/useToast'
+import { useCourseStore } from '@/stores/courseStore'
 import { useSectionStore } from '@/stores/sectionStore'
 import { matchesSearchQuery } from '@/utils/search'
 
 const SectionModal = defineAsyncComponent(() => import('@/components/SectionModal.vue'))
 const SectionTableSection = defineAsyncComponent(() => import('@/components/tables/SectionTableSection.vue'))
+const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))
 
 const sectionsStore = useSectionStore()
+const courseStore = useCourseStore()
 const { showModal, selectedEntity: selectedSection, modalRef } = useModalState<SectionDto>()
 const router = useRouter()
 
 const sections = computed(() => sectionsStore.getSections)
 const searchQuery = ref('')
-const filteredSections = computed(() =>
-  sections.value.filter(section =>
-    matchesSearchQuery(searchQuery.value, [section.id, section.name, section.sectionName, section.code, section.courseId]),
-  ),
-)
+
+// Course filter
+const selectedCourseName = ref('All Courses')
+const courseFilterOptions = computed(() => [
+  'All Courses',
+  ...courseStore.sortedCourses.map(c => c.name || String(c.id)),
+])
+const selectedCourseId = computed(() => {
+  if (selectedCourseName.value === 'All Courses')
+    return null
+  return courseStore.sortedCourses.find(c => (c.name || String(c.id)) === selectedCourseName.value)?.id ?? null
+})
+
+const filteredSections = computed(() => {
+  const courseId = selectedCourseId.value
+  return sections.value.filter((section) => {
+    const matchesCourse = !courseId || String(section.courseId ?? '') === String(courseId)
+    const matchesSearch = matchesSearchQuery(searchQuery.value, [section.id, section.name, section.sectionName, section.code, section.courseId])
+    return matchesCourse && matchesSearch
+  })
+})
 
 const {
   currentPage,
@@ -90,7 +109,10 @@ async function refreshSections() {
 
 onMounted(async () => {
   try {
-    await sectionsStore.fetchSections()
+    await Promise.all([
+      sectionsStore.fetchSections(),
+      courseStore.fetchCourses(),
+    ])
   }
   catch {
     // Error handled silently
@@ -98,6 +120,10 @@ onMounted(async () => {
 })
 
 watch(searchQuery, () => {
+  resetToFirstPage()
+})
+
+watch(selectedCourseName, () => {
   resetToFirstPage()
 })
 </script>
@@ -158,12 +184,18 @@ watch(searchQuery, () => {
         </div>
       </div>
 
-      <div class="management-toolbar">
+      <div class="filters-section">
         <ManagementSearchBar
           v-model="searchQuery"
           placeholder="Search sections by name, course ID, or section ID..."
           :result-count="totalSections"
         />
+        <div class="course-filter">
+          <CustomDropdown
+            v-model="selectedCourseName"
+            :options="courseFilterOptions"
+          />
+        </div>
       </div>
 
       <SectionTableSection
@@ -258,9 +290,16 @@ watch(searchQuery, () => {
   margin-bottom: 1rem;
 }
 
-.management-toolbar {
+.filters-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
-  max-width: 32rem;
+  flex-wrap: wrap;
+}
+
+.course-filter {
+  min-width: 200px;
 }
 
 .header-content {

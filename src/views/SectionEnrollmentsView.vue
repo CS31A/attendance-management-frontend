@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { SectionDto } from '@/api/sections'
 import type { EntityId } from '@/types'
-import { AlertTriangle, ArrowLeft, Check, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
+import { AlertTriangle, ArrowLeft, Check, RefreshCw, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
+import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useSectionStore } from '@/stores/sectionStore'
@@ -14,6 +15,7 @@ import { LOCALE } from '@/utils/constants'
 import { parseUtcDate } from '@/utils/qrcode'
 
 const AddEnrollmentModal = defineAsyncComponent(() => import('@/components/sections/AddEnrollmentModal.vue'))
+const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -43,6 +45,10 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(true)
 const invalidLink = ref(false)
+
+// Status filter
+const selectedStatus = ref('All')
+const statusFilterOptions = ['All', 'Active', 'Dropped']
 let pendingSectionFetchId: EntityId | null | undefined
 let isProcessingSectionFetch = false
 
@@ -62,14 +68,16 @@ function formatEnrollmentDate(value: string) {
 }
 
 const filteredEnrolledStudents = computed(() => {
-  if (!searchQuery.value)
-    return enrolledStudents.value
   const query = searchQuery.value.toLowerCase()
-  return enrolledStudents.value.filter(s =>
-    (s.studentFirstname && asSearchableString(s.studentFirstname).includes(query))
-    || (s.studentLastname && asSearchableString(s.studentLastname).includes(query))
-    || (s.studentId && asSearchableString(s.studentId).includes(query)),
-  )
+  return enrolledStudents.value.filter((s) => {
+    const matchesSearch = !query
+      || (s.studentFirstname && asSearchableString(s.studentFirstname).includes(query))
+      || (s.studentLastname && asSearchableString(s.studentLastname).includes(query))
+      || (s.studentId && asSearchableString(s.studentId).includes(query))
+    const matchesStatus = selectedStatus.value === 'All'
+      || ((s.status || 'Active') === selectedStatus.value)
+    return matchesSearch && matchesStatus
+  })
 })
 
 async function fetchDataForSection(currentSectionId: EntityId | null) {
@@ -252,14 +260,18 @@ watch(sectionId, (nextSectionId) => {
 
       <!-- Actions Bar -->
       <div class="actions-bar">
-        <div class="search-wrapper">
-          <Search class="search-icon" :size="18" />
-          <input
+        <div class="search-filter-row">
+          <ManagementSearchBar
             v-model="searchQuery"
-            type="text"
             placeholder="Search enrolled students..."
-            class="search-input"
-          >
+            :result-count="filteredEnrolledStudents.length"
+          />
+          <div class="status-filter">
+            <CustomDropdown
+              v-model="selectedStatus"
+              :options="statusFilterOptions"
+            />
+          </div>
         </div>
         <div class="actions-controls">
           <BulkDataActions
@@ -298,9 +310,9 @@ watch(sectionId, (nextSectionId) => {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="enrolledStudents.length === 0">
+            <tr v-if="filteredEnrolledStudents.length === 0">
               <td colspan="6" class="empty-state">
-                No students enrolled in this section.
+                {{ enrolledStudents.length === 0 ? 'No students enrolled in this section.' : 'No students match the current filters.' }}
               </td>
             </tr>
             <tr v-for="student in filteredEnrolledStudents" :key="student.enrollmentId">
@@ -519,34 +531,15 @@ watch(sectionId, (nextSectionId) => {
   flex-wrap: wrap;
 }
 
-.search-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
+.search-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.search-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-gray-400);
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
-  border: 1px solid var(--color-gray-200);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background: white;
-  transition: all 0.2s;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.status-filter {
+  min-width: 180px;
 }
 
 /* Table */
@@ -671,10 +664,6 @@ watch(sectionId, (nextSectionId) => {
   .actions-controls {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .search-wrapper {
-    max-width: 100%;
   }
 
   .data-table {
