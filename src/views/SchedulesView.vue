@@ -30,6 +30,7 @@ import { matchesSearchQuery } from '@/utils/search'
 
 const ScheduleList = defineAsyncComponent(() => import('@/components/schedules/ScheduleList.vue'))
 const SkeletonLoader = defineAsyncComponent(() => import('@/components/common/SkeletonLoader.vue'))
+const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -173,8 +174,16 @@ const filteredInstructorName = ref('')
 const isLoadingInstructorFilter = ref(false)
 const searchQuery = ref('')
 
+// Day of week filter
+const dayFilters = ['All Days', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const selectedDay = ref('All Days')
+
 const schedules = computed(() => {
-  const allSchedules = scheduleStore.sortedSchedules
+  let allSchedules = scheduleStore.sortedSchedules
+
+  if (selectedDay.value !== 'All Days') {
+    allSchedules = allSchedules.filter(schedule => schedule.dayOfWeek === selectedDay.value)
+  }
 
   if (filteredInstructorId.value) {
     return allSchedules.filter(schedule =>
@@ -317,6 +326,10 @@ onMounted(async () => {
 watch(searchQuery, () => {
   resetToFirstPage()
 })
+
+watch(selectedDay, () => {
+  resetToFirstPage()
+})
 </script>
 
 <template>
@@ -394,12 +407,18 @@ watch(searchQuery, () => {
         </div>
       </div>
 
-      <div class="management-toolbar">
+      <div class="filters-section">
         <ManagementSearchBar
           v-model="searchQuery"
           placeholder="Search schedules by subject, section, classroom, or instructor..."
           :result-count="totalSchedules"
         />
+        <div class="day-filter">
+          <CustomDropdown
+            v-model="selectedDay"
+            :options="dayFilters"
+          />
+        </div>
       </div>
 
       <ScheduleList
@@ -557,9 +576,16 @@ watch(searchQuery, () => {
   margin-bottom: 1rem;
 }
 
-.management-toolbar {
+.filters-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
-  max-width: 36rem;
+  flex-wrap: wrap;
+}
+
+.day-filter {
+  min-width: 180px;
 }
 
 .filter-badge {
