@@ -227,7 +227,7 @@ function goBack() {
         <!-- Enrollments Panel -->
         <div class="panel enrollments-panel">
           <h2 class="panel-title">
-            Enrolled Sections
+            Enrolled Subjects
           </h2>
           <div v-if="enrollments.length === 0" class="empty-state-panel">
             <GraduationCap :size="32" class="text-gray-400" />
