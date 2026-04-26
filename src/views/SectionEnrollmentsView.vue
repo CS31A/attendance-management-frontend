@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SectionDto } from '@/api/sections'
 import type { EntityId } from '@/types'
-import { AlertTriangle, ArrowLeft, Check, RefreshCw, Search, Trash2, UserPlus, X } from 'lucide-vue-next'
+import { AlertTriangle, ArrowLeft, Check, RefreshCw, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
