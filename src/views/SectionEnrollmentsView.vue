@@ -312,7 +312,7 @@ watch(sectionId, (nextSectionId) => {
           <tbody>
             <tr v-if="filteredEnrolledStudents.length === 0">
               <td colspan="6" class="empty-state">
-                No students enrolled in this section.
+                {{ enrolledStudents.length === 0 ? 'No students enrolled in this section.' : 'No students match the current filters.' }}
               </td>
             </tr>
             <tr v-for="student in filteredEnrolledStudents" :key="student.enrollmentId">
