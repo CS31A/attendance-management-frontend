@@ -14,6 +14,7 @@ interface Subject {
 
 defineProps<{
   subjects: Subject[]
+  isDeletionChecking?: boolean
 }>()
 
 defineEmits<{
@@ -81,7 +82,12 @@ defineEmits<{
               <button class="app-btn-icon app-btn-edit" title="Edit Subject" @click="$emit('edit', subject)">
                 <Edit :size="16" />
               </button>
-              <button class="app-btn-icon app-btn-delete" title="Delete Subject" @click="$emit('delete', subject.id)">
+              <button
+                class="app-btn-icon app-btn-delete"
+                title="Delete Subject"
+                :disabled="isDeletionChecking"
+                @click="$emit('delete', subject.id)"
+              >
                 <Trash2 :size="16" />
               </button>
             </div>

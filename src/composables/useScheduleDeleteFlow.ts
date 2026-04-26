@@ -61,7 +61,7 @@ export function createScheduleDeleteFlow(options: CreateScheduleDeleteFlowOption
 
   const flow = createDeleteFlow<ScheduleDto>({
     store: {
-      items: schedulesStore.schedules,
+      items: () => schedulesStore.schedules,
       deleteItem: schedulesStore.deleteSchedule,
     },
     dependencyChecks: [

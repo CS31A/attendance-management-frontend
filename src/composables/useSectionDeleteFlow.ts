@@ -9,7 +9,7 @@ import { createDeleteFlow } from './useEntityDeleteFlow'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface SectionsStoreLike {
-  sections: SectionDto[] | Ref<SectionDto[]> | (() => SectionDto[])
+  sections: SectionDto[]
   deleteSection: (id: EntityId) => Promise<unknown>
 }
 
@@ -65,7 +65,7 @@ export function createSectionDeleteFlow(options: CreateSectionDeleteFlowOptions)
 
   const flow = createDeleteFlow<SectionDto>({
     store: {
-      items: sectionsStore.sections,
+      items: () => sectionsStore.sections,
       deleteItem: sectionsStore.deleteSection,
     },
     dependencyChecks: [

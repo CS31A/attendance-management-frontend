@@ -9,7 +9,7 @@ import { createDeleteFlow } from './useEntityDeleteFlow'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface CoursesStoreLike {
-  courses: CourseDto[] | Ref<CourseDto[]> | (() => CourseDto[])
+  courses: CourseDto[]
   deleteCourse: (id: EntityId) => Promise<unknown>
 }
 
@@ -63,7 +63,7 @@ export function createCourseDeleteFlow(options: CreateCourseDeleteFlowOptions): 
 
   const flow = createDeleteFlow<CourseDto>({
     store: {
-      items: coursesStore.courses,
+      items: () => coursesStore.courses,
       deleteItem: coursesStore.deleteCourse,
     },
     dependencyChecks: [
