@@ -75,7 +75,7 @@ const filteredEnrolledStudents = computed(() => {
       || (s.studentLastname && asSearchableString(s.studentLastname).includes(query))
       || (s.studentId && asSearchableString(s.studentId).includes(query))
     const matchesStatus = selectedStatus.value === 'All'
-      || (s.status && s.status.toLowerCase() === selectedStatus.value.toLowerCase())
+      || ((s.status || 'Active') === selectedStatus.value)
     return matchesSearch && matchesStatus
   })
 })
@@ -310,7 +310,7 @@ watch(sectionId, (nextSectionId) => {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="enrolledStudents.length === 0">
+            <tr v-if="filteredEnrolledStudents.length === 0">
               <td colspan="6" class="empty-state">
                 No students enrolled in this section.
               </td>
@@ -666,9 +666,6 @@ watch(sectionId, (nextSectionId) => {
     align-items: stretch;
   }
 
-  .search-wrapper {
-    max-width: 100%;
-  }
 
   .data-table {
     font-size: 0.85rem;
