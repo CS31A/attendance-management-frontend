@@ -9,6 +9,7 @@ import { fetchStudentAttendanceReport } from '@/api/reports'
 import BaseButton from '@/components/common/BaseButton.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
+import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
 import { formatShortTableDate } from '@/utils/date'
 import { parseStudentRouteParam, resolveStudentProfileId } from '@/utils/studentRoute'
@@ -21,6 +22,7 @@ const studentId = computed(() => {
 })
 
 const enrollmentStore = useEnrollmentStore()
+const sectionStore = useSectionStore()
 const userStore = useUserStore()
 
 const loading = ref(true)
@@ -54,6 +56,26 @@ const displayJoinedDate = computed(() => {
   }
   return '-'
 })
+
+// Section name computed property
+const sectionName = ref<string | null>(null)
+
+async function fetchSectionName(sectionId: string) {
+  try {
+    const section = await sectionStore.getSection(sectionId)
+    sectionName.value = section.name || null
+  }
+  catch (err) {
+    console.error('Failed to fetch section name:', err)
+  }
+}
+
+// Watch for sectionId changes and fetch section name
+watch(() => studentUser.value?.sectionId, (newSectionId) => {
+  if (newSectionId) {
+    fetchSectionName(newSectionId)
+  }
+}, { immediate: true })
 
 async function fetchData() {
   loading.value = true
@@ -154,8 +176,8 @@ function goBack() {
               <span class="meta-item">
                 <Calendar :size="14" /> Joined: {{ displayJoinedDate }}
               </span>
-              <span v-if="studentUser?.sectionId" class="meta-item badge">
-                Section: {{ studentUser.sectionId }}
+              <span v-if="sectionName" class="meta-item badge">
+                Section: {{ sectionName }}
               </span>
               <span v-if="studentUser?.isRegular !== undefined" class="meta-item badge" :class="studentUser.isRegular ? 'badge-primary' : 'badge-warning'">
                 {{ studentUser.isRegular ? 'Regular' : 'Irregular' }}
@@ -524,7 +546,7 @@ function goBack() {
   text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: white;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border-primary);
