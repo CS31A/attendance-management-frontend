@@ -12,7 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
-  enrolled: [fingerprintId: string]
+  enrolled: [enrollmentSessionId: string]
   error: [message: string]
 }>()
 
@@ -92,9 +92,6 @@ function startPolling(sessionId: string) {
 
       if (isDone.value) {
         stopPolling()
-        if (session.status === 'Completed') {
-          emit('enrolled', session.enrollmentSessionId)
-        }
       }
     }
     catch (err: unknown) {
@@ -113,6 +110,9 @@ function stopPolling() {
 }
 
 function handleClose() {
+  if (status.value === 'Completed' && currentSessionId.value) {
+    emit('enrolled', currentSessionId.value)
+  }
   stopPolling()
   isMonitoring.value = false
   currentSessionId.value = null

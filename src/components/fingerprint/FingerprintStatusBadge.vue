@@ -54,12 +54,4 @@ const emit = defineEmits<{
 .not-enrolled {
   color: var(--color-gray-400);
 }
-
-.enrolled {
-  color: var(--color-success);
-}
-
-.not-enrolled {
-  color: var(--color-gray-400);
-}
 </style>
