@@ -73,7 +73,7 @@ onUnmounted(() => {
 })
 
 function handleNotificationClick() {
-  notificationStore.markAllRead()
+  // Dropdown open/close is handled inside Header; nothing else needed here.
 }
 
 function handleNotificationRead(notificationId: string) {

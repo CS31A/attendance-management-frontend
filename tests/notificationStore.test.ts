@@ -137,7 +137,6 @@ describe('notificationStore', () => {
 
     signalRMock.connections[0]!.closed?.()
     expect(store.status).toBe('disconnected')
-    expect(store.connection).toBe(null)
   })
 
   it('stops the current connection', async () => {
@@ -147,7 +146,6 @@ describe('notificationStore', () => {
     await store.stop()
 
     expect(signalRMock.connections[0]?.stop).toHaveBeenCalledTimes(1)
-    expect(store.connection).toBe(null)
     expect(store.status).toBe('disconnected')
   })
 
@@ -178,7 +176,6 @@ describe('notificationStore', () => {
     await startup
 
     expect(signalRMock.connections[0]?.stop).toHaveBeenCalled()
-    expect(store.connection).toBe(null)
     expect(store.status).toBe('disconnected')
   })
 
@@ -221,5 +218,20 @@ describe('notificationStore', () => {
     expect(store.notifications).toEqual([])
     expect(store.latestNotification).toBe(null)
     expect(store.status).toBe('idle')
+  })
+
+  it('caps notifications at MAX_NOTIFICATIONS (100)', async () => {
+    const store = useNotificationStore()
+    await store.start()
+
+    // Add more than 100 notifications
+    for (let i = 0; i < 150; i++) {
+      signalRMock.connections[0]!.handlers.ReceiveNotification(createPayload({ title: `Notification ${i}` }))
+    }
+
+    // Should be capped at 100
+    expect(store.notifications).toHaveLength(100)
+    // Most recent notification should be first
+    expect(store.notifications[0]?.title).toBe('Notification 149')
   })
 })

@@ -16,7 +16,7 @@ export interface NotificationPayload {
   type: NotificationType
   category: NotificationCategory
   metadata?: unknown
-  timestamp: string
+  timestamp?: string
 }
 
 export interface AppNotification extends NotificationPayload {

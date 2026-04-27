@@ -35,9 +35,11 @@ export const useNotificationStore = defineStore('notificationStore', () => {
   const unreadCount = computed(() => notifications.value.filter(notification => !notification.read).length)
   const hubUrl = computed(() => deriveNotificationHubUrl())
 
+  const MAX_NOTIFICATIONS = 100
+
   function recordNotification(payload: NotificationPayload): AppNotification {
     const notification = normalizeNotification(payload)
-    notifications.value = [notification, ...notifications.value]
+    notifications.value = [notification, ...notifications.value].slice(0, MAX_NOTIFICATIONS)
     latestNotification.value = notification
     return notification
   }
@@ -56,8 +58,11 @@ export const useNotificationStore = defineStore('notificationStore', () => {
       status.value = 'connected'
     })
     nextConnection.onclose(() => {
-      status.value = 'disconnected'
-      connection.value = null
+      // Only clear store state if this is still the active connection
+      if (connection.value === nextConnection) {
+        status.value = 'disconnected'
+        connection.value = null
+      }
     })
 
     return nextConnection
@@ -118,7 +123,6 @@ export const useNotificationStore = defineStore('notificationStore', () => {
   }
 
   return {
-    connection,
     status,
     notifications,
     latestNotification,
