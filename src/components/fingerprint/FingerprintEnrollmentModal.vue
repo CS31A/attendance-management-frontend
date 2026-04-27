@@ -151,7 +151,7 @@ function handleClose() {
               :key="device.id"
               :value="device.deviceIdentifier"
             >
-              {{ device.name }} ({{ device.location }})
+              {{ device.name || 'Unnamed Device' }} ({{ device.location || device.deviceIdentifier }})
             </option>
           </select>
           <p v-if="fingerprintStore.devices.length === 0 && !fingerprintStore.loading" class="hint">
