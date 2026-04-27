@@ -12,6 +12,7 @@ const route = reactive({
 const push = vi.fn()
 const fetchStudentAttendanceReport = vi.fn()
 const fetchStudentEnrollments = vi.fn()
+const getSection = vi.fn()
 const fetchUsers = vi.fn()
 
 const userStore = {
@@ -54,6 +55,12 @@ vi.mock('@/api/reports', () => ({
 vi.mock('@/stores/enrollmentStore', () => ({
   useEnrollmentStore: () => ({
     fetchStudentEnrollments,
+  }),
+}))
+
+vi.mock('@/stores/sectionStore', () => ({
+  useSectionStore: () => ({
+    getSection,
   }),
 }))
 
@@ -104,8 +111,11 @@ describe('student detail view', () => {
     route.params.studentId = '550e8400-e29b-41d4-a716-446655440001'
     push.mockReset()
     fetchUsers.mockReset()
+    getSection.mockReset()
     fetchStudentEnrollments.mockReset()
     fetchStudentAttendanceReport.mockReset()
+
+    getSection.mockResolvedValue({ name: 'BSCS 1A' })
 
     fetchStudentEnrollments.mockImplementation(async (studentId: string) => [
       {

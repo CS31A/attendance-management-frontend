@@ -9,6 +9,29 @@ import { ROLES } from '@/utils/constants'
 
 vi.mock('@/api')
 
+vi.mock('@/components/SideBar.vue', () => ({
+  default: {
+    name: 'SideBar',
+    template: '<aside data-testid="sidebar" />',
+  },
+}))
+
+vi.mock('@/components/Header.vue', () => ({
+  default: {
+    name: 'Header',
+    template: '<header data-testid="header" />',
+    props: ['notificationCount', 'notifications', 'isMobile', 'isSidebarOpen', 'isSidebarCollapsed', 'showSidebar'],
+  },
+}))
+
+vi.mock('@/components/common/Toast.vue', () => ({
+  default: {
+    name: 'Toast',
+    template: '<div data-testid="toast" />',
+    props: ['show', 'message', 'type'],
+  },
+}))
+
 const routeMock = vi.hoisted(() => ({
   path: '/dashboard',
   name: 'Dashboard',
