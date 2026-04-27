@@ -1,23 +1,61 @@
-<script setup>
-import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
+<script setup lang="ts">
+import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, MoreVertical, Trash2, User } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-defineProps({
-  users: {
-    type: Array,
-    required: true,
-  },
-  showRestore: {
-    type: Boolean,
-    default: false,
-  },
-})
+interface User {
+  userId?: string | number
+  id?: string | number
+  role?: string
+  firstName?: string
+  lastname?: string
+  firstname?: string
+  lastName?: string
+  name?: string
+  fullName?: string
+  email?: string
+  sectionId?: string
+  section?: string
+  sectionName?: string
+  createdAt?: string
+}
+
+defineProps<{
+  users: User[]
+  showRestore?: boolean
+}>()
 
 defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view'])
 
+// Dropdown state
+const openDropdownId = ref<string | null>(null)
+const dropdownRef = ref<HTMLElement | null>(null)
+
+function toggleDropdown(userId: string) {
+  openDropdownId.value = openDropdownId.value === userId ? null : userId
+}
+
+function closeDropdown() {
+  openDropdownId.value = null
+}
+
+function handleClickOutside(event: MouseEvent) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    closeDropdown()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 // Get role icon component
-function _getRoleIcon(role) {
-  const icons = {
+function _getRoleIcon(role: string) {
+  const icons: Record<string, any> = {
     Instructor: GraduationCap,
     Student: User,
   }
@@ -25,7 +63,7 @@ function _getRoleIcon(role) {
 }
 
 // Get user name - handle different possible field names
-function getUserName(user) {
+function getUserName(user: any) {
   // Try different possible field name combinations
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`
@@ -44,7 +82,7 @@ function getUserName(user) {
 }
 
 // Get user section - handle different possible field names
-function _getUserSection(user) {
+function _getUserSection(user: any) {
   if (user.sectionId) {
     return user.sectionId
   }
@@ -117,22 +155,59 @@ function _getUserSection(user) {
             </div>
           </td>
           <td class="td-actions">
-            <div class="app-cell-actions">
-              <button class="app-btn-icon app-btn-edit" title="Edit User" @click="$emit('edit', user)">
-                <Edit :size="16" />
+            <div ref="dropdownRef" class="app-cell-actions">
+              <button
+                class="app-btn-icon app-btn-ellipsis"
+                title="Actions"
+                @click="toggleDropdown(String(user.userId || user.id))"
+              >
+                <MoreVertical :size="16" />
               </button>
-              <button v-if="user.role === 'Student'" class="app-btn-icon app-btn-view" title="View Student Details" @click="$emit('view', user)">
-                <Eye :size="16" />
-              </button>
-              <button v-if="showRestore" class="app-btn-icon app-btn-restore" title="Restore User" @click="$emit('restore', user)">
-                <ArchiveRestore :size="16" />
-              </button>
-              <button v-else class="app-btn-icon app-btn-restore" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
-                <ArchiveX :size="16" />
-              </button>
-              <button class="app-btn-icon app-btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
-                <Trash2 :size="16" />
-              </button>
+              <transition name="dropdown-fade">
+                <div
+                  v-if="openDropdownId === String(user.userId || user.id)"
+                  class="actions-dropdown"
+                >
+                  <button
+                    class="dropdown-item"
+                    @click="$emit('edit', user); closeDropdown()"
+                  >
+                    <Edit :size="14" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    v-if="user.role === 'Student'"
+                    class="dropdown-item"
+                    @click="$emit('view', user); closeDropdown()"
+                  >
+                    <Eye :size="14" />
+                    <span>View Details</span>
+                  </button>
+                  <button
+                    v-if="showRestore"
+                    class="dropdown-item"
+                    @click="$emit('restore', user); closeDropdown()"
+                  >
+                    <ArchiveRestore :size="14" />
+                    <span>Restore</span>
+                  </button>
+                  <button
+                    v-else
+                    class="dropdown-item"
+                    @click="$emit('softDelete', user); closeDropdown()"
+                  >
+                    <ArchiveX :size="14" />
+                    <span>Archive</span>
+                  </button>
+                  <button
+                    class="dropdown-item dropdown-item-danger"
+                    @click="$emit('delete', user); closeDropdown()"
+                  >
+                    <Trash2 :size="14" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </transition>
             </div>
           </td>
         </tr>
@@ -263,5 +338,85 @@ function _getUserSection(user) {
   .th-name, .td-name { min-width: 80px; }
   .th-actions, .td-actions { min-width: 80px; }
   .user-name, .email-text, .date-text { font-size: 0.6875rem; }
+}
+
+/* Actions Dropdown Styles */
+.app-cell-actions {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-btn-ellipsis {
+  color: var(--color-gray-600);
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-btn-ellipsis:hover {
+  background: var(--color-gray-100);
+  color: var(--color-primary);
+}
+
+.actions-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-gray-200);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 160px;
+  padding: 0.25rem;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  color: var(--color-gray-700);
+  font-weight: 500;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: var(--color-gray-50);
+  color: var(--color-primary);
+}
+
+.dropdown-item-danger {
+  color: var(--color-error);
+}
+
+.dropdown-item-danger:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-error);
+}
+
+/* Dropdown Transition */
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
