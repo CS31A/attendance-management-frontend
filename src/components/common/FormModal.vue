@@ -235,8 +235,12 @@ const isFormValid = computed(() => {
   return allRequiredFilled && noErrors
 })
 
-// Initialize/reset form when entity changes
-watch(() => props.entity, (newEntity) => {
+// Initialize/reset form when entity changes or modal opens
+watch([() => props.entity, () => props.show], ([newEntity, show]) => {
+  // Only reset when modal is opening or entity changes
+  if (!show && !newEntity)
+    return
+
   // Clear form data first
   Object.keys(formData).forEach((key) => {
     delete formData[key]
