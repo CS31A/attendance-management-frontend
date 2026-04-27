@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+import type { AppNotification } from '@/types/notifications'
 import { Bell, ChevronLeft, ChevronRight, User } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -21,19 +22,35 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  notifications: {
+    type: Array as () => AppNotification[],
+    default: () => [],
+  },
 })
 
 // Emits
-const emit = defineEmits(['notificationClick', 'profileClick', 'toggleCollapse', 'sidebarToggle'])
+const emit = defineEmits<{
+  notificationClick: []
+  notificationRead: [notificationId: string]
+  profileClick: []
+  toggleCollapse: [isCollapsed: boolean]
+  sidebarToggle: [state: { isOpen: boolean, isCollapsed: boolean }]
+}>()
 
 const router = useRouter()
 
 // Reactive state
 const isCollapsed = ref(false)
+const isNotificationsOpen = ref(false)
 
 // Handle notification click
 function handleNotificationClick() {
+  isNotificationsOpen.value = !isNotificationsOpen.value
   emit('notificationClick')
+}
+
+function handleNotificationRead(notificationId: string) {
+  emit('notificationRead', notificationId)
 }
 
 // Handle profile click
@@ -85,10 +102,41 @@ function handleToggleCollapse() {
     </div>
 
     <div class="header-right">
-      <button class="icon-button notification-button" @click="handleNotificationClick">
-        <Bell :size="20" />
-        <span v-if="notificationCount > 0" class="notification-badge">{{ notificationCount }}</span>
-      </button>
+      <div class="notification-menu">
+        <button
+          class="icon-button notification-button"
+          type="button"
+          :aria-expanded="isNotificationsOpen"
+          aria-label="Notifications"
+          @click="handleNotificationClick"
+        >
+          <Bell :size="20" />
+          <span v-if="notificationCount > 0" class="notification-badge">{{ notificationCount }}</span>
+        </button>
+
+        <div v-if="isNotificationsOpen" class="notification-dropdown">
+          <div class="notification-dropdown-header">
+            <span>Notifications</span>
+            <span v-if="notificationCount > 0" class="notification-count">{{ notificationCount }} unread</span>
+          </div>
+
+          <div v-if="notifications.length === 0" class="notification-empty">
+            No notifications
+          </div>
+
+          <button
+            v-for="notification in notifications"
+            :key="notification.id"
+            type="button"
+            class="notification-item"
+            :class="{ unread: !notification.read }"
+            @click="handleNotificationRead(notification.id)"
+          >
+            <span class="notification-title">{{ notification.title }}</span>
+            <span class="notification-message">{{ notification.message }}</span>
+          </button>
+        </div>
+      </div>
 
       <button class="icon-button profile-button" @click="handleProfileClick">
         <User :size="20" />
@@ -208,6 +256,84 @@ header {
 
 .notification-button {
   position: relative;
+}
+
+.notification-menu {
+  position: relative;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(340px, calc(100vw - 24px));
+  max-height: 360px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-sm);
+}
+
+.notification-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.notification-count {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.notification-empty {
+  padding: var(--spacing-lg) var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.notification-item {
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-sm);
+  text-align: left;
+}
+
+.notification-item:hover {
+  background: var(--bg-secondary);
+}
+
+.notification-item.unread {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.notification-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.notification-message {
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .notification-badge {

@@ -1,12 +1,18 @@
-<script setup>
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+<script setup lang="ts">
+import type { AppNotification } from '@/types/notifications'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import Toast from './components/common/Toast.vue'
+import { useToast } from './composables/useToast'
 import { useAuthStore } from './stores/authStore'
+import { useNotificationStore } from './stores/notificationStore'
 
 const SideBar = defineAsyncComponent(() => import('./components/SideBar.vue'))
 const Header = defineAsyncComponent(() => import('./components/Header.vue'))
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const route = useRoute()
+const { toast, showToast, closeToast } = useToast()
 
 const isMobile = ref(false)
 const isSidebarOpen = ref(false)
@@ -19,20 +25,37 @@ const showSidebar = computed(() => {
   // Show sidebar if authenticated and not on login or 404 page
   return isAuthenticated.value && route.path !== '/login' && route.name !== 'NotFound'
 })
+const notificationCount = computed(() => notificationStore.unreadCount)
+const notifications = computed(() => notificationStore.notifications)
 
 function checkIsMobile() {
   isMobile.value = window.innerWidth <= 768
 }
 
+async function syncNotificationsWithAuth(authenticated: boolean) {
+  if (authenticated) {
+    try {
+      await notificationStore.start()
+    }
+    catch (error) {
+      console.error('Failed to start notification connection:', error)
+    }
+    return
+  }
+
+  await notificationStore.reset()
+}
+
 // Initialize authentication state
 onMounted(async () => {
   await authStore.initializeAuth()
+  await syncNotificationsWithAuth(authStore.getIsAuthenticated)
   checkIsMobile()
   window.addEventListener('resize', checkIsMobile)
 })
 
 // Event listener to detect when sidebar opens/closes
-function handleSidebarToggle(event) {
+function handleSidebarToggle(event: CustomEvent<{ isOpen?: boolean, isCollapsed?: boolean }>) {
   if (event.detail) {
     isSidebarOpen.value = event.detail.isOpen ?? false
     isSidebarCollapsed.value = event.detail.isCollapsed ?? false
@@ -40,20 +63,21 @@ function handleSidebarToggle(event) {
 }
 
 onMounted(() => {
-  window.addEventListener('sidebarToggle', handleSidebarToggle)
+  window.addEventListener('sidebarToggle', handleSidebarToggle as EventListener)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkIsMobile)
-  window.removeEventListener('sidebarToggle', handleSidebarToggle)
+  window.removeEventListener('sidebarToggle', handleSidebarToggle as EventListener)
+  void notificationStore.stop()
 })
 
-// Notification badge count (you can make this dynamic)
-const notificationCount = ref(1)
-
-// Handle notification click
 function handleNotificationClick() {
-  // Add your notification logic here
+  // Dropdown open/close is handled inside Header; nothing else needed here.
+}
+
+function handleNotificationRead(notificationId: string) {
+  notificationStore.markRead(notificationId)
 }
 
 // Handle profile click
@@ -62,9 +86,21 @@ function handleProfileClick() {
 }
 
 // Handle collapse toggle from Header
-function handleToggleCollapse(isCollapsed) {
+function handleToggleCollapse(isCollapsed: boolean) {
   isSidebarCollapsed.value = isCollapsed
 }
+
+watch(isAuthenticated, syncNotificationsWithAuth)
+
+watch(
+  () => notificationStore.latestNotification,
+  (notification: AppNotification | null) => {
+    if (!notification)
+      return
+
+    showToast(notification.message, 'info', 5000)
+  },
+)
 </script>
 
 <template>
@@ -83,11 +119,13 @@ function handleToggleCollapse(isCollapsed) {
       <Header
         v-if="showSidebar"
         :notification-count="notificationCount"
+        :notifications="notifications"
         :is-mobile="isMobile"
         :is-sidebar-open="isSidebarOpen"
         :is-sidebar-collapsed="isSidebarCollapsed"
         :show-sidebar="showSidebar"
         @notification-click="handleNotificationClick"
+        @notification-read="handleNotificationRead"
         @profile-click="handleProfileClick"
         @toggle-collapse="handleToggleCollapse"
         @sidebar-toggle="handleSidebarToggle"
@@ -103,6 +141,14 @@ function handleToggleCollapse(isCollapsed) {
       >
         <router-view />
       </main>
+
+      <Toast
+        :show="toast.show"
+        :message="toast.message"
+        :type="toast.type"
+        :duration="toast.duration"
+        @close="closeToast"
+      />
     </template>
   </div>
 </template>
