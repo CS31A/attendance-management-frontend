@@ -29,28 +29,44 @@ defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view'])
 
 // Dropdown state
 const openDropdownId = ref<string | null>(null)
-const dropdownRef = ref<HTMLElement | null>(null)
+const dropdownPosition = ref<{ top: number; left: number } | null>(null)
 
-function toggleDropdown(userId: string) {
-  openDropdownId.value = openDropdownId.value === userId ? null : userId
+function toggleDropdown(userId: string, event: MouseEvent) {
+  const button = event.currentTarget as HTMLElement
+  const rect = button.getBoundingClientRect()
+
+  if (openDropdownId.value === userId) {
+    closeDropdown()
+  } else {
+    openDropdownId.value = userId
+    dropdownPosition.value = {
+      top: rect.bottom + 8,
+      left: rect.right - 160, // Align to right side of button
+    }
+  }
 }
 
 function closeDropdown() {
   openDropdownId.value = null
+  dropdownPosition.value = null
 }
 
 function handleClickOutside(event: MouseEvent) {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-    closeDropdown()
-  }
+  closeDropdown()
+}
+
+function handleScroll() {
+  closeDropdown()
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  window.addEventListener('scroll', handleScroll, true)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', handleScroll, true)
 })
 
 // Get role icon component
@@ -155,59 +171,62 @@ function _getUserSection(user: any) {
             </div>
           </td>
           <td class="td-actions">
-            <div ref="dropdownRef" class="app-cell-actions">
+            <div class="app-cell-actions">
               <button
                 class="app-btn-icon app-btn-ellipsis"
                 title="Actions"
-                @click="toggleDropdown(String(user.userId || user.id))"
+                @click.stop="toggleDropdown(String(user.userId || user.id), $event)"
               >
                 <MoreVertical :size="16" />
               </button>
-              <transition name="dropdown-fade">
-                <div
-                  v-if="openDropdownId === String(user.userId || user.id)"
-                  class="actions-dropdown"
-                >
-                  <button
-                    class="dropdown-item"
-                    @click="$emit('edit', user); closeDropdown()"
+              <teleport to="body">
+                <transition name="dropdown-fade">
+                  <div
+                    v-if="openDropdownId === String(user.userId || user.id) && dropdownPosition"
+                    class="actions-dropdown"
+                    :style="{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }"
                   >
-                    <Edit :size="14" />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    v-if="user.role === 'Student'"
-                    class="dropdown-item"
-                    @click="$emit('view', user); closeDropdown()"
-                  >
-                    <Eye :size="14" />
-                    <span>View Details</span>
-                  </button>
-                  <button
-                    v-if="showRestore"
-                    class="dropdown-item"
-                    @click="$emit('restore', user); closeDropdown()"
-                  >
-                    <ArchiveRestore :size="14" />
-                    <span>Restore</span>
-                  </button>
-                  <button
-                    v-else
-                    class="dropdown-item"
-                    @click="$emit('softDelete', user); closeDropdown()"
-                  >
-                    <ArchiveX :size="14" />
-                    <span>Archive</span>
-                  </button>
-                  <button
-                    class="dropdown-item dropdown-item-danger"
-                    @click="$emit('delete', user); closeDropdown()"
-                  >
-                    <Trash2 :size="14" />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              </transition>
+                    <button
+                      class="dropdown-item"
+                      @click.stop="$emit('edit', user); closeDropdown()"
+                    >
+                      <Edit :size="14" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      v-if="user.role === 'Student'"
+                      class="dropdown-item"
+                      @click.stop="$emit('view', user); closeDropdown()"
+                    >
+                      <Eye :size="14" />
+                      <span>View Details</span>
+                    </button>
+                    <button
+                      v-if="showRestore"
+                      class="dropdown-item"
+                      @click.stop="$emit('restore', user); closeDropdown()"
+                    >
+                      <ArchiveRestore :size="14" />
+                      <span>Restore</span>
+                    </button>
+                    <button
+                      v-else
+                      class="dropdown-item"
+                      @click.stop="$emit('softDelete', user); closeDropdown()"
+                    >
+                      <ArchiveX :size="14" />
+                      <span>Archive</span>
+                    </button>
+                    <button
+                      class="dropdown-item dropdown-item-danger"
+                      @click.stop="$emit('delete', user); closeDropdown()"
+                    >
+                      <Trash2 :size="14" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </transition>
+              </teleport>
             </div>
           </td>
         </tr>
@@ -364,15 +383,13 @@ function _getUserSection(user: any) {
 }
 
 .actions-dropdown {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.5rem);
+  position: fixed;
   background: white;
   border-radius: 12px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--color-gray-200);
   overflow: hidden;
-  z-index: 100;
+  z-index: 1000;
   min-width: 160px;
   padding: 0.25rem;
 }

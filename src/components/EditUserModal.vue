@@ -98,7 +98,7 @@ function updateUser() {
   }
 
   const userData = {
-    Username: email.value,
+    UserId: props.user.userId || props.user.id,
     Email: email.value,
     FirstName: firstName.value,
     LastName: lastName.value,
