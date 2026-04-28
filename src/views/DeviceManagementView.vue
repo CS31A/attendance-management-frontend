@@ -16,9 +16,15 @@ const notificationStore = useNotificationStore()
 const { toast, showToast, closeToast } = useToast()
 
 const searchQuery = ref('')
-const selectedDevice = ref<FingerprintDeviceDto | null>(null)
+const selectedDeviceId = ref<string | number | null>(null)
 const showDeviceModal = ref(false)
 const viewMode = ref<'all' | 'active' | 'inactive'>('all')
+
+const selectedDevice = computed(() =>
+  selectedDeviceId.value != null
+    ? deviceStore.getDeviceById(selectedDeviceId.value) ?? null
+    : null,
+)
 
 onMounted(async () => {
   await refreshDevices()
@@ -98,13 +104,13 @@ function clearSearch() {
 }
 
 function handleViewDevice(device: FingerprintDeviceDto) {
-  selectedDevice.value = device
+  selectedDeviceId.value = device.id
   showDeviceModal.value = true
 }
 
 function closeDeviceModal() {
   showDeviceModal.value = false
-  selectedDevice.value = null
+  selectedDeviceId.value = null
 }
 
 function getConnectivityStatusClass(device: FingerprintDeviceDto): string {
