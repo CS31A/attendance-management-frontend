@@ -37,24 +37,16 @@ async function refreshDevices() {
 }
 
 function subscribeToDeviceUpdates() {
-  const connection = notificationStore.connection
-
-  if (connection) {
-    try {
-      connection.on('DeviceStatusUpdate', handleDeviceStatusUpdate)
-    }
-    catch (error) {
-      console.error('Failed to subscribe to device status updates:', error)
-    }
+  try {
+    notificationStore.registerHandler('DeviceStatusUpdate', handleDeviceStatusUpdate)
+  }
+  catch (error) {
+    console.error('Failed to subscribe to device status updates:', error)
   }
 }
 
 function unsubscribeFromDeviceUpdates() {
-  const connection = notificationStore.connection
-
-  if (connection) {
-    connection.off('DeviceStatusUpdate', handleDeviceStatusUpdate)
-  }
+  notificationStore.unregisterHandler('DeviceStatusUpdate', handleDeviceStatusUpdate)
 }
 
 function handleDeviceStatusUpdate(deviceUpdate: Partial<FingerprintDeviceDto> & { id: string | number }) {

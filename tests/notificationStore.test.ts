@@ -7,10 +7,11 @@ interface MockConnection {
   start: ReturnType<typeof vi.fn>
   stop: ReturnType<typeof vi.fn>
   on: ReturnType<typeof vi.fn>
+  off: ReturnType<typeof vi.fn>
   onreconnecting: ReturnType<typeof vi.fn>
   onreconnected: ReturnType<typeof vi.fn>
   onclose: ReturnType<typeof vi.fn>
-  handlers: Record<string, (payload: NotificationPayload) => void>
+  handlers: Record<string, ((payload: NotificationPayload) => void)[]>
   reconnecting?: () => void
   reconnected?: () => void
   closed?: () => void
@@ -28,7 +29,19 @@ const signalRMock = vi.hoisted(() => {
       stop: vi.fn().mockResolvedValue(undefined),
       handlers: {},
       on: vi.fn((eventName: string, handler: (payload: NotificationPayload) => void) => {
-        connections.at(-1)!.handlers[eventName] = handler
+        const conn = connections.at(-1)!
+        if (!conn.handlers[eventName])
+          conn.handlers[eventName] = []
+        conn.handlers[eventName]!.push(handler)
+      }),
+      off: vi.fn((eventName: string, handler: (payload: NotificationPayload) => void) => {
+        const conn = connections.at(-1)!
+        const list = conn.handlers[eventName]
+        if (list) {
+          const idx = list.indexOf(handler)
+          if (idx !== -1)
+            list.splice(idx, 1)
+        }
       }),
       onreconnecting: vi.fn((handler: () => void) => {
         connections.at(-1)!.reconnecting = handler
@@ -105,6 +118,7 @@ describe('notificationStore', () => {
         stop: vi.fn().mockResolvedValue(undefined),
         handlers: {},
         on: vi.fn(),
+        off: vi.fn(),
         onreconnecting: vi.fn(),
         onreconnected: vi.fn(),
         onclose: vi.fn(),
@@ -160,6 +174,7 @@ describe('notificationStore', () => {
         stop: vi.fn().mockResolvedValue(undefined),
         handlers: {},
         on: vi.fn(),
+        off: vi.fn(),
         onreconnecting: vi.fn(),
         onreconnected: vi.fn(),
         onclose: vi.fn(),
@@ -183,7 +198,7 @@ describe('notificationStore', () => {
     const store = useNotificationStore()
     await store.start()
 
-    signalRMock.connections[0]!.handlers.ReceiveNotification(createPayload())
+    signalRMock.connections[0]!.handlers.ReceiveNotification![0](createPayload())
 
     expect(store.notifications).toHaveLength(1)
     expect(store.unreadCount).toBe(1)
@@ -200,7 +215,7 @@ describe('notificationStore', () => {
     store.markRead(store.notifications[0]!.id)
     expect(store.unreadCount).toBe(0)
 
-    signalRMock.connections[0]!.handlers.ReceiveNotification(createPayload({ title: 'Session Started' }))
+    signalRMock.connections[0]!.handlers.ReceiveNotification![0](createPayload({ title: 'Session Started' }))
     expect(store.unreadCount).toBe(1)
 
     store.markAllRead()
@@ -210,7 +225,7 @@ describe('notificationStore', () => {
   it('reset stops the connection and clears volatile notification state', async () => {
     const store = useNotificationStore()
     await store.start()
-    signalRMock.connections[0]!.handlers.ReceiveNotification(createPayload())
+    signalRMock.connections[0]!.handlers.ReceiveNotification![0](createPayload())
 
     await store.reset()
 
@@ -226,12 +241,85 @@ describe('notificationStore', () => {
 
     // Add more than 100 notifications
     for (let i = 0; i < 150; i++) {
-      signalRMock.connections[0]!.handlers.ReceiveNotification(createPayload({ title: `Notification ${i}` }))
+      signalRMock.connections[0]!.handlers.ReceiveNotification![0](createPayload({ title: `Notification ${i}` }))
     }
 
     // Should be capped at 100
     expect(store.notifications).toHaveLength(100)
     // Most recent notification should be first
     expect(store.notifications[0]?.title).toBe('Notification 149')
+  })
+
+  it('registerHandler before start defers binding until connection is created', async () => {
+    const store = useNotificationStore()
+    const handler = vi.fn()
+
+    store.registerHandler('DeviceStatusUpdate', handler)
+    expect(signalRMock.connections).toHaveLength(0)
+
+    await store.start()
+    expect(signalRMock.connections[0]!.on).toHaveBeenCalledWith('DeviceStatusUpdate', handler)
+  })
+
+  it('registerHandler after start binds immediately to active connection', async () => {
+    const store = useNotificationStore()
+    await store.start()
+
+    const handler = vi.fn()
+    store.registerHandler('CustomEvent', handler)
+
+    expect(signalRMock.connections[0]!.on).toHaveBeenCalledWith('CustomEvent', handler)
+  })
+
+  it('unregisterHandler removes handler from connection and registry', async () => {
+    const store = useNotificationStore()
+    await store.start()
+
+    const handler = vi.fn()
+    store.registerHandler('DeviceStatusUpdate', handler)
+    store.unregisterHandler('DeviceStatusUpdate', handler)
+
+    expect(signalRMock.connections[0]!.off).toHaveBeenCalledWith('DeviceStatusUpdate', handler)
+  })
+
+  it('unregisterHandler cleans up empty event entries', async () => {
+    const store = useNotificationStore()
+    const handler = vi.fn()
+
+    store.registerHandler('DeviceStatusUpdate', handler)
+    store.unregisterHandler('DeviceStatusUpdate', handler)
+
+    await store.start()
+    const deviceCalls = signalRMock.connections[0]!.on.mock.calls.filter(
+      (call: [string, unknown]) => call[0] === 'DeviceStatusUpdate',
+    )
+    expect(deviceCalls).toHaveLength(0)
+  })
+
+  it('binds multiple handlers for the same event', async () => {
+    const store = useNotificationStore()
+    const handlerA = vi.fn()
+    const handlerB = vi.fn()
+
+    store.registerHandler('DeviceStatusUpdate', handlerA)
+    store.registerHandler('DeviceStatusUpdate', handlerB)
+    await store.start()
+
+    expect(signalRMock.connections[0]!.on).toHaveBeenCalledWith('DeviceStatusUpdate', handlerA)
+    expect(signalRMock.connections[0]!.on).toHaveBeenCalledWith('DeviceStatusUpdate', handlerB)
+  })
+
+  it('registered handlers survive connection reset (stop/start)', async () => {
+    const store = useNotificationStore()
+    const handler = vi.fn()
+
+    store.registerHandler('DeviceStatusUpdate', handler)
+    await store.start()
+    expect(signalRMock.connections[0]!.on).toHaveBeenCalledWith('DeviceStatusUpdate', handler)
+
+    await store.stop()
+    await store.start()
+
+    expect(signalRMock.connections[1]!.on).toHaveBeenCalledWith('DeviceStatusUpdate', handler)
   })
 })
