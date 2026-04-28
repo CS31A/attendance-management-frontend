@@ -44,16 +44,7 @@ onUnmounted(() => {
 async function handleStartEnrollment() {
   if (!canSubmit.value)
     return
-  await submitEnrollment(false)
-}
 
-async function handleStartAndMonitor() {
-  if (!canSubmit.value)
-    return
-  await submitEnrollment(true)
-}
-
-async function submitEnrollment(monitor: boolean) {
   isSubmitting.value = true
   error.value = ''
 
@@ -64,14 +55,8 @@ async function submitEnrollment(monitor: boolean) {
     )
     currentSessionId.value = session.enrollmentSessionId
     status.value = session.status
-
-    if (monitor) {
-      isMonitoring.value = true
-      startPolling(session.enrollmentSessionId)
-    }
-    else {
-      emit('close')
-    }
+    isMonitoring.value = true
+    startPolling(session.enrollmentSessionId)
   }
   catch (err: unknown) {
     const axiosError = err as { response?: { data?: { message?: string } } }
@@ -213,9 +198,6 @@ async function handleClose() {
           {{ isCancelling ? 'Cancelling...' : 'Cancel' }}
         </button>
         <template v-if="!isMonitoring">
-          <button class="btn-secondary" :disabled="!canSubmit" @click="handleStartAndMonitor">
-            Start & Monitor
-          </button>
           <button class="btn-primary" :disabled="!canSubmit" @click="handleStartEnrollment">
             <Loader2 v-if="isSubmitting" class="spin" :size="16" />
             <span v-else>Start Enrollment</span>
