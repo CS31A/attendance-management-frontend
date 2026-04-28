@@ -15,7 +15,7 @@ export interface FingerprintEnrollmentSessionDto {
   studentId: EntityId
   studentName: string
   assignedSensorFingerprintId: number
-  status: 'Pending' | 'InProgress' | 'Completed' | 'Failed' | 'Expired'
+  status: 'Pending' | 'InProgress' | 'Completed' | 'Failed' | 'Expired' | 'Cancelled'
   expiresAt: string
   failureReason?: string
 }
@@ -35,6 +35,11 @@ export async function createEnrollmentSession(payload: {
 
 export async function getEnrollmentSession(sessionId: string): Promise<FingerprintEnrollmentSessionDto> {
   const response = await api.get(`/fingerprint/enrollment-sessions/${sessionId}`)
+  return response.data
+}
+
+export async function cancelEnrollmentSession(sessionId: string): Promise<FingerprintEnrollmentSessionDto> {
+  const response = await api.delete(`/fingerprint/enrollment-sessions/${sessionId}`)
   return response.data
 }
 

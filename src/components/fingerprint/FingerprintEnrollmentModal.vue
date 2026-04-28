@@ -20,15 +20,16 @@ const fingerprintStore = useFingerprintStore()
 
 const selectedDeviceIdentifier = ref('')
 const isSubmitting = ref(false)
+const isCancelling = ref(false)
 const isMonitoring = ref(false)
 const currentSessionId = ref<string | null>(null)
-const status = ref<'Pending' | 'InProgress' | 'Completed' | 'Failed' | 'Expired'>('Pending')
+const status = ref<'Pending' | 'InProgress' | 'Completed' | 'Failed' | 'Expired' | 'Cancelled'>('Pending')
 const failureReason = ref('')
 const error = ref('')
 const pollInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
-const canSubmit = computed(() => selectedDeviceIdentifier.value && !isSubmitting.value)
-const isDone = computed(() => ['Completed', 'Failed', 'Expired'].includes(status.value))
+const canSubmit = computed(() => selectedDeviceIdentifier.value && !isSubmitting.value && !isCancelling.value)
+const isDone = computed(() => ['Completed', 'Failed', 'Expired', 'Cancelled'].includes(status.value))
 
 onMounted(() => {
   fingerprintStore.fetchDevices().catch((err) => {
@@ -109,7 +110,25 @@ function stopPolling() {
   }
 }
 
-function handleClose() {
+async function handleClose() {
+  if (isMonitoring.value && currentSessionId.value && !isDone.value) {
+    isCancelling.value = true
+    error.value = ''
+    try {
+      await fingerprintStore.cancelEnrollmentSession(currentSessionId.value)
+      status.value = 'Cancelled'
+    }
+    catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      error.value = axiosError.response?.data?.message || 'Failed to cancel enrollment'
+      isCancelling.value = false
+      return
+    }
+    finally {
+      isCancelling.value = false
+    }
+  }
+
   if (status.value === 'Completed' && currentSessionId.value) {
     emit('enrolled', currentSessionId.value)
   }
@@ -129,7 +148,7 @@ function handleClose() {
     <div class="modal">
       <div class="modal-header">
         <h3>Enroll Fingerprint</h3>
-        <button class="close-btn" @click="handleClose">
+        <button class="close-btn" :disabled="isCancelling" @click="handleClose">
           <X :size="20" />
         </button>
       </div>
@@ -166,15 +185,15 @@ function handleClose() {
               <Loader2 v-else class="spin" :size="16" />
               <span>Session created</span>
             </div>
-            <div class="step" :class="{ active: status === 'InProgress', complete: ['Completed', 'Failed', 'Expired'].includes(status) }">
-              <Check v-if="['Completed', 'Failed', 'Expired'].includes(status)" :size="16" />
+            <div class="step" :class="{ active: status === 'InProgress', complete: ['Completed', 'Failed', 'Expired', 'Cancelled'].includes(status) }">
+              <Check v-if="['Completed', 'Failed', 'Expired', 'Cancelled'].includes(status)" :size="16" />
               <Loader2 v-else-if="status === 'InProgress'" class="spin" :size="16" />
               <Clock v-else :size="16" />
               <span>Waiting for student scan...</span>
             </div>
             <div class="step" :class="{ active: isDone }">
               <Check v-if="status === 'Completed'" class="success-icon" :size="16" />
-              <X v-else-if="['Failed', 'Expired'].includes(status)" class="error-icon" :size="16" />
+              <X v-else-if="['Failed', 'Expired', 'Cancelled'].includes(status)" class="error-icon" :size="16" />
               <span>{{ status }}</span>
             </div>
           </div>
@@ -190,8 +209,8 @@ function handleClose() {
       </div>
 
       <div class="modal-footer">
-        <button class="btn-secondary" :disabled="isSubmitting" @click="handleClose">
-          Cancel
+        <button class="btn-secondary" :disabled="isSubmitting || isCancelling" @click="handleClose">
+          {{ isCancelling ? 'Cancelling...' : 'Cancel' }}
         </button>
         <template v-if="!isMonitoring">
           <button class="btn-secondary" :disabled="!canSubmit" @click="handleStartAndMonitor">

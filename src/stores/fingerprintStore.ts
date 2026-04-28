@@ -43,6 +43,10 @@ export const useFingerprintStore = defineStore('fingerprintStore', () => {
     return await fingerprintApi.getEnrollmentSession(sessionId)
   }
 
+  async function cancelEnrollmentSession(sessionId: string) {
+    return await fingerprintApi.cancelEnrollmentSession(sessionId)
+  }
+
   async function deleteFingerprint(fingerprintId: EntityId) {
     beginLoading()
     try {
@@ -59,6 +63,7 @@ export const useFingerprintStore = defineStore('fingerprintStore', () => {
     fetchDevices,
     createEnrollmentSession,
     getEnrollmentSession,
+    cancelEnrollmentSession,
     deleteFingerprint,
   }
 })
