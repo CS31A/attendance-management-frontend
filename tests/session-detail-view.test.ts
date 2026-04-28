@@ -100,6 +100,8 @@ describe('session detail view', () => {
     expect(qrCodeStore.fetchSessionQrCodes).toHaveBeenCalledWith('session-1')
     expect(wrapper.text()).toContain('CS101 - Data Structures')
     expect(wrapper.text()).toContain('Room 101')
+    expect(wrapper.text()).toContain('Scheduled End')
+    expect(wrapper.text()).toContain('9:00 AM')
     expect(wrapper.text()).toContain('4 / 10')
   })
 

@@ -287,6 +287,10 @@ onMounted(async () => {
             <dd>{{ displayText(formatTime(fieldValue(session, ['scheduledStartTime', 'startTime'])), 'Not scheduled') }}</dd>
           </div>
           <div>
+            <dt>Scheduled End</dt>
+            <dd>{{ displayText(formatTime(fieldValue(session, ['scheduledEndTime', 'endTime'])), 'Not scheduled') }}</dd>
+          </div>
+          <div>
             <dt>Actual Start</dt>
             <dd>{{ getLifecycleTimestamp(session, ['actualStartTime', 'startedAt']) }}</dd>
           </div>
