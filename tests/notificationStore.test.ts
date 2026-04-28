@@ -291,7 +291,7 @@ describe('notificationStore', () => {
 
     await store.start()
     const deviceCalls = signalRMock.connections[0]!.on.mock.calls.filter(
-      (call: [string, unknown]) => call[0] === 'DeviceStatusUpdate',
+      call => (call as [string, unknown])[0] === 'DeviceStatusUpdate',
     )
     expect(deviceCalls).toHaveLength(0)
   })
