@@ -62,6 +62,30 @@ export type ScheduleQueryParams = PaginationParams & {
   [key: string]: unknown
 }
 
+function normalizeSchedule(schedule: ScheduleDto): ScheduleDto {
+  const instructor = schedule.instructor
+
+  return Object.assign(schedule, {
+    subjectId: schedule.subjectId ?? schedule.subject?.id ?? null,
+    subjectCode: schedule.subjectCode ?? schedule.subject?.code,
+    subjectName: schedule.subjectName ?? schedule.subject?.name,
+    classroomId: schedule.classroomId ?? schedule.classroom?.id ?? null,
+    classroomName: schedule.classroomName ?? schedule.classroom?.name ?? schedule.classroom?.classroomName,
+    sectionId: schedule.sectionId ?? schedule.section?.id ?? null,
+    sectionName: schedule.sectionName ?? schedule.section?.name ?? schedule.section?.sectionName,
+    courseId: schedule.courseId ?? schedule.course?.id ?? null,
+    courseCode: schedule.courseCode ?? schedule.course?.code,
+    courseName: schedule.courseName ?? schedule.course?.name ?? schedule.course?.courseName,
+    instructorId: schedule.instructorId ?? instructor?.id ?? null,
+    instructorFirstName: schedule.instructorFirstName ?? instructor?.firstName ?? instructor?.firstname,
+    instructorLastName: schedule.instructorLastName ?? instructor?.lastName ?? instructor?.lastname,
+  })
+}
+
+function normalizeScheduleCollection(data: ScheduleCollectionDto): ScheduleCollectionDto {
+  return data.map(normalizeSchedule)
+}
+
 /**
  * Get all schedules
  * @returns {Promise<Array>} List of schedule objects
@@ -69,7 +93,7 @@ export type ScheduleQueryParams = PaginationParams & {
 export async function getAllSchedules(): Promise<ScheduleCollectionDto> {
   try {
     const response = await api.get(SCHEDULE_ENDPOINT)
-    return response.data
+    return normalizeScheduleCollection(response.data)
   }
   catch (error) {
     console.error('Failed to fetch schedules:', error)
@@ -85,7 +109,7 @@ export async function getAllSchedules(): Promise<ScheduleCollectionDto> {
 export async function getSchedulesBySection(sectionId: EntityId): Promise<ScheduleCollectionDto> {
   try {
     const response = await api.get(`${SCHEDULE_ENDPOINT}/by-section/${sectionId}`)
-    return response.data
+    return normalizeScheduleCollection(response.data)
   }
   catch (error) {
     console.error(`Failed to fetch schedules for section ${sectionId}:`, error)
@@ -100,7 +124,7 @@ export async function getSchedulesBySection(sectionId: EntityId): Promise<Schedu
 export async function getMySchedules(): Promise<ScheduleCollectionDto> {
   try {
     const response = await api.get(`${SCHEDULE_ENDPOINT}/my-schedules`)
-    return response.data
+    return normalizeScheduleCollection(response.data)
   }
   catch (error) {
     console.error('Failed to fetch my schedules:', error)
@@ -116,7 +140,7 @@ export async function getMySchedules(): Promise<ScheduleCollectionDto> {
 export async function getScheduleById(id: EntityId): Promise<ScheduleDto> {
   try {
     const response = await api.get(`${SCHEDULE_ENDPOINT}/${id}`)
-    return response.data
+    return normalizeSchedule(response.data)
   }
   catch (error) {
     console.error(`Failed to fetch schedule ${id}:`, error)
@@ -132,7 +156,7 @@ export async function getScheduleById(id: EntityId): Promise<ScheduleDto> {
 export async function createSchedule(data: SchedulePayload): Promise<ScheduleDto> {
   try {
     const response = await api.post(SCHEDULE_ENDPOINT, data)
-    return response.data
+    return normalizeSchedule(response.data)
   }
   catch (error) {
     console.error('Failed to create schedule:', error)
@@ -149,7 +173,7 @@ export async function createSchedule(data: SchedulePayload): Promise<ScheduleDto
 export async function updateSchedule(id: EntityId, data: SchedulePayload): Promise<ScheduleDto> {
   try {
     const response = await api.patch(`${SCHEDULE_ENDPOINT}/${id}`, data)
-    return response.data
+    return normalizeSchedule(response.data)
   }
   catch (error) {
     console.error(`Failed to update schedule ${id}:`, error)

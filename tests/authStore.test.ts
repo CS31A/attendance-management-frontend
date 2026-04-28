@@ -29,9 +29,13 @@ function createMockUserProfile(overrides: Partial<AuthUserProfile> = {}): AuthUs
 
 function createMockCheckAuthResponse(overrides: Partial<CheckAuthResponse> = {}): CheckAuthResponse {
   return {
-    user: { id: '1', name: 'Test User', email: 'test@example.com' } as CheckAuthResponse['user'],
+    user: 'testuser',
     ...overrides,
   }
+}
+
+function createStoredUser() {
+  return { username: 'testuser' }
 }
 
 describe('authStore', () => {
@@ -83,7 +87,7 @@ describe('authStore', () => {
       const result = await store.checkAuth()
 
       expect(result).toBe(true)
-      expect(store.user).toEqual(mockCheckResponse.user)
+      expect(store.user).toEqual({ username: mockCheckResponse.user })
       expect(store.isAuthenticated).toBe(true)
       expect(store.userProfile).toEqual(mockProfile)
       expect(store.isLoading).toBe(false)
@@ -93,7 +97,7 @@ describe('authStore', () => {
       vi.mocked(api.get).mockResolvedValue(createAxiosResponse({}) as never)
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 
@@ -111,7 +115,7 @@ describe('authStore', () => {
       vi.mocked(getErrorStatus).mockReturnValue(401)
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 
@@ -286,7 +290,7 @@ describe('authStore', () => {
       vi.mocked(api.post).mockResolvedValue({} as never)
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 
@@ -301,7 +305,7 @@ describe('authStore', () => {
       vi.mocked(api.post).mockRejectedValue(new Error('Logout failed'))
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 
@@ -333,7 +337,7 @@ describe('authStore', () => {
 
     it('does not call checkAuth when user is already set', async () => {
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.isLoading = true
 
       await store.initializeAuth()
@@ -378,7 +382,7 @@ describe('authStore', () => {
       vi.mocked(api.post).mockResolvedValue({ data: { success: false } } as never)
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 
@@ -396,7 +400,7 @@ describe('authStore', () => {
       vi.mocked(getErrorStatus).mockReturnValue(401)
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 
@@ -414,7 +418,7 @@ describe('authStore', () => {
       vi.mocked(getErrorStatus).mockReturnValue(403)
 
       const store = useAuthStore()
-      store.user = createMockCheckAuthResponse().user as NonNullable<CheckAuthResponse['user']>
+      store.user = createStoredUser()
       store.userProfile = createMockUserProfile()
       store.isAuthenticated = true
 

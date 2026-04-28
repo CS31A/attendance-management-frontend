@@ -52,6 +52,19 @@ function handlePageChange(page: number) {
   loadScanHistory()
 }
 
+function getStatusClass(status: string | undefined): string {
+  const normalizedStatus = status?.toLowerCase() || ''
+  if (normalizedStatus === 'present')
+    return 'status-present'
+  if (normalizedStatus === 'absent')
+    return 'status-absent'
+  if (normalizedStatus === 'late')
+    return 'status-late'
+  if (normalizedStatus === 'excused')
+    return 'status-excused'
+  return 'status-unknown'
+}
+
 function exportToCSV() {
   if (!hasScans.value)
     return
@@ -175,7 +188,6 @@ watch(() => props.show, (newVal) => {
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Student ID</th>
                 <th>Scan Time</th>
                 <th>Status</th>
               </tr>
@@ -185,18 +197,15 @@ watch(() => props.show, (newVal) => {
                 <td class="student-name">
                   {{ scan.studentName || 'Unknown' }}
                 </td>
-                <td class="student-id">
-                  {{ scan.studentId || 'N/A' }}
-                </td>
                 <td class="scan-time">
                   {{ formatScanTime(scan.scannedAt) }}
                 </td>
                 <td>
                   <span
                     class="status-badge"
-                    :class="scan.status === 'success' ? 'status-success' : 'status-failed'"
+                    :class="getStatusClass(scan.status)"
                   >
-                    {{ scan.status || 'success' }}
+                    {{ scan.status || 'Present' }}
                   </span>
                 </td>
               </tr>
@@ -469,14 +478,29 @@ watch(() => props.show, (newVal) => {
   letter-spacing: 0.05em;
 }
 
-.status-success {
+.status-present {
   background: #ecfdf5;
   color: #059669;
 }
 
-.status-failed {
+.status-absent {
   background: #fef2f2;
   color: #dc2626;
+}
+
+.status-late {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.status-excused {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-unknown {
+  background: #f3f4f6;
+  color: #9ca3af;
 }
 
 .pagination {
@@ -570,11 +594,6 @@ watch(() => props.show, (newVal) => {
   .qr-info {
     flex-direction: column;
     gap: 0.75rem;
-  }
-
-  .scans-table th:nth-child(2),
-  .scans-table td:nth-child(2) {
-    display: none;
   }
 }
 </style>

@@ -39,6 +39,36 @@ describe('schedules API', () => {
     expect(result).toBe(response.data)
   })
 
+  it('normalizes nested backend schedule relations into flat convenience fields', async () => {
+    getMock.mockResolvedValue({
+      data: [{
+        id: 'schedule-uuid',
+        timeIn: '08:00',
+        timeOut: '09:00',
+        subject: { id: 'subject-uuid', code: 'CS101', name: 'Data Structures' },
+        classroom: { id: 'classroom-uuid', name: 'Room 101' },
+        section: { id: 'section-uuid', name: 'BSCS 3A' },
+        instructor: { id: 'instructor-uuid', firstname: 'Ada', lastname: 'Lovelace' },
+      }],
+    })
+
+    const schedulesApi = await import('@/api/schedules')
+    const result = await schedulesApi.getAllSchedules()
+
+    expect(result[0]).toMatchObject({
+      subjectId: 'subject-uuid',
+      subjectCode: 'CS101',
+      subjectName: 'Data Structures',
+      classroomId: 'classroom-uuid',
+      classroomName: 'Room 101',
+      sectionId: 'section-uuid',
+      sectionName: 'BSCS 3A',
+      instructorId: 'instructor-uuid',
+      instructorFirstName: 'Ada',
+      instructorLastName: 'Lovelace',
+    })
+  })
+
   it('updates schedules with PATCH to match the backend route', async () => {
     const response = { data: { id: '5' } }
     patchMock.mockResolvedValue(response)

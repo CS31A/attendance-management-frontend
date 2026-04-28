@@ -92,6 +92,16 @@ export const useAuthStore = defineStore('authStore', () => {
    */
   const isAdmin = computed(() => userProfile.value?.role === ROLES.ADMIN)
 
+  function normalizeAuthenticatedUser(authenticatedUser: CheckAuthResponse['user']): AuthenticatedUser | null {
+    if (!authenticatedUser)
+      return null
+
+    if (typeof authenticatedUser === 'string')
+      return { username: authenticatedUser }
+
+    return authenticatedUser
+  }
+
   // Actions
   /**
    * Fetch the full user profile with role information
@@ -136,8 +146,10 @@ export const useAuthStore = defineStore('authStore', () => {
     try {
       const response = await api.get<CheckAuthResponse>('/account/check')
 
-      if (response.data && response.data.user) {
-        user.value = response.data.user
+      const authenticatedUser = normalizeAuthenticatedUser(response.data?.user)
+
+      if (authenticatedUser) {
+        user.value = authenticatedUser
         isAuthenticated.value = true
 
         // Fetch full user profile with role information

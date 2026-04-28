@@ -36,7 +36,7 @@ export interface AuthUserProfile {
 }
 
 export interface CheckAuthResponse {
-  user?: AuthenticatedUser | null
+  user?: AuthenticatedUser | string | null
   [key: string]: unknown
 }
 

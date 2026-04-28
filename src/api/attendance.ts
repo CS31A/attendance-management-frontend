@@ -31,12 +31,32 @@ export interface SessionAttendanceResponseDto extends AttendanceResponseDto {
   checkInTime?: string
 }
 
+export interface SessionAttendanceSummaryDto {
+  sessionId: EntityId
+  sessionDate: string
+  scheduleId: EntityId
+  scheduleTitle: string
+  subjectName: string
+  sectionName: string
+  totalEnrolled: number
+  presentCount: number
+  lateCount: number
+  absentCount: number
+  excusedCount: number
+  attendanceRate: number
+  attendanceRecords: SessionAttendanceResponseDto[]
+}
+
 export interface AttendanceSummaryDto {
-  total?: number
-  presentCount?: number
-  absentCount?: number
-  lateCount?: number
-  excusedCount?: number
+  totalSessions?: number
+  totalEnrolled?: number
+  totalPresent?: number
+  totalLate?: number
+  totalAbsent?: number
+  totalExcused?: number
+  attendanceRate?: number
+  averageCheckInTime?: string
+  mostFrequentStatus?: string
   [key: string]: unknown
 }
 
@@ -84,6 +104,14 @@ interface SessionAttendanceResponse {
   attendanceRecords?: SessionAttendanceResponseDto[]
 }
 
+interface AttendancePagedResponse {
+  items?: AttendanceResponseDto[]
+}
+
+interface StudentAttendanceHistoryResponse {
+  attendanceRecords?: AttendanceResponseDto[]
+}
+
 /**
  * Normalize backend PascalCase status to frontend lowercase
  * Backend returns 'Present' | 'Absent' | 'Late' | 'Excused'
@@ -98,6 +126,19 @@ function normalizeAttendanceRecord(record: AttendanceResponseDto): AttendanceRes
     ...record,
     status: normalizeStatus(record.status),
   }
+}
+
+function extractAttendanceRecords(data: AttendanceResponseDto[] | AttendancePagedResponse | StudentAttendanceHistoryResponse): AttendanceResponseDto[] {
+  if (Array.isArray(data))
+    return data
+
+  if ('items' in data && Array.isArray(data.items))
+    return data.items
+
+  if ('attendanceRecords' in data && Array.isArray(data.attendanceRecords))
+    return data.attendanceRecords
+
+  return []
 }
 
 // ==================== READ OPERATIONS ====================
@@ -123,7 +164,7 @@ export async function fetchAllAttendance(
   params: AttendanceQueryParams = {},
 ): Promise<AttendanceResponseDto[]> {
   const response = await api.get('/attendance', { params })
-  const records: AttendanceResponseDto[] = response.data
+  const records = extractAttendanceRecords(response.data)
   return records.map(normalizeAttendanceRecord)
 }
 
@@ -158,7 +199,7 @@ export async function fetchAttendanceById(id: EntityId): Promise<AttendanceRespo
  */
 export async function fetchStudentAttendance(studentId: EntityId): Promise<AttendanceResponseDto[]> {
   const response = await api.get(`/attendance/student/${studentId}`)
-  const records: AttendanceResponseDto[] = response.data
+  const records = extractAttendanceRecords(response.data)
   return records.map(normalizeAttendanceRecord)
 }
 
@@ -185,6 +226,39 @@ export async function fetchSessionAttendance(sessionId: EntityId): Promise<Sessi
     ...record,
     status: normalizeStatus(record.status),
   }))
+}
+
+/**
+ * Fetch full session attendance report with summary statistics
+ *
+ * Returns complete session attendance data including summary counts
+ * and individual student records.
+ *
+ * @param {EntityId} sessionId - Session ID
+ * @returns {Promise<SessionAttendanceSummaryDto>} Session attendance summary with records
+ * @throws {Error} 404 if session not found
+ */
+export async function fetchSessionAttendanceSummary(sessionId: EntityId): Promise<SessionAttendanceSummaryDto> {
+  const response = await api.get(`/attendance/session/${sessionId}`)
+  const data = response.data
+  return {
+    sessionId: data.sessionId,
+    sessionDate: data.sessionDate,
+    scheduleId: data.scheduleId,
+    scheduleTitle: data.scheduleTitle,
+    subjectName: data.subjectName,
+    sectionName: data.sectionName,
+    totalEnrolled: data.totalEnrolled,
+    presentCount: data.presentCount,
+    lateCount: data.lateCount,
+    absentCount: data.absentCount,
+    excusedCount: data.excusedCount,
+    attendanceRate: data.attendanceRate,
+    attendanceRecords: (data.attendanceRecords || []).map((record: SessionAttendanceResponseDto) => ({
+      ...record,
+      status: normalizeStatus(record.status),
+    })),
+  }
 }
 
 /**

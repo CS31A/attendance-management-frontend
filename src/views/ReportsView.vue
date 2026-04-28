@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { TooltipItem } from 'chart.js'
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { BarChart3, CheckCircle, Download, FileSpreadsheet, FileX, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
+import { AlertCircle, BarChart3, CheckCircle, Clock, Download, FileSpreadsheet, FileX, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { exportToCsv, fetchReportsSummary } from '@/api/reports'
 import { useSectionStore } from '@/stores/sectionStore'
-import { useUserStore } from '@/stores/userStore'
 import { LOCALE } from '@/utils/constants'
 import { formatLongDate } from '@/utils/date'
 
@@ -15,7 +14,6 @@ const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
 
-const userStore = useUserStore()
 const sectionStore = useSectionStore()
 
 // Active tab
@@ -27,14 +25,19 @@ const activeTab = ref<ReportsTab>('Today')
 const isLoading = ref(false)
 
 // Stats data
-const totalStudents = computed(() => userStore.students.length)
 const presentToday = ref(0)
+const lateToday = ref(0)
 const absentToday = ref(0)
+const excusedToday = ref(0)
+const summaryRate = ref(0)
+const summaryTotalRecords = ref(0)
+const summaryTotalEnrolled = ref(0)
+const totalStudents = computed(() => summaryTotalEnrolled.value)
 const attendanceRate = computed(() => {
-  const total = presentToday.value + absentToday.value
-  if (total === 0)
+  const rate = summaryRate.value
+  if (rate === 0)
     return 0
-  return ((presentToday.value / total) * 100).toFixed(1)
+  return rate.toFixed(1)
 })
 
 // Attendance Trend Chart Data
@@ -214,15 +217,17 @@ function setActiveTab(tab: ReportsTab) {
 async function fetchDashboardData() {
   isLoading.value = true
   try {
-    if (userStore.users.length === 0)
-      await userStore.fetchUsers()
-
     const { startDate, endDate } = getDateRange(activeTab.value)
 
     // 1. Summary stats from reports endpoint
     const summary = await fetchReportsSummary({ startDate, endDate })
     presentToday.value = summary.totalPresent
+    lateToday.value = summary.totalLate
     absentToday.value = summary.totalAbsent
+    excusedToday.value = summary.totalExcused
+    summaryRate.value = summary.attendanceRate
+    summaryTotalRecords.value = summary.totalSessions
+    summaryTotalEnrolled.value = summary.totalEnrolled ?? summary.totalSessions
 
     // 2. Attendance trend with per-period breakdown
     const trendLabels: string[] = []
@@ -299,7 +304,9 @@ async function handleExportCsv() {
   const rows: Record<string, unknown>[] = [
     { Category: 'Summary', Label: 'Date Range', Value: `${formatLongDate(startDate)} to ${formatLongDate(endDate)}` },
     { Category: 'Summary', Label: 'Present', Value: presentToday.value },
+    { Category: 'Summary', Label: 'Late', Value: lateToday.value },
     { Category: 'Summary', Label: 'Absent', Value: absentToday.value },
+    { Category: 'Summary', Label: 'Excused', Value: excusedToday.value },
     { Category: 'Summary', Label: 'Attendance Rate', Value: `${attendanceRate.value}%` },
     ...attendanceTrendLabels.value.map((label, i) => ({
       Category: 'Trend',
@@ -320,7 +327,9 @@ async function handleExportXlsx() {
   const summaryRows = [
     { Label: 'Date Range', Value: `${formatLongDate(startDate)} to ${formatLongDate(endDate)}` },
     { Label: 'Present', Value: presentToday.value },
+    { Label: 'Late', Value: lateToday.value },
     { Label: 'Absent', Value: absentToday.value },
+    { Label: 'Excused', Value: excusedToday.value },
     { Label: 'Attendance Rate', Value: `${attendanceRate.value}%` },
   ]
   const trendRows = attendanceTrendLabels.value.map((label, i) => ({
@@ -416,7 +425,6 @@ onMounted(() => {
             <div class="stat-icon green">
               <CheckCircle :size="24" />
             </div>
-            <!-- <span class="stat-trend positive">+2.1%</span> -->
           </div>
           <h3 class="stat-value">
             {{ presentToday.toLocaleString() }}
@@ -428,16 +436,43 @@ onMounted(() => {
 
         <div class="stat-card">
           <div class="stat-header">
+            <div class="stat-icon amber">
+              <Clock :size="24" />
+            </div>
+          </div>
+          <h3 class="stat-value">
+            {{ lateToday.toLocaleString() }}
+          </h3>
+          <p class="stat-label">
+            Late Today
+          </p>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
             <div class="stat-icon red">
               <XCircle :size="24" />
             </div>
-            <!-- <span class="stat-trend negative">-1.3%</span> -->
           </div>
           <h3 class="stat-value">
             {{ absentToday }}
           </h3>
           <p class="stat-label">
             Absent Today
+          </p>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon purple">
+              <AlertCircle :size="24" />
+            </div>
+          </div>
+          <h3 class="stat-value">
+            {{ excusedToday.toLocaleString() }}
+          </h3>
+          <p class="stat-label">
+            Excused Today
           </p>
         </div>
 
@@ -655,7 +690,7 @@ onMounted(() => {
 /* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -712,6 +747,16 @@ onMounted(() => {
 .stat-icon.navy {
   background: rgba(30, 58, 138, 0.1);
   color: var(--color-primary);
+}
+
+.stat-icon.amber {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.stat-icon.purple {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
 }
 
 .stat-trend {

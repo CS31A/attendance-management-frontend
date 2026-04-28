@@ -4,6 +4,7 @@ import {
   createAttendance,
   fetchAllAttendance,
   fetchAttendanceById,
+  fetchAttendanceSummary,
   fetchSessionAttendance,
   fetchStudentAttendance,
   updateAttendance,
@@ -24,9 +25,22 @@ describe('attendance api', () => {
 
   it('normalizes PascalCase statuses from attendance read responses', async () => {
     vi.mocked(api.get)
-      .mockResolvedValueOnce({ data: [{ id: '1', studentId: '10', sessionId: '20', status: 'Present' }] } as never)
+      .mockResolvedValueOnce({
+        data: {
+          items: [{ id: '1', studentId: '10', sessionId: '20', status: 'Present' }],
+          totalCount: 1,
+          pageNumber: 1,
+          pageSize: 50,
+        },
+      } as never)
       .mockResolvedValueOnce({ data: { id: '2', studentId: '10', sessionId: '20', status: 'Absent' } } as never)
-      .mockResolvedValueOnce({ data: [{ id: '3', studentId: '10', sessionId: '20', status: 'Late' }] } as never)
+      .mockResolvedValueOnce({
+        data: {
+          studentId: '10',
+          studentName: 'Alice',
+          attendanceRecords: [{ id: '3', studentId: '10', sessionId: '20', status: 'Late' }],
+        },
+      } as never)
       .mockResolvedValueOnce({
         data: {
           attendanceRecords: [
@@ -39,6 +53,34 @@ describe('attendance api', () => {
     await expect(fetchAttendanceById('2')).resolves.toMatchObject({ status: 'absent' })
     await expect(fetchStudentAttendance('10')).resolves.toMatchObject([{ status: 'late' }])
     await expect(fetchSessionAttendance('20')).resolves.toMatchObject([{ status: 'excused' }])
+  })
+
+  it('keeps backward compatibility with legacy flat attendance arrays', async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ data: [{ id: '1', studentId: '10', sessionId: '20', status: 'Present' }] } as never)
+      .mockResolvedValueOnce({ data: [{ id: '2', studentId: '10', sessionId: '20', status: 'Late' }] } as never)
+
+    await expect(fetchAllAttendance()).resolves.toMatchObject([{ status: 'present' }])
+    await expect(fetchStudentAttendance('10')).resolves.toMatchObject([{ status: 'late' }])
+  })
+
+  it('types attendance summary with backend field names', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        totalSessions: 12,
+        totalPresent: 9,
+        totalLate: 1,
+        totalAbsent: 2,
+        totalExcused: 0,
+        attendanceRate: 75,
+      },
+    } as never)
+
+    await expect(fetchAttendanceSummary()).resolves.toMatchObject({
+      totalSessions: 12,
+      totalPresent: 9,
+      totalAbsent: 2,
+    })
   })
 
   it('normalizes PascalCase statuses from attendance mutation responses', async () => {

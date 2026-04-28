@@ -16,6 +16,7 @@ export interface ReportsFilter {
 
 export interface AttendanceSummaryReportDto {
   totalSessions: number
+  totalEnrolled: number
   totalPresent: number
   totalLate: number
   totalAbsent: number
