@@ -60,8 +60,11 @@ api.interceptors.response.use(
 
     // Check if error is 401 and not from the refresh endpoint itself
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Prevent retry loop for the refresh endpoint
-      if (originalRequest.url === '/account/web/refresh') {
+      // Prevent retry loop for the refresh endpoint and login endpoint
+      if (
+        originalRequest.url === '/account/web/refresh'
+        || originalRequest.url === '/account/web/login'
+      ) {
         isRefreshing = false
         processQueue(error)
         return Promise.reject(error)
