@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, MoreVertical, Trash2, User } from 'lucide-vue-next'
+import type { EntityId } from '@/types'
+import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, Trash2, User as UserIcon } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
-import { onMounted, onUnmounted, ref } from 'vue'
 
 interface User {
-  userId?: string | number
-  id?: string | number
-  role?: string
+  id: EntityId
+  userId?: EntityId
+  email: string
+  role: string
   firstName?: string
-  lastname?: string
-  firstname?: string
   lastName?: string
+  firstname?: string
+  lastname?: string
   name?: string
   fullName?: string
-  email?: string
-  sectionId?: string
-  section?: string
-  sectionName?: string
   createdAt?: string
+  [key: string]: unknown
 }
 
 defineProps<{
@@ -25,62 +23,23 @@ defineProps<{
   showRestore?: boolean
 }>()
 
-defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view'])
+defineEmits<{
+  edit: [user: User]
+  softDelete: [user: User]
+  delete: [user: User]
+  restore: [user: User]
+  view: [user: User]
+}>()
 
-// Dropdown state
-const openDropdownId = ref<string | null>(null)
-const dropdownPosition = ref<{ top: number; left: number } | null>(null)
-
-function toggleDropdown(userId: string, event: MouseEvent) {
-  const button = event.currentTarget as HTMLElement
-  const rect = button.getBoundingClientRect()
-
-  if (openDropdownId.value === userId) {
-    closeDropdown()
-  } else {
-    openDropdownId.value = userId
-    dropdownPosition.value = {
-      top: rect.bottom + 8,
-      left: rect.right - 160, // Align to right side of button
-    }
-  }
-}
-
-function closeDropdown() {
-  openDropdownId.value = null
-  dropdownPosition.value = null
-}
-
-function handleClickOutside(event: MouseEvent) {
-  closeDropdown()
-}
-
-function handleScroll() {
-  closeDropdown()
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-  window.addEventListener('scroll', handleScroll, true)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('scroll', handleScroll, true)
-})
-
-// Get role icon component
 function _getRoleIcon(role: string) {
-  const icons: Record<string, any> = {
+  const icons: Record<string, typeof UserIcon> = {
     Instructor: GraduationCap,
-    Student: User,
+    Student: UserIcon,
   }
-  return icons[role] || User
+  return icons[role] || UserIcon
 }
 
-// Get user name - handle different possible field names
-function getUserName(user: any) {
-  // Try different possible field name combinations
+function getUserName(user: User) {
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`
   }
@@ -93,12 +52,10 @@ function getUserName(user: any) {
   if (user.fullName) {
     return user.fullName
   }
-  // Fallback to email if no name found
   return user.email || 'Unknown User'
 }
 
-// Get user section - handle different possible field names
-function _getUserSection(user: any) {
+function _getUserSection(user: User) {
   if (user.sectionId) {
     return user.sectionId
   }
@@ -172,61 +129,21 @@ function _getUserSection(user: any) {
           </td>
           <td class="td-actions">
             <div class="app-cell-actions">
-              <button
-                class="app-btn-icon app-btn-ellipsis"
-                title="Actions"
-                @click.stop="toggleDropdown(String(user.userId || user.id), $event)"
-              >
-                <MoreVertical :size="16" />
+              <button class="app-btn-icon app-btn-edit" title="Edit User" @click="$emit('edit', user)">
+                <Edit :size="16" />
               </button>
-              <teleport to="body">
-                <transition name="dropdown-fade">
-                  <div
-                    v-if="openDropdownId === String(user.userId || user.id) && dropdownPosition"
-                    class="actions-dropdown"
-                    :style="{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }"
-                  >
-                    <button
-                      class="dropdown-item"
-                      @click.stop="$emit('edit', user); closeDropdown()"
-                    >
-                      <Edit :size="14" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      v-if="user.role === 'Student'"
-                      class="dropdown-item"
-                      @click.stop="$emit('view', user); closeDropdown()"
-                    >
-                      <Eye :size="14" />
-                      <span>View Details</span>
-                    </button>
-                    <button
-                      v-if="showRestore"
-                      class="dropdown-item"
-                      @click.stop="$emit('restore', user); closeDropdown()"
-                    >
-                      <ArchiveRestore :size="14" />
-                      <span>Restore</span>
-                    </button>
-                    <button
-                      v-else
-                      class="dropdown-item"
-                      @click.stop="$emit('softDelete', user); closeDropdown()"
-                    >
-                      <ArchiveX :size="14" />
-                      <span>Archive</span>
-                    </button>
-                    <button
-                      class="dropdown-item dropdown-item-danger"
-                      @click.stop="$emit('delete', user); closeDropdown()"
-                    >
-                      <Trash2 :size="14" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                </transition>
-              </teleport>
+              <button v-if="user.role === 'Student'" class="app-btn-icon app-btn-view" title="View Student Details" @click="$emit('view', user)">
+                <Eye :size="16" />
+              </button>
+              <button v-if="showRestore" class="app-btn-icon app-btn-restore" title="Restore User" @click="$emit('restore', user)">
+                <ArchiveRestore :size="16" />
+              </button>
+              <button v-else class="app-btn-icon app-btn-restore" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
+                <ArchiveX :size="16" />
+              </button>
+              <button class="app-btn-icon app-btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
+                <Trash2 :size="16" />
+              </button>
             </div>
           </td>
         </tr>
@@ -357,83 +274,5 @@ function _getUserSection(user: any) {
   .th-name, .td-name { min-width: 80px; }
   .th-actions, .td-actions { min-width: 80px; }
   .user-name, .email-text, .date-text { font-size: 0.6875rem; }
-}
-
-/* Actions Dropdown Styles */
-.app-cell-actions {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.app-btn-ellipsis {
-  color: var(--color-gray-600);
-  background: transparent;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.app-btn-ellipsis:hover {
-  background: var(--color-gray-100);
-  color: var(--color-primary);
-}
-
-.actions-dropdown {
-  position: fixed;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--color-gray-200);
-  overflow: hidden;
-  z-index: 1000;
-  min-width: 160px;
-  padding: 0.25rem;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  color: var(--color-gray-700);
-  font-weight: 500;
-  text-align: left;
-}
-
-.dropdown-item:hover {
-  background: var(--color-gray-50);
-  color: var(--color-primary);
-}
-
-.dropdown-item-danger {
-  color: var(--color-error);
-}
-
-.dropdown-item-danger:hover {
-  background: rgba(220, 38, 38, 0.1);
-  color: var(--color-error);
-}
-
-/* Dropdown Transition */
-.dropdown-fade-enter-active,
-.dropdown-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-fade-enter-from,
-.dropdown-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 </style>

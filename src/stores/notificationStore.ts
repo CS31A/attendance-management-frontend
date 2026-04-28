@@ -37,6 +37,39 @@ export const useNotificationStore = defineStore('notificationStore', () => {
 
   const MAX_NOTIFICATIONS = 100
 
+  // eslint-disable-next-line ts/no-explicit-any -- SignalR hub callbacks accept arbitrary args
+  type SignalRHandler = (...args: any[]) => void
+  const handlers = new Map<string, Set<SignalRHandler>>()
+
+  function registerHandler(event: string, handler: SignalRHandler): void {
+    if (!handlers.has(event))
+      handlers.set(event, new Set())
+    handlers.get(event)!.add(handler)
+    if (connection.value) {
+      connection.value.on(event, handler)
+    }
+  }
+
+  function unregisterHandler(event: string, handler: SignalRHandler): void {
+    const set = handlers.get(event)
+    if (!set)
+      return
+    set.delete(handler)
+    if (set.size === 0)
+      handlers.delete(event)
+    if (connection.value) {
+      connection.value.off(event, handler)
+    }
+  }
+
+  function bindAllHandlers(target: HubConnection): void {
+    for (const [event, set] of handlers.entries()) {
+      for (const handler of set) {
+        target.on(event, handler)
+      }
+    }
+  }
+
   function recordNotification(payload: NotificationPayload): AppNotification {
     const notification = normalizeNotification(payload)
     notifications.value = [notification, ...notifications.value].slice(0, MAX_NOTIFICATIONS)
@@ -51,6 +84,7 @@ export const useNotificationStore = defineStore('notificationStore', () => {
       .build()
 
     nextConnection.on('ReceiveNotification', recordNotification)
+    bindAllHandlers(nextConnection)
     nextConnection.onreconnecting(() => {
       status.value = 'reconnecting'
     })
@@ -128,6 +162,10 @@ export const useNotificationStore = defineStore('notificationStore', () => {
     latestNotification,
     unreadCount,
     hubUrl,
+    /** @deprecated Use `registerHandler`/`unregisterHandler` instead — handlers registered directly on `connection` will not survive stop/start cycles */
+    connection,
+    registerHandler,
+    unregisterHandler,
     start,
     stop,
     reset,

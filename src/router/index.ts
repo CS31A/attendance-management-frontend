@@ -97,6 +97,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/ClassroomView.vue'),
     beforeEnter: [authGuard, adminGuard],
   },
+  {
+    path: '/devices',
+    component: () => import('../views/DeviceManagementView.vue'),
+    beforeEnter: [authGuard, adminGuard],
+  },
 
   {
     path: '/qr-code/projection/:qrCodeId',

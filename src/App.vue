@@ -55,10 +55,11 @@ onMounted(async () => {
 })
 
 // Event listener to detect when sidebar opens/closes
-function handleSidebarToggle(event: CustomEvent<{ isOpen?: boolean, isCollapsed?: boolean }>) {
-  if (event.detail) {
-    isSidebarOpen.value = event.detail.isOpen ?? false
-    isSidebarCollapsed.value = event.detail.isCollapsed ?? false
+function handleSidebarToggle(stateOrEvent: { isOpen: boolean, isCollapsed: boolean } | CustomEvent<{ isOpen?: boolean, isCollapsed?: boolean }>) {
+  const state = stateOrEvent instanceof CustomEvent ? stateOrEvent.detail : stateOrEvent
+  if (state) {
+    isSidebarOpen.value = state.isOpen ?? false
+    isSidebarCollapsed.value = state.isCollapsed ?? false
   }
 }
 
