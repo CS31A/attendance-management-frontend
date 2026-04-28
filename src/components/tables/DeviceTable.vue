@@ -56,12 +56,12 @@ function getStatusClass(device: FingerprintDeviceDto): string {
   const now = new Date()
   const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
 
-  // Consider device online if seen in last 5 minutes
-  if (diffMinutes < 5) {
+  // Consider device online if seen in last 2 minutes
+  if (diffMinutes < 2) {
     return 'status-online'
   }
 
-  // Consider device offline if not seen in last 5 minutes
+  // Consider device offline if not seen in last 2 minutes
   return 'status-offline'
 }
 
@@ -78,7 +78,7 @@ function getStatusText(device: FingerprintDeviceDto): string {
   const now = new Date()
   const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
 
-  if (diffMinutes < 5) {
+  if (diffMinutes < 2) {
     return 'Online'
   }
 

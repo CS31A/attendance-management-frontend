@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FingerprintDeviceDto } from '@/api/fingerprint'
 import { AlertTriangle, Monitor, Plus, RefreshCw } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
@@ -9,8 +9,10 @@ import Toast from '@/components/common/Toast.vue'
 import DeviceTable from '@/components/tables/DeviceTable.vue'
 import { useToast } from '@/composables/useToast'
 import { useDeviceStore } from '@/stores/deviceStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const deviceStore = useDeviceStore()
+const notificationStore = useNotificationStore()
 const { toast, showToast, closeToast } = useToast()
 
 const searchQuery = ref('')
@@ -20,12 +22,56 @@ const viewMode = ref<'all' | 'active' | 'inactive'>('all')
 
 onMounted(async () => {
   await refreshDevices()
+  subscribeToDeviceUpdates()
+})
+
+onUnmounted(() => {
+  unsubscribeFromDeviceUpdates()
 })
 
 async function refreshDevices() {
   const result = await deviceStore.fetchDevices()
   if (!result.success) {
     showToast('Failed to load devices', 'error')
+  }
+}
+
+function subscribeToDeviceUpdates() {
+  const connection = notificationStore.connection
+
+  if (connection) {
+    try {
+      connection.on('DeviceStatusUpdate', handleDeviceStatusUpdate)
+    }
+    catch (error) {
+      console.error('Failed to subscribe to device status updates:', error)
+    }
+  }
+}
+
+function unsubscribeFromDeviceUpdates() {
+  const connection = notificationStore.connection
+
+  if (connection) {
+    connection.off('DeviceStatusUpdate', handleDeviceStatusUpdate)
+  }
+}
+
+function handleDeviceStatusUpdate(deviceUpdate: Partial<FingerprintDeviceDto> & { id: string | number }) {
+  try {
+    deviceStore.updateDeviceStatus(deviceUpdate)
+
+    // Show toast notification for device status changes
+    const device = deviceStore.getDeviceById(deviceUpdate.id)
+    if (device) {
+      const isOnline = device.lastSeenAt && (new Date().getTime() - new Date(device.lastSeenAt).getTime()) < 120000
+      if (isOnline) {
+        showToast(`Device "${device.name || device.deviceIdentifier}" is now online`, 'success')
+      }
+    }
+  }
+  catch (error) {
+    console.error('Failed to handle device status update:', error)
   }
 }
 
@@ -78,7 +124,7 @@ function getConnectivityStatusClass(device: FingerprintDeviceDto): string {
   const now = new Date()
   const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
 
-  return diffMinutes < 5 ? 'status-online' : 'status-offline'
+  return diffMinutes < 2 ? 'status-online' : 'status-offline'
 }
 
 function getConnectivityStatusText(device: FingerprintDeviceDto): string {
@@ -90,7 +136,7 @@ function getConnectivityStatusText(device: FingerprintDeviceDto): string {
   const now = new Date()
   const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
 
-  return diffMinutes < 5 ? 'Online' : 'Offline'
+  return diffMinutes < 2 ? 'Online' : 'Offline'
 }
 </script>
 

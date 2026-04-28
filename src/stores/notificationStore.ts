@@ -128,6 +128,7 @@ export const useNotificationStore = defineStore('notificationStore', () => {
     latestNotification,
     unreadCount,
     hubUrl,
+    connection, // Expose connection for other stores to subscribe to custom events
     start,
     stop,
     reset,

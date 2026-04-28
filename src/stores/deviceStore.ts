@@ -30,6 +30,7 @@ export const useDeviceStore = defineStore('deviceStore', () => {
     try {
       const data = await getDevices()
       devices.value = data
+
       return { success: true }
     }
     catch (err) {
@@ -48,6 +49,14 @@ export const useDeviceStore = defineStore('deviceStore', () => {
 
   function getDeviceByIdentifier(identifier: string) {
     return devices.value.find(d => d.deviceIdentifier === identifier)
+  }
+
+  // Update device status from SignalR
+  function updateDeviceStatus(deviceUpdate: Partial<FingerprintDeviceDto> & { id: string | number }) {
+    const index = devices.value.findIndex(d => d.id === deviceUpdate.id)
+    if (index !== -1) {
+      devices.value[index] = { ...devices.value[index], ...deviceUpdate }
+    }
   }
 
   // Filter devices by search query
@@ -87,6 +96,7 @@ export const useDeviceStore = defineStore('deviceStore', () => {
     fetchDevices,
     getDeviceById,
     getDeviceByIdentifier,
+    updateDeviceStatus,
     filterDevices,
     $reset,
   }
