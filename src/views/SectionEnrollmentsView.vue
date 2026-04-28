@@ -49,6 +49,11 @@ const invalidLink = ref(false)
 // Status filter
 const selectedStatus = ref('All')
 const statusFilterOptions = ['All', 'Active', 'Dropped']
+
+// Enrollment type filter
+const selectedType = ref('All')
+const typeFilterOptions = ['All', 'Regular', 'Irregular', 'Retake']
+
 let pendingSectionFetchId: EntityId | null | undefined
 let isProcessingSectionFetch = false
 
@@ -76,7 +81,9 @@ const filteredEnrolledStudents = computed(() => {
       || (s.studentId && asSearchableString(s.studentId).includes(query))
     const matchesStatus = selectedStatus.value === 'All'
       || ((s.status || 'Active') === selectedStatus.value)
-    return matchesSearch && matchesStatus
+    const matchesType = selectedType.value === 'All'
+      || ((s.enrollmentType || 'Regular') === selectedType.value)
+    return matchesSearch && matchesStatus && matchesType
   })
 })
 
@@ -266,7 +273,11 @@ watch(sectionId, (nextSectionId) => {
             placeholder="Search enrolled students..."
             :result-count="filteredEnrolledStudents.length"
           />
-          <div class="status-filter">
+          <div class="filter-group">
+            <CustomDropdown
+              v-model="selectedType"
+              :options="typeFilterOptions"
+            />
             <CustomDropdown
               v-model="selectedStatus"
               :options="statusFilterOptions"
@@ -538,8 +549,16 @@ watch(sectionId, (nextSectionId) => {
   flex-wrap: wrap;
 }
 
-.status-filter {
-  min-width: 180px;
+.filter-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group > .custom-dropdown {
+  flex: 1 1 160px;
+  min-width: 160px;
 }
 
 /* Table */
