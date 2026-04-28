@@ -60,20 +60,37 @@ function handleViewDevice(device: FingerprintDeviceDto) {
   showDeviceModal.value = true
 }
 
-function handleEditDevice(device: FingerprintDeviceDto) {
-  selectedDevice.value = device
-  showDeviceModal.value = true
-}
-
 function handleAddDevice() {
-  selectedDevice.value = null
-  showDeviceModal.value = true
   showToast('Device registration is managed by the backend. Contact your system administrator.', 'info')
 }
 
 function closeDeviceModal() {
   showDeviceModal.value = false
   selectedDevice.value = null
+}
+
+function getConnectivityStatusClass(device: FingerprintDeviceDto): string {
+  if (!device.lastSeenAt) {
+    return 'status-offline'
+  }
+
+  const lastSeen = new Date(device.lastSeenAt)
+  const now = new Date()
+  const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
+
+  return diffMinutes < 5 ? 'status-online' : 'status-offline'
+}
+
+function getConnectivityStatusText(device: FingerprintDeviceDto): string {
+  if (!device.lastSeenAt) {
+    return 'Never Connected'
+  }
+
+  const lastSeen = new Date(device.lastSeenAt)
+  const now = new Date()
+  const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
+
+  return diffMinutes < 5 ? 'Online' : 'Offline'
 }
 </script>
 
@@ -131,10 +148,10 @@ function closeDeviceModal() {
         <div class="header-content">
           <div class="header-text">
             <h1 class="page-title">
-              Device Management
+              Device Monitoring
             </h1>
             <p class="page-subtitle">
-              Manage fingerprint devices and monitor their status
+              Monitor fingerprint devices and their status
             </p>
           </div>
           <div class="header-actions">
@@ -243,7 +260,6 @@ function closeDeviceModal() {
         :title="viewMode === 'all' ? 'All Devices' : viewMode === 'active' ? 'Active Devices' : 'Inactive Devices'"
         :show-actions="true"
         @view="handleViewDevice"
-        @edit="handleEditDevice"
       />
 
       <!-- Empty State -->
@@ -277,17 +293,17 @@ function closeDeviceModal() {
       </div>
     </div>
 
-    <!-- Device Modal (placeholder for future implementation) -->
-    <div v-if="showDeviceModal" class="modal-overlay" @click="closeDeviceModal">
+    <!-- Device Details Modal -->
+    <div v-if="showDeviceModal && selectedDevice" class="modal-overlay" @click="closeDeviceModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>{{ selectedDevice ? 'Device Details' : 'Add Device' }}</h2>
+          <h2>Device Details</h2>
           <button class="modal-close" @click="closeDeviceModal">
             ×
           </button>
         </div>
         <div class="modal-body">
-          <div v-if="selectedDevice" class="device-details">
+          <div class="device-details">
             <div class="detail-row">
               <span class="detail-label">Device Name:</span>
               <span class="detail-value">{{ selectedDevice.name || 'Unnamed Device' }}</span>
@@ -301,9 +317,15 @@ function closeDeviceModal() {
               <span class="detail-value">{{ selectedDevice.location || 'Not specified' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Status:</span>
-              <span :class="['detail-value', 'status-badge', selectedDevice.isActive ? 'status-active' : 'status-inactive']">
-                {{ selectedDevice.isActive ? 'Active' : 'Inactive' }}
+              <span class="detail-label">Registration Status:</span>
+              <span :class="['detail-value', 'status-badge', selectedDevice.isActive ? 'status-enabled' : 'status-disabled']">
+                {{ selectedDevice.isActive ? 'Enabled' : 'Disabled' }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Connectivity Status:</span>
+              <span :class="['detail-value', 'status-badge', getConnectivityStatusClass(selectedDevice)]">
+                {{ getConnectivityStatusText(selectedDevice) }}
               </span>
             </div>
             <div class="detail-row">
@@ -311,9 +333,8 @@ function closeDeviceModal() {
               <span class="detail-value">{{ selectedDevice.lastSeenAt ? new Date(selectedDevice.lastSeenAt).toLocaleString() : 'Never' }}</span>
             </div>
           </div>
-          <div v-else class="info-message">
-            <p>Device registration is managed by the backend system.</p>
-            <p>Contact your system administrator to register new devices.</p>
+          <div class="info-message">
+            <p><strong>Note:</strong> Device information is managed by the backend system. To update device details, contact your system administrator.</p>
           </div>
         </div>
         <div class="modal-footer">
@@ -687,6 +708,42 @@ function closeDeviceModal() {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-online {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success-dark);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-offline {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error-dark);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-enabled {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.status-disabled {
+  background: rgba(107, 114, 128, 0.1);
+  color: var(--color-gray-600);
+  border: 1px solid rgba(107, 114, 128, 0.2);
 }
 
 /* Responsive */

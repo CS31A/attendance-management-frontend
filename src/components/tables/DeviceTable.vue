@@ -11,7 +11,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   view: [device: FingerprintDeviceDto]
-  edit: [device: FingerprintDeviceDto]
 }>()
 
 const hasDevices = computed(() => props.devices.length > 0)
@@ -43,12 +42,47 @@ function formatLastSeen(lastSeenAt: string | null | undefined): string {
   })
 }
 
-function getStatusClass(isActive: boolean): string {
-  return isActive ? 'status-active' : 'status-inactive'
+function getStatusClass(device: FingerprintDeviceDto): string {
+  if (!device.isActive) {
+    return 'status-disabled'
+  }
+
+  // Check if device is online based on LastSeenAt
+  if (!device.lastSeenAt) {
+    return 'status-offline'
+  }
+
+  const lastSeen = new Date(device.lastSeenAt)
+  const now = new Date()
+  const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
+
+  // Consider device online if seen in last 5 minutes
+  if (diffMinutes < 5) {
+    return 'status-online'
+  }
+
+  // Consider device offline if not seen in last 5 minutes
+  return 'status-offline'
 }
 
-function getStatusText(isActive: boolean): string {
-  return isActive ? 'Active' : 'Inactive'
+function getStatusText(device: FingerprintDeviceDto): string {
+  if (!device.isActive) {
+    return 'Disabled'
+  }
+
+  if (!device.lastSeenAt) {
+    return 'Offline'
+  }
+
+  const lastSeen = new Date(device.lastSeenAt)
+  const now = new Date()
+  const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / 60000)
+
+  if (diffMinutes < 5) {
+    return 'Online'
+  }
+
+  return 'Offline'
 }
 </script>
 
@@ -102,9 +136,9 @@ function getStatusText(isActive: boolean): string {
               </div>
             </td>
             <td>
-              <span :class="['status-badge', getStatusClass(device.isActive)]">
+              <span :class="['status-badge', getStatusClass(device)]">
                 <Activity :size="14" />
-                {{ getStatusText(device.isActive) }}
+                {{ getStatusText(device) }}
               </span>
             </td>
             <td>
@@ -117,14 +151,7 @@ function getStatusText(isActive: boolean): string {
                   title="View Details"
                   @click="emit('view', device)"
                 >
-                  View
-                </button>
-                <button
-                  class="action-btn action-btn-edit"
-                  title="Edit Device"
-                  @click="emit('edit', device)"
-                >
-                  Edit
+                  View Details
                 </button>
               </div>
             </td>
@@ -279,13 +306,19 @@ function getStatusText(isActive: boolean): string {
   text-transform: capitalize;
 }
 
-.status-active {
+.status-online {
   background: rgba(34, 197, 94, 0.1);
   color: var(--color-success-dark);
   border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-.status-inactive {
+.status-offline {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error-dark);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-disabled {
   background: rgba(107, 114, 128, 0.1);
   color: var(--color-gray-600);
   border: 1px solid rgba(107, 114, 128, 0.2);
@@ -320,16 +353,6 @@ function getStatusText(isActive: boolean): string {
 .action-btn-view:hover {
   background: var(--color-primary-light);
   color: white;
-  transform: translateY(-1px);
-}
-
-.action-btn-edit {
-  background: var(--color-primary-light);
-  color: white;
-}
-
-.action-btn-edit:hover {
-  background: var(--color-primary);
   transform: translateY(-1px);
 }
 
