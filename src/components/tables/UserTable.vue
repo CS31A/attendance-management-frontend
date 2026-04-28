@@ -1,32 +1,45 @@
-<script setup>
-import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, Trash2, User } from 'lucide-vue-next'
+<script setup lang="ts">
+import type { EntityId } from '@/types'
+import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, Trash2, User as UserIcon } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
 
-defineProps({
-  users: {
-    type: Array,
-    required: true,
-  },
-  showRestore: {
-    type: Boolean,
-    default: false,
-  },
-})
-
-defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view'])
-
-// Get role icon component
-function _getRoleIcon(role) {
-  const icons = {
-    Instructor: GraduationCap,
-    Student: User,
-  }
-  return icons[role] || User
+interface User {
+  id: EntityId
+  userId?: EntityId
+  email: string
+  role: string
+  firstName?: string
+  lastName?: string
+  firstname?: string
+  lastname?: string
+  name?: string
+  fullName?: string
+  createdAt?: string
+  [key: string]: unknown
 }
 
-// Get user name - handle different possible field names
-function getUserName(user) {
-  // Try different possible field name combinations
+defineProps<{
+  users: User[]
+  showRestore?: boolean
+}>()
+
+defineEmits<{
+  edit: [user: User]
+  softDelete: [user: User]
+  delete: [user: User]
+  restore: [user: User]
+  view: [user: User]
+}>()
+
+function _getRoleIcon(role: string) {
+  const icons: Record<string, typeof UserIcon> = {
+    Instructor: GraduationCap,
+    Student: UserIcon,
+  }
+  return icons[role] || UserIcon
+}
+
+function getUserName(user: User) {
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`
   }
@@ -39,12 +52,10 @@ function getUserName(user) {
   if (user.fullName) {
     return user.fullName
   }
-  // Fallback to email if no name found
   return user.email || 'Unknown User'
 }
 
-// Get user section - handle different possible field names
-function _getUserSection(user) {
+function _getUserSection(user: User) {
   if (user.sectionId) {
     return user.sectionId
   }
