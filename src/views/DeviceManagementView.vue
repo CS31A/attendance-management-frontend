@@ -59,13 +59,17 @@ function unsubscribeFromDeviceUpdates() {
 
 function handleDeviceStatusUpdate(deviceUpdate: Partial<FingerprintDeviceDto> & { id: string | number }) {
   try {
+    const existing = deviceStore.getDeviceById(deviceUpdate.id)
+    const wasOnline = existing?.lastSeenAt
+      && (new Date().getTime() - new Date(existing.lastSeenAt).getTime()) < 120000
+
     deviceStore.updateDeviceStatus(deviceUpdate)
 
-    // Show toast notification for device status changes
     const device = deviceStore.getDeviceById(deviceUpdate.id)
     if (device) {
-      const isOnline = device.lastSeenAt && (new Date().getTime() - new Date(device.lastSeenAt).getTime()) < 120000
-      if (isOnline) {
+      const isOnline = device.lastSeenAt
+        && (new Date().getTime() - new Date(device.lastSeenAt).getTime()) < 120000
+      if (isOnline && !wasOnline) {
         showToast(`Device "${device.name || device.deviceIdentifier}" is now online`, 'success')
       }
     }
