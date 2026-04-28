@@ -29,6 +29,11 @@ const routes: RouteRecordRaw[] = [
     beforeEnter: [authGuard, instructorGuard],
   },
   {
+    path: '/sessions/:sessionId',
+    component: () => import('../views/SessionDetailView.vue'),
+    beforeEnter: [authGuard, instructorGuard],
+  },
+  {
     path: '/attendance',
     component: () => import('../views/AttendanceView.vue'),
     beforeEnter: [authGuard, instructorGuard],

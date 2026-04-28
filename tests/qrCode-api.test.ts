@@ -367,9 +367,20 @@ describe('qrCode API module with EntityId', () => {
 
       const result = await qrCodeApi.getScanHistoryById(qrCodeId, params)
 
-      expect(api.get).toHaveBeenCalledWith('/QrCode/222e8400-e29b-41d4-a716-446655440006/scan-history', { params })
+      expect(api.get).toHaveBeenCalledWith('/QrCode/222e8400-e29b-41d4-a716-446655440006/scan-history', { params: { pageNumber: 2, pageSize: 10 } })
       expect(result.scans?.items?.[0].id).toBe('333e8400-e29b-41d4-a716-446655440007' as EntityId)
       expect(result.scans?.items?.[0].studentId).toBe('444e8400-e29b-41d4-a716-446655440008' as EntityId)
+    })
+
+    it('preserves backend pagination names when already provided', async () => {
+      const qrCodeId = '222e8400-e29b-41d4-a716-446655440006' as EntityId
+      const params = { pageNumber: 3, pageSize: 25 }
+
+      vi.mocked(api.get).mockResolvedValue({ data: { qrCodeInfo: null, scanStatistics: null, scans: { items: [], totalItems: 0 } } } as never)
+
+      await qrCodeApi.getScanHistoryById(qrCodeId, params)
+
+      expect(api.get).toHaveBeenCalledWith('/QrCode/222e8400-e29b-41d4-a716-446655440006/scan-history', { params })
     })
   })
 

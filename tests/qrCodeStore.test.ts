@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import qrCodeApi from '@/api/qrCode'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
-import { getErrorMessage } from '@/utils/httpError'
+import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
 vi.mock('@/api/qrCode')
 vi.mock('@/utils/httpError')
@@ -163,6 +163,25 @@ describe('qrCodeStore', () => {
       expect(store.loading).toBe(false)
       expect(store.sessionQrCodes).toEqual(sessionQrCodes)
       expect(result).toEqual(sessionQrCodes)
+    })
+
+    it('fetchSessionQrCodes treats NO_QRCODES_FOUND as an empty list', async () => {
+      const store = useQrCodeStore()
+      const error = {
+        response: {
+          status: 404,
+          data: { errorCode: 'NO_QRCODES_FOUND' },
+        },
+      }
+
+      vi.mocked(qrCodeApi.getSessionQrCodes).mockRejectedValue(error as never)
+      vi.mocked(getErrorStatus).mockReturnValue(404)
+
+      const result = await store.fetchSessionQrCodes('session-1')
+
+      expect(result).toEqual([])
+      expect(store.sessionQrCodes).toEqual([])
+      expect(getErrorMessage).not.toHaveBeenCalled()
     })
 
     it('fetchScanHistory stores returned history payload', async () => {

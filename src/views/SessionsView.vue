@@ -282,6 +282,10 @@ function handleViewQrCodes(session: SessionResponseDto) {
   showQRListModal.value = true
 }
 
+function handleViewSessionDetails(session: SessionResponseDto) {
+  router.push(`/sessions/${session.id}`)
+}
+
 async function handleViewQrFromList(qrCode: DisplayedQrCode) {
   // Fetch the full QR code details including the image
   try {
@@ -377,6 +381,7 @@ onMounted(() => {
         @update-room="handleUpdateRoom"
         @generate-qr="handleGenerateQr"
         @view-qr-codes="handleViewQrCodes"
+        @view-details="handleViewSessionDetails"
       />
     </div>
 

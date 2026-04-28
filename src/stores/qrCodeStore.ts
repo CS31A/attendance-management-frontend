@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import qrCodeApi from '@/api/qrCode'
 import { entityIdsMatch } from '@/utils/entityId'
-import { getErrorMessage } from '@/utils/httpError'
+import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 import { parseUtcDate } from '@/utils/qrcode'
 
 interface ActiveQrCode extends QrCodeResponseDto {
@@ -131,6 +131,15 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
       return data
     }
     catch (err) {
+      const errorCode = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { errorCode?: string } } }).response?.data?.errorCode
+        : undefined
+
+      if (getErrorStatus(err) === 404 && errorCode === 'NO_QRCODES_FOUND') {
+        sessionQrCodes.value = []
+        return []
+      }
+
       error.value = getErrorMessage(err, 'Error fetching session QR codes')
       throw err
     }

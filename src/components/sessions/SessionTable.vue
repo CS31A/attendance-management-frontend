@@ -18,6 +18,7 @@ defineEmits<{
   updateRoom: [session: SessionResponseDto]
   generateQr: [session: SessionResponseDto]
   viewQrCodes: [session: SessionResponseDto]
+  viewDetails: [session: SessionResponseDto]
 }>()
 
 function getCourseName(session: SessionResponseDto | null) {
@@ -119,7 +120,17 @@ function formatTime(timeString: string | undefined) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="session in sessions" :key="session.id" class="session-row">
+        <tr
+          v-for="session in sessions"
+          :key="session.id"
+          class="session-row"
+          tabindex="0"
+          role="button"
+          :aria-label="`View details for ${getCourseName(session)}`"
+          @click="$emit('viewDetails', session)"
+          @keydown.enter.prevent="$emit('viewDetails', session)"
+          @keydown.space.prevent="$emit('viewDetails', session)"
+        >
           <!-- Date Column -->
           <td class="td-date">
             <div class="date-cell">
@@ -166,7 +177,7 @@ function formatTime(timeString: string | undefined) {
                   class="btn-action btn-start"
                   :title="canStartSession(session) ? 'Start Session' : 'Session can only be started on its scheduled date'"
                   :disabled="!canStartSession(session)"
-                  @click="$emit('start', session)"
+                  @click.stop="$emit('start', session)"
                 >
                   <Play class="btn-icon" :size="16" />
                   <span>Start</span>
@@ -174,7 +185,7 @@ function formatTime(timeString: string | undefined) {
                 <button
                   class="btn-action btn-delete"
                   title="Delete Session"
-                  @click="$emit('delete', session.id)"
+                  @click.stop="$emit('delete', session.id)"
                 >
                   <Trash2 class="btn-icon" :size="16" />
                 </button>
@@ -185,7 +196,7 @@ function formatTime(timeString: string | undefined) {
                 <button
                   class="btn-action btn-qr"
                   title="Generate QR Code"
-                  @click="$emit('generateQr', session)"
+                  @click.stop="$emit('generateQr', session)"
                 >
                   <QrCode class="btn-icon" :size="16" />
                   <span>QR</span>
@@ -193,7 +204,7 @@ function formatTime(timeString: string | undefined) {
                 <button
                   class="btn-action btn-view-qr"
                   title="View QR Codes"
-                  @click="$emit('viewQrCodes', session)"
+                  @click.stop="$emit('viewQrCodes', session)"
                 >
                   <Eye class="btn-icon" :size="16" />
                   <span>View</span>
@@ -201,7 +212,7 @@ function formatTime(timeString: string | undefined) {
                 <button
                   class="btn-action btn-end"
                   title="End Session"
-                  @click="$emit('end', session)"
+                  @click.stop="$emit('end', session)"
                 >
                   <StopCircle class="btn-icon" :size="16" />
                   <span>End</span>
@@ -209,7 +220,7 @@ function formatTime(timeString: string | undefined) {
                 <button
                   class="btn-action btn-room"
                   title="Change Room"
-                  @click="$emit('updateRoom', session)"
+                  @click.stop="$emit('updateRoom', session)"
                 >
                   <MapPin class="btn-icon" :size="16" />
                 </button>
@@ -279,6 +290,15 @@ tbody tr {
 
 tbody tr:hover {
   background: var(--color-gray-50);
+}
+
+.session-row {
+  cursor: pointer;
+}
+
+.session-row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 td {

@@ -20,10 +20,13 @@ export interface QrCodeResponseDto {
   qrHash?: string
   qrCodeImage?: string
   qrCodeImageUrl?: string
+  createdAt?: string
   generatedAt?: string
   expiresAt?: string
   usageCount?: number
+  maxUsage?: number
   isActive?: boolean
+  isExpired?: boolean
   [key: string]: unknown
 }
 
@@ -66,6 +69,8 @@ export interface QrCodeScanHistoryResponseDto {
 }
 
 export type QrCodePaginationParams = PaginationParams & {
+  pageNumber?: number
+  pageSize?: number
   [key: string]: unknown
 }
 
@@ -270,7 +275,13 @@ export async function getScanHistoryById(
   id: EntityId,
   params: QrCodePaginationParams = {},
 ): Promise<QrCodeScanHistoryResponseDto> {
-  const response = await api.get(`/QrCode/${id}/scan-history`, { params })
+  const { page, limit, ...rest } = params
+  const queryParams = {
+    ...rest,
+    ...(page != null ? { pageNumber: page } : {}),
+    ...(limit != null ? { pageSize: limit } : {}),
+  }
+  const response = await api.get(`/QrCode/${id}/scan-history`, { params: queryParams })
   return response.data
 }
 
@@ -287,7 +298,13 @@ export async function getScanHistoryByHash(
   qrHash: string,
   params: QrCodePaginationParams = {},
 ): Promise<QrCodeScanHistoryResponseDto> {
-  const response = await api.get(`/QrCode/hash/${qrHash}/scan-history`, { params })
+  const { page, limit, ...rest } = params
+  const queryParams = {
+    ...rest,
+    ...(page != null ? { pageNumber: page } : {}),
+    ...(limit != null ? { pageSize: limit } : {}),
+  }
+  const response = await api.get(`/QrCode/hash/${qrHash}/scan-history`, { params: queryParams })
   return response.data
 }
 

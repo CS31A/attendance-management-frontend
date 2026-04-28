@@ -172,6 +172,7 @@ describe('session table', () => {
       const emitted = wrapper.emitted<{ start: [SessionResponseDto] }>('start')
       expect(emitted).toBeDefined()
       expect(emitted?.[0]).toEqual([session])
+      expect(wrapper.emitted('viewDetails')).toBeUndefined()
     })
 
     it('does not emit start event when Start button is clicked and disabled', async () => {
@@ -228,6 +229,42 @@ describe('session table', () => {
       const timeText = wrapper.find('.time-text').text()
 
       expect(timeText).toBe(`${formatExpectedLocalTime(startIso)} - ${formatExpectedLocalTime(endIso)}`)
+    })
+  })
+
+  describe('detail navigation behavior', () => {
+    it('emits viewDetails when a row is clicked', async () => {
+      const session = createSession()
+      const wrapper = mountTable([session])
+
+      await wrapper.find('.session-row').trigger('click')
+
+      expect(wrapper.emitted<{ viewDetails: [SessionResponseDto] }>('viewDetails')?.[0]).toEqual([session])
+    })
+
+    it('emits viewDetails when a focused row is activated with Enter', async () => {
+      const session = createSession()
+      const wrapper = mountTable([session])
+
+      await wrapper.find('.session-row').trigger('keydown', { key: 'Enter' })
+
+      expect(wrapper.emitted<{ viewDetails: [SessionResponseDto] }>('viewDetails')?.[0]).toEqual([session])
+    })
+
+    it('does not emit viewDetails when active session action buttons are clicked', async () => {
+      const session = createSession({ status: 'active' })
+      const wrapper = mountTable([session])
+
+      await wrapper.find('.btn-qr').trigger('click')
+      await wrapper.find('.btn-view-qr').trigger('click')
+      await wrapper.find('.btn-end').trigger('click')
+      await wrapper.find('.btn-room').trigger('click')
+
+      expect(wrapper.emitted('viewDetails')).toBeUndefined()
+      expect(wrapper.emitted('generateQr')).toHaveLength(1)
+      expect(wrapper.emitted('viewQrCodes')).toHaveLength(1)
+      expect(wrapper.emitted('end')).toHaveLength(1)
+      expect(wrapper.emitted('updateRoom')).toHaveLength(1)
     })
   })
 })
