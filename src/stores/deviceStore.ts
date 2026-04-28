@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import type { FingerprintDeviceDto } from '@/api/fingerprint'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import { getDevices } from '@/api/fingerprint'
 
 export const useDeviceStore = defineStore('deviceStore', () => {

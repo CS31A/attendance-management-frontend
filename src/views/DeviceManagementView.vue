@@ -364,13 +364,13 @@ function getConnectivityStatusText(device: FingerprintDeviceDto): string {
             </div>
             <div class="detail-row">
               <span class="detail-label">Registration Status:</span>
-              <span :class="['detail-value', 'status-badge', selectedDevice.isActive ? 'status-enabled' : 'status-disabled']">
+              <span class="detail-value status-badge" :class="[selectedDevice.isActive ? 'status-enabled' : 'status-disabled']">
                 {{ selectedDevice.isActive ? 'Enabled' : 'Disabled' }}
               </span>
             </div>
             <div class="detail-row">
               <span class="detail-label">Connectivity Status:</span>
-              <span :class="['detail-value', 'status-badge', getConnectivityStatusClass(selectedDevice)]">
+              <span class="detail-value status-badge" :class="[getConnectivityStatusClass(selectedDevice)]">
                 {{ getConnectivityStatusText(selectedDevice) }}
               </span>
             </div>

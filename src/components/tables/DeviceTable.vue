@@ -136,7 +136,7 @@ function getStatusText(device: FingerprintDeviceDto): string {
               </div>
             </td>
             <td>
-              <span :class="['status-badge', getStatusClass(device)]">
+              <span class="status-badge" :class="[getStatusClass(device)]">
                 <Activity :size="14" />
                 {{ getStatusText(device) }}
               </span>
