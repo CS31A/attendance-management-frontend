@@ -5,7 +5,7 @@ import type { EntityId } from '@/types'
 import { ArcElement, CategoryScale, Chart as ChartJS, DoughnutController, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { calculateAttendanceStats, fetchAttendanceSummary, fetchSessionAttendance } from '@/api/attendance'
+import { calculateAttendanceStats, fetchAttendanceSummary, fetchSessionAttendance, getStatusLabel } from '@/api/attendance'
 import { getInstructorSubjects, getMySchedules } from '@/api/instructors'
 import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
 import { useAuthStore } from '@/stores/authStore'
@@ -868,7 +868,7 @@ onBeforeUnmount(() => {
                   <td>{{ record.studentName }}</td>
                   <td>
                     <span class="attendance-badge" :class="record.status.toLowerCase()">
-                      {{ record.status }}
+                      {{ getStatusLabel(record.status) }}
                     </span>
                   </td>
                   <td>{{ record.checkInTime ? formatTime(record.checkInTime) : '-' }}</td>

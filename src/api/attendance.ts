@@ -84,6 +84,22 @@ interface SessionAttendanceResponse {
   attendanceRecords?: SessionAttendanceResponseDto[]
 }
 
+/**
+ * Normalize backend PascalCase status to frontend lowercase
+ * Backend returns 'Present' | 'Absent' | 'Late' | 'Excused'
+ * Frontend expects 'present' | 'absent' | 'late' | 'excused'
+ */
+function normalizeStatus(status: string): AttendanceStatus {
+  return status.toLowerCase() as AttendanceStatus
+}
+
+function normalizeAttendanceRecord(record: AttendanceResponseDto): AttendanceResponseDto {
+  return {
+    ...record,
+    status: normalizeStatus(record.status),
+  }
+}
+
 // ==================== READ OPERATIONS ====================
 
 /**
@@ -107,7 +123,8 @@ export async function fetchAllAttendance(
   params: AttendanceQueryParams = {},
 ): Promise<AttendanceResponseDto[]> {
   const response = await api.get('/attendance', { params })
-  return response.data
+  const records: AttendanceResponseDto[] = response.data
+  return records.map(normalizeAttendanceRecord)
 }
 
 /**
@@ -123,7 +140,7 @@ export async function fetchAllAttendance(
  */
 export async function fetchAttendanceById(id: EntityId): Promise<AttendanceResponseDto> {
   const response = await api.get(`/attendance/${id}`)
-  return response.data
+  return normalizeAttendanceRecord(response.data)
 }
 
 /**
@@ -141,7 +158,8 @@ export async function fetchAttendanceById(id: EntityId): Promise<AttendanceRespo
  */
 export async function fetchStudentAttendance(studentId: EntityId): Promise<AttendanceResponseDto[]> {
   const response = await api.get(`/attendance/student/${studentId}`)
-  return response.data
+  const records: AttendanceResponseDto[] = response.data
+  return records.map(normalizeAttendanceRecord)
 }
 
 /**
@@ -162,7 +180,11 @@ export async function fetchSessionAttendance(sessionId: EntityId): Promise<Sessi
   const response = await api.get<SessionAttendanceResponse>(`/attendance/session/${sessionId}`)
   // Backend returns a wrapper object with attendanceRecords array
   // Extract just the attendanceRecords array for frontend consumption
-  return response.data.attendanceRecords || []
+  const records: SessionAttendanceResponseDto[] = response.data.attendanceRecords || []
+  return records.map(record => ({
+    ...record,
+    status: normalizeStatus(record.status),
+  }))
 }
 
 /**
@@ -204,7 +226,7 @@ export async function createAttendance(
   payload: CreateAttendancePayload,
 ): Promise<AttendanceResponseDto> {
   const response = await api.post('/attendance', payload)
-  return response.data
+  return normalizeAttendanceRecord(response.data)
 }
 
 /**
@@ -230,7 +252,7 @@ export async function updateAttendance(
   payload: UpdateAttendancePayload,
 ): Promise<AttendanceResponseDto> {
   const response = await api.put(`/attendance/${id}`, payload)
-  return response.data
+  return normalizeAttendanceRecord(response.data)
 }
 
 /**
