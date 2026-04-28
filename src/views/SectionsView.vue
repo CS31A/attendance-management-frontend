@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SectionDto, SectionPayload } from '@/api/sections'
-import { AlertTriangle, Plus } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -151,17 +151,6 @@ watch(selectedCourseName, () => {
         </div>
       </div>
     </template>
-
-    <!-- Error message -->
-    <div v-else-if="sectionsStore.error" class="error-message">
-      <div class="error-content">
-        <AlertTriangle class="error-icon" :size="24" />
-        <p>{{ sectionsStore.error }}</p>
-        <BaseButton variant="secondary" size="small" @click="sectionsStore.fetchSections">
-          Retry
-        </BaseButton>
-      </div>
-    </div>
 
     <div v-else class="container">
       <!-- Header -->

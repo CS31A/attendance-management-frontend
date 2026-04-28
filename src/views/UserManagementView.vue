@@ -3,7 +3,7 @@ import type { InstructorSessionsReportDto } from '@/api/reports'
 import type { CreateUserInput } from '@/stores/userStore'
 import type { EntityId } from '@/types'
 import type { HandleErrorableModal } from '@/types/ui'
-import { AlertTriangle, Plus, Users } from 'lucide-vue-next'
+import { Plus, Users } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchInstructorSessionsReport } from '@/api/reports'
@@ -475,21 +475,6 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
       <div class="pagination-section">
         <SkeletonLoader type="rectangle" :height="50" :width="300" style="margin-bottom: 1rem;" />
         <SkeletonLoader type="rectangle" :height="50" style="width: 100%;" />
-      </div>
-    </div>
-
-    <!-- Error message -->
-    <div v-else-if="userStore.error" class="error-message">
-      <div class="error-content">
-        <AlertTriangle class="error-icon" :size="24" />
-        <p>{{ userStore.error }}</p>
-        <BaseButton
-          variant="ghost"
-          size="small"
-          @click="userStore.fetchUsers(viewMode)"
-        >
-          Retry
-        </BaseButton>
       </div>
     </div>
 

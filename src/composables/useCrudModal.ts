@@ -13,6 +13,7 @@ export interface UseCrudModalOptions<TPayload, TEntity> {
   updateFn: (id: EntityId, data: TPayload) => Promise<unknown>
   entityLabel: string
   onSuccess?: () => void
+  onErrorHandled?: () => void
 }
 
 export function useCrudModal<TPayload, TEntity extends { id: EntityId }>(
@@ -33,6 +34,7 @@ export function useCrudModal<TPayload, TEntity extends { id: EntityId }>(
     }
     catch (error) {
       options.modalRef.value?.handleError?.(getErrorMessage(error, `Failed to save ${options.entityLabel.toLowerCase()}`))
+      options.onErrorHandled?.()
     }
   }
 

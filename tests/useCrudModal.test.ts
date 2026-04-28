@@ -94,6 +94,26 @@ describe('useCrudModal', () => {
       expect(options.showModal.value).toBe(true)
     })
 
+    it('runs onErrorHandled after surfacing a failed save in the modal', async () => {
+      const handleError = vi.fn()
+      const onErrorHandled = vi.fn()
+      const options = createTestOptions({
+        modalRef: { value: { handleError } },
+        showModal: { value: true },
+        onErrorHandled,
+        createFn: vi.fn(async () => {
+          throw new Error('Schedule conflict')
+        }),
+      })
+
+      const { handleSave } = useCrudModal<TestPayload, TestEntity>(options)
+      await handleSave({ name: 'Test' })
+
+      expect(handleError).toHaveBeenCalledWith('Schedule conflict')
+      expect(onErrorHandled).toHaveBeenCalledTimes(1)
+      expect(options.showModal.value).toBe(true)
+    })
+
     it('uses error message from error object when available', async () => {
       const handleError = vi.fn()
       const options = createTestOptions({

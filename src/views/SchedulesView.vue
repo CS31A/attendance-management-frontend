@@ -5,7 +5,7 @@ import type { SectionDto } from '@/api/sections'
 import type { SubjectDto } from '@/api/subjects'
 import type { EntityId } from '@/types'
 import type { FormFieldConfig, FormOption } from '@/types/ui'
-import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
+import { BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
@@ -245,6 +245,7 @@ const { handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal 
   createFn: data => scheduleStore.createSchedule(data),
   updateFn: (id, data) => scheduleStore.updateSchedule(id, data),
   entityLabel: 'Schedule',
+  onErrorHandled: () => scheduleStore.clearError(),
 })
 
 const {
@@ -355,17 +356,6 @@ watch(selectedDay, () => {
         </div>
       </div>
     </template>
-
-    <!-- Error message -->
-    <div v-else-if="scheduleStore.error" class="error-message">
-      <div class="error-content">
-        <AlertTriangle class="error-icon" :size="24" />
-        <p>{{ scheduleStore.error }}</p>
-        <BaseButton variant="secondary" size="small" @click="() => scheduleStore.fetchSchedules()">
-          Retry
-        </BaseButton>
-      </div>
-    </div>
 
     <div v-else class="container">
       <!-- Header -->

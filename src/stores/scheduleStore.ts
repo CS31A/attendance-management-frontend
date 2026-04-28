@@ -126,6 +126,10 @@ export const useScheduleStore = defineStore('schedule', () => {
     }
   }
 
+  function clearError() {
+    error.value = ''
+  }
+
   return {
     // State
     schedules,
@@ -143,5 +147,6 @@ export const useScheduleStore = defineStore('schedule', () => {
     createSchedule,
     updateSchedule,
     deleteSchedule,
+    clearError,
   }
 })

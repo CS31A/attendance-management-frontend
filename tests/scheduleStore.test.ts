@@ -22,6 +22,22 @@ function createSchedule(overrides: Partial<ScheduleDto> = {}): ScheduleDto {
   }
 }
 
+function createConflictError(message: string) {
+  const error = new Error('Request failed with status code 409') as Error & {
+    response?: {
+      status: number
+      data: { message: string }
+    }
+  }
+
+  error.response = {
+    status: 409,
+    data: { message },
+  }
+
+  return error
+}
+
 describe('scheduleStore', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -277,6 +293,24 @@ describe('scheduleStore', () => {
       expect(store.loading).toBe(false)
     })
 
+    it('createSchedule preserves backend 409 conflict message', async () => {
+      const actualHttpError = await vi.importActual<typeof import('@/utils/httpError')>('@/utils/httpError')
+      const conflictMessage = 'Schedule conflict: classroom is already booked for that day and time range.'
+      const conflictError = createConflictError(conflictMessage)
+      const payload: SchedulePayload = { dayOfWeek: 'Monday', timeIn: '08:00', timeOut: '09:00' }
+
+      vi.mocked(scheduleApi.createSchedule).mockRejectedValue(conflictError)
+      vi.mocked(getErrorMessage).mockImplementation(actualHttpError.getErrorMessage)
+      vi.mocked(getValidationErrorMessages).mockImplementation(actualHttpError.getValidationErrorMessages)
+
+      const store = useScheduleStore()
+
+      await expect(store.createSchedule(payload)).rejects.toBe(conflictError)
+
+      expect(store.error).toBe(conflictMessage)
+      expect(store.loading).toBe(false)
+    })
+
     it('updateSchedule sets fallback error, overrides with validation errors, and rethrows', async () => {
       const testError = new Error('Validation failed')
       const validationErrors = ['Time format invalid']
@@ -309,6 +343,24 @@ describe('scheduleStore', () => {
       await expect(store.updateSchedule('1', payload)).rejects.toThrow(testError)
 
       expect(store.error).toBe('Failed to update schedule: Server error')
+      expect(store.loading).toBe(false)
+    })
+
+    it('updateSchedule preserves backend 409 conflict message', async () => {
+      const actualHttpError = await vi.importActual<typeof import('@/utils/httpError')>('@/utils/httpError')
+      const conflictMessage = 'Schedule conflict: instructor is already booked on Monday from 08:00 to 09:00.'
+      const conflictError = createConflictError(conflictMessage)
+      const payload: SchedulePayload = { timeIn: '08:00', timeOut: '09:00' }
+
+      vi.mocked(scheduleApi.updateSchedule).mockRejectedValue(conflictError)
+      vi.mocked(getErrorMessage).mockImplementation(actualHttpError.getErrorMessage)
+      vi.mocked(getValidationErrorMessages).mockImplementation(actualHttpError.getValidationErrorMessages)
+
+      const store = useScheduleStore()
+
+      await expect(store.updateSchedule('1', payload)).rejects.toBe(conflictError)
+
+      expect(store.error).toBe(conflictMessage)
       expect(store.loading).toBe(false)
     })
 

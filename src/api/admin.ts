@@ -1,5 +1,6 @@
 import type { EntityId, PaginationParams } from '@/types'
 import api from '@/api'
+import axios from 'axios'
 
 /**
  * Admin API service for dashboard data
@@ -14,10 +15,30 @@ export type DashboardQueryParams = PaginationParams & {
 export type AdminMetricDto = Record<string, unknown>
 export type AdminCollectionDto = AdminMetricDto[]
 
-// System Health
+// System Health - uses root path (not /api) since health endpoints are mapped at root level
 export async function fetchSystemHealth(): Promise<AdminMetricDto> {
-  const response = await api.get('/health')
-  return response.data
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  // Remove '/api' suffix if present to get the root base URL
+  const rootBaseURL = baseURL.replace(/\/api$/, '')
+
+  const response = await axios.get(`${rootBaseURL}/health`, {
+    withCredentials: true,
+    timeout: 5000,
+  })
+  const data = response.data
+
+  // Transform backend health check response to frontend format
+  // Backend: { status: "Healthy", checks: [{ name: "database", data: { connected: true } }] }
+  // Frontend expects: { status: "healthy", database: { connected: true } }
+  const databaseCheck = data.checks?.find((check: { name: string }) => check.name === 'database')
+
+  return {
+    status: data.status?.toLowerCase() ?? 'unhealthy',
+    timestamp: data.timestamp,
+    database: {
+      connected: databaseCheck?.data?.connected ?? false,
+    },
+  }
 }
 
 // Attendance Summary

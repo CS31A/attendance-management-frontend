@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
 import type { FormFieldConfig } from '@/types/ui'
-import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
+import { DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
@@ -132,17 +132,6 @@ watch(searchQuery, () => {
         </div>
       </div>
     </template>
-
-    <!-- Error message -->
-    <div v-else-if="classroomStore.error" class="error-message">
-      <div class="error-content">
-        <AlertTriangle class="error-icon" :size="24" />
-        <p>{{ classroomStore.error }}</p>
-        <BaseButton variant="secondary" size="small" @click="classroomStore.fetchClassrooms">
-          Retry
-        </BaseButton>
-      </div>
-    </div>
 
     <div v-else class="container">
       <!-- Header -->
