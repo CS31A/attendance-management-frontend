@@ -21,6 +21,7 @@ interface User {
 defineProps<{
   users: User[]
   showRestore?: boolean
+  currentUserId?: EntityId
 }>()
 
 defineEmits<{
@@ -66,6 +67,17 @@ function _getUserSection(user: User) {
     return user.sectionName
   }
   return '-'
+}
+
+function canDeleteOrArchive(user: User, currentUserId?: EntityId): boolean {
+  // Prevent admin from deleting/archiving their own account
+  if (!currentUserId)
+    return true
+  const userId = user.userId || user.id
+  // If this is the current user and they have Admin role, disable delete/archive
+  if (String(userId) === String(currentUserId) && user.role === 'Admin')
+    return false
+  return true
 }
 </script>
 
@@ -138,10 +150,21 @@ function _getUserSection(user: User) {
               <button v-if="showRestore" class="app-btn-icon app-btn-restore" title="Restore User" @click="$emit('restore', user)">
                 <ArchiveRestore :size="16" />
               </button>
-              <button v-else class="app-btn-icon app-btn-restore" title="Soft Delete (Can be restored)" @click="$emit('softDelete', user)">
+              <button
+                v-else
+                class="app-btn-icon app-btn-restore"
+                :disabled="!canDeleteOrArchive(user, currentUserId)"
+                :title="!canDeleteOrArchive(user, currentUserId) ? 'Cannot archive your own account' : 'Soft Delete (Can be restored)'"
+                @click="$emit('softDelete', user)"
+              >
                 <ArchiveX :size="16" />
               </button>
-              <button class="app-btn-icon app-btn-delete" title="Permanently Delete" @click="$emit('delete', user)">
+              <button
+                class="app-btn-icon app-btn-delete"
+                :disabled="!canDeleteOrArchive(user, currentUserId)"
+                :title="!canDeleteOrArchive(user, currentUserId) ? 'Cannot delete your own account' : 'Permanently Delete'"
+                @click="$emit('delete', user)"
+              >
                 <Trash2 :size="16" />
               </button>
             </div>
@@ -181,6 +204,12 @@ function _getUserSection(user: User) {
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+/* Disabled button styling */
+.app-btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Responsive Sticky Columns */

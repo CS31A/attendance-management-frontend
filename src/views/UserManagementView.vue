@@ -15,6 +15,7 @@ import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
+import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
 import { resolveStudentProfileId } from '@/utils/studentRoute'
 
@@ -26,6 +27,7 @@ const CustomDropdown = defineAsyncComponent(() => import('@/components/common/Cu
 type ManagedUser = ReturnType<typeof useUserStore>['users'][number]
 
 const userStore = useUserStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 interface EditableUser {
@@ -156,6 +158,9 @@ const totalUsers = computed(() =>
 const hasActiveSearch = computed(() =>
   searchQuery.value.trim().length > 0,
 )
+
+// Get current user ID to prevent self-deletion
+const currentUserId = computed(() => authStore.userProfile?.userId)
 
 // Toast state and helpers
 const { toast, showToast, closeToast } = useToast()
@@ -577,6 +582,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
         :title="viewMode === 'Active' ? 'Active Users' : viewMode === 'Archived' ? 'Archived Users' : 'All Users'"
         role="All"
         :show-restore="viewMode === 'Archived'"
+        :current-user-id="currentUserId"
         :pagination="{
           currentPage,
           totalPages,
@@ -603,6 +609,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
         title="Instructors"
         role="Instructor"
         :show-restore="viewMode === 'Archived'"
+        :current-user-id="currentUserId"
         @edit="handleEditUser"
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"
@@ -714,6 +721,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
         title="Students"
         role="Student"
         :show-restore="viewMode === 'Archived'"
+        :current-user-id="currentUserId"
         @edit="handleEditUser"
         @soft-delete="handleSoftDeleteUser"
         @delete="handleHardDeleteUser"

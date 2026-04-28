@@ -23,6 +23,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  currentUserId: {
+    type: [String, Number],
+    default: undefined,
+  },
 })
 
 defineEmits(['edit', 'softDelete', 'delete', 'restore', 'view', 'nextPage', 'previousPage', 'goToPage', 'setItemsPerPage'])
@@ -50,6 +54,7 @@ function getRoleIcon(role) {
       <UserTable
         :users="users"
         :show-restore="showRestore"
+        :current-user-id="currentUserId"
         @edit="$emit('edit', $event)"
         @soft-delete="$emit('softDelete', $event)"
         @delete="$emit('delete', $event)"
