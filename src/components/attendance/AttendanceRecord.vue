@@ -185,7 +185,7 @@ onMounted(() => {
       studentName: student.name,
       studentNumber: student.studentNumber,
       status: ATTENDANCE_STATUSES.ABSENT,
-      originalStatus: null,
+      originalStatus: ATTENDANCE_STATUSES.ABSENT,
       originalNotes: '',
       notes: '',
     }))

@@ -7,6 +7,7 @@ import { exportToCsv, fetchReportsSummary } from '@/api/reports'
 import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
 import { LOCALE } from '@/utils/constants'
+import { formatLongDate } from '@/utils/date'
 
 const Bar = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Bar })))
 const Line = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Line })))
@@ -194,14 +195,15 @@ function getDateRange(tab: ReportsTab): { startDate: string, endDate: string } {
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
   if (tab === 'Today')
-    return { startDate: todayStr, endDate: todayStr }
+    return { startDate: `${todayStr}T00:00:00`, endDate: `${todayStr}T23:59:59` }
   const past = new Date(today)
   if (tab === 'Week')
     past.setDate(today.getDate() - 6)
   else if (tab === 'Month')
     past.setMonth(today.getMonth() - 1)
   else past.setFullYear(today.getFullYear() - 1)
-  return { startDate: past.toISOString().split('T')[0], endDate: todayStr }
+  const pastStr = past.toISOString().split('T')[0]
+  return { startDate: `${pastStr}T00:00:00`, endDate: `${todayStr}T23:59:59` }
 }
 
 function setActiveTab(tab: ReportsTab) {
@@ -295,7 +297,7 @@ async function fetchDashboardData() {
 async function handleExportCsv() {
   const { startDate, endDate } = getDateRange(activeTab.value)
   const rows: Record<string, unknown>[] = [
-    { Category: 'Summary', Label: 'Date Range', Value: `${startDate} to ${endDate}` },
+    { Category: 'Summary', Label: 'Date Range', Value: `${formatLongDate(startDate)} to ${formatLongDate(endDate)}` },
     { Category: 'Summary', Label: 'Present', Value: presentToday.value },
     { Category: 'Summary', Label: 'Absent', Value: absentToday.value },
     { Category: 'Summary', Label: 'Attendance Rate', Value: `${attendanceRate.value}%` },
@@ -316,7 +318,7 @@ async function handleExportCsv() {
 async function handleExportXlsx() {
   const { startDate, endDate } = getDateRange(activeTab.value)
   const summaryRows = [
-    { Label: 'Date Range', Value: `${startDate} to ${endDate}` },
+    { Label: 'Date Range', Value: `${formatLongDate(startDate)} to ${formatLongDate(endDate)}` },
     { Label: 'Present', Value: presentToday.value },
     { Label: 'Absent', Value: absentToday.value },
     { Label: 'Attendance Rate', Value: `${attendanceRate.value}%` },
