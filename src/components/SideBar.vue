@@ -282,7 +282,7 @@ onUnmounted(() => {
             <UserCircle :size="20" />
           </div>
           <div v-show="!isCollapsed" class="user-details">
-            <span class="user-name">{{ user }}</span>
+            <span class="user-name">{{ authStore.userProfile?.username || user?.username }}</span>
             <span class="user-role">{{ userRole }}</span>
           </div>
         </div>
