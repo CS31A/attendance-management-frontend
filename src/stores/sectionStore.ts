@@ -4,12 +4,14 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import sectionsApi from '@/api/sections'
 import { entityIdsMatch } from '@/utils/entityId'
+import { getErrorMessage } from '@/utils/httpError'
 
 export const useSectionStore = defineStore('sectionsStore', () => {
   const sections = ref<SectionDto[]>([])
   const itemsPerPage = ref(10)
   const loading = ref(false)
   const error = ref('')
+  const fetchError = ref('')
 
   const getSections = computed(() => sections.value)
   const getItemsPerPage = computed(() => itemsPerPage.value)
@@ -23,13 +25,16 @@ export const useSectionStore = defineStore('sectionsStore', () => {
   const fetchSections = async () => {
     loading.value = true
     error.value = ''
+    fetchError.value = ''
     try {
       const resp = await sectionsApi.getAllSections()
       sections.value = resp.data
     }
     catch (err) {
       console.error('Error fetching sections:', err)
-      error.value = 'Failed to fetch sections'
+      const msg = getErrorMessage(err, 'Failed to fetch sections')
+      error.value = msg
+      fetchError.value = msg
       throw err
     }
     finally {
@@ -117,6 +122,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     itemsPerPage,
     loading,
     error,
+    fetchError,
     // getters
     getSections,
     getNumberOfSections,

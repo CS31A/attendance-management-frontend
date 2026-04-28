@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CourseDto, CoursePayload } from '@/api/courses'
 import type { FormFieldConfig } from '@/types/ui'
-import { BookOpen, Plus } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
@@ -131,6 +131,17 @@ watch(searchQuery, () => {
         </div>
       </div>
     </template>
+
+    <!-- Error message -->
+    <div v-else-if="courseStore.fetchError" class="error-message">
+      <div class="error-content">
+        <AlertTriangle class="error-icon" :size="24" />
+        <p>{{ courseStore.fetchError }}</p>
+        <BaseButton variant="secondary" size="small" @click="courseStore.fetchCourses">
+          Retry
+        </BaseButton>
+      </div>
+    </div>
 
     <div v-else class="container">
       <!-- Header -->

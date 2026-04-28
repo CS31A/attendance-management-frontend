@@ -7,28 +7,29 @@ import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export const useCourseStore = defineStore('course', () => {
-  // State
   const courses = ref<CourseDto[]>([])
   const currentCourse = ref<CourseDto | null>(null)
   const loading = ref(false)
   const error = ref('')
+  const fetchError = ref('')
 
-  // Getters
   const hasCourses = computed(() => courses.value.length > 0)
   const sortedCourses = computed(() =>
     [...courses.value].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
   )
 
-  // Actions
   async function fetchCourses() {
     loading.value = true
     error.value = ''
+    fetchError.value = ''
     try {
       const response = await courseApi.getAllCourses()
       courses.value = response.data
     }
     catch (err) {
-      error.value = getErrorMessage(err, 'Failed to fetch courses')
+      const msg = getErrorMessage(err, 'Failed to fetch courses')
+      error.value = msg
+      fetchError.value = msg
       console.error('Error fetching courses:', err)
     }
     finally {
@@ -39,12 +40,15 @@ export const useCourseStore = defineStore('course', () => {
   async function fetchCourse(id: EntityId) {
     loading.value = true
     error.value = ''
+    fetchError.value = ''
     try {
       const response = await courseApi.getCourseById(id)
       currentCourse.value = response.data
     }
     catch (err) {
-      error.value = getErrorMessage(err, `Course with ID ${id} not found`)
+      const msg = getErrorMessage(err, `Course with ID ${id} not found`)
+      error.value = msg
+      fetchError.value = msg
       console.error('Error fetching course:', err)
     }
     finally {
@@ -63,9 +67,9 @@ export const useCourseStore = defineStore('course', () => {
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to create course')
       const validationErrors = getValidationErrorMessages(err)
-      if (validationErrors.length > 0)
+      if (validationErrors.length > 0) {
         error.value = validationErrors.join(', ')
-
+      }
       console.error('Error creating course:', err)
       throw err
     }
@@ -88,9 +92,9 @@ export const useCourseStore = defineStore('course', () => {
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to update course')
       const validationErrors = getValidationErrorMessages(err)
-      if (validationErrors.length > 0)
+      if (validationErrors.length > 0) {
         error.value = validationErrors.join(', ')
-
+      }
       console.error('Error updating course:', err)
       throw err
     }
@@ -117,17 +121,13 @@ export const useCourseStore = defineStore('course', () => {
   }
 
   return {
-    // State
     courses,
     currentCourse,
     loading,
     error,
-
-    // Getters
+    fetchError,
     hasCourses,
     sortedCourses,
-
-    // Actions
     fetchCourses,
     fetchCourse,
     createCourse,

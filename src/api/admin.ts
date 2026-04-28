@@ -1,6 +1,6 @@
 import type { EntityId, PaginationParams } from '@/types'
-import api from '@/api'
 import axios from 'axios'
+import api from '@/api'
 
 /**
  * Admin API service for dashboard data

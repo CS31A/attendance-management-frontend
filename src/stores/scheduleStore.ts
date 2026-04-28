@@ -12,6 +12,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const currentSchedule = ref<ScheduleDto | null>(null)
   const loading = ref(false)
   const error = ref('')
+  const fetchError = ref('')
 
   // Getters
   const hasSchedules = computed(() => schedules.value.length > 0)
@@ -32,12 +33,15 @@ export const useScheduleStore = defineStore('schedule', () => {
       loading.value = true
     }
     error.value = ''
+    fetchError.value = ''
     try {
       const data = await scheduleApi.getAllSchedules()
       schedules.value = data
     }
     catch (err) {
-      error.value = getErrorMessage(err, 'Failed to fetch schedules')
+      const msg = getErrorMessage(err, 'Failed to fetch schedules')
+      error.value = msg
+      fetchError.value = msg
       console.error('Error fetching schedules:', err)
     }
     finally {
@@ -50,12 +54,15 @@ export const useScheduleStore = defineStore('schedule', () => {
   async function fetchSchedule(id: EntityId) {
     loading.value = true
     error.value = ''
+    fetchError.value = ''
     try {
       const data = await scheduleApi.getScheduleById(id)
       currentSchedule.value = data
     }
     catch (err) {
-      error.value = getErrorMessage(err, `Schedule with ID ${id} not found`)
+      const msg = getErrorMessage(err, `Schedule with ID ${id} not found`)
+      error.value = msg
+      fetchError.value = msg
       console.error('Error fetching schedule:', err)
     }
     finally {
@@ -75,9 +82,9 @@ export const useScheduleStore = defineStore('schedule', () => {
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to create schedule')
       const validationErrors = getValidationErrorMessages(err)
-      if (validationErrors.length > 0)
+      if (validationErrors.length > 0) {
         error.value = validationErrors.join(', ')
-
+      }
       console.error('Error creating schedule:', err)
       throw err
     }
@@ -98,9 +105,9 @@ export const useScheduleStore = defineStore('schedule', () => {
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to update schedule')
       const validationErrors = getValidationErrorMessages(err)
-      if (validationErrors.length > 0)
+      if (validationErrors.length > 0) {
         error.value = validationErrors.join(', ')
-
+      }
       console.error('Error updating schedule:', err)
       throw err
     }
@@ -136,6 +143,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     currentSchedule,
     loading,
     error,
+    fetchError,
 
     // Getters
     hasSchedules,

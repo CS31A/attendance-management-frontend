@@ -8,6 +8,7 @@ export const useDeviceStore = defineStore('deviceStore', () => {
   const devices = ref<FingerprintDeviceDto[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const fetchError = ref<string | null>(null)
 
   // Getters
   const activeDevices = computed(() =>
@@ -26,6 +27,7 @@ export const useDeviceStore = defineStore('deviceStore', () => {
   async function fetchDevices() {
     loading.value = true
     error.value = null
+    fetchError.value = null
 
     try {
       const data = await getDevices()
@@ -35,8 +37,10 @@ export const useDeviceStore = defineStore('deviceStore', () => {
     }
     catch (err) {
       console.error('Failed to fetch devices:', err)
-      error.value = 'Failed to load devices. Please try again.'
-      return { success: false, error: error.value }
+      const msg = 'Failed to load devices. Please try again.'
+      error.value = msg
+      fetchError.value = msg
+      return { success: false, error: msg }
     }
     finally {
       loading.value = false
@@ -78,6 +82,7 @@ export const useDeviceStore = defineStore('deviceStore', () => {
     devices.value = []
     loading.value = false
     error.value = null
+    fetchError.value = null
   }
 
   return {
@@ -85,6 +90,7 @@ export const useDeviceStore = defineStore('deviceStore', () => {
     devices,
     loading,
     error,
+    fetchError,
 
     // Getters
     activeDevices,

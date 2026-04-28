@@ -171,10 +171,10 @@ function getConnectivityStatusText(device: FingerprintDeviceDto): string {
     </div>
 
     <!-- Error State -->
-    <div v-else-if="deviceStore.error" class="error-message">
+    <div v-else-if="deviceStore.fetchError" class="error-message">
       <div class="error-content">
         <AlertTriangle class="error-icon" :size="24" />
-        <p>{{ deviceStore.error }}</p>
+        <p>{{ deviceStore.fetchError }}</p>
         <BaseButton
           variant="ghost"
           size="small"

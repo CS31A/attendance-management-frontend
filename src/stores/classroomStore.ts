@@ -12,6 +12,7 @@ export const useClassroomStore = defineStore('classroom', () => {
   const currentClassroom = ref<ClassroomDto | null>(null)
   const loading = ref(false)
   const error = ref('')
+  const fetchError = ref('')
 
   // Getters
   const hasClassrooms = computed(() => classrooms.value.length > 0)
@@ -23,12 +24,15 @@ export const useClassroomStore = defineStore('classroom', () => {
   async function fetchClassrooms() {
     loading.value = true
     error.value = ''
+    fetchError.value = ''
     try {
       const response = await classroomApi.getAllClassrooms()
       classrooms.value = response.data
     }
     catch (err) {
-      error.value = getErrorMessage(err, 'Failed to fetch classrooms')
+      const msg = getErrorMessage(err, 'Failed to fetch classrooms')
+      error.value = msg
+      fetchError.value = msg
       console.error('Error fetching classrooms:', err)
     }
     finally {
@@ -39,12 +43,15 @@ export const useClassroomStore = defineStore('classroom', () => {
   async function fetchClassroom(id: EntityId) {
     loading.value = true
     error.value = ''
+    fetchError.value = ''
     try {
       const response = await classroomApi.getClassroomById(id)
       currentClassroom.value = response.data
     }
     catch (err) {
-      error.value = getErrorMessage(err, `Classroom with ID ${id} not found`)
+      const msg = getErrorMessage(err, `Classroom with ID ${id} not found`)
+      error.value = msg
+      fetchError.value = msg
       console.error('Error fetching classroom:', err)
     }
     finally {
@@ -63,9 +70,9 @@ export const useClassroomStore = defineStore('classroom', () => {
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to create classroom')
       const validationErrors = getValidationErrorMessages(err)
-      if (validationErrors.length > 0)
+      if (validationErrors.length > 0) {
         error.value = validationErrors.join(', ')
-
+      }
       console.error('Error creating classroom:', err)
       throw err
     }
@@ -88,9 +95,9 @@ export const useClassroomStore = defineStore('classroom', () => {
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to update classroom')
       const validationErrors = getValidationErrorMessages(err)
-      if (validationErrors.length > 0)
+      if (validationErrors.length > 0) {
         error.value = validationErrors.join(', ')
-
+      }
       console.error('Error updating classroom:', err)
       throw err
     }
@@ -122,6 +129,7 @@ export const useClassroomStore = defineStore('classroom', () => {
     currentClassroom,
     loading,
     error,
+    fetchError,
 
     // Getters
     hasClassrooms,

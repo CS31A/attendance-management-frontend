@@ -122,6 +122,7 @@ export const useUserStore = defineStore('user', () => {
   const loadingCount = ref(0)
   const loading = computed(() => loadingCount.value > 0)
   const error = ref('')
+  const fetchError = ref('')
   // Pagination state
   const currentPage = ref(1)
   const itemsPerPage = ref(10)
@@ -192,6 +193,7 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUsers(status = 'Active') {
     beginLoading()
     error.value = ''
+    fetchError.value = ''
 
     try {
       const resp = await api.get<ApiUser[]>('/users', { params: { status } })
@@ -200,7 +202,9 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (err) {
       console.error('Error fetching users:', err)
-      error.value = 'Failed to fetch users'
+      const msg = 'Failed to fetch users'
+      error.value = msg
+      fetchError.value = msg
     }
     finally {
       endLoading()
@@ -209,7 +213,6 @@ export const useUserStore = defineStore('user', () => {
 
   async function createUser(userData: CreateUserInput): Promise<UserActionResult> {
     beginLoading()
-    error.value = ''
 
     try {
       // Transform data to match Scalar API documentation exactly
@@ -255,7 +258,6 @@ export const useUserStore = defineStore('user', () => {
         errorMessage = validationErrors.join(', ')
       }
 
-      error.value = errorMessage
       return { success: false, error: errorMessage }
     }
     finally {
@@ -265,7 +267,6 @@ export const useUserStore = defineStore('user', () => {
 
   async function updateUser(userId: EntityId, userData: Record<string, unknown>): Promise<UserActionResult> {
     beginLoading()
-    error.value = ''
 
     try {
       // Find the original user to get their current role/endpoint
@@ -303,8 +304,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error updating user:', caughtError)
-      error.value = getErrorMessage(caughtError, 'Failed to update user')
-      return { success: false, error: error.value }
+      return { success: false, error: getErrorMessage(caughtError, 'Failed to update user') }
     }
     finally {
       endLoading()
@@ -320,7 +320,6 @@ export const useUserStore = defineStore('user', () => {
    */
   async function softDeleteUser(userId: EntityId): Promise<UserActionResult> {
     beginLoading()
-    error.value = ''
 
     try {
       await api.patch(`/users/${userId}/soft-delete`)
@@ -336,8 +335,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error soft deleting user:', caughtError)
-      error.value = getErrorMessage(caughtError, 'Failed to soft delete user')
-      return { success: false, error: error.value }
+      return { success: false, error: getErrorMessage(caughtError, 'Failed to soft delete user') }
     }
     finally {
       endLoading()
@@ -353,7 +351,6 @@ export const useUserStore = defineStore('user', () => {
    */
   async function hardDeleteUser(userId: EntityId): Promise<UserActionResult> {
     beginLoading()
-    error.value = ''
 
     try {
       await api.delete(`/users/${userId}`)
@@ -365,8 +362,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error hard deleting user:', caughtError)
-      error.value = getErrorMessage(caughtError, 'Failed to permanently delete user')
-      return { success: false, error: error.value }
+      return { success: false, error: getErrorMessage(caughtError, 'Failed to permanently delete user') }
     }
     finally {
       endLoading()
@@ -382,7 +378,6 @@ export const useUserStore = defineStore('user', () => {
    */
   async function restoreUser(userId: EntityId): Promise<UserActionResult> {
     beginLoading()
-    error.value = ''
 
     try {
       await api.patch(`/users/${userId}/restore`)
@@ -398,8 +393,7 @@ export const useUserStore = defineStore('user', () => {
     }
     catch (caughtError) {
       console.error('Error restoring user:', caughtError)
-      error.value = getErrorMessage(caughtError, 'Failed to restore user')
-      return { success: false, error: error.value }
+      return { success: false, error: getErrorMessage(caughtError, 'Failed to restore user') }
     }
     finally {
       endLoading()
@@ -441,6 +435,7 @@ export const useUserStore = defineStore('user', () => {
     users,
     loading,
     error,
+    fetchError,
     currentPage,
     itemsPerPage,
     totalItems,

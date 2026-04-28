@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubjectDto, SubjectPayload } from '@/api/subjects'
 import type { FormFieldConfig } from '@/types/ui'
-import { BookOpen, Hash, Plus } from 'lucide-vue-next'
+import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
@@ -141,6 +141,17 @@ watch(searchQuery, () => {
         </div>
       </div>
     </template>
+
+    <!-- Error message -->
+    <div v-else-if="subjectStore.fetchError" class="error-message">
+      <div class="error-content">
+        <AlertTriangle class="error-icon" :size="24" />
+        <p>{{ subjectStore.fetchError }}</p>
+        <BaseButton variant="secondary" size="small" @click="subjectStore.fetchSubjects">
+          Retry
+        </BaseButton>
+      </div>
+    </div>
 
     <div v-else class="container">
       <!-- Header -->

@@ -139,7 +139,8 @@ describe('sectionStore', () => {
       const store = useSectionStore()
 
       await expect(store.fetchSections()).rejects.toThrow(testError)
-      expect(store.error).toBe('Failed to fetch sections')
+      expect(store.error).toBe('Network error')
+      expect(store.fetchError).toBe('Network error')
       expect(store.loading).toBe(false)
     })
 
