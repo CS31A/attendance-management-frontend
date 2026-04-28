@@ -6,7 +6,7 @@ const props = defineProps({
   status: {
     type: String,
     required: true,
-    validator: value => ['not_started', 'active', 'completed', 'cancelled'].includes(value),
+    validator: value => ['not_started', 'active', 'completed', 'ended', 'cancelled'].includes(value),
   },
 })
 
@@ -22,6 +22,11 @@ const statusConfig = {
     class: 'status-active',
   },
   completed: {
+    label: 'Completed',
+    icon: CheckCircle,
+    class: 'status-completed',
+  },
+  ended: {
     label: 'Completed',
     icon: CheckCircle,
     class: 'status-completed',
