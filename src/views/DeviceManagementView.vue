@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FingerprintDeviceDto } from '@/api/fingerprint'
-import { AlertTriangle, Monitor, Plus, RefreshCw } from 'lucide-vue-next'
+import { AlertTriangle, Monitor, RefreshCw } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
@@ -106,10 +106,6 @@ function handleViewDevice(device: FingerprintDeviceDto) {
   showDeviceModal.value = true
 }
 
-function handleAddDevice() {
-  showToast('Device registration is managed by the backend. Contact your system administrator.', 'info')
-}
-
 function closeDeviceModal() {
   showDeviceModal.value = false
   selectedDevice.value = null
@@ -208,13 +204,6 @@ function getConnectivityStatusText(device: FingerprintDeviceDto): string {
               @click="refreshDevices"
             >
               Refresh
-            </BaseButton>
-            <BaseButton
-              variant="primary"
-              :icon="Plus"
-              @click="handleAddDevice"
-            >
-              Add Device
             </BaseButton>
           </div>
         </div>
@@ -327,15 +316,9 @@ function getConnectivityStatusText(device: FingerprintDeviceDto): string {
         >
           Clear Search
         </BaseButton>
-        <BaseButton
-          v-else
-          variant="primary"
-          size="large"
-          :icon="Plus"
-          @click="handleAddDevice"
-        >
-          Add Your First Device
-        </BaseButton>
+        <div v-else class="info-notice">
+          <p>Device registration is managed by the backend. Contact your system administrator.</p>
+        </div>
       </div>
     </div>
 
@@ -637,6 +620,20 @@ function getConnectivityStatusText(device: FingerprintDeviceDto): string {
   font-size: 1rem;
   color: var(--color-gray-500);
   margin: 0 0 2rem;
+}
+
+.info-notice {
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: inline-block;
+}
+
+.info-notice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-gray-500);
 }
 
 /* Modal Styles */

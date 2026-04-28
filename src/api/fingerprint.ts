@@ -4,8 +4,8 @@ import api from '@/api'
 export interface FingerprintDeviceDto {
   id: EntityId
   deviceIdentifier: string
-  name: string
-  location: string
+  name?: string
+  location?: string
   isActive: boolean
   lastSeenAt: string
 }

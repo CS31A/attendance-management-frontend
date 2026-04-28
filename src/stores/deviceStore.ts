@@ -67,9 +67,9 @@ export const useDeviceStore = defineStore('deviceStore', () => {
 
     const query = searchQuery.toLowerCase()
     return devices.value.filter(device =>
-      device.name.toLowerCase().includes(query)
+      (device.name ?? '').toLowerCase().includes(query)
       || device.deviceIdentifier.toLowerCase().includes(query)
-      || device.location.toLowerCase().includes(query),
+      || (device.location ?? '').toLowerCase().includes(query),
     )
   }
 
