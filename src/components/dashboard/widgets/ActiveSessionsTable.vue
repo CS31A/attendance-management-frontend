@@ -256,7 +256,7 @@ tbody tr:hover .cell-icon {
   display: inline-flex;
   align-items: center;
   padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
