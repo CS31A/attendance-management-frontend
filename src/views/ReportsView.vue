@@ -217,10 +217,8 @@ function setActiveTab(tab: ReportsTab) {
 async function fetchDashboardData() {
   isLoading.value = true
   try {
-    const { startDate, endDate } = getDateRange(activeTab.value)
-
-    // 1. Summary stats from reports endpoint
-    const summary = await fetchReportsSummary({ startDate, endDate })
+    // 1. Summary stats from reports endpoint (no date filter for all-time data)
+    const summary = await fetchReportsSummary({})
     presentToday.value = summary.totalPresent
     lateToday.value = summary.totalLate
     absentToday.value = summary.totalAbsent
@@ -276,11 +274,7 @@ async function fetchDashboardData() {
     for (const section of sectionStore.sections.slice(0, 5)) {
       performanceLabels.push(section.name || 'Unnamed')
       try {
-        const sectionStats = await fetchReportsSummary({
-          sectionId: section.id,
-          startDate,
-          endDate,
-        })
+        const sectionStats = await fetchReportsSummary({ sectionId: section.id })
         performanceValues.push(Number(sectionStats.attendanceRate))
       }
       catch {
