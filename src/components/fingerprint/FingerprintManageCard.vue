@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { EntityId } from '@/types'
 import { Fingerprint, Trash2 } from 'lucide-vue-next'
 import { formatLongDate } from '@/utils/date'
+import ConfirmationModal from '../common/ConfirmationModal.vue'
 
 defineProps<{
   fingerprint: {
@@ -18,10 +20,25 @@ const emit = defineEmits<{
   delete: [fingerprintId: EntityId]
 }>()
 
-function handleDelete(fingerprintId: EntityId) {
-  if (confirm('Are you sure you want to delete this fingerprint? This action cannot be undone.')) {
-    emit('delete', fingerprintId)
+const showDeleteModal = ref(false)
+const fingerprintToDelete = ref<EntityId | null>(null)
+
+function handleDeleteClick(fingerprintId: EntityId) {
+  fingerprintToDelete.value = fingerprintId
+  showDeleteModal.value = true
+}
+
+function handleConfirmDelete() {
+  if (fingerprintToDelete.value) {
+    emit('delete', fingerprintToDelete.value)
   }
+  showDeleteModal.value = false
+  fingerprintToDelete.value = null
+}
+
+function handleCancelDelete() {
+  showDeleteModal.value = false
+  fingerprintToDelete.value = null
 }
 </script>
 
@@ -54,7 +71,7 @@ function handleDelete(fingerprintId: EntityId) {
     </div>
 
     <div class="card-actions">
-      <button v-if="fingerprint" class="btn-danger" @click="handleDelete(fingerprint.id)">
+      <button v-if="fingerprint" class="btn-danger" @click="handleDeleteClick(fingerprint.id)">
         <Trash2 :size="16" />
         Delete
       </button>
@@ -63,6 +80,16 @@ function handleDelete(fingerprintId: EntityId) {
         {{ fingerprint ? 'Re-enroll' : 'Enroll' }}
       </button>
     </div>
+
+    <ConfirmationModal
+      :show="showDeleteModal"
+      title="Delete Fingerprint"
+      message="Are you sure you want to delete this fingerprint? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      @confirm="handleConfirmDelete"
+      @cancel="handleCancelDelete"
+    />
   </div>
 </template>
 

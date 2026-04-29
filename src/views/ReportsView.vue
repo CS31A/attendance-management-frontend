@@ -117,15 +117,11 @@ const classPerformanceValues = ref<number[]>([])
 
 // Empty state checks
 const hasNoAttendanceData = computed(() => {
-  return !isLoading.value
-    && attendanceTrendValues.value.length > 0
-    && attendanceTrendValues.value.every(v => v === 0)
+  return !isLoading.value && attendanceTrendValues.value.length === 0
 })
 
 const hasNoClassPerformanceData = computed(() => {
-  return !isLoading.value
-    && classPerformanceValues.value.length > 0
-    && classPerformanceValues.value.every(v => v === 0)
+  return !isLoading.value && classPerformanceValues.value.length === 0
 })
 
 const classPerformanceData = computed(() => ({
@@ -231,35 +227,9 @@ async function fetchDashboardData() {
     const trendLabels: string[] = []
     const trendValues: number[] = []
 
-    if (activeTab.value === 'Today') {
-      trendLabels.push(new Date().toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT_SHORT))
-      trendValues.push(Number(summary.attendanceRate))
-    }
-    else {
-      const points = activeTab.value === 'Year' ? 12 : activeTab.value === 'Month' ? 8 : 7
-      for (let i = points - 1; i >= 0; i--) {
-        const d = new Date()
-        if (activeTab.value === 'Year')
-          d.setMonth(d.getMonth() - i)
-        else if (activeTab.value === 'Month')
-          d.setDate(d.getDate() - i * 4)
-        else d.setDate(d.getDate() - i)
-
-        const dateStr = d.toISOString().split('T')[0]
-        const label = activeTab.value === 'Year'
-          ? d.toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT_MONTH)
-          : d.toLocaleDateString(LOCALE.DEFAULT, LOCALE.DATE_FORMAT_SHORT)
-
-        trendLabels.push(label)
-        try {
-          const dayStats = await fetchReportsSummary({ startDate: dateStr, endDate: dateStr })
-          trendValues.push(Number(dayStats.attendanceRate))
-        }
-        catch {
-          trendValues.push(0)
-        }
-      }
-    }
+    // Always show overall attendance rate as a single point for consistency
+    trendLabels.push('All Time')
+    trendValues.push(Number(summary.attendanceRate))
 
     attendanceTrendLabels.value = trendLabels
     attendanceTrendValues.value = trendValues
@@ -271,14 +241,23 @@ async function fetchDashboardData() {
     const performanceLabels: string[] = []
     const performanceValues: number[] = []
 
-    for (const section of sectionStore.sections.slice(0, 5)) {
-      performanceLabels.push(section.name || 'Unnamed')
-      try {
-        const sectionStats = await fetchReportsSummary({ sectionId: section.id })
-        performanceValues.push(Number(sectionStats.attendanceRate))
-      }
-      catch {
-        performanceValues.push(0)
+    // Show all sections up to 5, even if they have no attendance data
+    const sectionsToShow = sectionStore.sections.slice(0, 5)
+    if (sectionsToShow.length === 0) {
+      // If no sections exist, show a placeholder
+      performanceLabels.push('No Sections')
+      performanceValues.push(0)
+    }
+    else {
+      for (const section of sectionsToShow) {
+        performanceLabels.push(section.name || 'Unnamed')
+        try {
+          const sectionStats = await fetchReportsSummary({ sectionId: section.id })
+          performanceValues.push(Number(sectionStats.attendanceRate))
+        }
+        catch {
+          performanceValues.push(0)
+        }
       }
     }
 
@@ -512,14 +491,6 @@ onMounted(() => {
             <div v-if="isLoading" class="loading-chart">
               Loading...
             </div>
-            <div v-else-if="hasNoAttendanceData" class="chart-empty-state">
-              <FileX :size="48" />
-              <h3>No Attendance Data</h3>
-              <p>No attendance records found for the selected period.</p>
-              <p class="empty-state-hint">
-                Create sessions and take attendance to see trends.
-              </p>
-            </div>
             <Line v-else :data="attendanceTrendData" :options="attendanceTrendOptions" />
           </div>
         </div>
@@ -547,14 +518,6 @@ onMounted(() => {
           <div class="chart-wrapper">
             <div v-if="isLoading" class="loading-chart">
               Loading...
-            </div>
-            <div v-else-if="hasNoClassPerformanceData" class="chart-empty-state">
-              <FileX :size="48" />
-              <h3>No Section Data</h3>
-              <p>No attendance data available for any section.</p>
-              <p class="empty-state-hint">
-                Attendance taken in sections will appear here.
-              </p>
             </div>
             <Bar v-else :data="classPerformanceData" :options="classPerformanceOptions" />
           </div>
