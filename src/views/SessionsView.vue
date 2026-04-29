@@ -6,6 +6,7 @@ import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Toast from '@/components/common/Toast.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useToast } from '@/composables/useToast'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
@@ -39,6 +40,7 @@ const showQRGenerateModal = ref(false)
 const showQRDisplayModal = ref(false)
 const showQRListModal = ref(false)
 const showCancelModal = ref(false)
+const showRevokeModal = ref(false)
 const sessionToCancel = ref<SessionResponseDto | null>(null)
 const isCancelling = ref(false)
 const selectedSession = ref<SessionResponseDto | null>(null)
@@ -264,13 +266,20 @@ async function handleQrGenerated(qrData: DisplayedQrCode) {
 }
 
 function handleQrRevoke(_qrCode: DisplayedQrCode) {
-  if (confirm('Are you sure you want to revoke this QR code? It will no longer be valid for attendance.')) {
-    // Since we're dealing with a simple image response, we'll just close the modal
-    // In a real implementation, you'd call an API to revoke the QR code
-    showToast('QR Code revoked successfully', 'success')
-    showQRDisplayModal.value = false
-    currentQrCode.value = null
-  }
+  showRevokeModal.value = true
+}
+
+function handleConfirmRevoke() {
+  // Since we're dealing with a simple image response, we'll just close the modal
+  // In a real implementation, you'd call an API to revoke the QR code
+  showToast('QR Code revoked successfully', 'success')
+  showQRDisplayModal.value = false
+  currentQrCode.value = null
+  showRevokeModal.value = false
+}
+
+function handleCancelRevoke() {
+  showRevokeModal.value = false
 }
 
 function handleQrFullscreen(qrCodeId: EntityId) {
@@ -451,6 +460,17 @@ onMounted(() => {
       :is-deleting="isCancelling"
       @confirm="handleConfirmCancel"
       @cancel="closeCancelSession"
+    />
+
+    <!-- QR Revoke Confirmation Modal -->
+    <ConfirmationModal
+      :show="showRevokeModal"
+      title="Revoke QR Code"
+      message="Are you sure you want to revoke this QR code? It will no longer be valid for attendance."
+      confirm-text="Revoke"
+      cancel-text="Cancel"
+      @confirm="handleConfirmRevoke"
+      @cancel="handleCancelRevoke"
     />
 
     <!-- Toast Notification -->

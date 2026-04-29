@@ -22,6 +22,7 @@ import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
 import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 import { entityIdsMatch } from '@/utils/entityId'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 
 interface AttendanceStats {
   total: number
@@ -51,6 +52,7 @@ const localAttendance = ref<EditableAttendanceRecord[]>([])
 const searchQuery = ref('')
 const submitting = ref(false)
 const hasChanges = ref(false)
+const showUnsavedModal = ref(false)
 
 // Initialize local attendance from props
 watch(() => props.attendance, (newAttendance) => {
@@ -149,11 +151,20 @@ async function handleSubmit() {
 
 function handleBack() {
   if (hasChanges.value) {
-    if (!confirm('You have unsaved changes. Are you sure you want to go back?')) {
-      return
-    }
+    showUnsavedModal.value = true
   }
+  else {
+    emit('back')
+  }
+}
+
+function handleConfirmBack() {
+  showUnsavedModal.value = false
   emit('back')
+}
+
+function handleCancelBack() {
+  showUnsavedModal.value = false
 }
 
 function formatTime(timeString: string | undefined) {
@@ -390,6 +401,17 @@ onMounted(() => {
         <p>There are no students enrolled in this section.</p>
       </div>
     </div>
+
+    <!-- Unsaved Changes Confirmation Modal -->
+    <ConfirmationModal
+      :show="showUnsavedModal"
+      title="Unsaved Changes"
+      message="You have unsaved changes. Are you sure you want to go back?"
+      confirm-text="Leave"
+      cancel-text="Stay"
+      @confirm="handleConfirmBack"
+      @cancel="handleCancelBack"
+    />
   </div>
 </template>
 

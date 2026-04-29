@@ -8,6 +8,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
@@ -41,6 +42,8 @@ const userStore = useUserStore()
 const section = ref<SectionDto | null>(null)
 const searchQuery = ref('')
 const showAddModal = ref(false)
+const showDropModal = ref(false)
+const enrollmentToDrop = ref<EntityId | null>(null)
 const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(true)
@@ -139,21 +142,32 @@ function fetchData() {
   void processSectionFetchQueue()
 }
 
-async function handleDrop(enrollmentId: EntityId) {
-  if (!confirm('Are you sure you want to drop this student?'))
-    return
+function handleDropClick(enrollmentId: EntityId) {
+  enrollmentToDrop.value = enrollmentId
+  showDropModal.value = true
+}
 
-  if (sectionId.value == null)
+async function handleConfirmDrop() {
+  if (enrollmentToDrop.value == null || sectionId.value == null)
     return
 
   try {
     errorMessage.value = ''
-    await enrollmentStore.dropStudent(enrollmentId, sectionId.value)
+    await enrollmentStore.dropStudent(enrollmentToDrop.value, sectionId.value)
     successMessage.value = 'Student dropped successfully'
   }
   catch (error: unknown) {
     errorMessage.value = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to drop student'
   }
+  finally {
+    showDropModal.value = false
+    enrollmentToDrop.value = null
+  }
+}
+
+function handleCancelDrop() {
+  showDropModal.value = false
+  enrollmentToDrop.value = null
 }
 
 async function handleReenroll(enrollmentId: EntityId) {
@@ -350,7 +364,7 @@ watch(sectionId, (nextSectionId) => {
                     v-if="student.status !== 'Dropped' && student.enrollmentId"
                     class="btn-icon danger"
                     title="Drop Student"
-                    @click="handleDrop(student.enrollmentId)"
+                    @click="handleDropClick(student.enrollmentId)"
                   >
                     <Trash2 :size="16" />
                   </button>
@@ -377,6 +391,17 @@ watch(sectionId, (nextSectionId) => {
       @close="showAddModal = false"
       @success="handleEnrollmentSuccess"
       @error="handleEnrollmentError"
+    />
+
+    <!-- Drop Student Confirmation Modal -->
+    <ConfirmationModal
+      :show="showDropModal"
+      title="Drop Student"
+      message="Are you sure you want to drop this student?"
+      confirm-text="Drop"
+      cancel-text="Cancel"
+      @confirm="handleConfirmDrop"
+      @cancel="handleCancelDrop"
     />
   </div>
 </template>
