@@ -209,7 +209,11 @@ onUnmounted(() => {
           Download
         </button>
 
-        <button class="btn-action danger" @click="handleRevoke">
+        <button
+          class="btn-action danger"
+          :disabled="isExpired"
+          @click="handleRevoke"
+        >
           <Ban :size="18" />
           Revoke
         </button>

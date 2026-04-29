@@ -7,6 +7,10 @@ defineProps({
     type: Array,
     required: true,
   },
+  courses: {
+    type: Array,
+    default: () => [],
+  },
   title: {
     type: String,
     required: true,
@@ -36,6 +40,7 @@ defineEmits(['edit', 'delete', 'nextPage', 'previousPage', 'goToPage', 'setItems
     <div class="table-container">
       <SectionTable
         :sections="sections"
+        :courses="courses"
         :is-deletion-checking="isDeletionChecking"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"

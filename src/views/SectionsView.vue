@@ -200,6 +200,7 @@ watch(selectedCourseName, () => {
 
       <SectionTableSection
         :sections="paginatedSections"
+        :courses="courseStore.courses"
         title="All Sections"
         :is-deletion-checking="isDeletionChecking"
         :pagination="totalSections > 0 ? {
