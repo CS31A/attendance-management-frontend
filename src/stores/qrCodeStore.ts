@@ -127,8 +127,13 @@ export const useQrCodeStore = defineStore('qrCodeStore', () => {
     clearError()
     try {
       const data = await qrCodeApi.getSessionQrCodes(sessionId)
-      sessionQrCodes.value = data
-      return data
+      // Compute isExpired client-side for each QR code
+      const enrichedData = data.map(qrCode => ({
+        ...qrCode,
+        isExpired: qrCode.expiresAt ? new Date(qrCode.expiresAt) < new Date() : false,
+      }))
+      sessionQrCodes.value = enrichedData
+      return enrichedData
     }
     catch (err) {
       const errorCode = err && typeof err === 'object' && 'response' in err
