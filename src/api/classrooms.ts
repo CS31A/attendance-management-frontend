@@ -13,7 +13,9 @@ export interface ClassroomDto {
   [key: string]: unknown
 }
 
-export type ClassroomPayload = Record<string, unknown>
+export interface ClassroomPayload {
+  name: string
+}
 
 export default {
   /**

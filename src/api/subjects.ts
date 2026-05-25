@@ -13,7 +13,10 @@ export interface SubjectDto {
   [key: string]: unknown
 }
 
-export type SubjectPayload = Record<string, unknown>
+export interface SubjectPayload {
+  name: string
+  code: string
+}
 
 export default {
   /**

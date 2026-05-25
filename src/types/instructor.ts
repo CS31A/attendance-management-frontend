@@ -44,19 +44,7 @@ export interface SubjectScheduleDto {
   timeIn: string
   timeOut: string
   classroomName: string
-  students: StudentDto[]
-}
-
-/**
- * DTO for student information
- * Matches: StudentDto.cs
- */
-export interface StudentDto {
-  studentId: EntityId
-  firstname: string
-  lastname: string
-  isRegular: boolean
-  enrollmentType: string
+  students: { studentId: EntityId; firstname: string; lastname: string; isRegular: boolean; enrollmentType: string }[]
 }
 
 export interface InstructorSectionOverviewItem {
@@ -68,7 +56,7 @@ export interface InstructorSectionOverviewItem {
   uniqueStudentCount: number
 }
 
-export interface InstructorHandledClassStudent {
+export interface InstructorSectionStudent {
   studentId: EntityId
   firstname: string
   lastname: string
@@ -90,19 +78,9 @@ export interface InstructorHandledClassDetail {
   classroomId: EntityId
   classroomName: string
   studentCount: number
-  students: InstructorHandledClassStudent[]
+  students: InstructorSectionStudent[]
 }
 
-export interface InstructorHomeSectionStudent {
-  studentId: EntityId
-  firstname: string
-  lastname: string
-  isRegular: boolean
-  enrollmentType: string
-  hasFingerprint: boolean
-  fingerprintDeviceId?: EntityId
-  fingerprintDeviceName?: string
-}
 
 export interface InstructorSectionDetail {
   sectionId: EntityId
@@ -112,7 +90,7 @@ export interface InstructorSectionDetail {
   handledClassCount: number
   homeSectionStudentCount: number
   handledClasses: InstructorHandledClassDetail[]
-  homeSectionStudents: InstructorHomeSectionStudent[]
+  homeSectionStudents: InstructorSectionStudent[]
 }
 
 export interface InstructorStudentEnrollment {

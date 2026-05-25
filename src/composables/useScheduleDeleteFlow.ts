@@ -1,10 +1,9 @@
 import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { ScheduleDto } from '@/api/schedules'
+import type { ToastType } from '@/composables/useToast'
 import type { EntityId } from '@/types'
 import schedulesApi from '@/api/schedules'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-
-type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface SchedulesStoreLike {
   schedules: ScheduleDto[]

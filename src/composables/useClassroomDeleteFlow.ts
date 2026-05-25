@@ -2,11 +2,10 @@ import type { AxiosResponse } from 'axios'
 import type { Ref } from 'vue'
 import type { DeleteFlowInternalReturn } from './useEntityDeleteFlow'
 import type { ClassroomDto } from '@/api/classrooms'
+import type { ToastType } from '@/composables/useToast'
 import type { EntityId } from '@/types'
 import classroomsApi from '@/api/classrooms'
 import { createDeleteFlow } from './useEntityDeleteFlow'
-
-type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface ClassroomsStoreLike {
   classrooms: ClassroomDto[]

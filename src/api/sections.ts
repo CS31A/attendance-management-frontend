@@ -8,12 +8,11 @@ export interface SectionDto {
   [key: string]: unknown
 }
 
-export interface StudentDto {
-  id: EntityId
-  [key: string]: unknown
-}
 
-export type SectionPayload = Record<string, unknown>
+export interface SectionPayload {
+  name: string
+  courseId: EntityId
+}
 
 export default {
   /**
@@ -70,20 +69,20 @@ export default {
    * Get active students in section
    * GET /api/sections/{sectionId}/active-students
    * @param {EntityId} sectionId - Section ID (string UUID)
-   * @returns {Promise<AxiosResponse<StudentDto[]>>} Array of active students
+   * @returns {Promise<AxiosResponse<Record<string, unknown>[]>>} Array of active students
    */
-  getActiveStudents(sectionId: EntityId): Promise<AxiosResponse<StudentDto[]>> {
-    return api.get<StudentDto[]>(`/sections/${sectionId}/active-students`)
+  getActiveStudents(sectionId: EntityId): Promise<AxiosResponse<Record<string, unknown>[]>> {
+    return api.get<Record<string, unknown>[]>(`/sections/${sectionId}/active-students`)
   },
 
   /**
    * Get all students in section
    * GET /api/sections/{sectionId}/all-students
    * @param {EntityId} sectionId - Section ID (string UUID)
-   * @returns {Promise<AxiosResponse<StudentDto[]>>} Array of all students
+   * @returns {Promise<AxiosResponse<Record<string, unknown>[]>>} Array of all students
    */
-  getAllStudents(sectionId: EntityId): Promise<AxiosResponse<StudentDto[]>> {
-    return api.get<StudentDto[]>(`/sections/${sectionId}/all-students`)
+  getAllStudents(sectionId: EntityId): Promise<AxiosResponse<Record<string, unknown>[]>> {
+    return api.get<Record<string, unknown>[]>(`/sections/${sectionId}/all-students`)
   },
 
   /**

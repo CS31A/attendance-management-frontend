@@ -56,7 +56,15 @@ export interface ScheduleDto {
 }
 
 export type ScheduleCollectionDto = ScheduleDto[]
-export type SchedulePayload = Record<string, unknown>
+export interface SchedulePayload {
+  timeIn: string
+  timeOut: string
+  dayOfWeek: string
+  subjectId: EntityId
+  classroomId: EntityId
+  sectionId: EntityId
+  instructorId: EntityId
+}
 
 export type ScheduleQueryParams = PaginationParams & {
   [key: string]: unknown

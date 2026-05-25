@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CourseDto } from '@/api/courses'
 import type { EntityId } from '@/types'
 import { BookOpen, Calendar, Edit, Trash2, Users } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
@@ -15,6 +16,7 @@ interface Section {
 
 defineProps<{
   sections: Section[]
+  courses?: CourseDto[]
   isDeletionChecking?: boolean
 }>()
 
@@ -37,6 +39,13 @@ function getSectionName(section: Section): string {
   }
   return `Section ${section.id}`
 }
+
+function getCourseName(courseId: EntityId | undefined, courses: CourseDto[] | undefined): string {
+  if (!courseId || !courses)
+    return '-'
+  const course = courses.find(c => String(c.id) === String(courseId))
+  return course?.name || '-'
+}
 </script>
 
 <template>
@@ -51,7 +60,7 @@ function getSectionName(section: Section): string {
             Section Name
           </th>
           <th class="th-course">
-            Course ID
+            Course Name
           </th>
           <th class="th-created">
             Created
@@ -73,7 +82,7 @@ function getSectionName(section: Section): string {
             </div>
           </td>
           <td class="td-course">
-            <span class="course-badge">{{ section.courseId }}</span>
+            <span class="course-badge">{{ getCourseName(section.courseId, courses) }}</span>
           </td>
           <td class="td-created">
             <div class="created-cell">
@@ -134,16 +143,17 @@ function getSectionName(section: Section): string {
 }
 
 .th-id {
-  width: 8%;
-  min-width: 60px;
+  width: 10%;
+  min-width: 80px;
 }
 
 .th-name {
-  width: 35%;
+  width: 30%;
 }
 
 .th-course {
-  width: 15%;
+  width: 20%;
+  text-align: center;
 }
 
 .th-created {
@@ -201,7 +211,9 @@ function getSectionName(section: Section): string {
 
 /* Course Column */
 .td-course {
+  text-align: center;
   color: var(--color-gray-600);
+  white-space: nowrap;
 }
 
 .course-badge {

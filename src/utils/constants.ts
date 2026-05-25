@@ -18,16 +18,6 @@ export const SESSION_STATUSES = {
 } as const
 
 export type SessionStatus = (typeof SESSION_STATUSES)[keyof typeof SESSION_STATUSES]
-
-export const ATTENDANCE_STATUSES = {
-  PRESENT: 'present',
-  ABSENT: 'absent',
-  LATE: 'late',
-  EXCUSED: 'excused',
-} as const
-
-export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[keyof typeof ATTENDANCE_STATUSES]
-
 /**
  * Locale Constants
  * Standardized locale and formatting options for date/time display

@@ -1,12 +1,11 @@
 import type { AxiosResponse } from 'axios'
 import type { Ref } from 'vue'
+import type { ToastType } from '@/composables/useToast'
 import type { EntityId } from '@/types'
 import { reactive, ref } from 'vue'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'
-
-type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 export interface DependencyCheckConfig {
   check: (id: EntityId) => Promise<AxiosResponse<boolean>>
