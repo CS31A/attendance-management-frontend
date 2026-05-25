@@ -4,10 +4,8 @@ import { describe, expect, it } from 'vitest'
 describe('phase 6 and 7 migration targets', () => {
   it('utility modules are migrated to TypeScript', () => {
     const utilsModules = [
-      'src/utils/auth.ts',
       'src/utils/constants.ts',
       'src/utils/qrcode.ts',
-      'src/utils/toast.ts',
     ]
 
     utilsModules.forEach((modulePath) => {

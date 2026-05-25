@@ -9,7 +9,8 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
-import { createCourseDeleteFlow } from '@/composables/useCourseDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
+import coursesApi from '@/api/courses'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
@@ -74,20 +75,27 @@ const { handleSave: handleSaveCourse, openAddModal, openEditModal, closeModal } 
 
 const {
   showDeleteModal,
-  courseToDelete,
+  itemToDelete: courseToDelete,
   isDeleting,
-  isDeletionChecking,
-  handleDeleteCourse,
+  isCheckingDependencies: isDeletionChecking,
+  handleDelete: handleDeleteCourse,
   confirmDelete,
   cancelDelete,
-} = createCourseDeleteFlow({
-  coursesStore: courseStore,
-  showToast,
+} = createDeleteFlow<CourseDto>({
+  store: {
+    items: () => courseStore.courses,
+    deleteItem: courseStore.deleteCourse,
+  },
+  dependencyChecks: [
+    { check: coursesApi.hasSectionsInCourse, message: 'Cannot delete: Course has sections assigned. Remove sections first.' },
+  ],
+  labels: { entityName: 'Course', entityNamePlural: 'Courses' },
   onDeleteSuccess: () => {
     if (paginatedCourses.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
+  showToast,
 })
 
 async function refreshCourses() {

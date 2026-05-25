@@ -14,7 +14,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
-import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
 import { useSectionStore } from '@/stores/sectionStore'
@@ -86,21 +86,29 @@ const { handleSave: handleSaveSection, openAddModal, openEditModal, closeModal }
 
 const {
   showDeleteModal,
-  sectionToDelete,
+  itemToDelete: sectionToDelete,
   isDeleting,
-  isDeletionChecking,
-  handleDeleteSection,
+  isCheckingDependencies: isDeletionChecking,
+  handleDelete: handleDeleteSection,
   confirmDelete,
   cancelDelete,
-} = createSectionDeleteFlow({
-  sectionsStore,
-  sectionsApi,
-  showToast,
+} = createDeleteFlow<SectionDto>({
+  store: {
+    items: () => sectionsStore.sections,
+    deleteItem: sectionsStore.deleteSection,
+  },
+  dependencyChecks: [
+    { check: sectionsApi.hasSchedulesInSection, message: 'Cannot delete: Section has schedules assigned. Remove schedules first.' },
+    { check: sectionsApi.hasStudentsInSection, message: 'Cannot delete: Section has assigned students. Reassign students first.' },
+    { check: sectionsApi.hasEnrollmentsInSection, message: 'Cannot delete: Section has student enrollments. Remove enrollments first.' },
+  ],
+  labels: { entityName: 'Section', entityNamePlural: 'Sections' },
   onDeleteSuccess: () => {
     if (paginatedSections.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
+  showToast,
 })
 
 async function refreshSections() {

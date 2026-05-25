@@ -11,6 +11,7 @@ import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
 import sectionsApi from '@/api/sections'
 import subjectApi from '@/api/subjects'
+import schedulesApi from '@/api/schedules'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
@@ -21,7 +22,7 @@ import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
-import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
@@ -250,20 +251,27 @@ const { handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal 
 
 const {
   showDeleteModal,
-  scheduleToDelete,
+  itemToDelete: scheduleToDelete,
   isDeleting,
-  isDeletionChecking,
-  handleDeleteSchedule,
+  isCheckingDependencies: isDeletionChecking,
+  handleDelete: handleDeleteSchedule,
   confirmDelete,
   cancelDelete,
-} = createScheduleDeleteFlow({
-  schedulesStore: scheduleStore,
-  showToast,
+} = createDeleteFlow<ScheduleDto>({
+  store: {
+    items: () => scheduleStore.schedules,
+    deleteItem: scheduleStore.deleteSchedule,
+  },
+  dependencyChecks: [
+    { check: schedulesApi.hasSessionsInSchedule, message: 'Cannot delete: Schedule has sessions assigned. Remove sessions first.' },
+  ],
+  labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
   onDeleteSuccess: () => {
     if (paginatedSchedules.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
+  showToast,
 })
 
 async function filterByInstructor(instructorId: string | null | undefined) {

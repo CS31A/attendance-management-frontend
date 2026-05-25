@@ -12,8 +12,9 @@ import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
-import { createSubjectDeleteFlow } from '@/composables/useSubjectDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useToast } from '@/composables/useToast'
+import subjectsApi from '@/api/subjects'
 import { useSubjectStore } from '@/stores/subjectStore'
 import { matchesSearchQuery } from '@/utils/search'
 
@@ -84,20 +85,28 @@ const { handleSave: handleSaveSubject, openAddModal, openEditModal, closeModal }
 
 const {
   showDeleteModal,
-  subjectToDelete,
+  itemToDelete: subjectToDelete,
   isDeleting,
-  isDeletionChecking,
-  handleDeleteSubject,
+  isCheckingDependencies: isDeletionChecking,
+  handleDelete: handleDeleteSubject,
   confirmDelete,
   cancelDelete,
-} = createSubjectDeleteFlow({
-  subjectsStore: subjectStore,
-  showToast,
+} = createDeleteFlow<SubjectDto>({
+  store: {
+    items: () => subjectStore.subjects,
+    deleteItem: subjectStore.deleteSubject,
+  },
+  dependencyChecks: [
+    { check: subjectsApi.hasSchedulesInSubject, message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+    { check: subjectsApi.hasEnrollmentsInSubject, message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+  ],
+  labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
   onDeleteSuccess: () => {
     if (paginatedSubjects.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
+  showToast,
 })
 
 async function refreshSubjects() {

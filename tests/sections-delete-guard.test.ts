@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import api from '@/api'
-import { createSectionDeleteFlow } from '@/composables/useSectionDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useSectionStore } from '@/stores/sectionStore'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
@@ -36,43 +36,45 @@ describe('sections delete guard regression', () => {
   })
 
   it('opens the delete modal after dependency checks pass', async () => {
-    const flow = createSectionDeleteFlow({
-      sectionsStore: {
-        sections: [createSection()],
-        deleteSection: vi.fn(),
+    const flow = createDeleteFlow<SectionDto>({
+      store: {
+        items: () => [createSection()],
+        deleteItem: vi.fn(),
       },
-      sectionsApi: {
-        hasSchedulesInSection: vi.fn().mockResolvedValue({ data: false }),
-        hasStudentsInSection: vi.fn().mockResolvedValue({ data: false }),
-        hasEnrollmentsInSection: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has assigned students. Reassign students first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Section', entityNamePlural: 'Sections' },
     })
 
-    await flow.handleDeleteSection('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.sectionToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
   it('blocks delete and shows an actionable toast when schedules exist', async () => {
-    const flow = createSectionDeleteFlow({
-      sectionsStore: {
-        sections: [createSection()],
-        deleteSection: vi.fn(),
+    const flow = createDeleteFlow<SectionDto>({
+      store: {
+        items: () => [createSection()],
+        deleteItem: vi.fn(),
       },
-      sectionsApi: {
-        hasSchedulesInSection: vi.fn().mockResolvedValue({ data: true }),
-        hasStudentsInSection: vi.fn().mockResolvedValue({ data: false }),
-        hasEnrollmentsInSection: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Section has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has assigned students. Reassign students first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Section', entityNamePlural: 'Sections' },
     })
 
-    await flow.handleDeleteSection('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.sectionToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
     expect(flow.toast.message).toBe('Cannot delete: Section has schedules assigned. Remove schedules first.')
@@ -80,24 +82,25 @@ describe('sections delete guard regression', () => {
 
   it('keeps the delete path available when dependency checks fail', async () => {
     const logError = vi.fn()
-    const flow = createSectionDeleteFlow({
-      sectionsStore: {
-        sections: [createSection()],
-        deleteSection: vi.fn(),
+    const flow = createDeleteFlow<SectionDto>({
+      store: {
+        items: () => [createSection()],
+        deleteItem: vi.fn(),
       },
-      sectionsApi: {
-        hasSchedulesInSection: vi.fn().mockRejectedValue(new Error('network down')),
-        hasStudentsInSection: vi.fn().mockResolvedValue({ data: false }),
-        hasEnrollmentsInSection: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockRejectedValue(new Error('network down')), message: 'Cannot delete: Section has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has assigned students. Reassign students first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Section', entityNamePlural: 'Sections' },
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteSection('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.sectionToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify section dependencies. Server will validate the delete request.')
@@ -107,20 +110,22 @@ describe('sections delete guard regression', () => {
   it('keeps the modal open and shows the conflict message on a 409 delete failure', async () => {
     const section = createSection()
     const conflictMessage = 'Cannot delete: Section has schedules assigned. Remove schedules first.'
-    const flow = createSectionDeleteFlow({
-      sectionsStore: {
-        sections: [section],
-        deleteSection: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
+    const flow = createDeleteFlow<SectionDto>({
+      store: {
+        items: () => [section],
+        deleteItem: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
       },
+      dependencyChecks: [],
+      labels: { entityName: 'Section', entityNamePlural: 'Sections' },
     })
 
-    flow.sectionToDelete.value = section
+    flow.itemToDelete.value = section
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.sectionToDelete.value).toEqual(section)
+    expect(flow.itemToDelete.value).toEqual(section)
     expect(flow.isDeleting.value).toBe(false)
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
@@ -130,26 +135,30 @@ describe('sections delete guard regression', () => {
   it('closes the modal and clears selection after a successful delete', async () => {
     const section = createSection()
     const onDeleteSuccess = vi.fn()
-    const sectionsStore = {
-      sections: [section],
-      deleteSection: vi.fn().mockImplementation(async (id: string) => {
-        sectionsStore.sections = sectionsStore.sections.filter(current => current.id !== id)
-      }),
-    }
+    const items: SectionDto[] = [section]
+    const mockDeleteItem = vi.fn().mockImplementation(async (id: string) => {
+      const idx = items.findIndex(current => current.id === id)
+      if (idx !== -1) items.splice(idx, 1)
+    })
 
-    const flow = createSectionDeleteFlow({
-      sectionsStore,
+    const flow = createDeleteFlow<SectionDto>({
+      store: {
+        items: () => items,
+        deleteItem: mockDeleteItem,
+      },
+      dependencyChecks: [],
+      labels: { entityName: 'Section', entityNamePlural: 'Sections' },
       onDeleteSuccess,
     })
 
-    flow.sectionToDelete.value = section
+    flow.itemToDelete.value = section
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
-    expect(sectionsStore.sections).toHaveLength(0)
+    expect(items).toHaveLength(0)
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.sectionToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('success')
     expect(flow.toast.message).toBe('Section deleted successfully')
@@ -194,23 +203,24 @@ describe('sections delete guard regression', () => {
   describe('external toast mode', () => {
     it('delegates schedule-block error to external showToast', async () => {
       const externalShowToast = vi.fn()
-      const flow = createSectionDeleteFlow({
-        sectionsStore: {
-          sections: [createSection()],
-          deleteSection: vi.fn(),
+      const flow = createDeleteFlow<SectionDto>({
+        store: {
+          items: () => [createSection()],
+          deleteItem: vi.fn(),
         },
-        sectionsApi: {
-          hasSchedulesInSection: vi.fn().mockResolvedValue({ data: true }),
-          hasStudentsInSection: vi.fn().mockResolvedValue({ data: false }),
-          hasEnrollmentsInSection: vi.fn().mockResolvedValue({ data: false }),
-        },
+        dependencyChecks: [
+          { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Section has schedules assigned. Remove schedules first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has assigned students. Reassign students first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has student enrollments. Remove enrollments first.' },
+        ],
+        labels: { entityName: 'Section', entityNamePlural: 'Sections' },
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSection('1')
+      await flow.handleDelete('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
-      expect(flow.sectionToDelete.value).toBeNull()
+      expect(flow.itemToDelete.value).toBeNull()
       expect(externalShowToast).toHaveBeenCalledWith(
         'Cannot delete: Section has schedules assigned. Remove schedules first.',
         'error',
@@ -222,25 +232,26 @@ describe('sections delete guard regression', () => {
     it('delegates warning toast when dependency checks fail', async () => {
       const externalShowToast = vi.fn()
       const logError = vi.fn()
-      const flow = createSectionDeleteFlow({
-        sectionsStore: {
-          sections: [createSection()],
-          deleteSection: vi.fn(),
+      const flow = createDeleteFlow<SectionDto>({
+        store: {
+          items: () => [createSection()],
+          deleteItem: vi.fn(),
         },
-        sectionsApi: {
-          hasSchedulesInSection: vi.fn().mockRejectedValue(new Error('network down')),
-          hasStudentsInSection: vi.fn().mockResolvedValue({ data: false }),
-          hasEnrollmentsInSection: vi.fn().mockResolvedValue({ data: false }),
-        },
+        dependencyChecks: [
+          { check: vi.fn().mockRejectedValue(new Error('network down')), message: 'Cannot delete: Section has schedules assigned. Remove schedules first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has assigned students. Reassign students first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Section has student enrollments. Remove enrollments first.' },
+        ],
+        labels: { entityName: 'Section', entityNamePlural: 'Sections' },
         logDependencyCheckError: logError,
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSection('1')
+      await flow.handleDelete('1')
 
-      expect(flow.isDeletionChecking.value).toBe(false)
+      expect(flow.isCheckingDependencies.value).toBe(false)
       expect(flow.showDeleteModal.value).toBe(true)
-      expect(flow.sectionToDelete.value?.id).toBe('1')
+      expect(flow.itemToDelete.value?.id).toBe('1')
       expect(externalShowToast).toHaveBeenCalledWith(
         'Warning: Could not verify section dependencies. Server will validate the delete request.',
         'warning',
@@ -254,27 +265,31 @@ describe('sections delete guard regression', () => {
       const externalShowToast = vi.fn()
       const onDeleteSuccess = vi.fn()
       const section = createSection()
-      const sectionsStore = {
-        sections: [section],
-        deleteSection: vi.fn().mockImplementation(async (id: string) => {
-          sectionsStore.sections = sectionsStore.sections.filter((current: SectionDto) => current.id !== id)
-        }),
-      }
+      const items: SectionDto[] = [section]
+      const mockDeleteItem = vi.fn().mockImplementation(async (id: string) => {
+        const idx = items.findIndex((current: SectionDto) => current.id === id)
+        if (idx !== -1) items.splice(idx, 1)
+      })
 
-      const flow = createSectionDeleteFlow({
-        sectionsStore,
+      const flow = createDeleteFlow<SectionDto>({
+        store: {
+          items: () => items,
+          deleteItem: mockDeleteItem,
+        },
+        dependencyChecks: [],
+        labels: { entityName: 'Section', entityNamePlural: 'Sections' },
         onDeleteSuccess,
         showToast: externalShowToast,
       })
 
-      flow.sectionToDelete.value = section
+      flow.itemToDelete.value = section
       flow.showDeleteModal.value = true
 
       await flow.confirmDelete()
 
-      expect(sectionsStore.sections).toHaveLength(0)
+      expect(items).toHaveLength(0)
       expect(flow.showDeleteModal.value).toBe(false)
-      expect(flow.sectionToDelete.value).toBeNull()
+      expect(flow.itemToDelete.value).toBeNull()
       expect(externalShowToast).toHaveBeenCalledWith('Section deleted successfully', 'success', 3000)
       expect(onDeleteSuccess).toHaveBeenCalledOnce()
       expect('toast' in flow).toBe(false)
@@ -282,20 +297,22 @@ describe('sections delete guard regression', () => {
 
     it('does not return internal toast API in external mode', () => {
       const externalShowToast = vi.fn()
-      const flow = createSectionDeleteFlow({
-        sectionsStore: {
-          sections: [createSection()],
-          deleteSection: vi.fn(),
+      const flow = createDeleteFlow<SectionDto>({
+        store: {
+          items: () => [createSection()],
+          deleteItem: vi.fn(),
         },
+        dependencyChecks: [],
+        labels: { entityName: 'Section', entityNamePlural: 'Sections' },
         showToast: externalShowToast,
       })
 
       // Verify only delete-flow state is returned
       expect(flow).toHaveProperty('showDeleteModal')
-      expect(flow).toHaveProperty('sectionToDelete')
+      expect(flow).toHaveProperty('itemToDelete')
       expect(flow).toHaveProperty('isDeleting')
-      expect(flow).toHaveProperty('isDeletionChecking')
-      expect(flow).toHaveProperty('handleDeleteSection')
+      expect(flow).toHaveProperty('isCheckingDependencies')
+      expect(flow).toHaveProperty('handleDelete')
       expect(flow).toHaveProperty('confirmDelete')
       expect(flow).toHaveProperty('cancelDelete')
 

@@ -2,7 +2,7 @@ import type { ClassroomDto } from '@/api/classrooms'
 import type { EntityId } from '@/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createClassroomDeleteFlow } from '@/composables/useClassroomDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 
 function createConflictError(message: string) {
   const error = new Error('Request failed with status code 409') as Error & {
@@ -30,80 +30,84 @@ describe('classrooms delete guard regression', () => {
   })
 
   it('opens the delete modal after dependency checks pass', async () => {
-    const flow = createClassroomDeleteFlow({
-      classroomsStore: {
-        classrooms: [createClassroom()],
-        deleteClassroom: vi.fn(),
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => [createClassroom()],
+        deleteItem: vi.fn(),
       },
-      classroomsApi: {
-        hasSchedulesInClassroom: vi.fn().mockResolvedValue({ data: false }),
-        hasSessionsInClassroom: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
     })
 
-    await flow.handleDeleteClassroom('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.classroomToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
   it('blocks delete and shows an actionable toast when schedules exist', async () => {
-    const flow = createClassroomDeleteFlow({
-      classroomsStore: {
-        classrooms: [createClassroom()],
-        deleteClassroom: vi.fn(),
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => [createClassroom()],
+        deleteItem: vi.fn(),
       },
-      classroomsApi: {
-        hasSchedulesInClassroom: vi.fn().mockResolvedValue({ data: true }),
-        hasSessionsInClassroom: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
     })
 
-    await flow.handleDeleteClassroom('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.classroomToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
     expect(flow.toast.message).toBe('Cannot delete: Classroom has schedules assigned. Remove schedules first.')
   })
 
   it('blocks delete and shows an actionable toast when sessions exist', async () => {
-    const flow = createClassroomDeleteFlow({
-      classroomsStore: {
-        classrooms: [createClassroom()],
-        deleteClassroom: vi.fn(),
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => [createClassroom()],
+        deleteItem: vi.fn(),
       },
-      classroomsApi: {
-        hasSchedulesInClassroom: vi.fn().mockResolvedValue({ data: false }),
-        hasSessionsInClassroom: vi.fn().mockResolvedValue({ data: true }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
     })
 
-    await flow.handleDeleteClassroom('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.classroomToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
     expect(flow.toast.message).toBe('Cannot delete: Classroom has sessions assigned. Remove sessions first.')
   })
 
   it('checks schedules before sessions and blocks on first dependency found', async () => {
-    const flow = createClassroomDeleteFlow({
-      classroomsStore: {
-        classrooms: [createClassroom()],
-        deleteClassroom: vi.fn(),
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => [createClassroom()],
+        deleteItem: vi.fn(),
       },
-      classroomsApi: {
-        hasSchedulesInClassroom: vi.fn().mockResolvedValue({ data: true }),
-        hasSessionsInClassroom: vi.fn().mockResolvedValue({ data: true }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
     })
 
-    await flow.handleDeleteClassroom('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.toast.message).toBe('Cannot delete: Classroom has schedules assigned. Remove schedules first.')
@@ -111,23 +115,24 @@ describe('classrooms delete guard regression', () => {
 
   it('keeps the delete path available when dependency checks fail', async () => {
     const logError = vi.fn()
-    const flow = createClassroomDeleteFlow({
-      classroomsStore: {
-        classrooms: [createClassroom()],
-        deleteClassroom: vi.fn(),
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => [createClassroom()],
+        deleteItem: vi.fn(),
       },
-      classroomsApi: {
-        hasSchedulesInClassroom: vi.fn().mockRejectedValue(new Error('network down')),
-        hasSessionsInClassroom: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockRejectedValue(new Error('network down')), message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteClassroom('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.classroomToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify classroom dependencies. Server will validate the delete request.')
@@ -137,20 +142,22 @@ describe('classrooms delete guard regression', () => {
   it('keeps the modal open and shows the conflict message on a 409 delete failure', async () => {
     const classroom = createClassroom()
     const conflictMessage = 'Cannot delete: Classroom has schedules assigned. Remove schedules first.'
-    const flow = createClassroomDeleteFlow({
-      classroomsStore: {
-        classrooms: [classroom],
-        deleteClassroom: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => [classroom],
+        deleteItem: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
       },
+      dependencyChecks: [],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
     })
 
-    flow.classroomToDelete.value = classroom
+    flow.itemToDelete.value = classroom
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.classroomToDelete.value).toEqual(classroom)
+    expect(flow.itemToDelete.value).toEqual(classroom)
     expect(flow.isDeleting.value).toBe(false)
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
@@ -160,26 +167,28 @@ describe('classrooms delete guard regression', () => {
   it('closes the modal and clears selection after a successful delete', async () => {
     const classroom = createClassroom()
     const onDeleteSuccess = vi.fn()
-    const classroomsStore = {
-      classrooms: [classroom],
-      deleteClassroom: vi.fn().mockImplementation(async (id: EntityId) => {
-        classroomsStore.classrooms = classroomsStore.classrooms.filter(current => current.id !== id)
-      }),
-    }
-
-    const flow = createClassroomDeleteFlow({
-      classroomsStore,
+    const storeItems = [classroom]
+    const flow = createDeleteFlow<ClassroomDto>({
+      store: {
+        items: () => storeItems,
+        deleteItem: vi.fn().mockImplementation(async (id: EntityId) => {
+          const idx = storeItems.findIndex(current => current.id === id)
+          if (idx !== -1) storeItems.splice(idx, 1)
+        }),
+      },
+      dependencyChecks: [],
+      labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
       onDeleteSuccess,
     })
 
-    flow.classroomToDelete.value = classroom
+    flow.itemToDelete.value = classroom
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
-    expect(classroomsStore.classrooms).toHaveLength(0)
+    expect(storeItems).toHaveLength(0)
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.classroomToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('success')
     expect(flow.toast.message).toBe('Classroom deleted successfully')
@@ -189,22 +198,23 @@ describe('classrooms delete guard regression', () => {
   describe('external toast mode', () => {
     it('delegates schedules-block error to external showToast', async () => {
       const externalShowToast = vi.fn()
-      const flow = createClassroomDeleteFlow({
-        classroomsStore: {
-          classrooms: [createClassroom()],
-          deleteClassroom: vi.fn(),
+      const flow = createDeleteFlow<ClassroomDto>({
+        store: {
+          items: () => [createClassroom()],
+          deleteItem: vi.fn(),
         },
-        classroomsApi: {
-          hasSchedulesInClassroom: vi.fn().mockResolvedValue({ data: true }),
-          hasSessionsInClassroom: vi.fn().mockResolvedValue({ data: false }),
-        },
+        dependencyChecks: [
+          { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+        ],
+        labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteClassroom('1')
+      await flow.handleDelete('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
-      expect(flow.classroomToDelete.value).toBeNull()
+      expect(flow.itemToDelete.value).toBeNull()
       expect(externalShowToast).toHaveBeenCalledWith(
         'Cannot delete: Classroom has schedules assigned. Remove schedules first.',
         'error',
@@ -215,19 +225,21 @@ describe('classrooms delete guard regression', () => {
 
     it('does not return internal toast API in external mode', () => {
       const externalShowToast = vi.fn()
-      const flow = createClassroomDeleteFlow({
-        classroomsStore: {
-          classrooms: [createClassroom()],
-          deleteClassroom: vi.fn(),
+      const flow = createDeleteFlow<ClassroomDto>({
+        store: {
+          items: () => [createClassroom()],
+          deleteItem: vi.fn(),
         },
+        dependencyChecks: [],
+        labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
         showToast: externalShowToast,
       })
 
       expect(flow).toHaveProperty('showDeleteModal')
-      expect(flow).toHaveProperty('classroomToDelete')
+      expect(flow).toHaveProperty('itemToDelete')
       expect(flow).toHaveProperty('isDeleting')
-      expect(flow).toHaveProperty('isDeletionChecking')
-      expect(flow).toHaveProperty('handleDeleteClassroom')
+      expect(flow).toHaveProperty('isCheckingDependencies')
+      expect(flow).toHaveProperty('handleDelete')
       expect(flow).toHaveProperty('confirmDelete')
       expect(flow).toHaveProperty('cancelDelete')
 

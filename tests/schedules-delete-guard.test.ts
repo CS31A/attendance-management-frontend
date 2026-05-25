@@ -1,7 +1,7 @@
 import type { ScheduleDto } from '@/api/schedules'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createScheduleDeleteFlow } from '@/composables/useScheduleDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 
 function createConflictError(message: string) {
   const error = new Error('Request failed with status code 409') as Error & {
@@ -29,39 +29,41 @@ describe('schedules delete guard regression', () => {
   })
 
   it('opens the delete modal after dependency checks pass', async () => {
-    const flow = createScheduleDeleteFlow({
-      schedulesStore: {
-        schedules: [createSchedule()],
-        deleteSchedule: vi.fn(),
+    const flow = createDeleteFlow<ScheduleDto>({
+      store: {
+        items: () => [createSchedule()],
+        deleteItem: vi.fn(),
       },
-      schedulesApi: {
-        hasSessionsInSchedule: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Schedule has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
     })
 
-    await flow.handleDeleteSchedule('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.scheduleToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
   it('blocks delete and shows an actionable toast when sessions exist', async () => {
-    const flow = createScheduleDeleteFlow({
-      schedulesStore: {
-        schedules: [createSchedule()],
-        deleteSchedule: vi.fn(),
+    const flow = createDeleteFlow<ScheduleDto>({
+      store: {
+        items: () => [createSchedule()],
+        deleteItem: vi.fn(),
       },
-      schedulesApi: {
-        hasSessionsInSchedule: vi.fn().mockResolvedValue({ data: true }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Schedule has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
     })
 
-    await flow.handleDeleteSchedule('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.scheduleToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
     expect(flow.toast.message).toBe('Cannot delete: Schedule has sessions assigned. Remove sessions first.')
@@ -69,22 +71,23 @@ describe('schedules delete guard regression', () => {
 
   it('keeps the delete path available when dependency checks fail', async () => {
     const logError = vi.fn()
-    const flow = createScheduleDeleteFlow({
-      schedulesStore: {
-        schedules: [createSchedule()],
-        deleteSchedule: vi.fn(),
+    const flow = createDeleteFlow<ScheduleDto>({
+      store: {
+        items: () => [createSchedule()],
+        deleteItem: vi.fn(),
       },
-      schedulesApi: {
-        hasSessionsInSchedule: vi.fn().mockRejectedValue(new Error('network down')),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockRejectedValue(new Error('network down')), message: 'Cannot delete: Schedule has sessions assigned. Remove sessions first.' },
+      ],
+      labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteSchedule('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.scheduleToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify schedule dependencies. Server will validate the delete request.')
@@ -94,20 +97,21 @@ describe('schedules delete guard regression', () => {
   it('keeps the modal open and shows the conflict message on a 409 delete failure', async () => {
     const schedule = createSchedule()
     const conflictMessage = 'Cannot delete: Schedule has sessions assigned. Remove sessions first.'
-    const flow = createScheduleDeleteFlow({
-      schedulesStore: {
-        schedules: [schedule],
-        deleteSchedule: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
+    const flow = createDeleteFlow<ScheduleDto>({
+      store: {
+        items: () => [schedule],
+        deleteItem: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
       },
+      labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
     })
 
-    flow.scheduleToDelete.value = schedule
+    flow.itemToDelete.value = schedule
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.scheduleToDelete.value).toEqual(schedule)
+    expect(flow.itemToDelete.value).toEqual(schedule)
     expect(flow.isDeleting.value).toBe(false)
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
@@ -117,26 +121,29 @@ describe('schedules delete guard regression', () => {
   it('closes the modal and clears selection after a successful delete', async () => {
     const schedule = createSchedule()
     const onDeleteSuccess = vi.fn()
-    const schedulesStore = {
-      schedules: [schedule],
-      deleteSchedule: vi.fn().mockImplementation(async (id: string) => {
-        schedulesStore.schedules = schedulesStore.schedules.filter(current => current.id !== id)
-      }),
-    }
+    const items = [schedule]
+    const deleteItem = vi.fn().mockImplementation(async (id: string) => {
+      const idx = items.findIndex(current => current.id === id)
+      if (idx !== -1) items.splice(idx, 1)
+    })
 
-    const flow = createScheduleDeleteFlow({
-      schedulesStore,
+    const flow = createDeleteFlow<ScheduleDto>({
+      store: {
+        items: () => items,
+        deleteItem,
+      },
+      labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
       onDeleteSuccess,
     })
 
-    flow.scheduleToDelete.value = schedule
+    flow.itemToDelete.value = schedule
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
-    expect(schedulesStore.schedules).toHaveLength(0)
+    expect(items).toHaveLength(0)
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.scheduleToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('success')
     expect(flow.toast.message).toBe('Schedule deleted successfully')
@@ -146,21 +153,22 @@ describe('schedules delete guard regression', () => {
   describe('external toast mode', () => {
     it('delegates sessions-block error to external showToast', async () => {
       const externalShowToast = vi.fn()
-      const flow = createScheduleDeleteFlow({
-        schedulesStore: {
-          schedules: [createSchedule()],
-          deleteSchedule: vi.fn(),
+      const flow = createDeleteFlow<ScheduleDto>({
+        store: {
+          items: () => [createSchedule()],
+          deleteItem: vi.fn(),
         },
-        schedulesApi: {
-          hasSessionsInSchedule: vi.fn().mockResolvedValue({ data: true }),
-        },
+        dependencyChecks: [
+          { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Schedule has sessions assigned. Remove sessions first.' },
+        ],
+        labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSchedule('1')
+      await flow.handleDelete('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
-      expect(flow.scheduleToDelete.value).toBeNull()
+      expect(flow.itemToDelete.value).toBeNull()
       expect(externalShowToast).toHaveBeenCalledWith(
         'Cannot delete: Schedule has sessions assigned. Remove sessions first.',
         'error',
@@ -171,19 +179,20 @@ describe('schedules delete guard regression', () => {
 
     it('does not return internal toast API in external mode', () => {
       const externalShowToast = vi.fn()
-      const flow = createScheduleDeleteFlow({
-        schedulesStore: {
-          schedules: [createSchedule()],
-          deleteSchedule: vi.fn(),
+      const flow = createDeleteFlow<ScheduleDto>({
+        store: {
+          items: () => [createSchedule()],
+          deleteItem: vi.fn(),
         },
+        labels: { entityName: 'Schedule', entityNamePlural: 'Schedules' },
         showToast: externalShowToast,
       })
 
       expect(flow).toHaveProperty('showDeleteModal')
-      expect(flow).toHaveProperty('scheduleToDelete')
+      expect(flow).toHaveProperty('itemToDelete')
       expect(flow).toHaveProperty('isDeleting')
-      expect(flow).toHaveProperty('isDeletionChecking')
-      expect(flow).toHaveProperty('handleDeleteSchedule')
+      expect(flow).toHaveProperty('isCheckingDependencies')
+      expect(flow).toHaveProperty('handleDelete')
       expect(flow).toHaveProperty('confirmDelete')
       expect(flow).toHaveProperty('cancelDelete')
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
+import classroomsApi from '@/api/classrooms'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -9,7 +10,7 @@ import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
-import { createClassroomDeleteFlow } from '@/composables/useClassroomDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useCrudModal } from '@/composables/useCrudModal'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useModalState } from '@/composables/useModalState'
@@ -75,20 +76,29 @@ const { handleSave: handleSaveClassroom, openAddModal, openEditModal, closeModal
 
 const {
   showDeleteModal,
-  classroomToDelete,
+  itemToDelete: classroomToDelete,
   isDeleting,
-  isDeletionChecking,
-  handleDeleteClassroom,
+  isCheckingDependencies: isDeletionChecking,
+  handleDelete: handleDeleteClassroom,
   confirmDelete,
   cancelDelete,
-} = createClassroomDeleteFlow({
-  classroomsStore: classroomStore,
-  showToast,
+} = createDeleteFlow<ClassroomDto>({
+  store: {
+    items: () => classroomStore.classrooms,
+    deleteItem: classroomStore.deleteClassroom,
+  },
+  dependencyChecks: [
+    { check: classroomsApi.hasSchedulesInClassroom, message: 'Cannot delete: Classroom has schedules assigned. Remove schedules first.' },
+    { check: classroomsApi.hasSessionsInClassroom, message: 'Cannot delete: Classroom has sessions assigned. Remove sessions first.' },
+  ],
+  labels: { entityName: 'Classroom', entityNamePlural: 'Classrooms' },
   onDeleteSuccess: () => {
     if (paginatedClassrooms.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
   },
+  showToast,
+}
 })
 
 async function refreshClassrooms() {

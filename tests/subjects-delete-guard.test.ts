@@ -1,7 +1,7 @@
 import type { SubjectDto } from '@/api/subjects'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createSubjectDeleteFlow } from '@/composables/useSubjectDeleteFlow'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 
 function createConflictError(message: string) {
   const error = new Error('Request failed with status code 409') as Error & {
@@ -29,80 +29,84 @@ describe('subjects delete guard regression', () => {
   })
 
   it('opens the delete modal after dependency checks pass', async () => {
-    const flow = createSubjectDeleteFlow({
-      subjectsStore: {
-        subjects: [createSubject()],
-        deleteSubject: vi.fn(),
+    const flow = createDeleteFlow<SubjectDto>({
+      store: {
+        items: () => [createSubject()],
+        deleteItem: vi.fn(),
       },
-      subjectsApi: {
-        hasSchedulesInSubject: vi.fn().mockResolvedValue({ data: false }),
-        hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
     })
 
-    await flow.handleDeleteSubject('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.subjectToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(false)
   })
 
   it('blocks delete and shows an actionable toast when schedules exist', async () => {
-    const flow = createSubjectDeleteFlow({
-      subjectsStore: {
-        subjects: [createSubject()],
-        deleteSubject: vi.fn(),
+    const flow = createDeleteFlow<SubjectDto>({
+      store: {
+        items: () => [createSubject()],
+        deleteItem: vi.fn(),
       },
-      subjectsApi: {
-        hasSchedulesInSubject: vi.fn().mockResolvedValue({ data: true }),
-        hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
     })
 
-    await flow.handleDeleteSubject('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.subjectToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
     expect(flow.toast.message).toBe('Cannot delete: Subject has schedules assigned. Remove schedules first.')
   })
 
   it('blocks delete and shows an actionable toast when enrollments exist', async () => {
-    const flow = createSubjectDeleteFlow({
-      subjectsStore: {
-        subjects: [createSubject()],
-        deleteSubject: vi.fn(),
+    const flow = createDeleteFlow<SubjectDto>({
+      store: {
+        items: () => [createSubject()],
+        deleteItem: vi.fn(),
       },
-      subjectsApi: {
-        hasSchedulesInSubject: vi.fn().mockResolvedValue({ data: false }),
-        hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: true }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
     })
 
-    await flow.handleDeleteSubject('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.subjectToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
     expect(flow.toast.message).toBe('Cannot delete: Subject has student enrollments. Remove enrollments first.')
   })
 
   it('checks schedules before enrollments and blocks on first dependency found', async () => {
-    const flow = createSubjectDeleteFlow({
-      subjectsStore: {
-        subjects: [createSubject()],
-        deleteSubject: vi.fn(),
+    const flow = createDeleteFlow<SubjectDto>({
+      store: {
+        items: () => [createSubject()],
+        deleteItem: vi.fn(),
       },
-      subjectsApi: {
-        hasSchedulesInSubject: vi.fn().mockResolvedValue({ data: true }),
-        hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: true }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
     })
 
-    await flow.handleDeleteSubject('1')
+    await flow.handleDelete('1')
 
     expect(flow.showDeleteModal.value).toBe(false)
     expect(flow.toast.message).toBe('Cannot delete: Subject has schedules assigned. Remove schedules first.')
@@ -110,23 +114,24 @@ describe('subjects delete guard regression', () => {
 
   it('keeps the delete path available when dependency checks fail', async () => {
     const logError = vi.fn()
-    const flow = createSubjectDeleteFlow({
-      subjectsStore: {
-        subjects: [createSubject()],
-        deleteSubject: vi.fn(),
+    const flow = createDeleteFlow<SubjectDto>({
+      store: {
+        items: () => [createSubject()],
+        deleteItem: vi.fn(),
       },
-      subjectsApi: {
-        hasSchedulesInSubject: vi.fn().mockRejectedValue(new Error('network down')),
-        hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: false }),
-      },
+      dependencyChecks: [
+        { check: vi.fn().mockRejectedValue(new Error('network down')), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+        { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+      ],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
       logDependencyCheckError: logError,
     })
 
-    await flow.handleDeleteSubject('1')
+    await flow.handleDelete('1')
 
-    expect(flow.isDeletionChecking.value).toBe(false)
+    expect(flow.isCheckingDependencies.value).toBe(false)
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.subjectToDelete.value?.id).toBe('1')
+    expect(flow.itemToDelete.value?.id).toBe('1')
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('warning')
     expect(flow.toast.message).toBe('Warning: Could not verify subject dependencies. Server will validate the delete request.')
@@ -136,20 +141,22 @@ describe('subjects delete guard regression', () => {
   it('keeps the modal open and shows the conflict message on a 409 delete failure', async () => {
     const subject = createSubject()
     const conflictMessage = 'Cannot delete: Subject has schedules assigned. Remove schedules first.'
-    const flow = createSubjectDeleteFlow({
-      subjectsStore: {
-        subjects: [subject],
-        deleteSubject: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
+    const flow = createDeleteFlow<SubjectDto>({
+      store: {
+        items: () => [subject],
+        deleteItem: vi.fn().mockRejectedValue(createConflictError(conflictMessage)),
       },
+      dependencyChecks: [],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
     })
 
-    flow.subjectToDelete.value = subject
+    flow.itemToDelete.value = subject
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
     expect(flow.showDeleteModal.value).toBe(true)
-    expect(flow.subjectToDelete.value).toEqual(subject)
+    expect(flow.itemToDelete.value).toEqual(subject)
     expect(flow.isDeleting.value).toBe(false)
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('error')
@@ -159,26 +166,27 @@ describe('subjects delete guard regression', () => {
   it('closes the modal and clears selection after a successful delete', async () => {
     const subject = createSubject()
     const onDeleteSuccess = vi.fn()
-    const subjectsStore = {
-      subjects: [subject],
-      deleteSubject: vi.fn().mockImplementation(async (id: string) => {
-        subjectsStore.subjects = subjectsStore.subjects.filter(current => current.id !== id)
-      }),
-    }
+    const items = [subject]
+    const deleteItem = vi.fn().mockImplementation(async (id: string) => {
+      const idx = items.findIndex(current => current.id === id)
+      if (idx !== -1) items.splice(idx, 1)
+    })
 
-    const flow = createSubjectDeleteFlow({
-      subjectsStore,
+    const flow = createDeleteFlow<SubjectDto>({
+      store: { items: () => items, deleteItem },
+      dependencyChecks: [],
+      labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
       onDeleteSuccess,
     })
 
-    flow.subjectToDelete.value = subject
+    flow.itemToDelete.value = subject
     flow.showDeleteModal.value = true
 
     await flow.confirmDelete()
 
-    expect(subjectsStore.subjects).toHaveLength(0)
+    expect(items).toHaveLength(0)
     expect(flow.showDeleteModal.value).toBe(false)
-    expect(flow.subjectToDelete.value).toBeNull()
+    expect(flow.itemToDelete.value).toBeNull()
     expect(flow.toast.show).toBe(true)
     expect(flow.toast.type).toBe('success')
     expect(flow.toast.message).toBe('Subject deleted successfully')
@@ -188,22 +196,23 @@ describe('subjects delete guard regression', () => {
   describe('external toast mode', () => {
     it('delegates schedule-block error to external showToast', async () => {
       const externalShowToast = vi.fn()
-      const flow = createSubjectDeleteFlow({
-        subjectsStore: {
-          subjects: [createSubject()],
-          deleteSubject: vi.fn(),
+      const flow = createDeleteFlow<SubjectDto>({
+        store: {
+          items: () => [createSubject()],
+          deleteItem: vi.fn(),
         },
-        subjectsApi: {
-          hasSchedulesInSubject: vi.fn().mockResolvedValue({ data: true }),
-          hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: false }),
-        },
+        dependencyChecks: [
+          { check: vi.fn().mockResolvedValue({ data: true }), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+        ],
+        labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSubject('1')
+      await flow.handleDelete('1')
 
       expect(flow.showDeleteModal.value).toBe(false)
-      expect(flow.subjectToDelete.value).toBeNull()
+      expect(flow.itemToDelete.value).toBeNull()
       expect(externalShowToast).toHaveBeenCalledWith(
         'Cannot delete: Subject has schedules assigned. Remove schedules first.',
         'error',
@@ -215,24 +224,25 @@ describe('subjects delete guard regression', () => {
     it('delegates warning toast when dependency checks fail', async () => {
       const externalShowToast = vi.fn()
       const logError = vi.fn()
-      const flow = createSubjectDeleteFlow({
-        subjectsStore: {
-          subjects: [createSubject()],
-          deleteSubject: vi.fn(),
+      const flow = createDeleteFlow<SubjectDto>({
+        store: {
+          items: () => [createSubject()],
+          deleteItem: vi.fn(),
         },
-        subjectsApi: {
-          hasSchedulesInSubject: vi.fn().mockRejectedValue(new Error('network down')),
-          hasEnrollmentsInSubject: vi.fn().mockResolvedValue({ data: false }),
-        },
+        dependencyChecks: [
+          { check: vi.fn().mockRejectedValue(new Error('network down')), message: 'Cannot delete: Subject has schedules assigned. Remove schedules first.' },
+          { check: vi.fn().mockResolvedValue({ data: false }), message: 'Cannot delete: Subject has student enrollments. Remove enrollments first.' },
+        ],
+        labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
         logDependencyCheckError: logError,
         showToast: externalShowToast,
       })
 
-      await flow.handleDeleteSubject('1')
+      await flow.handleDelete('1')
 
-      expect(flow.isDeletionChecking.value).toBe(false)
+      expect(flow.isCheckingDependencies.value).toBe(false)
       expect(flow.showDeleteModal.value).toBe(true)
-      expect(flow.subjectToDelete.value?.id).toBe('1')
+      expect(flow.itemToDelete.value?.id).toBe('1')
       expect(externalShowToast).toHaveBeenCalledWith(
         'Warning: Could not verify subject dependencies. Server will validate the delete request.',
         'warning',
@@ -244,19 +254,21 @@ describe('subjects delete guard regression', () => {
 
     it('does not return internal toast API in external mode', () => {
       const externalShowToast = vi.fn()
-      const flow = createSubjectDeleteFlow({
-        subjectsStore: {
-          subjects: [createSubject()],
-          deleteSubject: vi.fn(),
+      const flow = createDeleteFlow<SubjectDto>({
+        store: {
+          items: () => [createSubject()],
+          deleteItem: vi.fn(),
         },
+        dependencyChecks: [],
+        labels: { entityName: 'Subject', entityNamePlural: 'Subjects' },
         showToast: externalShowToast,
       })
 
       expect(flow).toHaveProperty('showDeleteModal')
-      expect(flow).toHaveProperty('subjectToDelete')
+      expect(flow).toHaveProperty('itemToDelete')
       expect(flow).toHaveProperty('isDeleting')
-      expect(flow).toHaveProperty('isDeletionChecking')
-      expect(flow).toHaveProperty('handleDeleteSubject')
+      expect(flow).toHaveProperty('isCheckingDependencies')
+      expect(flow).toHaveProperty('handleDelete')
       expect(flow).toHaveProperty('confirmDelete')
       expect(flow).toHaveProperty('cancelDelete')
 
