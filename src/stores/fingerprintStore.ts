@@ -1,42 +1,23 @@
 import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import * as fingerprintApi from '@/api/fingerprint'
+import { useLoadingState } from '@/composables/useLoadingState'
 
 export const useFingerprintStore = defineStore('fingerprintStore', () => {
   const devices = ref<fingerprintApi.FingerprintDeviceDto[]>([])
-  const loadingCount = ref(0)
-  const loading = computed(() => loadingCount.value > 0)
-
-  function beginLoading() {
-    loadingCount.value += 1
-  }
-  function endLoading() {
-    loadingCount.value = Math.max(0, loadingCount.value - 1)
-  }
+  const { loading, withLoading } = useLoadingState()
 
   async function fetchDevices() {
-    beginLoading()
-    try {
+    return withLoading(async () => {
       devices.value = await fingerprintApi.getDevices()
-    }
-    catch (err) {
-      console.error('Failed to fetch devices:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch devices:', err))
   }
 
   async function createEnrollmentSession(studentId: EntityId, deviceIdentifier: string) {
-    beginLoading()
-    try {
+    return withLoading(async () => {
       return await fingerprintApi.createEnrollmentSession({ studentId, deviceId: deviceIdentifier })
-    }
-    finally {
-      endLoading()
-    }
+    })
   }
 
   async function getEnrollmentSession(sessionId: string) {
@@ -48,13 +29,9 @@ export const useFingerprintStore = defineStore('fingerprintStore', () => {
   }
 
   async function deleteFingerprint(fingerprintId: EntityId) {
-    beginLoading()
-    try {
+    return withLoading(async () => {
       await fingerprintApi.deleteFingerprint(fingerprintId)
-    }
-    finally {
-      endLoading()
-    }
+    })
   }
 
   return {

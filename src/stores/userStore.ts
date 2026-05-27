@@ -6,6 +6,7 @@ import api from '@/api'
 import { ROLES } from '@/utils/constants'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
+import { useLoadingState } from '@/composables/useLoadingState'
 
 interface ApiUserProfile {
   id?: EntityId
@@ -119,8 +120,7 @@ function normalizeRole(role: UiRole): UserRole {
 export const useUserStore = defineStore('user', () => {
   // State
   const users = ref<ApiUser[]>([])
-  const loadingCount = ref(0)
-  const loading = computed(() => loadingCount.value > 0)
+  const { loading, withLoading } = useLoadingState()
   const error = ref('')
   const fetchError = ref('')
   // Pagination state
@@ -181,134 +181,120 @@ export const useUserStore = defineStore('user', () => {
 
   const hasPreviousPage = computed(() => currentPage.value > 1)
 
-  function beginLoading() {
-    loadingCount.value += 1
-  }
-
-  function endLoading() {
-    loadingCount.value = Math.max(0, loadingCount.value - 1)
-  }
+  // ==================== ACTIONS ====================
 
   // Actions
   async function fetchUsers(status = 'Active') {
-    beginLoading()
     error.value = ''
     fetchError.value = ''
 
-    try {
-      const resp = await api.get<ApiUser[]>('/users', { params: { status } })
-      // Map user profile data to flat structure
-      users.value = resp.data.map(user => mapUserProfile(user))
-    }
-    catch (err) {
-      console.error('Error fetching users:', err)
-      const msg = 'Failed to fetch users'
-      error.value = msg
-      fetchError.value = msg
-    }
-    finally {
-      endLoading()
-    }
+    return withLoading(async () => {
+      try {
+        const resp = await api.get<ApiUser[]>('/users', { params: { status } })
+        // Map user profile data to flat structure
+        users.value = resp.data.map(user => mapUserProfile(user))
+      }
+      catch (err) {
+        console.error('Error fetching users:', err)
+        const msg = 'Failed to fetch users'
+        error.value = msg
+        fetchError.value = msg
+      }
+    })
   }
 
   async function createUser(userData: CreateUserInput): Promise<UserActionResult> {
-    beginLoading()
+    return withLoading(async () => {
+      try {
+        // Transform data to match Scalar API documentation exactly
+        const registerData = {
+          username: userData.Username,
+          firstname: userData.FirstName,
+          lastname: userData.LastName,
+          email: userData.Email,
+          password: userData.Password,
+          repeatedPassword: userData.RepeatedPassword,
+          role: userData.Role, // 'Admin' | 'Instructor' | 'Student'
+          sectionId: userData.Role === 'Student' && userData.SectionId
+            ? userData.SectionId
+            : null,
+        }
+        const response = await api.post('/account/register', registerData)
 
-    try {
-      // Transform data to match Scalar API documentation exactly
-      const registerData = {
-        username: userData.Username,
-        firstname: userData.FirstName,
-        lastname: userData.LastName,
-        email: userData.Email,
-        password: userData.Password,
-        repeatedPassword: userData.RepeatedPassword,
-        role: userData.Role, // 'Admin' | 'Instructor' | 'Student'
-        sectionId: userData.Role === 'Student' && userData.SectionId
-          ? userData.SectionId
-          : null,
+        // Add the new user to the store
+        // Map profile data if present in response
+        const newUser = response.data.userId
+          ? mapUserProfile(response.data)
+          : {
+              id: response.data.id || Date.now(),
+              firstName: response.data.firstName || response.data.firstname || userData.FirstName,
+              lastName: response.data.lastName || response.data.lastname || userData.LastName,
+              email: response.data.email || userData.Email,
+              role: normalizeRole(userData.Role),
+              sectionId: response.data.sectionId || userData.SectionId,
+              createdAt: response.data.createdAt || new Date().toISOString(),
+            }
+
+        users.value.push(newUser)
+
+        return { success: true, data: response.data }
       }
-      const response = await api.post('/account/register', registerData)
+      catch (caughtError) {
+        console.error('Error creating user:', caughtError)
 
-      // Add the new user to the store
-      // Map profile data if present in response
-      const newUser = response.data.userId
-        ? mapUserProfile(response.data)
-        : {
-            id: response.data.id || Date.now(),
-            firstName: response.data.firstName || response.data.firstname || userData.FirstName,
-            lastName: response.data.lastName || response.data.lastname || userData.LastName,
-            email: response.data.email || userData.Email,
-            role: normalizeRole(userData.Role),
-            sectionId: response.data.sectionId || userData.SectionId,
-            createdAt: response.data.createdAt || new Date().toISOString(),
-          }
+        // Extract detailed error message from backend
+        let errorMessage = getErrorMessage(caughtError, 'Failed to create user')
+        const validationErrors = getValidationErrorMessages(caughtError)
+        if (validationErrors.length > 0) {
+          errorMessage = validationErrors.join(', ')
+        }
 
-      users.value.push(newUser)
-
-      return { success: true, data: response.data }
-    }
-    catch (caughtError) {
-      console.error('Error creating user:', caughtError)
-
-      // Extract detailed error message from backend
-      let errorMessage = getErrorMessage(caughtError, 'Failed to create user')
-      const validationErrors = getValidationErrorMessages(caughtError)
-      if (validationErrors.length > 0) {
-        errorMessage = validationErrors.join(', ')
+        return { success: false, error: errorMessage }
       }
-
-      return { success: false, error: errorMessage }
-    }
-    finally {
-      endLoading()
-    }
+    })
   }
 
   async function updateUser(userId: EntityId, userData: Record<string, unknown>): Promise<UserActionResult> {
-    beginLoading()
+    return withLoading(async () => {
+      try {
+        // Find the original user to get their current role/endpoint
+        const originalUser = users.value.find(user => entityIdsMatch(user.userId || user.id, userId))
+        if (!originalUser) {
+          throw new Error('User not found')
+        }
 
-    try {
-      // Find the original user to get their current role/endpoint
-      const originalUser = users.value.find(user => entityIdsMatch(user.userId || user.id, userId))
-      if (!originalUser) {
-        throw new Error('User not found')
+        const requestUserId = originalUser.userId || originalUser.id
+        if (!requestUserId) {
+          throw new Error('User ID not found for user')
+        }
+
+        const response = await api.patch(`/account/admin/users/${requestUserId}`, userData)
+
+        // Update the user in the store with the original role (role cannot be changed)
+        const index = users.value.findIndex(user => entityIdsMatch(user.userId || user.id, userId))
+        if (index !== -1) {
+          const responseData = response.data as ApiUser
+          const hasNestedProfile = Boolean(responseData.adminProfile || responseData.instructorProfile || responseData.studentProfile)
+          const updatedUser = hasNestedProfile
+            ? mapUserProfile({ ...responseData, role: originalUser.role })
+            : {
+                ...originalUser,
+                ...responseData,
+                role: originalUser.role,
+                firstName: asOptionalString(responseData.firstName) || asOptionalString(responseData.firstname) || originalUser.firstName,
+                lastName: asOptionalString(responseData.lastName) || asOptionalString(responseData.lastname) || originalUser.lastName,
+                department: responseData.department ?? originalUser.department ?? null,
+              }
+          users.value[index] = updatedUser
+        }
+
+        return { success: true, data: response.data }
       }
-
-      const requestUserId = originalUser.userId || originalUser.id
-      if (!requestUserId) {
-        throw new Error('User ID not found for user')
+      catch (caughtError) {
+        console.error('Error updating user:', caughtError)
+        return { success: false, error: getErrorMessage(caughtError, 'Failed to update user') }
       }
-
-      const response = await api.patch(`/account/admin/users/${requestUserId}`, userData)
-
-      // Update the user in the store with the original role (role cannot be changed)
-      const index = users.value.findIndex(user => entityIdsMatch(user.userId || user.id, userId))
-      if (index !== -1) {
-        const responseData = response.data as ApiUser
-        const hasNestedProfile = Boolean(responseData.adminProfile || responseData.instructorProfile || responseData.studentProfile)
-        const updatedUser = hasNestedProfile
-          ? mapUserProfile({ ...responseData, role: originalUser.role })
-          : {
-              ...originalUser,
-              ...responseData,
-              role: originalUser.role,
-              firstName: asOptionalString(responseData.firstName) || asOptionalString(responseData.firstname) || originalUser.firstName,
-              lastName: asOptionalString(responseData.lastName) || asOptionalString(responseData.lastname) || originalUser.lastName,
-              department: responseData.department ?? originalUser.department ?? null,
-            }
-        users.value[index] = updatedUser
-      }
-
-      return { success: true, data: response.data }
-    }
-    catch (caughtError) {
-      console.error('Error updating user:', caughtError)
-      return { success: false, error: getErrorMessage(caughtError, 'Failed to update user') }
-    }
-    finally {
-      endLoading()
-    }
+    })
   }
 
   /**
@@ -319,27 +305,24 @@ export const useUserStore = defineStore('user', () => {
    * @returns {Promise<{success: boolean, error?: string}>} The result of the soft delete operation
    */
   async function softDeleteUser(userId: EntityId): Promise<UserActionResult> {
-    beginLoading()
+    return withLoading(async () => {
+      try {
+        await api.patch(`/users/${userId}/soft-delete`)
 
-    try {
-      await api.patch(`/users/${userId}/soft-delete`)
+        // Mark user as deleted in local state
+        const index = users.value.findIndex(u => entityIdsMatch(u.userId || u.id, userId))
+        if (index !== -1) {
+          users.value[index].deletedAt = new Date().toISOString()
+          users.value[index].isDeleted = true
+        }
 
-      // Mark user as deleted in local state
-      const index = users.value.findIndex(u => entityIdsMatch(u.userId || u.id, userId))
-      if (index !== -1) {
-        users.value[index].deletedAt = new Date().toISOString()
-        users.value[index].isDeleted = true
+        return { success: true }
       }
-
-      return { success: true }
-    }
-    catch (caughtError) {
-      console.error('Error soft deleting user:', caughtError)
-      return { success: false, error: getErrorMessage(caughtError, 'Failed to soft delete user') }
-    }
-    finally {
-      endLoading()
-    }
+      catch (caughtError) {
+        console.error('Error soft deleting user:', caughtError)
+        return { success: false, error: getErrorMessage(caughtError, 'Failed to soft delete user') }
+      }
+    })
   }
 
   /**
@@ -350,23 +333,20 @@ export const useUserStore = defineStore('user', () => {
    * @returns {Promise<{success: boolean, error?: string}>} The result of the hard delete operation
    */
   async function hardDeleteUser(userId: EntityId): Promise<UserActionResult> {
-    beginLoading()
+    return withLoading(async () => {
+      try {
+        await api.delete(`/users/${userId}`)
 
-    try {
-      await api.delete(`/users/${userId}`)
+        // Remove the user from the store
+        users.value = users.value.filter(user => !entityIdsMatch(user.userId || user.id, userId))
 
-      // Remove the user from the store
-      users.value = users.value.filter(user => !entityIdsMatch(user.userId || user.id, userId))
-
-      return { success: true }
-    }
-    catch (caughtError) {
-      console.error('Error hard deleting user:', caughtError)
-      return { success: false, error: getErrorMessage(caughtError, 'Failed to permanently delete user') }
-    }
-    finally {
-      endLoading()
-    }
+        return { success: true }
+      }
+      catch (caughtError) {
+        console.error('Error hard deleting user:', caughtError)
+        return { success: false, error: getErrorMessage(caughtError, 'Failed to permanently delete user') }
+      }
+    })
   }
 
   /**
@@ -377,27 +357,24 @@ export const useUserStore = defineStore('user', () => {
    * @returns {Promise<{success: boolean, error?: string}>} The result of the restore operation
    */
   async function restoreUser(userId: EntityId): Promise<UserActionResult> {
-    beginLoading()
+    return withLoading(async () => {
+      try {
+        await api.patch(`/users/${userId}/restore`)
 
-    try {
-      await api.patch(`/users/${userId}/restore`)
+        // Mark user as not deleted in local state
+        const index = users.value.findIndex(u => entityIdsMatch(u.userId || u.id, userId))
+        if (index !== -1) {
+          users.value[index].deletedAt = null
+          users.value[index].isDeleted = false
+        }
 
-      // Mark user as not deleted in local state
-      const index = users.value.findIndex(u => entityIdsMatch(u.userId || u.id, userId))
-      if (index !== -1) {
-        users.value[index].deletedAt = null
-        users.value[index].isDeleted = false
+        return { success: true }
       }
-
-      return { success: true }
-    }
-    catch (caughtError) {
-      console.error('Error restoring user:', caughtError)
-      return { success: false, error: getErrorMessage(caughtError, 'Failed to restore user') }
-    }
-    finally {
-      endLoading()
-    }
+      catch (caughtError) {
+        console.error('Error restoring user:', caughtError)
+        return { success: false, error: getErrorMessage(caughtError, 'Failed to restore user') }
+      }
+    })
   }
 
   // Pagination actions

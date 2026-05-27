@@ -25,6 +25,7 @@ import {
 import { normalizeNotes } from '@/utils/attendanceRecord'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
+import { useLoadingState } from '@/composables/useLoadingState'
 
 /**
  * Attendance Store
@@ -49,9 +50,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   /** @type {import('vue').Ref<Array>} */
   const sessionAttendance = ref<SessionAttendanceResponseDto[]>([])
 
-  /** @type {import('vue').Ref<boolean>} */
-  const loadingCount = ref(0)
-  const loading = computed(() => loadingCount.value > 0)
+  const { loading, withLoading, resetLoading } = useLoadingState()
 
   /** @type {import('vue').Ref<object | null>} */
   const currentRecord = ref<AttendanceResponseDto | null>(null)
@@ -237,14 +236,6 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     return sessionAttendance.value.length > 0
   })
 
-  function beginLoading() {
-    loadingCount.value += 1
-  }
-
-  function endLoading() {
-    loadingCount.value = Math.max(0, loadingCount.value - 1)
-  }
-
   // ==================== ACTIONS ====================
 
   /**
@@ -253,20 +244,11 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Array of attendance records
    */
   const fetchAllAttendance = async (params: AttendanceQueryParams = {}) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchAllAttendance(params)
       attendanceRecords.value = data
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch attendance records:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch attendance records:', err))
   }
 
   /**
@@ -275,20 +257,11 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<object>} Attendance record
    */
   const fetchAttendanceById = async (id: EntityId) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchAttendanceById(id)
       currentRecord.value = data
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch attendance record:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch attendance record:', err))
   }
 
   /**
@@ -297,28 +270,26 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Array of attendance records
    */
   const fetchSessionAttendance = async (sessionId: EntityId) => {
-    beginLoading()
     currentSessionId.value = sessionId
     clearSyncWarning()
 
-    try {
-      // API returns attendanceRecords array directly (extracted in api layer)
-      const data = await apiFetchSessionAttendance(sessionId)
-      sessionAttendance.value = data
-      return data
-    }
-    catch (err) {
-      console.error('Failed to fetch session attendance:', err)
-      // If attendance doesn't exist yet (404), return empty array
-      if (getErrorStatus(err) === 404) {
-        sessionAttendance.value = []
-        return []
+    return withLoading(async () => {
+      try {
+        // API returns attendanceRecords array directly (extracted in api layer)
+        const data = await apiFetchSessionAttendance(sessionId)
+        sessionAttendance.value = data
+        return data
       }
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+      catch (err) {
+        console.error('Failed to fetch session attendance:', err)
+        // If attendance doesn't exist yet (404), return empty array
+        if (getErrorStatus(err) === 404) {
+          sessionAttendance.value = []
+          return []
+        }
+        throw err
+      }
+    })
   }
 
   /**
@@ -327,19 +298,10 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Array of attendance records
    */
   const fetchStudentAttendance = async (studentId: EntityId) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchStudentAttendance(studentId)
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch student attendance:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch student attendance:', err))
   }
 
   /**
@@ -348,20 +310,11 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<object>} Summary statistics
    */
   const fetchAttendanceSummary = async (params: AttendanceQueryParams = {}) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchAttendanceSummary(params)
       summary.value = data
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch attendance summary:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch attendance summary:', err))
   }
 
   /**
@@ -373,58 +326,56 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<Array>} Created/updated attendance records
    */
   const submitAttendance = async (payload: RecordAttendancePayload) => {
-    beginLoading()
     clearSyncWarning()
     const submittedRecords: AttendanceResponseDto[] = []
 
-    try {
-      for (const record of payload.records) {
-        const normalizedNotes = normalizeNotes(record.notes)
-        const backendStatus = mapAttendanceStatusForWrite(record.status)
-        const existingRecordId = record.id
+    return withLoading(async () => {
+      try {
+        for (const record of payload.records) {
+          const normalizedNotes = normalizeNotes(record.notes)
+          const backendStatus = mapAttendanceStatusForWrite(record.status)
+          const existingRecordId = record.id
 
-        const savedRecord = existingRecordId !== undefined && existingRecordId !== null
-          ? await apiUpdateAttendance(existingRecordId, {
-              status: backendStatus,
-              notes: normalizedNotes,
-            })
-          : await apiCreateAttendance({
-              sessionId: payload.sessionId,
-              studentId: record.studentId,
-              status: backendStatus,
-              notes: normalizedNotes,
-              ...(record.checkInTime !== undefined && { checkInTime: record.checkInTime }),
-            })
+          const savedRecord = existingRecordId !== undefined && existingRecordId !== null
+            ? await apiUpdateAttendance(existingRecordId, {
+                status: backendStatus,
+                notes: normalizedNotes,
+              })
+            : await apiCreateAttendance({
+                sessionId: payload.sessionId,
+                studentId: record.studentId,
+                status: backendStatus,
+                notes: normalizedNotes,
+                ...(record.checkInTime !== undefined && { checkInTime: record.checkInTime }),
+              })
 
-        submittedRecords.push(savedRecord)
+          submittedRecords.push(savedRecord)
+        }
+
+        if (isCurrentSession(payload.sessionId)) {
+          applyAttendanceUpdates(submittedRecords, true)
+        }
+
+        refreshSessionAttendanceInBackground(
+          payload.sessionId,
+          'Attendance was saved, but latest details could not be refreshed. Please refresh the page.',
+        )
+
+        return submittedRecords
       }
+      catch (err) {
+        const savedCount = submittedRecords.length
+        const totalCount = payload.records.length
 
-      if (isCurrentSession(payload.sessionId)) {
-        applyAttendanceUpdates(submittedRecords, true)
+        if (savedCount > 0) {
+          syncWarning.value = `${savedCount} of ${totalCount} records saved. Please refresh the page to review the latest attendance details.`
+        }
+
+        console.error('Failed to record attendance:', err)
+
+        throw createAttendanceSubmissionError(err, savedCount, totalCount)
       }
-
-      refreshSessionAttendanceInBackground(
-        payload.sessionId,
-        'Attendance was saved, but latest details could not be refreshed. Please refresh the page.',
-      )
-
-      return submittedRecords
-    }
-    catch (err) {
-      const savedCount = submittedRecords.length
-      const totalCount = payload.records.length
-
-      if (savedCount > 0) {
-        syncWarning.value = `${savedCount} of ${totalCount} records saved. Please refresh the page to review the latest attendance details.`
-      }
-
-      console.error('Failed to record attendance:', err)
-
-      throw createAttendanceSubmissionError(err, savedCount, totalCount)
-    }
-    finally {
-      endLoading()
-    }
+    })
   }
 
   /**
@@ -434,45 +385,43 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<object>} Updated attendance record
    */
   const updateAttendanceRecord = async (id: EntityId, payload: AttendanceUpdateInput) => {
-    beginLoading()
     clearSyncWarning()
 
     // Store original state for rollback
     const originalRecords = [...sessionAttendance.value]
     const recordIndex = sessionAttendance.value.findIndex(r => entityIdsMatch(r.id, id))
 
-    try {
-      const updatedRecord = await apiUpdateAttendance(id, {
-        ...payload,
-        status: payload.status ? mapAttendanceStatusForWrite(payload.status) : undefined,
-      })
-      if (recordIndex !== -1) {
-        applyAttendanceUpdates([updatedRecord])
+    return withLoading(async () => {
+      try {
+        const updatedRecord = await apiUpdateAttendance(id, {
+          ...payload,
+          status: payload.status ? mapAttendanceStatusForWrite(payload.status) : undefined,
+        })
+        if (recordIndex !== -1) {
+          applyAttendanceUpdates([updatedRecord])
+        }
+
+        if (currentSessionId.value !== null) {
+          refreshSessionAttendanceInBackground(
+            currentSessionId.value,
+            'Attendance was updated, but latest details could not be refreshed. Please refresh the page.',
+          )
+        }
+        else if (recordIndex !== -1) {
+          sessionAttendance.value[recordIndex] = updatedRecord
+        }
+
+        return updatedRecord
       }
+      catch (err) {
+        console.error('Failed to update attendance record:', err)
 
-      if (currentSessionId.value !== null) {
-        refreshSessionAttendanceInBackground(
-          currentSessionId.value,
-          'Attendance was updated, but latest details could not be refreshed. Please refresh the page.',
-        )
+        // Rollback on error
+        sessionAttendance.value = originalRecords
+
+        throw err
       }
-      else if (recordIndex !== -1) {
-        sessionAttendance.value[recordIndex] = updatedRecord
-      }
-
-      return updatedRecord
-    }
-    catch (err) {
-      console.error('Failed to update attendance record:', err)
-
-      // Rollback on error
-      sessionAttendance.value = originalRecords
-
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    })
   }
 
   /**
@@ -481,28 +430,25 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<void>}
    */
   const deleteAttendanceRecord = async (id: EntityId) => {
-    beginLoading()
-
     // Store original state for rollback
     const originalRecords = [...sessionAttendance.value]
 
-    try {
-      await apiDeleteAttendance(id)
+    return withLoading(async () => {
+      try {
+        await apiDeleteAttendance(id)
 
-      // Remove from local state
-      sessionAttendance.value = sessionAttendance.value.filter(r => !entityIdsMatch(r.id, id))
-    }
-    catch (err) {
-      console.error('Failed to delete attendance record:', err)
+        // Remove from local state
+        sessionAttendance.value = sessionAttendance.value.filter(r => !entityIdsMatch(r.id, id))
+      }
+      catch (err) {
+        console.error('Failed to delete attendance record:', err)
 
-      // Rollback on error
-      sessionAttendance.value = originalRecords
+        // Rollback on error
+        sessionAttendance.value = originalRecords
 
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+        throw err
+      }
+    })
   }
 
   /**
@@ -549,7 +495,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const resetStore = () => {
     attendanceRecords.value = []
     sessionAttendance.value = []
-    loadingCount.value = 0
+    resetLoading()
     currentRecord.value = null
     summary.value = null
     currentSessionId.value = null

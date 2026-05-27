@@ -25,6 +25,7 @@ import {
 } from '@/api/sessions'
 import { entityIdsMatch } from '@/utils/entityId'
 import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
+import { useLoadingState } from '@/composables/useLoadingState'
 
 /**
  * Session Store
@@ -43,9 +44,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   /** @type {import('vue').Ref<Array>} */
   const sessions = ref<SessionResponseDto[]>([])
 
-  /** @type {import('vue').Ref<boolean>} */
-  const loadingCount = ref(0)
-  const loading = computed(() => loadingCount.value > 0)
+  const { loading, withLoading, resetLoading } = useLoadingState()
 
   /** @type {import('vue').Ref<object | null>} */
   const currentSession = ref<SessionResponseDto | null>(null)
@@ -130,14 +129,6 @@ export const useSessionStore = defineStore('sessionStore', () => {
     return sessions.value.find(session => entityIdsMatch(session.id, sessionId))
   })
 
-  function beginLoading() {
-    loadingCount.value += 1
-  }
-
-  function endLoading() {
-    loadingCount.value = Math.max(0, loadingCount.value - 1)
-  }
-
   // ==================== ACTIONS ====================
 
   /**
@@ -146,20 +137,11 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessions = async () => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchMySessions()
       sessions.value = data
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch sessions:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch sessions:', err))
   }
 
   /**
@@ -168,9 +150,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<object>} Session object
    */
   const fetchSessionById = async (sessionId: EntityId) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchSessionById(sessionId)
       currentSession.value = data
 
@@ -184,14 +164,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
       }
 
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch session:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch session:', err))
   }
 
   /**
@@ -200,19 +173,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessionsBySchedule = async (scheduleId: EntityId) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchSessionsBySchedule(scheduleId)
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch sessions by schedule:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch sessions by schedule:', err))
   }
 
   /**
@@ -221,19 +185,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessionsByStatusApi = async (status: SessionStatus) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchSessionsByStatus(status)
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch sessions by status:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch sessions by status:', err))
   }
 
   /**
@@ -242,19 +197,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @returns {Promise<Array>} Array of session objects
    */
   const fetchSessionsByDate = async (date: string) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const data = await apiFetchSessionsByDate(date)
       return data
-    }
-    catch (err) {
-      console.error('Failed to fetch sessions by date:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to fetch sessions by date:', err))
   }
 
   /**
@@ -267,23 +213,14 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @throws {Error} 403 if not instructor, 400 if business rule violated
    */
   const createSession = async (payload: CreateSessionPayload) => {
-    beginLoading()
-
-    try {
+    return withLoading(async () => {
       const newSession = await apiCreateSession(payload)
 
       // Add to local state
       sessions.value.push(newSession)
 
       return newSession
-    }
-    catch (err) {
-      console.error('Failed to create session:', err)
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    }, err => console.error('Failed to create session:', err))
   }
 
   /**
@@ -299,53 +236,50 @@ export const useSessionStore = defineStore('sessionStore', () => {
     sessionId: EntityId,
     payload: Omit<StartSessionPayload, 'rowVersion'> = {},
   ) => {
-    beginLoading()
-
     // Store original state for rollback
     const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
-    try {
-      // Client-side validation
-      if (originalSessionSnapshot && originalSessionSnapshot.status !== 'not_started') {
-        throw new Error('Only sessions in "not_started" status can be started')
-      }
+    return withLoading(async () => {
+      try {
+        // Client-side validation
+        if (originalSessionSnapshot && originalSessionSnapshot.status !== 'not_started') {
+          throw new Error('Only sessions in "not_started" status can be started')
+        }
 
-      if (originalSessionSnapshot && !isSessionScheduledForToday(originalSessionSnapshot)) {
-        throw new Error('Session can only be started on its scheduled date')
-      }
+        if (originalSessionSnapshot && !isSessionScheduledForToday(originalSessionSnapshot)) {
+          throw new Error('Session can only be started on its scheduled date')
+        }
 
-      const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'start')
-      const updatedSession = await apiStartSession(sessionId, { ...payload, rowVersion })
+        const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'start')
+        const updatedSession = await apiStartSession(sessionId, { ...payload, rowVersion })
 
-      // Update local state
-      if (sessionIndex !== -1) {
-        sessions.value[sessionIndex] = updatedSession
-      }
-      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
-        currentSession.value = updatedSession
-      }
+        // Update local state
+        if (sessionIndex !== -1) {
+          sessions.value[sessionIndex] = updatedSession
+        }
+        if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
+          currentSession.value = updatedSession
+        }
 
-      return updatedSession
-    }
-    catch (err) {
-      console.error('Failed to start session:', err)
-
-      // Rollback optimistic update if any
-      if (sessionIndex !== -1 && originalSessionSnapshot) {
-        sessions.value[sessionIndex] = originalSessionSnapshot
+        return updatedSession
       }
-      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
-        currentSession.value = originalCurrentSession
-      }
+      catch (err) {
+        console.error('Failed to start session:', err)
 
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+        // Rollback optimistic update if any
+        if (sessionIndex !== -1 && originalSessionSnapshot) {
+          sessions.value[sessionIndex] = originalSessionSnapshot
+        }
+        if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
+          currentSession.value = originalCurrentSession
+        }
+
+        throw err
+      }
+    })
   }
 
   /**
@@ -357,49 +291,46 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
   const endSession = async (sessionId: EntityId, payload: Omit<EndSessionPayload, 'rowVersion'> = {}) => {
-    beginLoading()
-
     // Store original state for rollback
     const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
-    try {
-      // Client-side validation
-      if (originalSessionSnapshot && originalSessionSnapshot.status !== 'active') {
-        throw new Error('Only active sessions can be ended')
-      }
+    return withLoading(async () => {
+      try {
+        // Client-side validation
+        if (originalSessionSnapshot && originalSessionSnapshot.status !== 'active') {
+          throw new Error('Only active sessions can be ended')
+        }
 
-      const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'end')
-      const updatedSession = await apiEndSession(sessionId, { ...payload, rowVersion })
+        const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'end')
+        const updatedSession = await apiEndSession(sessionId, { ...payload, rowVersion })
 
-      // Update local state
-      if (sessionIndex !== -1) {
-        sessions.value[sessionIndex] = updatedSession
-      }
-      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
-        currentSession.value = updatedSession
-      }
+        // Update local state
+        if (sessionIndex !== -1) {
+          sessions.value[sessionIndex] = updatedSession
+        }
+        if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
+          currentSession.value = updatedSession
+        }
 
-      return updatedSession
-    }
-    catch (err) {
-      console.error('Failed to end session:', err)
-
-      // Rollback optimistic update if any
-      if (sessionIndex !== -1 && originalSessionSnapshot) {
-        sessions.value[sessionIndex] = originalSessionSnapshot
+        return updatedSession
       }
-      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
-        currentSession.value = originalCurrentSession
-      }
+      catch (err) {
+        console.error('Failed to end session:', err)
 
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+        // Rollback optimistic update if any
+        if (sessionIndex !== -1 && originalSessionSnapshot) {
+          sessions.value[sessionIndex] = originalSessionSnapshot
+        }
+        if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
+          currentSession.value = originalCurrentSession
+        }
+
+        throw err
+      }
+    })
   }
 
   /**
@@ -410,49 +341,46 @@ export const useSessionStore = defineStore('sessionStore', () => {
    * @throws {Error} 403 if not assigned instructor, 400 if invalid status
    */
   const deleteSession = async (sessionId: EntityId, reason: string) => {
-    beginLoading()
-
     // Store original state for rollback
     const originalSessions = [...sessions.value]
     const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
-    try {
-      // Client-side validation
-      if (originalSession && originalSession.status !== 'not_started') {
-        throw new Error('Only sessions in "not_started" status can be deleted')
-      }
+    return withLoading(async () => {
+      try {
+        // Client-side validation
+        if (originalSession && originalSession.status !== 'not_started') {
+          throw new Error('Only sessions in "not_started" status can be deleted')
+        }
 
-      const payload: DeleteSessionPayload = {
-        reason,
-        rowVersion: requireSessionRowVersion(originalSession, 'cancel'),
-      }
-      const updatedSession = await apiDeleteSession(sessionId, payload)
+        const payload: DeleteSessionPayload = {
+          reason,
+          rowVersion: requireSessionRowVersion(originalSession, 'cancel'),
+        }
+        const updatedSession = await apiDeleteSession(sessionId, payload)
 
-      if (sessionIndex !== -1) {
-        sessions.value[sessionIndex] = updatedSession
-      }
-      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
-        currentSession.value = updatedSession
-      }
+        if (sessionIndex !== -1) {
+          sessions.value[sessionIndex] = updatedSession
+        }
+        if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
+          currentSession.value = updatedSession
+        }
 
-      return updatedSession
-    }
-    catch (err) {
-      console.error('Failed to delete session:', err)
-
-      // Rollback optimistic update
-      sessions.value = originalSessions
-      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
-        currentSession.value = originalCurrentSession
+        return updatedSession
       }
+      catch (err) {
+        console.error('Failed to delete session:', err)
 
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+        // Rollback optimistic update
+        sessions.value = originalSessions
+        if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
+          currentSession.value = originalCurrentSession
+        }
+
+        throw err
+      }
+    })
   }
 
   /**
@@ -467,49 +395,46 @@ export const useSessionStore = defineStore('sessionStore', () => {
     sessionId: EntityId,
     payload: Omit<UpdateSessionRoomPayload, 'rowVersion'>,
   ) => {
-    beginLoading()
-
     // Store original state for rollback
     const originalSession = sessions.value.find(s => entityIdsMatch(s.id, sessionId))
     const originalSessionSnapshot = originalSession ? { ...originalSession } : null
     const originalCurrentSession = currentSession.value
     const sessionIndex = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
 
-    try {
-      // Client-side validation
-      if (originalSessionSnapshot && originalSessionSnapshot.status !== 'active') {
-        throw new Error('Room can only be updated for active sessions')
-      }
+    return withLoading(async () => {
+      try {
+        // Client-side validation
+        if (originalSessionSnapshot && originalSessionSnapshot.status !== 'active') {
+          throw new Error('Room can only be updated for active sessions')
+        }
 
-      const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'update the room for')
-      const updatedSession = await apiUpdateSessionRoom(sessionId, { ...payload, rowVersion })
+        const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'update the room for')
+        const updatedSession = await apiUpdateSessionRoom(sessionId, { ...payload, rowVersion })
 
-      // Update local state
-      if (sessionIndex !== -1) {
-        sessions.value[sessionIndex] = updatedSession
-      }
-      if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
-        currentSession.value = updatedSession
-      }
+        // Update local state
+        if (sessionIndex !== -1) {
+          sessions.value[sessionIndex] = updatedSession
+        }
+        if (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId)) {
+          currentSession.value = updatedSession
+        }
 
-      return updatedSession
-    }
-    catch (err) {
-      console.error('Failed to update session room:', err)
-
-      // Rollback optimistic update if any
-      if (sessionIndex !== -1 && originalSessionSnapshot) {
-        sessions.value[sessionIndex] = originalSessionSnapshot
+        return updatedSession
       }
-      if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
-        currentSession.value = originalCurrentSession
-      }
+      catch (err) {
+        console.error('Failed to update session room:', err)
 
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+        // Rollback optimistic update if any
+        if (sessionIndex !== -1 && originalSessionSnapshot) {
+          sessions.value[sessionIndex] = originalSessionSnapshot
+        }
+        if ((originalCurrentSession && entityIdsMatch(originalCurrentSession.id, sessionId)) || (currentSession.value && entityIdsMatch(currentSession.value.id, sessionId))) {
+          currentSession.value = originalCurrentSession
+        }
+
+        throw err
+      }
+    })
   }
 
   /**
@@ -524,7 +449,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
    */
   const resetStore = () => {
     sessions.value = []
-    loadingCount.value = 0
+    resetLoading()
     currentSession.value = null
   }
 

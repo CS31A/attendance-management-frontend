@@ -13,12 +13,12 @@ import {
   getMySectionsWithStudents,
   getMyStudentDetail,
 } from '@/api/instructors'
+import { useLoadingState } from '@/composables/useLoadingState'
 
 export const useInstructorStore = defineStore('instructorStore', () => {
   // ==================== STATE ====================
 
   const instructorData = ref<InstructorSectionsWithStudentsResponseDto | null>(null)
-  const loadingCount = ref(0)
   const error = ref<string | null>(null)
 
   const sectionsOverviewList = ref<InstructorSectionOverviewItem[]>([])
@@ -27,7 +27,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
 
   // ==================== GETTERS ====================
 
-  const loading = computed(() => loadingCount.value > 0)
+  const { loading, withLoading, resetLoading } = useLoadingState()
 
   const sections = computed(() => instructorData.value?.sections ?? [])
 
@@ -63,96 +63,74 @@ export const useInstructorStore = defineStore('instructorStore', () => {
 
   const totalUniqueStudents = computed(() => uniqueStudentIds.value.size)
 
-  // ==================== HELPER FUNCTIONS ====================
-
-  function beginLoading() {
-    loadingCount.value += 1
-  }
-
-  function endLoading() {
-    loadingCount.value = Math.max(0, loadingCount.value - 1)
-  }
-
   // ==================== ACTIONS ====================
 
   const fetchSectionsWithStudents = async () => {
-    beginLoading()
     error.value = null
-
-    try {
-      const data = await getMySectionsWithStudents()
-      instructorData.value = data
-      return data
-    }
-    catch (err) {
-      console.error('Failed to fetch instructor sections with students:', err)
-      error.value = err instanceof Error ? err.message : 'Failed to load sections'
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    return withLoading(async () => {
+      try {
+        const data = await getMySectionsWithStudents()
+        instructorData.value = data
+        return data
+      }
+      catch (err) {
+        console.error('Failed to fetch instructor sections with students:', err)
+        error.value = err instanceof Error ? err.message : 'Failed to load sections'
+        throw err
+      }
+    })
   }
 
   const fetchSectionsOverview = async () => {
-    beginLoading()
     error.value = null
-
-    try {
-      const [overviewData, sectionsWithData] = await Promise.all([
-        getMySectionsOverview(),
-        getMySectionsWithStudents(),
-      ])
-      sectionsOverviewList.value = overviewData
-      instructorData.value = sectionsWithData
-      return overviewData
-    }
-    catch (err) {
-      console.error('Failed to fetch sections overview:', err)
-      error.value = err instanceof Error ? err.message : 'Failed to load sections overview'
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    return withLoading(async () => {
+      try {
+        const [overviewData, sectionsWithData] = await Promise.all([
+          getMySectionsOverview(),
+          getMySectionsWithStudents(),
+        ])
+        sectionsOverviewList.value = overviewData
+        instructorData.value = sectionsWithData
+        return overviewData
+      }
+      catch (err) {
+        console.error('Failed to fetch sections overview:', err)
+        error.value = err instanceof Error ? err.message : 'Failed to load sections overview'
+        throw err
+      }
+    })
   }
 
   const fetchSectionDetail = async (sectionId: EntityId) => {
-    beginLoading()
     error.value = null
-
-    try {
-      const data = await getMySectionDetail(sectionId)
-      currentSectionDetail.value = data
-      return data
-    }
-    catch (err) {
-      console.error(`Failed to fetch section detail for section ${sectionId}:`, err)
-      error.value = err instanceof Error ? err.message : 'Failed to load section detail'
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    return withLoading(async () => {
+      try {
+        const data = await getMySectionDetail(sectionId)
+        currentSectionDetail.value = data
+        return data
+      }
+      catch (err) {
+        console.error(`Failed to fetch section detail for section ${sectionId}:`, err)
+        error.value = err instanceof Error ? err.message : 'Failed to load section detail'
+        throw err
+      }
+    })
   }
 
   const fetchStudentDetail = async (studentId: EntityId) => {
-    beginLoading()
     error.value = null
-
-    try {
-      const data = await getMyStudentDetail(studentId)
-      currentStudentDetail.value = data
-      return data
-    }
-    catch (err) {
-      console.error(`Failed to fetch student detail for student ${studentId}:`, err)
-      error.value = err instanceof Error ? err.message : 'Failed to load student detail'
-      throw err
-    }
-    finally {
-      endLoading()
-    }
+    return withLoading(async () => {
+      try {
+        const data = await getMyStudentDetail(studentId)
+        currentStudentDetail.value = data
+        return data
+      }
+      catch (err) {
+        console.error(`Failed to fetch student detail for student ${studentId}:`, err)
+        error.value = err instanceof Error ? err.message : 'Failed to load student detail'
+        throw err
+      }
+    })
   }
 
   const clearSectionDetail = () => {
@@ -169,7 +147,7 @@ export const useInstructorStore = defineStore('instructorStore', () => {
 
   const resetStore = () => {
     instructorData.value = null
-    loadingCount.value = 0
+    resetLoading()
     error.value = null
     sectionsOverviewList.value = []
     currentSectionDetail.value = null

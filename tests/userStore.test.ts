@@ -197,13 +197,16 @@ describe('userStore', () => {
       expect(store.users[0].role).toBe(ROLES.INSTRUCTOR)
     })
 
-    it('failure sets error = \'Failed to fetch users\' and resets loading', async () => {
+    it('catches API error internally: sets error, resets loading, resolves normally', async () => {
       vi.mocked(api.get).mockRejectedValue(new Error('Network error'))
 
       const store = useUserStore()
+
+      // must NOT reject — fetchUsers catches internally
       await store.fetchUsers()
 
       expect(store.error).toBe('Failed to fetch users')
+      expect(store.fetchError).toBe('Failed to fetch users')
       expect(store.loading).toBe(false)
     })
   })
