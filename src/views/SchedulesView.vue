@@ -236,7 +236,21 @@ const {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { showModal, selectedEntity: selectedSchedule, modalRef, handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal } = useCrudModal<SchedulePayload, ScheduleDto>({ showToast, createFn: data => scheduleStore.createSchedule(data), updateFn: (id, data) => scheduleStore.updateSchedule(id, data), entityLabel: 'Schedule', onErrorHandled: () => scheduleStore.clearError() })
+const {
+  showModal,
+  selectedEntity: selectedSchedule,
+  modalRef,
+  handleSave: handleSaveSchedule,
+  openAddModal,
+  openEditModal,
+  closeModal,
+} = useCrudModal<SchedulePayload, ScheduleDto>({
+  showToast,
+  createFn: data => scheduleStore.createSchedule(data),
+  updateFn: (id, data) => scheduleStore.updateSchedule(id, data),
+  entityLabel: 'Schedule',
+  onErrorHandled: () => scheduleStore.clearError(),
+})
 
 const {
   showDeleteModal,

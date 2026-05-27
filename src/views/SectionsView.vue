@@ -72,7 +72,20 @@ function openEnrollmentModal(section: SectionDto) {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { showModal, selectedEntity: selectedSection, modalRef, handleSave: handleSaveSection, openAddModal, openEditModal, closeModal } = useCrudModal<SectionPayload, SectionDto>({ showToast, createFn: data => sectionsStore.addSection(data), updateFn: (id, data) => sectionsStore.updateSection(id, data), entityLabel: 'Section' })
+const {
+  showModal,
+  selectedEntity: selectedSection,
+  modalRef,
+  handleSave: handleSaveSection,
+  openAddModal,
+  openEditModal,
+  closeModal,
+} = useCrudModal<SectionPayload, SectionDto>({
+  showToast,
+  createFn: data => sectionsStore.addSection(data),
+  updateFn: (id, data) => sectionsStore.updateSection(id, data),
+  entityLabel: 'Section',
+})
 
 const {
   showDeleteModal,

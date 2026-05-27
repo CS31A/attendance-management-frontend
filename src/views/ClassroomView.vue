@@ -62,7 +62,20 @@ const {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { showModal, selectedEntity: selectedClassroom, modalRef, handleSave: handleSaveClassroom, openAddModal, openEditModal, closeModal } = useCrudModal<ClassroomPayload, ClassroomDto>({ showToast, createFn: data => classroomStore.createClassroom(data), updateFn: (id, data) => classroomStore.updateClassroom(id, data), entityLabel: 'Classroom' })
+const {
+  showModal,
+  selectedEntity: selectedClassroom,
+  modalRef,
+  handleSave: handleSaveClassroom,
+  openAddModal,
+  openEditModal,
+  closeModal,
+} = useCrudModal<ClassroomPayload, ClassroomDto>({
+  showToast,
+  createFn: data => classroomStore.createClassroom(data),
+  updateFn: (id, data) => classroomStore.updateClassroom(id, data),
+  entityLabel: 'Classroom',
+})
 
 const {
   showDeleteModal,
