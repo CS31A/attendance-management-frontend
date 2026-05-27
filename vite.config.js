@@ -17,10 +17,10 @@ export default defineConfig({
   // },
   test: {
     include: ['tests/**/*.test.ts'],
-    exclude: ['graphify-out/**', '**/graphify-out/**'],
+    exclude: [],
     typecheck: {
       include: ['src/type-tests/**/*.test.ts'],
-      exclude: ['graphify-out/**', '**/graphify-out/**'],
+      exclude: [],
     },
     environment: 'happy-dom',
     environmentMatchGlobs: [
