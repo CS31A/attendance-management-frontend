@@ -1,5 +1,32 @@
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
 
+export interface AttendanceSubmissionError extends Error {
+  savedCount: number
+  totalCount: number
+  response?: unknown
+}
+
+export function createAttendanceSubmissionError(
+  error: unknown,
+  savedCount: number,
+  totalCount: number,
+): AttendanceSubmissionError {
+  const sourceError = error instanceof Error
+    ? error
+    : new Error('Failed to record attendance.')
+
+  const enhancedError = new Error(sourceError.message, { cause: error }) as AttendanceSubmissionError
+  enhancedError.name = sourceError.name
+  enhancedError.savedCount = savedCount
+  enhancedError.totalCount = totalCount
+
+  if (error && typeof error === 'object' && 'response' in error) {
+    enhancedError.response = (error as { response?: unknown }).response
+  }
+
+  return enhancedError
+}
+
 const DEFAULT_ATTENDANCE_SUBMISSION_ERROR = 'Failed to record attendance. Please try again.'
 const DEFAULT_ATTENDANCE_CONFLICT_ERROR = 'Attendance could not be recorded for one or more students. Please confirm the affected student is enrolled in this session and try again.'
 const DEFAULT_ATTENDANCE_NOT_FOUND_ERROR = 'The session or attendance record could not be found. Please refresh and try again.'

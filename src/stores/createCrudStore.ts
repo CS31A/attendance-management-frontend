@@ -6,11 +6,11 @@ import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export interface CrudApi<TDto, TPayload> {
-  getAll: (...args: unknown[]) => Promise<AxiosResponse<TDto[]>>
-  getById: (id: EntityId, ...args: unknown[]) => Promise<AxiosResponse<TDto>>
-  create: (data: TPayload, ...args: unknown[]) => Promise<AxiosResponse<TDto>>
-  update: (id: EntityId, data: TPayload, ...args: unknown[]) => Promise<AxiosResponse<TDto>>
-  delete: (id: EntityId, ...args: unknown[]) => Promise<AxiosResponse<unknown>>
+  getAll: () => Promise<AxiosResponse<TDto[]>>
+  getById: (id: EntityId) => Promise<AxiosResponse<TDto>>
+  create: (data: TPayload) => Promise<AxiosResponse<TDto>>
+  update: (id: EntityId, data: TPayload) => Promise<AxiosResponse<TDto>>
+  delete: (id: EntityId) => Promise<AxiosResponse<unknown>>
 }
 
 export function createCrudStore<
@@ -44,6 +44,7 @@ export function createCrudStore<
         const nameB = (b as Record<string, unknown>).name as string | null | undefined
         const safeA = nameA ?? '\uFFFF'
         const safeB = nameB ?? '\uFFFF'
+        // '\uFFFF' sorts unnamed/null items last alphabetically
         return safeA.localeCompare(safeB)
       }),
     )

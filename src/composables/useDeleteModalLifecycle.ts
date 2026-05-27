@@ -13,8 +13,7 @@ export interface UseDeleteModalLifecycleReturn<T> {
 
 /**
  * Internal primitive for managing delete modal lifecycle state.
- * Extracts the shared "modal-state triad" used by both useEntityDelete
- * and createDeleteFlow to ensure consistent behavior.
+ * Extracts the shared "modal-state triad" used by createDeleteFlow
  *
  * This is an internal primitive - external code should use createDeleteFlow.
  * or entity-specific delete flows instead.

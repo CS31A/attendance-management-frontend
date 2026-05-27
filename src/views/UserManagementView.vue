@@ -15,6 +15,7 @@ import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
+import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
 import { resolveStudentProfileId } from '@/utils/studentRoute'
@@ -83,7 +84,7 @@ onMounted(async () => {
 watch(viewMode, async (newMode) => {
   try {
     await userStore.fetchUsers(newMode)
-    userStore.setCurrentPage(1)
+    resetToFirstPage()
   }
   catch (error) {
     console.error('Failed to fetch users for mode:', newMode, error)
@@ -94,17 +95,8 @@ const filteredUsers = computed(() =>
   userStore.filteredUsers(searchQuery.value, selectedRole.value),
 )
 
-const paginatedUsers = computed(() =>
-  userStore.paginatedUsers(searchQuery.value, selectedRole.value),
-)
 
-const filteredInstructors = computed(() =>
-  paginatedUsers.value.filter(u => u.role === 'Instructor'),
-)
 
-const filteredStudents = computed(() =>
-  paginatedUsers.value.filter(u => u.role === 'Student'),
-)
 
 const allFilteredInstructors = computed(() =>
   filteredUsers.value.filter(u => u.role === 'Instructor'),
@@ -133,25 +125,27 @@ const instructorWorkloadSummary = computed(() => {
 
 const workloadSessions = computed(() => instructorWorkload.value?.sessions ?? [])
 
-// Pagination computed properties
-const totalPages = computed(() =>
-  userStore.totalPages(searchQuery.value, selectedRole.value),
+const {
+  currentPage,
+  itemsPerPage,
+  totalItems: totalUsers,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage,
+  paginatedItems: paginatedUsers,
+  nextPage,
+  previousPage,
+  goToPage,
+  setItemsPerPage,
+  resetToFirstPage,
+} = useLocalPagination({ items: filteredUsers })
+
+const filteredInstructors = computed(() =>
+  paginatedUsers.value.filter(u => u.role === 'Instructor'),
 )
 
-const hasNextPage = computed(() =>
-  userStore.hasNextPage(searchQuery.value, selectedRole.value),
-)
-
-const hasPreviousPage = computed(() =>
-  userStore.hasPreviousPage,
-)
-
-const currentPage = computed(() =>
-  userStore.currentPage,
-)
-
-const totalUsers = computed(() =>
-  filteredUsers.value.length,
+const filteredStudents = computed(() =>
+  paginatedUsers.value.filter(u => u.role === 'Student'),
 )
 
 // Check if there's an active search
@@ -395,26 +389,8 @@ function handleEditUser(user: ManagedUser) {
   showEditUser.value = true
 }
 
-// Pagination methods
-function nextPage() {
-  userStore.nextPage(searchQuery.value, selectedRole.value)
-}
-
-function previousPage() {
-  userStore.previousPage()
-}
-
-function goToPage(page: number) {
-  userStore.goToPage(page, searchQuery.value, selectedRole.value)
-}
-
-function setItemsPerPage(itemsPerPage: number) {
-  userStore.setItemsPerPage(itemsPerPage)
-}
-
-// Reset pagination when search or filter changes
 watch([searchQuery, selectedRole], () => {
-  userStore.setCurrentPage(1)
+  resetToFirstPage()
 })
 
 watch(allFilteredInstructors, (instructors) => {
@@ -589,7 +565,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
           hasNextPage,
           hasPreviousPage,
           totalUsers,
-          itemsPerPage: userStore.itemsPerPage,
+          itemsPerPage,
         }"
         @edit="handleEditUser"
         @soft-delete="handleSoftDeleteUser"

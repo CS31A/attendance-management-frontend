@@ -83,61 +83,6 @@ describe('attendanceStore', () => {
   })
 
   describe('state and getters', () => {
-    it('recordsByStatus filters by status', () => {
-      const store = useAttendanceStore()
-      store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: '1', studentId: '1', status: 'present' }),
-        createSessionAttendanceRecord({ id: '2', studentId: '2', status: 'absent' }),
-        createSessionAttendanceRecord({ id: '3', studentId: '3', status: 'present' }),
-      ]
-      expect(store.recordsByStatus('present')).toHaveLength(2)
-      expect(store.recordsByStatus('absent')).toHaveLength(1)
-      expect(store.recordsByStatus('late')).toHaveLength(0)
-    })
-
-    it('presentRecords returns present students', () => {
-      const store = useAttendanceStore()
-      store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: '1', status: 'present' }),
-        createSessionAttendanceRecord({ id: '2', status: 'absent' }),
-        createSessionAttendanceRecord({ id: '3', status: 'present' }),
-      ]
-      expect(store.presentRecords).toHaveLength(2)
-      expect(store.presentRecords.every(r => r.status === 'present')).toBe(true)
-    })
-
-    it('absentRecords returns absent students', () => {
-      const store = useAttendanceStore()
-      store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: '1', status: 'present' }),
-        createSessionAttendanceRecord({ id: '2', status: 'absent' }),
-        createSessionAttendanceRecord({ id: '3', status: 'absent' }),
-      ]
-      expect(store.absentRecords).toHaveLength(2)
-      expect(store.absentRecords.every(r => r.status === 'absent')).toBe(true)
-    })
-
-    it('lateRecords returns late students', () => {
-      const store = useAttendanceStore()
-      store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: '1', status: 'late' }),
-        createSessionAttendanceRecord({ id: '2', status: 'present' }),
-        createSessionAttendanceRecord({ id: '3', status: 'late' }),
-      ]
-      expect(store.lateRecords).toHaveLength(2)
-      expect(store.lateRecords.every(r => r.status === 'late')).toBe(true)
-    })
-
-    it('excusedRecords returns excused students', () => {
-      const store = useAttendanceStore()
-      store.sessionAttendance = [
-        createSessionAttendanceRecord({ id: '1', status: 'excused' }),
-        createSessionAttendanceRecord({ id: '2', status: 'present' }),
-        createSessionAttendanceRecord({ id: '3', status: 'excused' }),
-      ]
-      expect(store.excusedRecords).toHaveLength(2)
-      expect(store.excusedRecords.every(r => r.status === 'excused')).toBe(true)
-    })
 
     it('sessionStats calculates statistics', () => {
       const store = useAttendanceStore()

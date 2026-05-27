@@ -26,6 +26,7 @@ import { useLoadingState } from '@/composables/useLoadingState'
 import { normalizeNotes } from '@/utils/attendanceRecord'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
+import { createAttendanceSubmissionError } from '@/utils/attendanceSubmission'
 
 /**
  * Attendance Store
@@ -85,32 +86,6 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     return attendanceStatusWriteMap[status]
   }
 
-  interface AttendanceSubmissionError extends Error {
-    savedCount: number
-    totalCount: number
-    response?: unknown
-  }
-
-  function createAttendanceSubmissionError(
-    error: unknown,
-    savedCount: number,
-    totalCount: number,
-  ): AttendanceSubmissionError {
-    const sourceError = error instanceof Error
-      ? error
-      : new Error('Failed to record attendance.')
-
-    const enhancedError = new Error(sourceError.message, { cause: error }) as AttendanceSubmissionError
-    enhancedError.name = sourceError.name
-    enhancedError.savedCount = savedCount
-    enhancedError.totalCount = totalCount
-
-    if (error && typeof error === 'object' && 'response' in error) {
-      enhancedError.response = (error as { response?: unknown }).response
-    }
-
-    return enhancedError
-  }
 
   function applyAttendanceUpdates(records: AttendanceResponseDto[], allowInsert = false) {
     records.forEach((record) => {
@@ -170,46 +145,13 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
   // ==================== GETTERS ====================
 
-  /**
-   * Get attendance records filtered by status
-   * @param {string} status - Attendance status ('present' | 'absent' | 'late' | 'excused')
-   * @returns {Array} Filtered attendance records
-   */
-  const recordsByStatus = computed(() => (status: AttendanceStatus) => {
-    return sessionAttendance.value.filter(record => record.status === status)
-  })
-
-  /**
-   * Get all present students from current session
-   * @returns {Array} Present attendance records
-   */
-  const presentRecords = computed(() => {
-    return sessionAttendance.value.filter(record => record.status === 'present')
-  })
-
-  /**
-   * Get all absent students from current session
-   * @returns {Array} Absent attendance records
-   */
-  const absentRecords = computed(() => {
-    return sessionAttendance.value.filter(record => record.status === 'absent')
-  })
-
-  /**
-   * Get all late students from current session
-   * @returns {Array} Late attendance records
-   */
-  const lateRecords = computed(() => {
-    return sessionAttendance.value.filter(record => record.status === 'late')
-  })
-
-  /**
-   * Get all excused students from current session
-   * @returns {Array} Excused attendance records
-   */
-  const excusedRecords = computed(() => {
-    return sessionAttendance.value.filter(record => record.status === 'excused')
-  })
+  function withRollback<T>(arrayRef: { value: T[] }, mutate: () => Promise<T>): Promise<T> {
+    const snapshot = JSON.parse(JSON.stringify(arrayRef.value))
+    return mutate().catch((err) => {
+      arrayRef.value = snapshot
+      throw err
+    })
+  }
 
   /**
    * Get attendance statistics for current session
@@ -387,41 +329,28 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   const updateAttendanceRecord = async (id: EntityId, payload: AttendanceUpdateInput) => {
     clearSyncWarning()
 
-    // Store original state for rollback
-    const originalRecords = [...sessionAttendance.value]
-    const recordIndex = sessionAttendance.value.findIndex(r => entityIdsMatch(r.id, id))
-
-    return withLoading(async () => {
-      try {
-        const updatedRecord = await apiUpdateAttendance(id, {
-          ...payload,
-          status: payload.status ? mapAttendanceStatusForWrite(payload.status) : undefined,
-        })
-        if (recordIndex !== -1) {
-          applyAttendanceUpdates([updatedRecord])
-        }
-
-        if (currentSessionId.value !== null) {
-          refreshSessionAttendanceInBackground(
-            currentSessionId.value,
-            'Attendance was updated, but latest details could not be refreshed. Please refresh the page.',
-          )
-        }
-        else if (recordIndex !== -1) {
-          sessionAttendance.value[recordIndex] = updatedRecord
-        }
-
-        return updatedRecord
+    return withLoading(() => withRollback(sessionAttendance, async () => {
+      const recordIndex = sessionAttendance.value.findIndex(r => entityIdsMatch(r.id, id))
+      const updatedRecord = await apiUpdateAttendance(id, {
+        ...payload,
+        status: payload.status ? mapAttendanceStatusForWrite(payload.status) : undefined,
+      })
+      if (recordIndex !== -1) {
+        applyAttendanceUpdates([updatedRecord])
       }
-      catch (err) {
-        console.error('Failed to update attendance record:', err)
 
-        // Rollback on error
-        sessionAttendance.value = originalRecords
-
-        throw err
+      if (currentSessionId.value !== null) {
+        refreshSessionAttendanceInBackground(
+          currentSessionId.value,
+          'Attendance was updated, but latest details could not be refreshed. Please refresh the page.',
+        )
       }
-    })
+      else if (recordIndex !== -1) {
+        sessionAttendance.value[recordIndex] = updatedRecord
+      }
+
+      return updatedRecord
+    }))
   }
 
   /**
@@ -430,27 +359,13 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    * @returns {Promise<void>}
    */
   const deleteAttendanceRecord = async (id: EntityId) => {
-    // Store original state for rollback
-    const originalRecords = [...sessionAttendance.value]
+    return withLoading(() => withRollback(sessionAttendance, async () => {
+      await apiDeleteAttendance(id)
 
-    return withLoading(async () => {
-      try {
-        await apiDeleteAttendance(id)
-
-        // Remove from local state
-        sessionAttendance.value = sessionAttendance.value.filter(r => !entityIdsMatch(r.id, id))
-      }
-      catch (err) {
-        console.error('Failed to delete attendance record:', err)
-
-        // Rollback on error
-        sessionAttendance.value = originalRecords
-
-        throw err
-      }
-    })
+      // Remove from local state
+      sessionAttendance.value = sessionAttendance.value.filter(r => !entityIdsMatch(r.id, id))
+    }))
   }
-
   /**
    * Update local attendance status for a student (optimistic update)
    * Used for immediate UI feedback before submitting to server
@@ -515,11 +430,6 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     syncWarning,
 
     // Getters
-    recordsByStatus,
-    presentRecords,
-    absentRecords,
-    lateRecords,
-    excusedRecords,
     sessionStats,
     getRecordByStudentId,
     hasAttendanceData,

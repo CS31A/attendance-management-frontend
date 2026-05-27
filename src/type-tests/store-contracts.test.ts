@@ -19,7 +19,6 @@ type _attendanceRecordNotAny = ExpectFalse<IsAny<AttendanceStore['attendanceReco
 type _attendanceSummaryNotAny = ExpectFalse<IsAny<AttendanceStore['summary']>>
 type _attendanceSubmitPayloadNotAny = ExpectFalse<IsAny<Parameters<AttendanceStore['submitAttendance']>[0]>>
 type _attendanceUpdatePayloadNotAny = ExpectFalse<IsAny<Parameters<AttendanceStore['updateAttendanceRecord']>[1]>>
-type _attendanceStatusParamNotAny = ExpectFalse<IsAny<Parameters<AttendanceStore['recordsByStatus']>[0]>>
 
 type _authUserNotAny = ExpectFalse<IsAny<AuthStore['user']>>
 type _authUserProfileNotAny = ExpectFalse<IsAny<AuthStore['userProfile']>>

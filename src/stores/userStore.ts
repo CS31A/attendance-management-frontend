@@ -3,6 +3,7 @@ import type { UserRole } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
+import { mapUserProfile } from '@/api/admin'
 import { useLoadingState } from '@/composables/useLoadingState'
 import { ROLES } from '@/utils/constants'
 import { entityIdsMatch } from '@/utils/entityId'
@@ -60,50 +61,6 @@ interface UserActionResult<T = unknown> {
   error?: string
 }
 
-// Helper function to map user profile data from API response to flat structure
-function mapUserProfile(user: ApiUser): ApiUser {
-  // Normalize legacy 'Teacher' role to 'Instructor'
-  const normalizedRole = user.role === 'Teacher' ? 'Instructor' : user.role
-
-  // Extract base fields
-  const mappedUser: ApiUser = {
-    userId: user.userId,
-    username: user.username,
-    email: user.email,
-    role: normalizedRole,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    isDeleted: user.isDeleted,
-  }
-
-  // Map profile data based on role
-  if (normalizedRole === 'Admin' && user.adminProfile) {
-    mappedUser.firstName = user.adminProfile.firstname
-    mappedUser.lastName = user.adminProfile.lastname
-    mappedUser.profileId = user.adminProfile.id
-    mappedUser.createdAt = user.adminProfile.createdAt
-    mappedUser.updatedAt = user.adminProfile.updatedAt
-  }
-  else if (normalizedRole === 'Instructor' && user.instructorProfile) {
-    mappedUser.firstName = user.instructorProfile.firstname
-    mappedUser.lastName = user.instructorProfile.lastname
-    mappedUser.department = user.instructorProfile.department ?? null
-    mappedUser.profileId = user.instructorProfile.id
-    mappedUser.createdAt = user.instructorProfile.createdAt
-    mappedUser.updatedAt = user.instructorProfile.updatedAt
-  }
-  else if (normalizedRole === 'Student' && user.studentProfile) {
-    mappedUser.firstName = user.studentProfile.firstname
-    mappedUser.lastName = user.studentProfile.lastname
-    mappedUser.sectionId = user.studentProfile.sectionId
-    mappedUser.isRegular = user.studentProfile.isRegular
-    mappedUser.profileId = user.studentProfile.id
-    mappedUser.createdAt = user.studentProfile.createdAt
-    mappedUser.updatedAt = user.studentProfile.updatedAt
-  }
-
-  return mappedUser
-}
 
 function asLowerString(value: unknown): string {
   return typeof value === 'string' ? value.toLowerCase() : ''
@@ -123,10 +80,6 @@ export const useUserStore = defineStore('user', () => {
   const { loading, withLoading } = useLoadingState()
   const error = ref('')
   const fetchError = ref('')
-  // Pagination state
-  const currentPage = ref(1)
-  const itemsPerPage = ref(10)
-  const totalItems = ref(0)
 
   // Getters
   const getUsers = computed(() => users.value)
@@ -160,26 +113,6 @@ export const useUserStore = defineStore('user', () => {
     return filtered
   })
 
-  // Pagination getters
-  const paginatedUsers = computed(() => (searchQuery: string, selectedRole: string) => {
-    const filtered = filteredUsers.value(searchQuery, selectedRole)
-    const start = (currentPage.value - 1) * itemsPerPage.value
-    const end = start + itemsPerPage.value
-    return filtered.slice(start, end)
-  })
-
-  const totalPages = computed(() => (searchQuery: string, selectedRole: string) => {
-    const filtered = filteredUsers.value(searchQuery, selectedRole)
-    return Math.ceil(filtered.length / itemsPerPage.value)
-  })
-
-  const hasNextPage = computed(() => (searchQuery: string, selectedRole: string) => {
-    const filtered = filteredUsers.value(searchQuery, selectedRole)
-    const computedTotalPages = Math.ceil(filtered.length / itemsPerPage.value)
-    return currentPage.value < computedTotalPages
-  })
-
-  const hasPreviousPage = computed(() => currentPage.value > 1)
 
   // ==================== ACTIONS ====================
 
@@ -377,35 +310,6 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
-  // Pagination actions
-  function setCurrentPage(page: number): void {
-    currentPage.value = page
-  }
-
-  function setItemsPerPage(newItemsPerPage: number): void {
-    itemsPerPage.value = newItemsPerPage
-    currentPage.value = 1 // Reset to first page when changing items per page
-  }
-
-  function nextPage(searchQuery: string, selectedRole: string): void {
-    const computedTotalPages = totalPages.value(searchQuery, selectedRole)
-    if (currentPage.value < computedTotalPages) {
-      currentPage.value++
-    }
-  }
-
-  function previousPage(): void {
-    if (currentPage.value > 1) {
-      currentPage.value--
-    }
-  }
-
-  function goToPage(page: number, searchQuery: string, selectedRole: string): void {
-    const computedTotalPages = totalPages.value(searchQuery, selectedRole)
-    if (page >= 1 && page <= computedTotalPages) {
-      currentPage.value = page
-    }
-  }
 
   return {
     // State
@@ -413,19 +317,12 @@ export const useUserStore = defineStore('user', () => {
     loading,
     error,
     fetchError,
-    currentPage,
-    itemsPerPage,
-    totalItems,
 
     // Getters
     getUsers,
     instructors,
     students,
     filteredUsers,
-    paginatedUsers,
-    totalPages,
-    hasNextPage,
-    hasPreviousPage,
 
     // Actions
     fetchUsers,
@@ -434,10 +331,5 @@ export const useUserStore = defineStore('user', () => {
     softDeleteUser,
     hardDeleteUser,
     restoreUser,
-    setCurrentPage,
-    setItemsPerPage,
-    nextPage,
-    previousPage,
-    goToPage,
   }
 })

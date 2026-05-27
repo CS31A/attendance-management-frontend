@@ -1,7 +1,85 @@
 import type { EntityId, PaginationParams } from '@/types'
+import type { UserRole } from '@/utils/constants'
 import axios from 'axios'
 import api from '@/api'
 
+interface ApiUserProfile {
+  id?: EntityId
+  firstname?: string
+  lastname?: string
+  department?: string | null
+  sectionId?: EntityId | null
+  isRegular?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+interface ApiUser {
+  userId?: EntityId
+  id?: EntityId
+  username?: string
+  email?: string
+  role?: UserRole | 'Teacher'
+  createdAt?: string
+  updatedAt?: string
+  isDeleted?: boolean
+  firstName?: string
+  lastName?: string
+  profileId?: EntityId
+  department?: string | null
+  sectionId?: EntityId | null
+  isRegular?: boolean
+  adminProfile?: ApiUserProfile | null
+  instructorProfile?: ApiUserProfile | null
+  studentProfile?: ApiUserProfile | null
+  deletedAt?: string | null
+  [key: string]: unknown
+}
+
+// Helper function to map user profile data from API response to flat structure
+export function mapUserProfile(user: ApiUser): ApiUser {
+  // Normalize legacy 'Teacher' role to 'Instructor'
+  const normalizedRole = user.role === 'Teacher' ? 'Instructor' : user.role
+
+  // Extract base fields
+  const mappedUser: ApiUser = {
+    userId: user.userId,
+    username: user.username,
+    email: user.email,
+    role: normalizedRole,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    isDeleted: user.isDeleted,
+  }
+
+  // Map profile data based on role
+  if (normalizedRole === 'Admin' && user.adminProfile) {
+    mappedUser.firstName = user.adminProfile.firstname
+    mappedUser.lastName = user.adminProfile.lastname
+    mappedUser.profileId = user.adminProfile.id
+    mappedUser.createdAt = user.adminProfile.createdAt
+    mappedUser.updatedAt = user.adminProfile.updatedAt
+  }
+  else if (normalizedRole === 'Instructor' && user.instructorProfile) {
+    mappedUser.firstName = user.instructorProfile.firstname
+    mappedUser.lastName = user.instructorProfile.lastname
+    mappedUser.department = user.instructorProfile.department ?? null
+    mappedUser.profileId = user.instructorProfile.id
+    mappedUser.createdAt = user.instructorProfile.createdAt
+    mappedUser.updatedAt = user.instructorProfile.updatedAt
+  }
+  else if (normalizedRole === 'Student' && user.studentProfile) {
+    mappedUser.firstName = user.studentProfile.firstname
+    mappedUser.lastName = user.studentProfile.lastname
+    mappedUser.sectionId = user.studentProfile.sectionId
+    mappedUser.isRegular = user.studentProfile.isRegular
+    mappedUser.profileId = user.studentProfile.id
+    mappedUser.createdAt = user.studentProfile.createdAt
+    mappedUser.updatedAt = user.studentProfile.updatedAt
+  }
+
+  return mappedUser
+}
 /**
  * Admin API service for dashboard data
  */
