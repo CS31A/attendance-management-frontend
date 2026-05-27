@@ -62,8 +62,8 @@ describe('subjectStore', () => {
         createSubject({ id: '2' as EntityId, name: 'Beta' }),
       ]
       const sorted = store.sortedSubjects
-      expect(sorted[0].name).toBeUndefined()
-      expect(sorted[1].name).toBe('Beta')
+      expect(sorted[0].name).toBe('Beta')
+      expect(sorted[1].name).toBeUndefined()
     })
   })
 

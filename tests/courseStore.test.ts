@@ -80,8 +80,8 @@ describe('courseStore', () => {
         createCourse({ id: '2' as EntityId, name: 'Beta' }),
       ]
       const sorted = store.sortedCourses
-      expect(sorted[0].name).toBeUndefined()
-      expect(sorted[1].name).toBe('Beta')
+      expect(sorted[0].name).toBe('Beta')
+      expect(sorted[1].name).toBeUndefined()
     })
 
     it('sortedCourses handles empty names safely', () => {

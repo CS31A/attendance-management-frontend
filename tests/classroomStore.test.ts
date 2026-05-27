@@ -80,8 +80,8 @@ describe('classroomStore', () => {
         createClassroom({ id: '2' as EntityId, name: 'Beta' }),
       ]
       const sorted = store.sortedClassrooms
-      expect(sorted[0].name).toBeUndefined()
-      expect(sorted[1].name).toBe('Beta')
+      expect(sorted[0].name).toBe('Beta')
+      expect(sorted[1].name).toBeUndefined()
     })
 
     it('sortedClassrooms handles empty names safely', () => {

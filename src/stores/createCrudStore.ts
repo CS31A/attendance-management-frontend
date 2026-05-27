@@ -21,9 +21,10 @@ export function createCrudStore<
   storeId: string,
   entityLabel: Singular,
   api: CrudApi<TDto, TPayload>,
+  options?: { plural?: string },
 ) {
   const singular = entityLabel
-  const plural = `${entityLabel}s` as `${Singular}s`
+  const plural = (options?.plural ?? `${entityLabel}s`) as `${Singular}s`
   const singularCap = (entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1)) as Capitalize<Singular>
   const pluralCap = (plural.charAt(0).toUpperCase() + plural.slice(1)) as Capitalize<`${Singular}s`>
 
@@ -38,7 +39,13 @@ export function createCrudStore<
     // Getters
     const hasEntities = computed(() => items.value.length > 0)
     const sortedEntities = computed(() =>
-      [...items.value].sort((a, b) => ((a as Record<string, unknown>).name as string || '').localeCompare((b as Record<string, unknown>).name as string || '')),
+      [...items.value].sort((a, b) => {
+        const nameA = (a as Record<string, unknown>).name as string | null | undefined
+        const nameB = (b as Record<string, unknown>).name as string | null | undefined
+        const safeA = nameA ?? '\uFFFF'
+        const safeB = nameB ?? '\uFFFF'
+        return safeA.localeCompare(safeB)
+      }),
     )
 
     // Actions
