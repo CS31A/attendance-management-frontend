@@ -3,10 +3,10 @@ import type { UserRole } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '@/api'
+import { useLoadingState } from '@/composables/useLoadingState'
 import { ROLES } from '@/utils/constants'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
-import { useLoadingState } from '@/composables/useLoadingState'
 
 interface ApiUserProfile {
   id?: EntityId

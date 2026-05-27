@@ -59,7 +59,6 @@ export default defineConfig({
             './src/components/sessions/EndSessionModal.vue',
             './src/components/sessions/StartSessionModal.vue',
             './src/components/sessions/UpdateRoomModal.vue',
-            './src/components/sessions/SessionCard.vue',
             './src/components/sessions/SessionTable.vue',
             './src/components/sessions/SessionStatusBadge.vue',
           ],

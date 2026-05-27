@@ -127,7 +127,8 @@ describe('courses delete guard regression', () => {
     const store = {
       deleteItem: vi.fn().mockImplementation(async (id: EntityId) => {
         const idx = items.findIndex(current => current.id === id)
-        if (idx !== -1) items.splice(idx, 1)
+        if (idx !== -1)
+          items.splice(idx, 1)
       }),
     }
 
@@ -220,7 +221,8 @@ describe('courses delete guard regression', () => {
       const store = {
         deleteItem: vi.fn().mockImplementation(async (id: EntityId) => {
           const idx = items.findIndex((current: CourseDto) => current.id === id)
-          if (idx !== -1) items.splice(idx, 1)
+          if (idx !== -1)
+            items.splice(idx, 1)
         }),
       }
 

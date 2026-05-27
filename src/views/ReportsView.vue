@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { TooltipItem } from 'chart.js'
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { AlertCircle, BarChart3, CheckCircle, Clock, Download, FileSpreadsheet, FileX, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
+import { AlertCircle, BarChart3, CheckCircle, Clock, Download, FileSpreadsheet, GraduationCap, MoreVertical, Printer, TrendingUp, Users, XCircle } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { exportToCsv, fetchReportsSummary } from '@/api/reports'
 import { useSectionStore } from '@/stores/sectionStore'
-import { LOCALE } from '@/utils/constants'
 import { formatLongDate } from '@/utils/date'
 
 const Bar = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Bar })))

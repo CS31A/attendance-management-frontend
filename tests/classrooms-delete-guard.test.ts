@@ -173,7 +173,8 @@ describe('classrooms delete guard regression', () => {
         items: () => storeItems,
         deleteItem: vi.fn().mockImplementation(async (id: EntityId) => {
           const idx = storeItems.findIndex(current => current.id === id)
-          if (idx !== -1) storeItems.splice(idx, 1)
+          if (idx !== -1)
+            storeItems.splice(idx, 1)
         }),
       },
       dependencyChecks: [],

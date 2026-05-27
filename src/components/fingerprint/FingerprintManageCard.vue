@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import type { EntityId } from '@/types'
 import { Fingerprint, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import { formatLongDate } from '@/utils/date'
 import ConfirmationModal from '../common/ConfirmationModal.vue'
 

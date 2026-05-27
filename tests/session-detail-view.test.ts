@@ -17,6 +17,14 @@ vi.mock('vue-router', () => ({
 
 vi.mock('@/utils/date', () => ({
   formatShortWeekdayDateWithYear: vi.fn(() => 'Fri, Mar 15, 2024'),
+  parseUtcDate: vi.fn((value: string | Date | null | undefined) => {
+    if (!value)
+      return null
+    if (value instanceof Date)
+      return value
+    return new Date(value)
+  }),
+  formatDateTime: vi.fn((value: string | undefined) => value ? `formatted ${value}` : '-'),
 }))
 
 vi.mock('@/utils/qrcode', async () => {

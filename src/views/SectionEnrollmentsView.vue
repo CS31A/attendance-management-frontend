@@ -6,14 +6,14 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
-import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useEnrollmentStore } from '@/stores/enrollmentStore'
 import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
 import { LOCALE } from '@/utils/constants'
-import { parseUtcDate } from '@/utils/qrcode'
+import { parseUtcDate } from '@/utils/date'
 
 const AddEnrollmentModal = defineAsyncComponent(() => import('@/components/sections/AddEnrollmentModal.vue'))
 const CustomDropdown = defineAsyncComponent(() => import('@/components/common/CustomDropdown.vue'))

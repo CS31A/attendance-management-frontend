@@ -124,7 +124,8 @@ describe('schedules delete guard regression', () => {
     const items = [schedule]
     const deleteItem = vi.fn().mockImplementation(async (id: string) => {
       const idx = items.findIndex(current => current.id === id)
-      if (idx !== -1) items.splice(idx, 1)
+      if (idx !== -1)
+        items.splice(idx, 1)
     })
 
     const flow = createDeleteFlow<ScheduleDto>({

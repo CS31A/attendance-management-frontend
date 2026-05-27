@@ -22,10 +22,10 @@ import {
   updateAttendance as apiUpdateAttendance,
   calculateAttendanceStats,
 } from '@/api/attendance'
+import { useLoadingState } from '@/composables/useLoadingState'
 import { normalizeNotes } from '@/utils/attendanceRecord'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
-import { useLoadingState } from '@/composables/useLoadingState'
 
 /**
  * Attendance Store

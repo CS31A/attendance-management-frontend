@@ -138,7 +138,8 @@ describe('sections delete guard regression', () => {
     const items: SectionDto[] = [section]
     const mockDeleteItem = vi.fn().mockImplementation(async (id: string) => {
       const idx = items.findIndex(current => current.id === id)
-      if (idx !== -1) items.splice(idx, 1)
+      if (idx !== -1)
+        items.splice(idx, 1)
     })
 
     const flow = createDeleteFlow<SectionDto>({
@@ -268,7 +269,8 @@ describe('sections delete guard regression', () => {
       const items: SectionDto[] = [section]
       const mockDeleteItem = vi.fn().mockImplementation(async (id: string) => {
         const idx = items.findIndex((current: SectionDto) => current.id === id)
-        if (idx !== -1) items.splice(idx, 1)
+        if (idx !== -1)
+          items.splice(idx, 1)
       })
 
       const flow = createDeleteFlow<SectionDto>({

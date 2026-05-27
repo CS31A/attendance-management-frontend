@@ -1,3 +1,4 @@
+import type { EntityId } from '@/types'
 /**
  * Type-level tests for instructor interface merging (TDD green phase).
  *
@@ -7,7 +8,6 @@
  * These tests verify the unified interface has the expected shape.
  */
 import type { InstructorSectionStudent } from '@/types/instructor'
-import type { EntityId } from '@/types'
 
 // ── helpers ──────────────────────────────────────────────────────
 type IsAny<T> = 0 extends (1 & T) ? true : false

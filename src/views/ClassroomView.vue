@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import type { ClassroomDto, ClassroomPayload } from '@/api/classrooms'
-import classroomsApi from '@/api/classrooms'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, DoorOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import classroomsApi from '@/api/classrooms'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
-import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useCrudModal } from '@/composables/useCrudModal'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useLocalPagination } from '@/composables/useLocalPagination'
-import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useClassroomStore } from '@/stores/classroomStore'
 import { matchesSearchQuery } from '@/utils/search'
@@ -37,7 +36,6 @@ const classroomFields: FormFieldConfig[] = [
 ]
 
 const classroomStore = useClassroomStore()
-const { showModal, selectedEntity: selectedClassroom, modalRef } = useModalState<ClassroomDto>()
 
 const classrooms = computed(() => classroomStore.sortedClassrooms)
 const searchQuery = ref('')
@@ -64,15 +62,7 @@ const {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { handleSave: handleSaveClassroom, openAddModal, openEditModal, closeModal } = useCrudModal<ClassroomPayload, ClassroomDto>({
-  entity: selectedClassroom,
-  showModal,
-  modalRef,
-  showToast,
-  createFn: data => classroomStore.createClassroom(data),
-  updateFn: (id, data) => classroomStore.updateClassroom(id, data),
-  entityLabel: 'Classroom',
-})
+const { showModal, selectedEntity: selectedClassroom, modalRef, handleSave: handleSaveClassroom, openAddModal, openEditModal, closeModal } = useCrudModal<ClassroomPayload, ClassroomDto>({ showToast, createFn: data => classroomStore.createClassroom(data), updateFn: (id, data) => classroomStore.updateClassroom(id, data), entityLabel: 'Classroom' })
 
 const {
   showDeleteModal,
@@ -98,7 +88,6 @@ const {
     }
   },
   showToast,
-}
 })
 
 async function refreshClassrooms() {

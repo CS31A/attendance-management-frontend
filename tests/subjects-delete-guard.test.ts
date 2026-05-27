@@ -169,7 +169,8 @@ describe('subjects delete guard regression', () => {
     const items = [subject]
     const deleteItem = vi.fn().mockImplementation(async (id: string) => {
       const idx = items.findIndex(current => current.id === id)
-      if (idx !== -1) items.splice(idx, 1)
+      if (idx !== -1)
+        items.splice(idx, 1)
     })
 
     const flow = createDeleteFlow<SubjectDto>({

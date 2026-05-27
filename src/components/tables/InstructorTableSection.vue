@@ -2,7 +2,7 @@
 import { ArchiveX, Calendar, ChevronLeft, ChevronRight, Edit, Eye, RotateCcw, Trash2, Users } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { LOCALE } from '@/utils/constants'
-import { parseUtcDate } from '@/utils/qrcode'
+import { parseUtcDate } from '@/utils/date'
 
 const props = defineProps({
   instructors: {

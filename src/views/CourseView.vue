@@ -3,17 +3,16 @@ import type { CourseDto, CoursePayload } from '@/api/courses'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import coursesApi from '@/api/courses'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
-import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
-import coursesApi from '@/api/courses'
 import { useCrudModal } from '@/composables/useCrudModal'
+import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 import { useLocalPagination } from '@/composables/useLocalPagination'
-import { useModalState } from '@/composables/useModalState'
 import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
 import { matchesSearchQuery } from '@/utils/search'
@@ -36,7 +35,6 @@ const courseFields: FormFieldConfig[] = [
 ]
 
 const courseStore = useCourseStore()
-const { showModal, selectedEntity: selectedCourse, modalRef } = useModalState<CourseDto>()
 
 const courses = computed(() => courseStore.sortedCourses)
 const searchQuery = ref('')
@@ -63,15 +61,7 @@ const {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { handleSave: handleSaveCourse, openAddModal, openEditModal, closeModal } = useCrudModal<CoursePayload, CourseDto>({
-  entity: selectedCourse,
-  showModal,
-  modalRef,
-  showToast,
-  createFn: data => courseStore.createCourse(data),
-  updateFn: (id, data) => courseStore.updateCourse(id, data),
-  entityLabel: 'Course',
-})
+const { showModal, selectedEntity: selectedCourse, modalRef, handleSave: handleSaveCourse, openAddModal, openEditModal, closeModal } = useCrudModal<CoursePayload, CourseDto>({ showToast, createFn: data => courseStore.createCourse(data), updateFn: (id, data) => courseStore.updateCourse(id, data), entityLabel: 'Course' })
 
 const {
   showDeleteModal,

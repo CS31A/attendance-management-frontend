@@ -44,7 +44,7 @@ export interface SubjectScheduleDto {
   timeIn: string
   timeOut: string
   classroomName: string
-  students: { studentId: EntityId; firstname: string; lastname: string; isRegular: boolean; enrollmentType: string }[]
+  students: { studentId: EntityId, firstname: string, lastname: string, isRegular: boolean, enrollmentType: string }[]
 }
 
 export interface InstructorSectionOverviewItem {
@@ -80,7 +80,6 @@ export interface InstructorHandledClassDetail {
   studentCount: number
   students: InstructorSectionStudent[]
 }
-
 
 export interface InstructorSectionDetail {
   sectionId: EntityId

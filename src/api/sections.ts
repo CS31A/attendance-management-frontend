@@ -8,7 +8,6 @@ export interface SectionDto {
   [key: string]: unknown
 }
 
-
 export interface SectionPayload {
   name: string
   courseId: EntityId

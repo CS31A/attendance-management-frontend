@@ -7,9 +7,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { LOCALE } from '@/utils/constants'
-import { formatShortWeekdayDateWithYear } from '@/utils/date'
+import { formatDateTime, formatShortWeekdayDateWithYear, parseUtcDate } from '@/utils/date'
 import { getErrorMessage } from '@/utils/httpError'
-import { formatDateTime, parseUtcDate } from '@/utils/qrcode'
 
 const QRDisplayModal = defineAsyncComponent(() => import('@/components/qrcode/QRDisplayModal.vue'))
 const QRScanHistoryModal = defineAsyncComponent(() => import('@/components/qrcode/QRScanHistoryModal.vue'))

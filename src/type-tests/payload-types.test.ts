@@ -9,9 +9,9 @@
  */
 import type { ClassroomPayload } from '@/api/classrooms'
 import type { CoursePayload } from '@/api/courses'
-import type { SubjectPayload } from '@/api/subjects'
-import type { SectionPayload } from '@/api/sections'
 import type { SchedulePayload } from '@/api/schedules'
+import type { SectionPayload } from '@/api/sections'
+import type { SubjectPayload } from '@/api/subjects'
 import type { EntityId } from '@/types'
 
 // ── helpers ──────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ type _subjectHasName = ExpectTrue<Extends<SubjectPayload['name'], string>>
 type _subjectHasCode = ExpectTrue<Extends<SubjectPayload['code'], string>>
 
 type _subjectPayloadAcceptsNameCode = ExpectTrue<
-  Extends<{ name: string; code: string }, SubjectPayload>
+  Extends<{ name: string, code: string }, SubjectPayload>
 >
 
 // ═══════════════════════════════════════════════════════════════
@@ -65,7 +65,7 @@ type _sectionHasName = ExpectTrue<Extends<SectionPayload['name'], string>>
 type _sectionHasCourseId = ExpectTrue<Extends<SectionPayload['courseId'], EntityId>>
 
 type _sectionPayloadAcceptsNameCourseId = ExpectTrue<
-  Extends<{ name: string; courseId: EntityId }, SectionPayload>
+  Extends<{ name: string, courseId: EntityId }, SectionPayload>
 >
 
 // ═══════════════════════════════════════════════════════════════

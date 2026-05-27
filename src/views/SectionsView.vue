@@ -12,9 +12,8 @@ import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useLocalPagination } from '@/composables/useLocalPagination'
-import { useModalState } from '@/composables/useModalState'
 import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
+import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useToast } from '@/composables/useToast'
 import { useCourseStore } from '@/stores/courseStore'
 import { useSectionStore } from '@/stores/sectionStore'
@@ -26,7 +25,6 @@ const CustomDropdown = defineAsyncComponent(() => import('@/components/common/Cu
 
 const sectionsStore = useSectionStore()
 const courseStore = useCourseStore()
-const { showModal, selectedEntity: selectedSection, modalRef } = useModalState<SectionDto>()
 const router = useRouter()
 
 const sections = computed(() => sectionsStore.getSections)
@@ -74,15 +72,7 @@ function openEnrollmentModal(section: SectionDto) {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { handleSave: handleSaveSection, openAddModal, openEditModal, closeModal } = useCrudModal<SectionPayload, SectionDto>({
-  entity: selectedSection,
-  showModal,
-  modalRef,
-  showToast,
-  createFn: data => sectionsStore.addSection(data),
-  updateFn: (id, data) => sectionsStore.updateSection(id, data),
-  entityLabel: 'Section',
-})
+const { showModal, selectedEntity: selectedSection, modalRef, handleSave: handleSaveSection, openAddModal, openEditModal, closeModal } = useCrudModal<SectionPayload, SectionDto>({ showToast, createFn: data => sectionsStore.addSection(data), updateFn: (id, data) => sectionsStore.updateSection(id, data), entityLabel: 'Section' })
 
 const {
   showDeleteModal,

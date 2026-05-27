@@ -19,10 +19,10 @@ import {
 } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { ATTENDANCE_STATUSES, getStatusLabel } from '@/api/attendance'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { hasUnsavedAttendanceChanges, mergeAttendanceWithLocalChanges } from '@/utils/attendanceRecord'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 import { entityIdsMatch } from '@/utils/entityId'
-import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 
 interface AttendanceStats {
   total: number

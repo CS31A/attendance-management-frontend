@@ -8,6 +8,8 @@ interface DateUtilsModule {
   formatLongDate: (date: DateInput, fallback?: string) => string
   formatShortWeekdayDate: (date: DateInput, options?: { includeYear?: boolean, fallback?: string }) => string
   formatLongWeekdayDate: (date: DateInput, fallback?: string) => string
+  parseUtcDate: (dateString: string | Date | null | undefined) => Date | null
+  formatDateTime: (date: string | Date | null | undefined) => string
 }
 
 describe('date format consolidation', () => {
@@ -37,6 +39,42 @@ describe('date format consolidation', () => {
     expect(dateUtils.formatLongWeekdayDate(sample)).toBe('Friday, March 15, 2024')
   })
 
+  it('parseUtcDate is exported from date.ts and parses UTC strings correctly', async () => {
+    const dateUtils = await import('@/utils/date') as DateUtilsModule
+
+    expect(dateUtils.parseUtcDate).toBeDefined()
+    expect(dateUtils.parseUtcDate(null)).toBeNull()
+    expect(dateUtils.parseUtcDate(undefined)).toBeNull()
+
+    // Plain ISO string (no timezone) treated as UTC
+    const result = dateUtils.parseUtcDate('2024-03-15T12:00:00')
+    expect(result).toBeInstanceOf(Date)
+    expect(result!.toISOString()).toBe('2024-03-15T12:00:00.000Z')
+
+    // String with Z suffix already
+    const withZ = dateUtils.parseUtcDate('2024-03-15T12:00:00Z')
+    expect(withZ).toBeInstanceOf(Date)
+    expect(withZ!.toISOString()).toBe('2024-03-15T12:00:00.000Z')
+
+    // Date object passthrough
+    const dateObj = new Date('2024-03-15T12:00:00Z')
+    expect(dateUtils.parseUtcDate(dateObj)).toBe(dateObj)
+  })
+
+  it('formatDateTime is exported from date.ts and formats dates with time', async () => {
+    const dateUtils = await import('@/utils/date') as DateUtilsModule
+
+    expect(dateUtils.formatDateTime).toBeDefined()
+    expect(dateUtils.formatDateTime(null)).toBe('-')
+    expect(dateUtils.formatDateTime(undefined)).toBe('-')
+
+    const result = dateUtils.formatDateTime('2024-03-15T12:00:00Z')
+    expect(result).not.toBe('-')
+    expect(result).toContain('Mar')
+    expect(result).toContain('15')
+    expect(result).toContain('2024')
+  })
+
   it('targeted files no longer define local formatDate helpers', () => {
     const files = [
       'src/components/tables/UserTable.vue',
@@ -49,7 +87,6 @@ describe('date format consolidation', () => {
       'src/components/attendance/AttendanceList.vue',
       'src/components/attendance/AttendanceRecord.vue',
       'src/components/sessions/SessionTable.vue',
-      'src/components/sessions/SessionCard.vue',
       'src/components/sessions/StartSessionModal.vue',
       'src/components/sessions/EndSessionModal.vue',
       'src/components/sessions/UpdateRoomModal.vue',
@@ -59,5 +96,29 @@ describe('date format consolidation', () => {
       const source = readFileSync(file, 'utf8')
       expect(source.includes('function formatDate(')).toBe(false)
     })
+  })
+
+  it('consumers import parseUtcDate and formatDateTime from date.ts, not qrcode.ts', () => {
+    const consumers = [
+      'src/views/SessionDetailView.vue',
+      'src/views/SectionEnrollmentsView.vue',
+      'src/components/tables/InstructorTableSection.vue',
+      'src/stores/qrCodeStore.ts',
+      'src/components/qrcode/QRCodeListModal.vue',
+    ]
+
+    consumers.forEach((file) => {
+      const source = readFileSync(file, 'utf8')
+      expect(source.includes(`from '@/utils/qrcode'`)).toBe(false)
+    })
+  })
+
+  it('qrcode.ts still exports QR-specific utilities', () => {
+    const source = readFileSync('src/utils/qrcode.ts', 'utf8')
+    expect(source.includes('export function formatDate')).toBe(true)
+    expect(source.includes('export function formatCountdown')).toBe(true)
+    expect(source.includes('export function calculateRemainingTime')).toBe(true)
+    expect(source.includes('export function isQrExpired')).toBe(true)
+    expect(source.includes('export function formatScanTime')).toBe(true)
   })
 })

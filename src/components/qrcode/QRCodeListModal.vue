@@ -2,7 +2,7 @@
 import { Check, Clock, Eye, QrCode, RefreshCw, X, XCircle } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useQrCodeStore } from '@/stores/qrCodeStore'
-import { formatDateTime, parseUtcDate } from '@/utils/qrcode'
+import { formatDateTime, parseUtcDate } from '@/utils/date'
 
 const props = defineProps({
   show: {

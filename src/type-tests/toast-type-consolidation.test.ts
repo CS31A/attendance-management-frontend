@@ -33,8 +33,8 @@ type ShowToastParams = Parameters<UseToastReturn['showToast']>
 type _secondParamIsToastType = ExpectTrue<
   [ShowToastParams[1]] extends [ToastType | undefined]
     ? [ToastType | undefined] extends [ShowToastParams[1]]
-      ? true
-      : false
+        ? true
+        : false
     : false
 >
 

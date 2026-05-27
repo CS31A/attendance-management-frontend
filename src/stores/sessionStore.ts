@@ -23,9 +23,9 @@ import {
   updateSessionRoom as apiUpdateSessionRoom,
 
 } from '@/api/sessions'
+import { useLoadingState } from '@/composables/useLoadingState'
 import { entityIdsMatch } from '@/utils/entityId'
 import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
-import { useLoadingState } from '@/composables/useLoadingState'
 
 /**
  * Session Store

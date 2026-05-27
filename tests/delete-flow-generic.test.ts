@@ -1,11 +1,11 @@
+import type { AxiosResponse } from 'axios'
+import type { EntityId } from '@/types'
 /**
  * Tests for using createDeleteFlow directly (no entity-specific wrappers).
  * These tests lock the behavior that the 5 wrapper files currently provide,
  * proving that views can call createDeleteFlow<T>() directly with entity config.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { AxiosResponse } from 'axios'
-import type { EntityId } from '@/types'
 import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
 
 // --- Helpers ---
@@ -45,7 +45,7 @@ function createStore(items: TestEntity[]) {
 // --- Tests ---
 
 describe('createDeleteFlow used directly (no wrapper)', () => {
-  describe('Classroom-like config (2 dependency checks)', () => {
+  describe('classroom-like config (2 dependency checks)', () => {
     const api = {
       hasSchedulesInClassroom: vi.fn().mockResolvedValue(okResponse(false)),
       hasSessionsInClassroom: vi.fn().mockResolvedValue(okResponse(false)),
@@ -155,7 +155,7 @@ describe('createDeleteFlow used directly (no wrapper)', () => {
     })
   })
 
-  describe('Course-like config (1 dependency check)', () => {
+  describe('course-like config (1 dependency check)', () => {
     const api = {
       hasSectionsInCourse: vi.fn().mockResolvedValue(okResponse(false)),
     }
@@ -189,7 +189,7 @@ describe('createDeleteFlow used directly (no wrapper)', () => {
     })
   })
 
-  describe('Section-like config (3 dependency checks)', () => {
+  describe('section-like config (3 dependency checks)', () => {
     const api = {
       hasSchedulesInSection: vi.fn().mockResolvedValue(okResponse(false)),
       hasStudentsInSection: vi.fn().mockResolvedValue(okResponse(false)),
@@ -248,7 +248,7 @@ describe('createDeleteFlow used directly (no wrapper)', () => {
     })
   })
 
-  describe('Subject-like config (2 dependency checks)', () => {
+  describe('subject-like config (2 dependency checks)', () => {
     const api = {
       hasSchedulesInSubject: vi.fn().mockResolvedValue(okResponse(false)),
       hasEnrollmentsInSubject: vi.fn().mockResolvedValue(okResponse(false)),
@@ -271,7 +271,7 @@ describe('createDeleteFlow used directly (no wrapper)', () => {
     })
   })
 
-  describe('Schedule-like config (1 dependency check)', () => {
+  describe('schedule-like config (1 dependency check)', () => {
     const api = {
       hasSessionsInSchedule: vi.fn().mockResolvedValue(okResponse(false)),
     }
@@ -332,7 +332,7 @@ describe('createDeleteFlow used directly (no wrapper)', () => {
     })
   })
 
-  describe('DeleteFlowState interface shape', () => {
+  describe('deleteFlowState interface shape', () => {
     it('returns all required properties', () => {
       const items = [createEntity('1', 'Test')]
       const flow = createDeleteFlow<TestEntity>({

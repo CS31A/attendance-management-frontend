@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { useToast } from '@/composables/useToast'
 
 describe('toast-type-consolidation', () => {
-  describe('ToastType export', () => {
+  describe('toastType export', () => {
     it('useToast composable is exported and callable', () => {
       expect(typeof useToast).toBe('function')
     })
@@ -38,7 +38,7 @@ describe('toast-type-consolidation', () => {
     })
   })
 
-  describe('ToastType values', () => {
+  describe('toastType values', () => {
     it('accepts all valid ToastType values', () => {
       const validTypes: ToastType[] = ['success', 'error', 'warning', 'info']
       const { toast, showToast } = useToast()

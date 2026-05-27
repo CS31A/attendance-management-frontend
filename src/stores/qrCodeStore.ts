@@ -3,9 +3,9 @@ import type { EntityId } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import qrCodeApi from '@/api/qrCode'
+import { parseUtcDate } from '@/utils/date'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
-import { parseUtcDate } from '@/utils/qrcode'
 
 interface ActiveQrCode extends QrCodeResponseDto {
   qrCodeData?: string | ArrayBuffer | null

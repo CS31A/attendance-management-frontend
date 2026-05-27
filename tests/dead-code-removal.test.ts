@@ -73,7 +73,7 @@ describe('dead code removal', () => {
       expect(typeof mod.useToast).toBe('function')
     })
 
-    it('ROLES imports from @/utils/constants', async () => {
+    it('rOLES imports from @/utils/constants', async () => {
       const { ROLES } = await import('@/utils/constants')
       expect(ROLES).toBeDefined()
       expect(ROLES.ADMIN).toBe('Admin')
@@ -81,7 +81,7 @@ describe('dead code removal', () => {
       expect(ROLES.STUDENT).toBe('Student')
     })
 
-    it('SESSION_STATUSES imports from @/utils/constants', async () => {
+    it('sESSION_STATUSES imports from @/utils/constants', async () => {
       const { SESSION_STATUSES } = await import('@/utils/constants')
       expect(SESSION_STATUSES).toBeDefined()
       expect(SESSION_STATUSES.NOT_STARTED).toBe('not_started')

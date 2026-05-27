@@ -148,7 +148,7 @@ describe('issue fixes 1-4', () => {
   })
 
   it('qRCode utilities expose a shared date-time formatter', () => {
-    const source = readFileSync('src/utils/qrcode.ts', 'utf8')
+    const source = readFileSync('src/utils/date.ts', 'utf8')
     expect(source.includes('export function formatDateTime(')).toBe(true)
   })
 

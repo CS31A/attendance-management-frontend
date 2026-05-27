@@ -9,9 +9,9 @@ import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import classroomApi from '@/api/classrooms'
+import schedulesApi from '@/api/schedules'
 import sectionsApi from '@/api/sections'
 import subjectApi from '@/api/subjects'
-import schedulesApi from '@/api/schedules'
 import AlertModal from '@/components/common/AlertModal.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
@@ -20,9 +20,8 @@ import FormModal from '@/components/common/FormModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useLocalPagination } from '@/composables/useLocalPagination'
-import { useModalState } from '@/composables/useModalState'
 import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
+import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useToast } from '@/composables/useToast'
 import { useScheduleStore } from '@/stores/scheduleStore'
 import { useUserStore } from '@/stores/userStore'
@@ -158,7 +157,6 @@ const scheduleFields: FormFieldConfig[] = [
 ]
 
 const scheduleStore = useScheduleStore()
-const { showModal, selectedEntity: selectedSchedule, modalRef } = useModalState<ScheduleDto>()
 
 // Modal state for alerts
 const showAlertDialog = ref(false)
@@ -238,16 +236,7 @@ const {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal } = useCrudModal<SchedulePayload, ScheduleDto>({
-  entity: selectedSchedule,
-  showModal,
-  modalRef,
-  showToast,
-  createFn: data => scheduleStore.createSchedule(data),
-  updateFn: (id, data) => scheduleStore.updateSchedule(id, data),
-  entityLabel: 'Schedule',
-  onErrorHandled: () => scheduleStore.clearError(),
-})
+const { showModal, selectedEntity: selectedSchedule, modalRef, handleSave: handleSaveSchedule, openAddModal, openEditModal, closeModal } = useCrudModal<SchedulePayload, ScheduleDto>({ showToast, createFn: data => scheduleStore.createSchedule(data), updateFn: (id, data) => scheduleStore.updateSchedule(id, data), entityLabel: 'Schedule', onErrorHandled: () => scheduleStore.clearError() })
 
 const {
   showDeleteModal,

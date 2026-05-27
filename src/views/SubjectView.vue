@@ -3,6 +3,7 @@ import type { SubjectDto, SubjectPayload } from '@/api/subjects'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import subjectsApi from '@/api/subjects'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -10,11 +11,9 @@ import FormModal from '@/components/common/FormModal.vue'
 import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useCrudModal } from '@/composables/useCrudModal'
-import { useLocalPagination } from '@/composables/useLocalPagination'
-import { useModalState } from '@/composables/useModalState'
 import { createDeleteFlow } from '@/composables/useEntityDeleteFlow'
+import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useToast } from '@/composables/useToast'
-import subjectsApi from '@/api/subjects'
 import { useSubjectStore } from '@/stores/subjectStore'
 import { matchesSearchQuery } from '@/utils/search'
 
@@ -46,7 +45,6 @@ const subjectFields: FormFieldConfig[] = [
 ]
 
 const subjectStore = useSubjectStore()
-const { showModal, selectedEntity: selectedSubject, modalRef } = useModalState<SubjectDto>()
 
 const subjects = computed(() => subjectStore.sortedSubjects)
 const searchQuery = ref('')
@@ -73,15 +71,7 @@ const {
 
 const { toast, showToast, closeToast } = useToast()
 
-const { handleSave: handleSaveSubject, openAddModal, openEditModal, closeModal } = useCrudModal<SubjectPayload, SubjectDto>({
-  entity: selectedSubject,
-  showModal,
-  modalRef,
-  showToast,
-  createFn: data => subjectStore.createSubject(data),
-  updateFn: (id, data) => subjectStore.updateSubject(id, data),
-  entityLabel: 'Subject',
-})
+const { showModal, selectedEntity: selectedSubject, modalRef, handleSave: handleSaveSubject, openAddModal, openEditModal, closeModal } = useCrudModal<SubjectPayload, SubjectDto>({ showToast, createFn: data => subjectStore.createSubject(data), updateFn: (id, data) => subjectStore.updateSubject(id, data), entityLabel: 'Subject' })
 
 const {
   showDeleteModal,

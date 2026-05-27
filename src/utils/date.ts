@@ -1,3 +1,5 @@
+import { LOCALE } from './constants'
+
 type DateInput = string | Date | null | undefined
 interface ShortWeekdayDateOptions {
   includeYear?: boolean
@@ -68,4 +70,44 @@ export function formatShortWeekdayDateWithYear(value: DateInput, fallback = 'N/A
 
 export function formatLongWeekdayDate(value: DateInput, fallback = 'N/A'): string {
   return formatWithFormatter(value, fallback, longWeekdayFormatter)
+}
+
+/**
+ * Parse a date string as UTC if it doesn't have timezone information
+ *
+ * @param {string|Date} dateString - Date string from backend
+ * @returns {Date} Date object
+ */
+export function parseUtcDate(dateString: string | Date | null | undefined): Date | null {
+  if (!dateString)
+    return null
+
+  // If already a Date object, return it
+  if (dateString instanceof Date)
+    return dateString
+
+  // If the date string doesn't end with 'Z' or have timezone offset (+/-)
+  // treat it as UTC by appending 'Z'
+  if (!/Z|[+-]\d{2}:\d{2}$/.test(dateString)) {
+    return new Date(`${dateString}Z`)
+  }
+
+  return new Date(dateString)
+}
+
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date)
+    return '-'
+
+  const parsed = parseUtcDate(date)
+  if (!parsed)
+    return '-'
+
+  return parsed.toLocaleString(LOCALE.DEFAULT, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
