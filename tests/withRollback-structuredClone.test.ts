@@ -101,7 +101,7 @@ describe('withRollback edge cases', () => {
       withRollback(arrayRef, async () => {
         throw new Error('should not reach')
       }),
-    ).rejects.toThrow(/snapshot/)
+    ).rejects.toThrow(/circular|cycle/)
   })
 
   it('rolls back deeply nested mutations', async () => {
@@ -203,5 +203,64 @@ describe('withRollback edge cases', () => {
 
     expect(result).toEqual({ id: '1' })
     expect(arrayRef.value).toHaveLength(0)
+  })
+
+  it('handles Map with reactive values', async () => {
+    const { reactive } = await import('vue')
+    const map = new Map<string, { city: string }>()
+    map.set('item', reactive({ city: 'NYC' }))
+    const arrayRef = {
+      value: [{ id: '1', data: map }],
+    }
+
+    await expect(
+      withRollback(arrayRef, async () => {
+        arrayRef.value[0].data.get('item')!.city = 'LA'
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+
+    expect(arrayRef.value[0].data.get('item')!.city).toBe('NYC')
+  })
+
+  it('handles Set with reactive values without snapshot error', async () => {
+    const { reactive } = await import('vue')
+    const items = new Set<{ id: string }>()
+    items.add(reactive({ id: '1' }))
+    items.add(reactive({ id: '2' }))
+    const arrayRef = { value: [{ id: '1', items }] }
+
+    // Snapshot creation should not throw when Set contains reactive proxies
+    await expect(
+      withRollback(arrayRef, async () => {
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+  })
+
+  it('handles Map with Date values', async () => {
+    const date = new Date('2026-05-27')
+    const map = new Map<string, Date>()
+    map.set('createdAt', date)
+    const arrayRef = {
+      value: [{ id: '1', data: map }],
+    }
+
+    await expect(
+      withRollback(arrayRef, async () => {
+        arrayRef.value[0].data.set('createdAt', new Date('2025-01-01'))
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+
+    expect(arrayRef.value[0].data.get('createdAt')).toBeInstanceOf(Date)
+    expect(arrayRef.value[0].data.get('createdAt')).toEqual(date)
+  })
+
+  it('resolves with undefined when void-returning mutate succeeds', async () => {
+    const arrayRef = { value: [{ id: '1', name: 'Alice' }] }
+    const result = await withRollback(arrayRef, async () => {})
+    expect(result).toBeUndefined()
+    expect(arrayRef.value).toHaveLength(1)
   })
 })
