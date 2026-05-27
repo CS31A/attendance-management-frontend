@@ -92,16 +92,38 @@ describe('withRollback edge cases', () => {
     expect(arrayRef.value[0].address.city).toBe('NYC')
   })
 
-  it('throws descriptive error when snapshot fails (circular ref)', async () => {
-    const circular: any = { id: '1' }
+  it('handles circular references gracefully via memoization', async () => {
+    const circular: any = { id: '1', name: 'Alice' }
     circular.self = circular
     const arrayRef = { value: [circular] }
 
+    // Circular refs are now handled by memoization, not rejected
     await expect(
       withRollback(arrayRef, async () => {
-        throw new Error('should not reach')
+        arrayRef.value[0].name = 'Bob'
+        throw new Error('fail')
       }),
-    ).rejects.toThrow(/circular|cycle/)
+    ).rejects.toThrow('fail')
+
+    // Rollback restores the circular structure
+    expect(arrayRef.value[0].name).toBe('Alice')
+    expect(arrayRef.value[0].self).toBe(arrayRef.value[0])
+  })
+
+  it('handles array self-reference without infinite recursion', async () => {
+    const arr: any[] = [{ id: '1' }]
+    arr.push(arr) // circular: array contains itself
+    const arrayRef = { value: arr }
+
+    // Should not hang or throw — memoization handles the cycle
+    await expect(
+      withRollback(arrayRef, async () => {
+        arrayRef.value[0].id = 'mutated'
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+
+    expect(arrayRef.value[0].id).toBe('1')
   })
 
   it('rolls back deeply nested mutations', async () => {
@@ -223,19 +245,26 @@ describe('withRollback edge cases', () => {
     expect(arrayRef.value[0].data.get('item')!.city).toBe('NYC')
   })
 
-  it('handles Set with reactive values without snapshot error', async () => {
+  it('rolls back Set with reactive values on mutation failure', async () => {
     const { reactive } = await import('vue')
     const items = new Set<{ id: string }>()
     items.add(reactive({ id: '1' }))
     items.add(reactive({ id: '2' }))
     const arrayRef = { value: [{ id: '1', items }] }
 
-    // Snapshot creation should not throw when Set contains reactive proxies
+    // Mutate Set contents, then fail — rollback should restore original
     await expect(
       withRollback(arrayRef, async () => {
+        arrayRef.value[0].items.add(reactive({ id: '3' }))
+        const item1 = [...arrayRef.value[0].items].find(i => i.id === '1')!
+        item1.id = 'mutated'
         throw new Error('fail')
       }),
     ).rejects.toThrow('fail')
+    // Rollback should restore original Set
+    expect(arrayRef.value[0].items.size).toBe(2)
+    const ids = [...arrayRef.value[0].items].map(i => i.id).sort()
+    expect(ids).toEqual(['1', '2'])
   })
 
   it('handles Map with Date values', async () => {
@@ -262,5 +291,37 @@ describe('withRollback edge cases', () => {
     const result = await withRollback(arrayRef, async () => {})
     expect(result).toBeUndefined()
     expect(arrayRef.value).toHaveLength(1)
+  })
+
+  it('handles shared (non-circular) references without throwing', async () => {
+    const shared = { city: 'NYC' }
+    const arrayRef = {
+      value: [{ id: '1', address: shared, billing: shared }],
+    }
+
+    // Should NOT throw — shared ref is not circular
+    const result = await withRollback(arrayRef, async () => {
+      return { id: 'new' }
+    })
+
+    expect(result).toEqual({ id: 'new' })
+    expect(arrayRef.value[0].address.city).toBe('NYC')
+  })
+
+  it('rolls back correctly with shared references', async () => {
+    const shared = { city: 'NYC' }
+    const arrayRef = {
+      value: [{ id: '1', address: shared, billing: shared }],
+    }
+
+    await expect(
+      withRollback(arrayRef, async () => {
+        arrayRef.value[0].address.city = 'LA'
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+
+    expect(arrayRef.value[0].address.city).toBe('NYC')
+    expect(arrayRef.value[0].billing.city).toBe('NYC')
   })
 })

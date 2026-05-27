@@ -4,31 +4,36 @@ import { toRaw } from 'vue'
  * Recursively unwrap Vue reactive proxies so structuredClone can clone the tree.
  * toRaw only strips the outermost proxy; nested reactive objects remain proxied.
  */
-function toRawDeep<T>(value: T, seen = new WeakSet<object>()): T {
+function toRawDeep<T>(value: T, memo = new Map<object, unknown>()): T {
   const raw = toRaw(value)
   if (raw === null || raw === undefined) return raw
   if (raw instanceof Date || raw instanceof RegExp) return raw
   if (typeof raw === 'object') {
-    if (seen.has(raw as object)) {
-      throw new Error('circular reference detected in snapshot input')
-    }
-    seen.add(raw as object)
+    if (memo.has(raw as object)) return memo.get(raw as object) as T
   }
   if (raw instanceof Map) {
     const m = new Map()
-    for (const [k, v] of raw) m.set(toRawDeep(k, seen), toRawDeep(v, seen))
+    memo.set(raw as object, m)
+    for (const [k, v] of raw) m.set(toRawDeep(k, memo), toRawDeep(v, memo))
     return m as T
   }
   if (raw instanceof Set) {
     const s = new Set()
-    for (const v of raw) s.add(toRawDeep(v, seen))
+    memo.set(raw as object, s)
+    for (const v of raw) s.add(toRawDeep(v, memo))
     return s as T
   }
-  if (Array.isArray(raw)) return raw.map(item => toRawDeep(item, seen)) as T
+  if (Array.isArray(raw)) {
+    const arr: unknown[] = []
+    memo.set(raw as object, arr)
+    for (const item of raw) arr.push(toRawDeep(item, memo))
+    return arr as T
+  }
   if (typeof raw === 'object') {
     const result: Record<string, unknown> = {}
+    memo.set(raw as object, result)
     for (const key of Object.keys(raw)) {
-      result[key] = toRawDeep(raw[key], seen)
+      result[key] = toRawDeep(raw[key], memo)
     }
     return result
   }
@@ -42,7 +47,7 @@ function toRawDeep<T>(value: T, seen = new WeakSet<object>()): T {
  * Date, undefined, Map/Set, and nested Vue reactive proxies.
  *
  * Snapshot preserves values only — not prototypes, methods, or Symbol keys.
- * Rejects immediately if snapshot creation fails (e.g., circular refs, WeakMap).
+ * Handles circular and shared references via memoization (no longer rejects).
  * Rejects with original error if mutation fails (array is rolled back first).
  */
 export function withRollback<T>(arrayRef: { value: T[] }, mutate: () => Promise<void>): Promise<void>
