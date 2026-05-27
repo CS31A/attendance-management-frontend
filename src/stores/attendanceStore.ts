@@ -27,6 +27,7 @@ import { normalizeNotes } from '@/utils/attendanceRecord'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
 import { createAttendanceSubmissionError } from '@/utils/attendanceSubmission'
+import { withRollback } from '@/utils/withRollback'
 
 /**
  * Attendance Store
@@ -145,13 +146,6 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
   // ==================== GETTERS ====================
 
-  function withRollback<T>(arrayRef: { value: T[] }, mutate: () => Promise<T>): Promise<T> {
-    const snapshot = JSON.parse(JSON.stringify(arrayRef.value))
-    return mutate().catch((err) => {
-      arrayRef.value = snapshot
-      throw err
-    })
-  }
 
   /**
    * Get attendance statistics for current session
