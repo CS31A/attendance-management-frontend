@@ -1,10 +1,10 @@
-import { toRaw } from 'vue'
+import { reactive, toRaw } from 'vue'
 
 /**
  * Recursively unwrap Vue reactive proxies so structuredClone can clone the tree.
  * toRaw only strips the outermost proxy; nested reactive objects remain proxied.
  */
-function toRawDeep<T>(value: T, memo = new Map<object, unknown>()): T {
+function toRawDeep<T>(value: T, memo: Map<object, unknown>): T {
   const raw = toRaw(value)
   if (raw === null || raw === undefined) return raw
   if (raw instanceof Date || raw instanceof RegExp) return raw
@@ -48,6 +48,7 @@ function toRawDeep<T>(value: T, memo = new Map<object, unknown>()): T {
  *
  * Snapshot preserves values only — not prototypes, methods, or Symbol keys.
  * Handles circular and shared references via memoization (no longer rejects).
+ * Rollback wraps the restored snapshot in reactive() to preserve Vue reactivity.
  * Rejects with original error if mutation fails (array is rolled back first).
  */
 export function withRollback<T>(arrayRef: { value: T[] }, mutate: () => Promise<void>): Promise<void>
@@ -55,12 +56,13 @@ export function withRollback<T, R>(arrayRef: { value: T[] }, mutate: () => Promi
 export function withRollback<T, R = void>(arrayRef: { value: T[] }, mutate: () => Promise<R>): Promise<R> {
   let snapshot: T[]
   try {
-    snapshot = structuredClone(toRawDeep(arrayRef.value))
+    const memo = new Map<object, unknown>()
+    snapshot = structuredClone(toRawDeep(arrayRef.value, memo))
   } catch (err) {
     return Promise.reject(new Error(`Failed to create snapshot: input contains non-cloneable values. ${err instanceof Error ? err.message : String(err)}`))
   }
   return mutate().catch((err) => {
-    arrayRef.value = snapshot
+    arrayRef.value = reactive(snapshot)
     throw err
   })
 }

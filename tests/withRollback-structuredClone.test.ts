@@ -324,4 +324,60 @@ describe('withRollback edge cases', () => {
     expect(arrayRef.value[0].address.city).toBe('NYC')
     expect(arrayRef.value[0].billing.city).toBe('NYC')
   })
+
+  it('preserves Vue reactivity on rollback', async () => {
+    const { reactive, isReactive } = await import('vue')
+    const arrayRef = {
+      value: reactive([
+        { id: '1', name: 'Alice', address: { city: 'NYC' } },
+      ]),
+    }
+
+    // Verify reactive before mutation
+    expect(isReactive(arrayRef.value)).toBe(true)
+    expect(isReactive(arrayRef.value[0])).toBe(true)
+
+    await expect(
+      withRollback(arrayRef, async () => {
+        arrayRef.value[0].name = 'Bob'
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+
+    // Values restored
+    expect(arrayRef.value[0].name).toBe('Alice')
+
+    // Reactivity preserved — THIS IS THE KEY ASSERTION
+    expect(isReactive(arrayRef.value)).toBe(true)
+    expect(isReactive(arrayRef.value[0])).toBe(true)
+    expect(isReactive(arrayRef.value[0].address)).toBe(true)
+
+  })
+
+  it('rollback uses reactive() directly, not plain object fallback', async () => {
+    const { reactive, isReactive } = await import('vue')
+    const arrayRef = {
+      value: reactive([
+        { id: '1', name: 'Alice' },
+      ]),
+    }
+
+    await expect(
+      withRollback(arrayRef, async () => {
+        arrayRef.value[0].name = 'Bob'
+        throw new Error('fail')
+      }),
+    ).rejects.toThrow('fail')
+
+    // Rollback must produce a reactive object, not a plain object
+    expect(isReactive(arrayRef.value)).toBe(true)
+    expect(isReactive(arrayRef.value[0])).toBe(true)
+
+    // Value restored
+    expect(arrayRef.value[0].name).toBe('Alice')
+
+    // Verify the array can be mutated reactively after rollback
+    arrayRef.value[0].name = 'Charlie'
+    expect(arrayRef.value[0].name).toBe('Charlie')
+  })
 })

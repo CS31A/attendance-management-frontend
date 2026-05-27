@@ -161,8 +161,9 @@ describe('qrCodeStore', () => {
 
       expect(store.error).toBe('')
       expect(store.loading).toBe(false)
-      expect(store.sessionQrCodes).toEqual(sessionQrCodes)
-      expect(result).toEqual(sessionQrCodes)
+      const expected = sessionQrCodes.map(q => ({ ...q, isExpired: true }))
+      expect(store.sessionQrCodes).toEqual(expected)
+      expect(result).toEqual(expected)
     })
 
     it('fetchSessionQrCodes treats NO_QRCODES_FOUND as an empty list', async () => {

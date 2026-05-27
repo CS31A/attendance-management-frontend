@@ -17,7 +17,6 @@ const fetchSectionStudents = vi.fn()
 const dropStudent = vi.fn()
 const reenrollStudent = vi.fn()
 const fetchUsers = vi.fn()
-const confirmMock = vi.fn()
 
 const sectionStore = {
   getSection,
@@ -92,6 +91,17 @@ function mountView() {
             </div>
           `,
         },
+        ConfirmationModal: {
+          name: 'ConfirmationModal',
+          props: ['show', 'title', 'message', 'confirmText', 'cancelText'],
+          template: `
+            <div v-if="show" data-test="confirmation-modal">
+              <p>{{ message }}</p>
+              <button data-test="modal-confirm" @click="$emit('confirm')">{{ confirmText }}</button>
+              <button data-test="modal-cancel" @click="$emit('cancel')">{{ cancelText }}</button>
+            </div>
+          `,
+        },
       },
     },
   })
@@ -103,7 +113,6 @@ function mountView() {
 describe('sectionEnrollmentsView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.stubGlobal('confirm', confirmMock)
     route.params.sectionId = '1'
     enrollmentStore.getSectionStudents = []
     getSection.mockResolvedValue({
@@ -114,7 +123,6 @@ describe('sectionEnrollmentsView', () => {
     dropStudent.mockResolvedValue(undefined)
     reenrollStudent.mockResolvedValue(undefined)
     fetchUsers.mockResolvedValue([])
-    confirmMock.mockReturnValue(true)
   })
 
   afterEach(() => {
@@ -270,11 +278,20 @@ describe('sectionEnrollmentsView', () => {
     const wrapper = mountView()
     await flushPromises()
 
+    // Click drop button to open confirmation modal
     await wrapper.find('button[title="Drop Student"]').trigger('click')
-    await wrapper.find('button[title="Re-enroll Student"]').trigger('click')
+    await flushPromises()
 
-    expect(confirmMock).toHaveBeenCalledWith('Are you sure you want to drop this student?')
+    // Click modal confirm button
+    await wrapper.find('[data-test="modal-confirm"]').trigger('click')
+    await flushPromises()
+
     expect(dropStudent).toHaveBeenCalledWith('201', '1')
+
+    // Re-enroll is called directly (no modal)
+    await wrapper.find('button[title="Re-enroll Student"]').trigger('click')
+    await flushPromises()
+
     expect(reenrollStudent).toHaveBeenCalledWith('202', '1')
   })
 
