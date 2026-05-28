@@ -15,6 +15,7 @@ import ManagementSearchBar from '@/components/common/ManagementSearchBar.vue'
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue'
 import Toast from '@/components/common/Toast.vue'
 import { useToast } from '@/composables/useToast'
+import { formatDisplayName } from '@/composables/useUserName'
 import { useLocalPagination } from '@/composables/useLocalPagination'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
@@ -160,7 +161,7 @@ const currentUserId = computed(() => authStore.userProfile?.userId)
 const { toast, showToast, closeToast } = useToast()
 
 function getInstructorDisplayName(user: ManagedUser): string {
-  return `${user.firstName || user.firstname || ''} ${user.lastName || user.lastname || ''}`.trim() || 'Unnamed Instructor'
+  return formatDisplayName(user, 'Unnamed Instructor')
 }
 
 function getWorkloadRange(): { startDate: string, endDate: string } {
@@ -762,7 +763,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
       :message="deleteType === 'soft'
         ? 'Mark this user as deleted? This action can be undone.'
         : 'Permanently delete this user? This action cannot be undone and will remove all related data.'"
-      :item-name="userToDelete ? `${userToDelete.firstName || userToDelete.firstname || ''} ${userToDelete.lastName || userToDelete.lastname || ''} (${userToDelete.username})` : ''"
+      :item-name="userToDelete ? `${formatDisplayName(userToDelete)} (${userToDelete.username})` : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

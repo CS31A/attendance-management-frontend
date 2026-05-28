@@ -13,6 +13,7 @@ import schedulesApi from '@/api/schedules'
 import sectionsApi from '@/api/sections'
 import subjectApi from '@/api/subjects'
 import AlertModal from '@/components/common/AlertModal.vue'
+import { formatDisplayName } from '@/composables/useUserName'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BulkDataActions from '@/components/common/BulkDataActions.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -148,7 +149,7 @@ const scheduleFields: FormFieldConfig[] = [
 
         options.push({
           value: instructor.profileId,
-          label: `${instructor.firstName || instructor.firstname || ''} ${instructor.lastName || instructor.lastname || ''}`.trim() || 'Unnamed Instructor',
+          label: formatDisplayName(instructor, 'Unnamed Instructor'),
         })
         return options
       }, [])
@@ -214,7 +215,7 @@ const filteredSchedules = computed(() =>
       schedule.instructor?.lastname,
       schedule.instructorFirstName,
       schedule.instructorLastName,
-      `${schedule.instructor?.firstName || schedule.instructor?.firstname || schedule.instructorFirstName || ''} ${schedule.instructor?.lastName || schedule.instructor?.lastname || schedule.instructorLastName || ''}`.trim(),
+      formatDisplayName(schedule.instructor, '', { firstName: schedule.instructorFirstName, lastName: schedule.instructorLastName }),
     ]),
   ),
 )
@@ -293,7 +294,7 @@ async function filterByInstructor(instructorId: string | null | undefined) {
 
     if (instructor) {
       filteredInstructorId.value = parsedInstructorId
-      filteredInstructorName.value = `${instructor.firstName || instructor.firstname || ''} ${instructor.lastName || instructor.lastname || ''}`.trim() || 'Instructor'
+      filteredInstructorName.value = formatDisplayName(instructor, 'Instructor')
       currentPage.value = 1
     }
   }

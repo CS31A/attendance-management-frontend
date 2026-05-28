@@ -1,46 +1,43 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { normalizeUserName, formatDisplayName } from '@/composables/useUserName'
 
-describe('firstname/lastname lowercase fallback coverage', () => {
-  it('EditUserModal falls back to lowercase firstname/lastname from API profile', () => {
-    const source = readFileSync('src/components/EditUserModal.vue', 'utf8')
-
-    expect(source).toContain('newUser.firstName || newUser.firstname ||')
-    expect(source).toContain('newUser.lastName || newUser.lastname ||')
+describe('firstname/lastname lowercase fallback behavior', () => {
+  it('handles camelCase firstName/lastName from API', () => {
+    const raw = { firstName: 'John', lastName: 'Doe' }
+    expect(formatDisplayName(raw)).toBe('John Doe')
   })
 
-  it('ScheduleList falls back to lowercase instructor firstname/lastname', () => {
-    const source = readFileSync('src/components/schedules/ScheduleList.vue', 'utf8')
-
-    expect(source).toContain('instructor.firstName || instructor.firstname ||')
-    expect(source).toContain('instructor.lastName || instructor.lastname ||')
+  it('falls back to lowercase firstname/lastname from API', () => {
+    const raw = { firstname: 'John', lastname: 'Doe' }
+    expect(formatDisplayName(raw)).toBe('John Doe')
   })
 
-  it('UserTable handles lowercase firstname/lastname from API', () => {
+  it('prefers camelCase over lowercase when both present', () => {
+    const raw = { firstName: 'John', firstname: 'johnny', lastName: 'Doe', lastname: 'doey' }
+    expect(formatDisplayName(raw)).toBe('John Doe')
+  })
+
+  it('handles mixed case variants', () => {
+    const raw = { firstName: 'John', lastname: 'Doe' }
+    expect(formatDisplayName(raw)).toBe('John Doe')
+  })
+
+  it('returns empty string for missing names', () => {
+    const raw = { username: 'jdoe' }
+    expect(formatDisplayName(raw)).toBe('')
+  })
+
+  it('handles null/undefined raw input', () => {
+    expect(formatDisplayName(null)).toBe('')
+    expect(formatDisplayName(undefined)).toBe('')
+  })
+})
+
+describe('UserTable migration to composable', () => {
+  it('UserTable uses formatDisplayName from composable', () => {
     const source = readFileSync('src/components/tables/UserTable.vue', 'utf8')
-
-    expect(source).toContain('user.firstname && user.lastname')
-  })
-
-  it('SchedulesView falls back to lowercase instructor firstname/lastname', () => {
-    const source = readFileSync('src/views/SchedulesView.vue', 'utf8')
-
-    // Instructor label in form options
-    expect(source).toContain('instructor.firstName || instructor.firstname ||')
-    expect(source).toContain('instructor.lastName || instructor.lastname ||')
-  })
-
-  it('UserManagementView falls back to lowercase user firstname/lastname', () => {
-    const source = readFileSync('src/views/UserManagementView.vue', 'utf8')
-
-    expect(source).toContain('user.firstName || user.firstname ||')
-    expect(source).toContain('user.lastName || user.lastname ||')
-  })
-
-  it('StudentDetailView falls back to lowercase firstname/lastname', () => {
-    const source = readFileSync('src/views/StudentDetailView.vue', 'utf8')
-
-    expect(source).toContain('studentUser.value.firstName || studentUser.value.firstname ||')
-    expect(source).toContain('studentUser.value.lastName || studentUser.value.lastname ||')
+    expect(source).toContain("import { formatDisplayName } from '@/composables/useUserName'")
+    expect(source).not.toContain('user.firstName && user.lastName')
   })
 })

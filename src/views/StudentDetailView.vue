@@ -13,6 +13,7 @@ import { useSectionStore } from '@/stores/sectionStore'
 import { useUserStore } from '@/stores/userStore'
 import { formatShortTableDate } from '@/utils/date'
 import { parseStudentRouteParam, resolveStudentProfileId } from '@/utils/studentRoute'
+import { formatDisplayName } from '@/composables/useUserName'
 
 const route = useRoute()
 const router = useRouter()
@@ -41,7 +42,7 @@ const studentUser = computed(() => {
 // Derived display values
 const displayTitle = computed(() => {
   if (studentUser.value) {
-    return `${studentUser.value.firstName || studentUser.value.firstname || ''} ${studentUser.value.lastName || studentUser.value.lastname || ''}`.trim() || studentUser.value.username || 'Student Details'
+    return formatDisplayName(studentUser.value, studentUser.value.username || 'Student Details')
   }
   if (report.value?.studentName) {
     return report.value.studentName

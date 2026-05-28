@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { EntityId } from '@/types'
 import { Calendar, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-vue-next'
+import { formatDisplayName } from '@/composables/useUserName'
 
 interface Schedule {
   id: EntityId
@@ -56,11 +57,8 @@ function formatTime(time: string | null | undefined): string {
 }
 
 function getInstructorName(schedule: Schedule): string {
-  const instructor = schedule.instructor || {}
-  const firstName = instructor.firstName || instructor.firstname || schedule.instructorFirstName || ''
-  const lastName = instructor.lastName || instructor.lastname || schedule.instructorLastName || ''
-  const fullName = `${firstName} ${lastName}`.trim()
-  return fullName || '-'
+  const extra = { firstName: schedule.instructorFirstName, lastName: schedule.instructorLastName }
+  return formatDisplayName(schedule.instructor, '-', extra)
 }
 </script>
 

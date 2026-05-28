@@ -2,6 +2,7 @@
 import { AlertTriangle, GraduationCap, Loader2, User, X } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useSectionStore } from '@/stores/sectionStore'
+import { normalizeUserName } from '@/composables/useUserName'
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -32,8 +33,9 @@ const sortedSections = computed(() =>
 watch(() => props.user, (newUser) => {
   if (newUser) {
     email.value = newUser.email || ''
-    firstName.value = newUser.firstName || newUser.firstname || ''
-    lastName.value = newUser.lastName || newUser.lastname || ''
+    const names = normalizeUserName(newUser)
+    firstName.value = names.firstName
+    lastName.value = names.lastName
     password.value = ''
     confirmPassword.value = ''
     role.value = newUser.role || ''

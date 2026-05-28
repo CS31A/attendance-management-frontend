@@ -2,6 +2,7 @@
 import type { EntityId } from '@/types'
 import { ArchiveRestore, ArchiveX, Calendar, Edit, Eye, GraduationCap, Mail, Trash2, User as UserIcon } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
+import { formatDisplayName } from '@/composables/useUserName'
 
 interface User {
   id: EntityId
@@ -41,19 +42,7 @@ function _getRoleIcon(role: string) {
 }
 
 function getUserName(user: User) {
-  if (user.firstName && user.lastName) {
-    return `${user.firstName} ${user.lastName}`
-  }
-  if (user.firstname && user.lastname) {
-    return `${user.firstname} ${user.lastname}`
-  }
-  if (user.name) {
-    return user.name
-  }
-  if (user.fullName) {
-    return user.fullName
-  }
-  return user.email || 'Unknown User'
+  return formatDisplayName(user) || user.name || user.fullName || user.email || 'Unknown User'
 }
 
 function _getUserSection(user: User) {
