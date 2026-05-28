@@ -762,7 +762,7 @@ watch([selectedInstructorWorkloadId, selectedRole], async ([instructorId, role])
       :message="deleteType === 'soft'
         ? 'Mark this user as deleted? This action can be undone.'
         : 'Permanently delete this user? This action cannot be undone and will remove all related data.'"
-      :item-name="userToDelete ? `${userToDelete.firstName || userToDelete.firstname} ${userToDelete.lastName || userToDelete.lastname} (${userToDelete.username})` : ''"
+      :item-name="userToDelete ? `${userToDelete.firstName || userToDelete.firstname || ''} ${userToDelete.lastName || userToDelete.lastname || ''} (${userToDelete.username})` : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

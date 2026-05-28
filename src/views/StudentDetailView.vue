@@ -41,7 +41,7 @@ const studentUser = computed(() => {
 // Derived display values
 const displayTitle = computed(() => {
   if (studentUser.value) {
-    return `${studentUser.value.firstName || ''} ${studentUser.value.lastName || ''}`.trim() || studentUser.value.username || 'Student Details'
+    return `${studentUser.value.firstName || studentUser.value.firstname || ''} ${studentUser.value.lastName || studentUser.value.lastname || ''}`.trim() || studentUser.value.username || 'Student Details'
   }
   if (report.value?.studentName) {
     return report.value.studentName

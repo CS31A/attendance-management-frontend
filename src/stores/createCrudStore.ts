@@ -5,6 +5,16 @@ import { computed, ref } from 'vue'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
+const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
+function getNestedValue(obj: unknown, path: string): unknown {
+  return path.split('.').reduce((current, key) => {
+    if (RESERVED_KEYS.has(key)) return undefined
+    return current != null && typeof current === 'object'
+      ? (current as Record<string, unknown>)[key]
+      : undefined
+  }, obj)
+}
 export interface CrudApi<TDto, TPayload> {
   getAll: () => Promise<AxiosResponse<TDto[]>>
   getById: (id: EntityId) => Promise<AxiosResponse<TDto>>
@@ -39,24 +49,26 @@ export function createCrudStore<
     // Getters
     const hasEntities = computed(() => items.value.length > 0)
     const sortKey = options?.sortKey || 'name'
-
-    const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-    function getNestedValue(obj: unknown, path: string): unknown {
-      return path.split('.').reduce((current, key) => {
-        if (RESERVED_KEYS.has(key)) return undefined
-        return current != null && typeof current === 'object'
-          ? (current as Record<string, unknown>)[key]
-          : undefined
-      }, obj)
-    }
-
     const sortedEntities = computed(() =>
       [...items.value].sort((a, b) => {
-        const valA = getNestedValue(a, sortKey) as string | null | undefined
-        const valB = getNestedValue(b, sortKey) as string | null | undefined
-        const safeA = String(valA ?? '\uFFFF')
-        const safeB = String(valB ?? '\uFFFF')
-        return safeA.localeCompare(safeB)
+        const valA = getNestedValue(a, sortKey)
+        const valB = getNestedValue(b, sortKey)
+
+        // Null/undefined sort last
+        if (valA == null && valB == null) return 0
+        if (valA == null) return 1
+        if (valB == null) return -1
+
+        // Numeric comparison when both values are numeric
+        const numA = typeof valA === 'number' ? (Number.isNaN(valA) ? null : valA) : (typeof valA === 'string' && /^-?\d+(\.\d+)?$/.test(valA) ? Number(valA) : null)
+        const numB = typeof valB === 'number' ? (Number.isNaN(valB) ? null : valB) : (typeof valB === 'string' && /^-?\d+(\.\d+)?$/.test(valB) ? Number(valB) : null)
+
+        if (numA != null && numB != null) {
+          return numA - numB
+        }
+
+        // String comparison fallback
+        return String(valA).localeCompare(String(valB))
       }),
     )
 
