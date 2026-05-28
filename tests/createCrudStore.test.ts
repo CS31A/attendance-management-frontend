@@ -101,6 +101,134 @@ describe('createCrudStore', () => {
   })
 
   // ------------------------------------------------------------------
+  // 2. Custom sort key
+  // ------------------------------------------------------------------
+  describe('custom sort key', () => {
+    it('uses custom sortKey when provided', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', title: 'Charlie' },
+        { id: '2', title: 'Alice' },
+        { id: '3', title: 'Bob' },
+      ]))
+
+      const useStore = createCrudStore('sortkey-basic', 'item', api, { sortKey: 'title' })
+      const store = useStore()
+      await store.fetchItems()
+
+      const sorted = store.sortedItems as { id: string, title: string }[]
+      expect(sorted.map(i => i.title)).toEqual(['Alice', 'Bob', 'Charlie'])
+    })
+
+    it('sorts by custom key with null/undefined values last', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', title: 'Charlie' },
+        { id: '2', title: null },
+        { id: '3', title: 'Alice' },
+        { id: '4' }, // title undefined
+      ]))
+
+      const useStore = createCrudStore('sortkey-null', 'item', api, { sortKey: 'title' })
+      const store = useStore()
+      await store.fetchItems()
+
+      const sorted = store.sortedItems as { id: string, title?: string | null }[]
+      expect(sorted[0].title).toBe('Alice')
+      expect(sorted[1].title).toBe('Charlie')
+      expect(sorted[2].title == null).toBe(true)
+      expect(sorted[3].title == null).toBe(true)
+    })
+
+    it('falls back to name when sortKey not provided', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', name: 'Charlie' },
+        { id: '2', name: 'Alice' },
+        { id: '3', name: 'Bob' },
+      ]))
+
+      const useStore = createCrudStore('sortkey-default', 'item', api)
+      const store = useStore()
+      await store.fetchItems()
+
+      const sorted = store.sortedItems as TestDto[]
+      expect(sorted.map(i => i.name)).toEqual(['Alice', 'Bob', 'Charlie'])
+    })
+
+    it('works with nested sortKey like schedule.day', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', schedule: { day: 'Wednesday' } },
+        { id: '2', schedule: { day: 'Monday' } },
+        { id: '3', schedule: { day: 'Friday' } },
+      ]))
+
+      const useStore = createCrudStore('sortkey-nested', 'item', api, { sortKey: 'schedule.day' })
+      const store = useStore()
+      await store.fetchItems()
+
+      const sorted = store.sortedItems as { id: string, schedule: { day: string } }[]
+      expect(sorted.map(i => i.schedule.day)).toEqual(['Friday', 'Monday', 'Wednesday'])
+    })
+
+    it('handles boolean field values without throwing', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', name: 'A', isActive: true },
+        { id: '2', name: 'B', isActive: false },
+        { id: '3', name: 'C', isActive: true },
+      ]))
+
+      const useStore = createCrudStore('sortkey-bool', 'item', api, { sortKey: 'isActive' })
+      const store = useStore()
+      await store.fetchItems()
+
+      expect(() => store.sortedItems).not.toThrow()
+      const sorted = store.sortedItems as { id: string, name: string, isActive: boolean }[]
+      // String(false) = "false", String(true) = "true" — "false" < "true"
+      expect(sorted[0].isActive).toBe(false)
+      expect(sorted[1].isActive).toBe(true)
+      expect(sorted[2].isActive).toBe(true)
+    })
+
+    it('handles numeric field values without throwing', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', name: 'A', priority: 3 },
+        { id: '2', name: 'B', priority: 1 },
+        { id: '3', name: 'C', priority: 2 },
+      ]))
+
+      const useStore = createCrudStore('sortkey-num', 'item', api, { sortKey: 'priority' })
+      const store = useStore()
+      await store.fetchItems()
+
+      expect(() => store.sortedItems).not.toThrow()
+      const sorted = store.sortedItems as { id: string, name: string, priority: number }[]
+      expect(sorted[0].priority).toBe(1)
+      expect(sorted[1].priority).toBe(2)
+      expect(sorted[2].priority).toBe(3)
+    })
+
+    it('handles mixed types (string, boolean, number) for same sortKey', async () => {
+      const api = createMockApi()
+      vi.mocked(api.getAll).mockResolvedValue(createAxiosResponse([
+        { id: '1', name: 'A', value: 'hello' },
+        { id: '2', name: 'B', value: true },
+        { id: '3', name: 'C', value: 42 },
+        { id: '4', name: 'D' }, // value undefined
+      ]))
+
+      const useStore = createCrudStore('sortkey-mixed', 'item', api, { sortKey: 'value' })
+      const store = useStore()
+      await store.fetchItems()
+
+      expect(() => store.sortedItems).not.toThrow()
+    })
+  })
+
+  // ------------------------------------------------------------------
   // 2. Explicit plural parameter
   // ------------------------------------------------------------------
   describe('explicit plural parameter', () => {

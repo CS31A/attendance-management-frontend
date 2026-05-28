@@ -159,7 +159,7 @@ describe('issue fixes 1-4', () => {
   })
 
   it('apiUser role union keeps only the legacy compatibility literal', () => {
-    const source = readFileSync('src/stores/userStore.ts', 'utf8')
+    const source = readFileSync('src/types/user.ts', 'utf8')
     expect(source.includes('role?: UserRole | \'Teacher\'')).toBe(true)
     expect(source.includes('role?: UserRole | \'Instructor\' | \'Teacher\'')).toBe(false)
   })

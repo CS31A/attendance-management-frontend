@@ -30,3 +30,5 @@ export interface ApiError {
 }
 
 export type ApiEnvelope<TData> = { success: true, data: TData, error?: never, message?: string } | { success: false, error: ApiError, data?: never, message?: string }
+
+export type { ApiUser, ApiUserProfile } from './user'

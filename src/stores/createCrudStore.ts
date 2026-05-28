@@ -21,7 +21,7 @@ export function createCrudStore<
   storeId: string,
   entityLabel: Singular,
   api: CrudApi<TDto, TPayload>,
-  options?: { plural?: string },
+  options?: { plural?: string, sortKey?: string },
 ) {
   const singular = entityLabel
   const plural = (options?.plural ?? `${entityLabel}s`) as `${Singular}s`
@@ -38,13 +38,24 @@ export function createCrudStore<
 
     // Getters
     const hasEntities = computed(() => items.value.length > 0)
+    const sortKey = options?.sortKey || 'name'
+
+    const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+    function getNestedValue(obj: unknown, path: string): unknown {
+      return path.split('.').reduce((current, key) => {
+        if (RESERVED_KEYS.has(key)) return undefined
+        return current != null && typeof current === 'object'
+          ? (current as Record<string, unknown>)[key]
+          : undefined
+      }, obj)
+    }
+
     const sortedEntities = computed(() =>
       [...items.value].sort((a, b) => {
-        const nameA = (a as Record<string, unknown>).name as string | null | undefined
-        const nameB = (b as Record<string, unknown>).name as string | null | undefined
-        const safeA = nameA ?? '\uFFFF'
-        const safeB = nameB ?? '\uFFFF'
-        // '\uFFFF' sorts unnamed/null items last alphabetically
+        const valA = getNestedValue(a, sortKey) as string | null | undefined
+        const valB = getNestedValue(b, sortKey) as string | null | undefined
+        const safeA = String(valA ?? '\uFFFF')
+        const safeB = String(valB ?? '\uFFFF')
         return safeA.localeCompare(safeB)
       }),
     )

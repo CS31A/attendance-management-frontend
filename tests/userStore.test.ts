@@ -502,7 +502,7 @@ describe('userStore', () => {
   })
 
   describe('filteredUsers', () => {
-    it('matches firstName, lastName, email, username, and legacy lowercase fields', () => {
+    it('matches firstName, lastName, email, and username', () => {
       const store = useUserStore()
       store.users = [
         createMockApiUser({
@@ -514,8 +514,8 @@ describe('userStore', () => {
         }) as ApiUser,
         createMockApiUser({
           userId: '2' as EntityId,
-          firstname: 'Jane',
-          lastname: 'Smith',
+          firstName: 'Jane',
+          lastName: 'Smith',
           email: 'jane@example.com',
           username: 'janesmith',
         }) as ApiUser,

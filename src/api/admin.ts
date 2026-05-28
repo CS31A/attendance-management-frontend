@@ -1,40 +1,8 @@
 import type { EntityId, PaginationParams } from '@/types'
-import type { UserRole } from '@/utils/constants'
+import type { ApiUser, ApiUserProfile } from '@/types/user'
 import axios from 'axios'
 import api from '@/api'
 
-interface ApiUserProfile {
-  id?: EntityId
-  firstname?: string
-  lastname?: string
-  department?: string | null
-  sectionId?: EntityId | null
-  isRegular?: boolean
-  createdAt?: string
-  updatedAt?: string
-}
-
-interface ApiUser {
-  userId?: EntityId
-  id?: EntityId
-  username?: string
-  email?: string
-  role?: UserRole | 'Teacher'
-  createdAt?: string
-  updatedAt?: string
-  isDeleted?: boolean
-  firstName?: string
-  lastName?: string
-  profileId?: EntityId
-  department?: string | null
-  sectionId?: EntityId | null
-  isRegular?: boolean
-  adminProfile?: ApiUserProfile | null
-  instructorProfile?: ApiUserProfile | null
-  studentProfile?: ApiUserProfile | null
-  deletedAt?: string | null
-  [key: string]: unknown
-}
 
 // Helper function to map user profile data from API response to flat structure
 export function mapUserProfile(user: ApiUser): ApiUser {

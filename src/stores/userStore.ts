@@ -1,4 +1,5 @@
 import type { EntityId } from '@/types'
+import type { ApiUser, ApiUserProfile } from '@/types/user'
 import type { UserRole } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -9,38 +10,6 @@ import { ROLES } from '@/utils/constants'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
-interface ApiUserProfile {
-  id?: EntityId
-  firstname?: string
-  lastname?: string
-  department?: string | null
-  sectionId?: EntityId | null
-  isRegular?: boolean
-  createdAt?: string
-  updatedAt?: string
-}
-
-interface ApiUser {
-  userId?: EntityId
-  id?: EntityId
-  username?: string
-  email?: string
-  role?: UserRole | 'Teacher'
-  createdAt?: string
-  updatedAt?: string
-  isDeleted?: boolean
-  firstName?: string
-  lastName?: string
-  profileId?: EntityId
-  department?: string | null
-  sectionId?: EntityId | null
-  isRegular?: boolean
-  adminProfile?: ApiUserProfile | null
-  instructorProfile?: ApiUserProfile | null
-  studentProfile?: ApiUserProfile | null
-  deletedAt?: string | null
-  [key: string]: unknown
-}
 
 type UiRole = 'Admin' | 'Instructor' | 'Student'
 
@@ -97,8 +66,8 @@ export const useUserStore = defineStore('user', () => {
       const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter((user) => {
         // Handle both camelCase and lowercase property names from API
-        const firstName = asLowerString(user.firstName || user.firstname)
-        const lastName = asLowerString(user.lastName || user.lastname)
+        const firstName = asLowerString(user.firstName)
+        const lastName = asLowerString(user.lastName)
         const emailValue = asLowerString(user.email)
         const username = asLowerString(user.username)
 
@@ -160,8 +129,8 @@ export const useUserStore = defineStore('user', () => {
           ? mapUserProfile(response.data)
           : {
               id: response.data.id || Date.now(),
-              firstName: response.data.firstName || response.data.firstname || userData.FirstName,
-              lastName: response.data.lastName || response.data.lastname || userData.LastName,
+              firstName: response.data.firstName || userData.FirstName,
+              lastName: response.data.lastName || userData.LastName,
               email: response.data.email || userData.Email,
               role: normalizeRole(userData.Role),
               sectionId: response.data.sectionId || userData.SectionId,
@@ -214,8 +183,8 @@ export const useUserStore = defineStore('user', () => {
                 ...originalUser,
                 ...responseData,
                 role: originalUser.role,
-                firstName: asOptionalString(responseData.firstName) || asOptionalString(responseData.firstname) || originalUser.firstName,
-                lastName: asOptionalString(responseData.lastName) || asOptionalString(responseData.lastname) || originalUser.lastName,
+                firstName: asOptionalString(responseData.firstName) || originalUser.firstName,
+                lastName: asOptionalString(responseData.lastName) || originalUser.lastName,
                 department: responseData.department ?? originalUser.department ?? null,
               }
           users.value[index] = updatedUser
