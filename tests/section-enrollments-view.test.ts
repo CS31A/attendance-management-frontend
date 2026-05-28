@@ -286,13 +286,13 @@ describe('sectionEnrollmentsView', () => {
     await wrapper.find('[data-test="modal-confirm"]').trigger('click')
     await flushPromises()
 
-    expect(dropStudent).toHaveBeenCalledWith('201', '1')
+    expect(dropStudent).toHaveBeenCalledWith('3', '1')
 
     // Re-enroll is called directly (no modal)
     await wrapper.find('button[title="Re-enroll Student"]').trigger('click')
     await flushPromises()
 
-    expect(reenrollStudent).toHaveBeenCalledWith('202', '1')
+    expect(reenrollStudent).toHaveBeenCalledWith('4', '1')
   })
 
   it('opens the add enrollment modal and refreshes enrollments after a success event', async () => {

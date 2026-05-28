@@ -17,6 +17,7 @@ vi.mock('@/api/sessions', async (importOriginal) => {
     startSession: vi.fn(),
     endSession: vi.fn(),
     updateSessionRoom: vi.fn(),
+    toSession: vi.fn(((dto: any) => ({ ...dto })) as any),
   }
 })
 

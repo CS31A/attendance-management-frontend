@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import { AlertTriangle, Trash2, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { getSessionDisplayName } from '@/api/sessions'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
 const props = defineProps<{
-  session: SessionResponseDto
+  session: Session
   isDeleting?: boolean
 }>()
 

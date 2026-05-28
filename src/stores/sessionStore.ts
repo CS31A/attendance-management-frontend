@@ -2,11 +2,11 @@ import type {
   CreateSessionPayload,
   DeleteSessionPayload,
   EndSessionPayload,
-  SessionResponseDto,
   StartSessionPayload,
   UpdateSessionRoomPayload,
 } from '@/api/sessions'
 import type { EntityId } from '@/types'
+import type { Session } from '@/types/domain/session'
 import type { SessionStatus } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -21,6 +21,7 @@ import {
   fetchSessionsByStatus as apiFetchSessionsByStatus,
   startSession as apiStartSession,
   updateSessionRoom as apiUpdateSessionRoom,
+  toSession,
 
 } from '@/api/sessions'
 import { useLoadingState } from '@/composables/useLoadingState'
@@ -42,12 +43,12 @@ export const useSessionStore = defineStore('sessionStore', () => {
   // ==================== STATE ====================
 
   /** @type {import('vue').Ref<Array>} */
-  const sessions = ref<SessionResponseDto[]>([])
+  const sessions = ref<Session[]>([])
 
   const { loading, withLoading, resetLoading } = useLoadingState()
 
   /** @type {import('vue').Ref<object | null>} */
-  const currentSession = ref<SessionResponseDto | null>(null)
+  const currentSession = ref<Session | null>(null)
 
   // ==================== GETTERS ====================
 
@@ -139,8 +140,8 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const fetchSessions = async () => {
     return withLoading(async () => {
       const data = await apiFetchMySessions()
-      sessions.value = data
-      return data
+      sessions.value = data.map(toSession)
+      return sessions.value
     }, err => console.error('Failed to fetch sessions:', err))
   }
 
@@ -152,18 +153,19 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const fetchSessionById = async (sessionId: EntityId) => {
     return withLoading(async () => {
       const data = await apiFetchSessionById(sessionId)
-      currentSession.value = data
+      const session = toSession(data)
+      currentSession.value = session
 
       // Update in sessions array if it exists, otherwise push it
       const index = sessions.value.findIndex(s => entityIdsMatch(s.id, sessionId))
       if (index !== -1) {
-        sessions.value[index] = data
+        sessions.value[index] = session
       }
       else {
-        sessions.value.push(data)
+        sessions.value.push(session)
       }
 
-      return data
+      return session
     }, err => console.error('Failed to fetch session:', err))
   }
 
@@ -175,7 +177,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const fetchSessionsBySchedule = async (scheduleId: EntityId) => {
     return withLoading(async () => {
       const data = await apiFetchSessionsBySchedule(scheduleId)
-      return data
+      return data.map(toSession)
     }, err => console.error('Failed to fetch sessions by schedule:', err))
   }
 
@@ -187,7 +189,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const fetchSessionsByStatusApi = async (status: SessionStatus) => {
     return withLoading(async () => {
       const data = await apiFetchSessionsByStatus(status)
-      return data
+      return data.map(toSession)
     }, err => console.error('Failed to fetch sessions by status:', err))
   }
 
@@ -199,7 +201,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   const fetchSessionsByDate = async (date: string) => {
     return withLoading(async () => {
       const data = await apiFetchSessionsByDate(date)
-      return data
+      return data.map(toSession)
     }, err => console.error('Failed to fetch sessions by date:', err))
   }
 
@@ -217,9 +219,10 @@ export const useSessionStore = defineStore('sessionStore', () => {
       const newSession = await apiCreateSession(payload)
 
       // Add to local state
-      sessions.value.push(newSession)
+      const session = toSession(newSession)
+      sessions.value.push(session)
 
-      return newSession
+      return session
     }, err => console.error('Failed to create session:', err))
   }
 
@@ -254,7 +257,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
         }
 
         const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'start')
-        const updatedSession = await apiStartSession(sessionId, { ...payload, rowVersion })
+        const updatedSession = toSession(await apiStartSession(sessionId, { ...payload, rowVersion }))
 
         // Update local state
         if (sessionIndex !== -1) {
@@ -305,7 +308,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
         }
 
         const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'end')
-        const updatedSession = await apiEndSession(sessionId, { ...payload, rowVersion })
+        const updatedSession = toSession(await apiEndSession(sessionId, { ...payload, rowVersion }))
 
         // Update local state
         if (sessionIndex !== -1) {
@@ -358,7 +361,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
           reason,
           rowVersion: requireSessionRowVersion(originalSession, 'cancel'),
         }
-        const updatedSession = await apiDeleteSession(sessionId, payload)
+        const updatedSession = toSession(await apiDeleteSession(sessionId, payload))
 
         if (sessionIndex !== -1) {
           sessions.value[sessionIndex] = updatedSession
@@ -409,7 +412,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
         }
 
         const rowVersion = requireSessionRowVersion(originalSessionSnapshot, 'update the room for')
-        const updatedSession = await apiUpdateSessionRoom(sessionId, { ...payload, rowVersion })
+        const updatedSession = toSession(await apiUpdateSessionRoom(sessionId, { ...payload, rowVersion }))
 
         // Update local state
         if (sessionIndex !== -1) {
@@ -454,7 +457,7 @@ export const useSessionStore = defineStore('sessionStore', () => {
   }
 
   function requireSessionRowVersion(
-    session: SessionResponseDto | null | undefined,
+    session: Session | null | undefined,
     action: string,
   ): string {
     if (!session?.rowVersion) {

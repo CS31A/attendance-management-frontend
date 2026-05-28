@@ -5,7 +5,6 @@ import type { EntityId } from '@/types'
 import { reactive, ref } from 'vue'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getErrorStatus } from '@/utils/httpError'
-import { useDeleteModalLifecycle } from './useDeleteModalLifecycle'
 
 export interface DependencyCheckConfig {
   check: (id: EntityId) => Promise<AxiosResponse<boolean>>
@@ -56,15 +55,27 @@ export function createDeleteFlow<T extends { id: EntityId }>({
   logDependencyCheckError = error => console.error(`Failed to check ${labels.entityName} dependencies:`, error),
   showToast: externalShowToast,
 }: CreateDeleteFlowOptions<T>) {
-  const {
-    showDeleteModal,
-    entityToDelete: itemToDelete,
-    isDeleting,
-    openDeleteModal,
-    closeDeleteModal,
-    startDeleting,
-    finishDeleting,
-  } = useDeleteModalLifecycle<T>()
+  const showDeleteModal = ref(false)
+  const itemToDelete = ref<T | null>(null)
+  const isDeleting = ref(false)
+
+  function openDeleteModal(entity: T) {
+    itemToDelete.value = entity
+    showDeleteModal.value = true
+  }
+
+  function closeDeleteModal() {
+    showDeleteModal.value = false
+    itemToDelete.value = null
+  }
+
+  function startDeleting() {
+    isDeleting.value = true
+  }
+
+  function finishDeleting() {
+    isDeleting.value = false
+  }
 
   const isCheckingDependencies = ref(false)
 

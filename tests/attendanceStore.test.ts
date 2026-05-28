@@ -3,6 +3,7 @@ import type {
   AttendanceSummaryDto,
   SessionAttendanceResponseDto,
 } from '@/api/attendance'
+import type { AttendanceRecord, SessionAttendanceRecord } from '@/types/domain/attendance'
 import type { EntityId } from '@/types'
 
 import { createPinia, setActivePinia } from 'pinia'
@@ -23,6 +24,7 @@ import { getErrorStatus } from '@/utils/httpError'
 
 vi.mock('@/api/attendance', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/attendance')>()
+
   return {
     ...actual,
     createAttendance: vi.fn(),
@@ -33,6 +35,34 @@ vi.mock('@/api/attendance', async (importOriginal) => {
     fetchSessionAttendance: vi.fn(),
     fetchStudentAttendance: vi.fn(),
     updateAttendance: vi.fn(),
+    toAttendanceRecord: vi.fn((dto: any) => ({
+      id: dto.id ?? '',
+      studentId: dto.studentId ?? '',
+      sessionId: dto.sessionId ?? '',
+      status: (dto.status ?? 'absent').toLowerCase(),
+      notes: dto.notes ?? '',
+    })),
+    toSessionAttendanceRecord: vi.fn((dto: any) => ({
+      id: dto.id ?? '',
+      studentId: dto.studentId ?? '',
+      sessionId: dto.sessionId ?? '',
+      status: (dto.status ?? 'absent').toLowerCase(),
+      notes: dto.notes ?? '',
+      studentNumber: dto.studentNumber ?? '',
+      studentName: dto.studentName ?? '',
+      checkInTime: dto.checkInTime ?? '',
+    })),
+    toAttendanceSummary: vi.fn((dto: any) => ({
+      totalSessions: dto.totalSessions ?? 0,
+      totalEnrolled: dto.totalEnrolled ?? 0,
+      totalPresent: dto.totalPresent ?? 0,
+      totalLate: dto.totalLate ?? 0,
+      totalAbsent: dto.totalAbsent ?? 0,
+      totalExcused: dto.totalExcused ?? 0,
+      attendanceRate: dto.attendanceRate ?? 0,
+      averageCheckInTime: dto.averageCheckInTime ?? '',
+      mostFrequentStatus: dto.mostFrequentStatus ?? '',
+    })),
   }
 })
 vi.mock('@/utils/httpError')
@@ -44,22 +74,27 @@ interface Deferred<T> {
 }
 
 // Helper factory
-function createAttendanceRecord(overrides: Partial<AttendanceResponseDto> = {}): AttendanceResponseDto {
+function createAttendanceRecord(overrides: Partial<AttendanceRecord> = {}): AttendanceRecord {
   return {
     id: '1',
     studentId: '1',
     sessionId: '1',
     status: 'present',
+    notes: '',
     ...overrides,
   }
 }
 
-function createSessionAttendanceRecord(overrides: Partial<SessionAttendanceResponseDto> = {}): SessionAttendanceResponseDto {
+function createSessionAttendanceRecord(overrides: Partial<SessionAttendanceRecord> = {}): SessionAttendanceRecord {
   return {
     id: '1',
     studentId: '1',
     sessionId: '1',
     status: 'present',
+    notes: '',
+    studentNumber: '',
+    studentName: '',
+    checkInTime: '',
     ...overrides,
   }
 }
@@ -210,9 +245,15 @@ describe('attendanceStore', () => {
 
     it('fetchAttendanceSummary stores API data in summary', async () => {
       const mockSummary = {
-        total: 10,
-        presentCount: 8,
-        absentCount: 2,
+        totalSessions: 10,
+        totalEnrolled: 0,
+        totalPresent: 8,
+        totalLate: 0,
+        totalAbsent: 2,
+        totalExcused: 0,
+        attendanceRate: 0,
+        averageCheckInTime: '',
+        mostFrequentStatus: '',
       } as AttendanceSummaryDto
       vi.mocked(apiFetchAttendanceSummary).mockResolvedValue(mockSummary)
 
@@ -368,7 +409,7 @@ describe('attendanceStore', () => {
       store.attendanceRecords = [createAttendanceRecord()]
       store.sessionAttendance = [createSessionAttendanceRecord()]
       store.currentRecord = createAttendanceRecord()
-      store.summary = { total: 10 } as AttendanceSummaryDto
+      store.summary = { totalSessions: 10, totalEnrolled: 10, totalPresent: 5, totalLate: 2, totalAbsent: 2, totalExcused: 1, attendanceRate: 50, averageCheckInTime: '', mostFrequentStatus: 'present' }
       store.currentSessionId = '1'
       store.syncWarning = 'warning'
 

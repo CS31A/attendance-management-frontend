@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CourseDto } from '@/api/courses'
+import type { Course } from '@/types/domain/course'
 import type { EntityId } from '@/types'
 import { BookOpen, Calendar, Edit, Trash2, Users } from 'lucide-vue-next'
 import { formatShortTableDate as formatDate } from '@/utils/date'
@@ -16,7 +16,7 @@ interface Section {
 
 defineProps<{
   sections: Section[]
-  courses?: CourseDto[]
+  courses?: Course[]
   isDeletionChecking?: boolean
 }>()
 
@@ -40,7 +40,7 @@ function getSectionName(section: Section): string {
   return `Section ${section.id}`
 }
 
-function getCourseName(courseId: EntityId | undefined, courses: CourseDto[] | undefined): string {
+function getCourseName(courseId: EntityId | undefined, courses: Course[] | undefined): string {
   if (!courseId || !courses)
     return '-'
   const course = courses.find(c => String(c.id) === String(courseId))

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EnrollmentDto } from '@/api/enrollments'
+import type { Enrollment } from '@/types/domain/enrollment'
 import type { StudentAttendanceReportDto } from '@/api/reports'
 import { AlertTriangle, ArrowLeft, Calendar, Clock, GraduationCap, Mail, User } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
@@ -29,7 +29,7 @@ const userStore = useUserStore()
 const loading = ref(true)
 const error = ref('')
 const report = ref<StudentAttendanceReportDto | null>(null)
-const enrollments = ref<EnrollmentDto[]>([])
+const enrollments = ref<Enrollment[]>([])
 
 // Base student identity from user store context
 const studentUser = computed(() => {
@@ -246,7 +246,7 @@ function goBack() {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="enrollment in enrollments" :key="enrollment.id || enrollment.enrollmentId">
+                <tr v-for="enrollment in enrollments" :key="enrollment.id">
                   <td>{{ enrollment.subjectName || enrollment.subject || '-' }}</td>
                   <td>{{ enrollment.sectionName || enrollment.section || enrollment.sectionId || '-' }}</td>
                   <td>{{ enrollment.enrollmentType || 'Regular' }}</td>

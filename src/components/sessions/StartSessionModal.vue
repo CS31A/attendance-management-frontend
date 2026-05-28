@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ClassroomDto } from '@/api/classrooms'
-import type { ScheduleDto } from '@/api/schedules'
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Classroom } from '@/types/domain/classroom'
+import type { Schedule } from '@/types/domain/schedule'
+import type { Session } from '@/types/domain/session'
 import type { EntityId } from '@/types'
 import { AlertTriangle, Play, X } from 'lucide-vue-next'
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -11,7 +11,7 @@ import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 import { getPublicEntityId } from '@/utils/entityIdNormalization'
 
 const props = defineProps<{
-  session: SessionResponseDto
+  session: Session
 }>()
 
 const emit = defineEmits<{
@@ -25,9 +25,9 @@ const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/Lo
 const actualRoomId = ref<EntityId | null>(null)
 const attendanceCutoffMinutes = ref(15)
 const errorMessage = ref('')
-const classrooms = ref<ClassroomDto[]>([])
+const classrooms = ref<Classroom[]>([])
 const loadingClassrooms = ref(false)
-const scheduleDetails = ref<ScheduleDto | null>(null)
+const scheduleDetails = ref<Schedule | null>(null)
 const loadingSchedule = ref(false)
 
 // Methods
@@ -49,7 +49,7 @@ async function loadClassrooms() {
   }
 }
 
-function getCourseName(session: SessionResponseDto | null) {
+function getCourseName(session: Session | null) {
   if (!session)
     return 'N/A'
   // Try different field combinations based on API response structure
@@ -62,7 +62,7 @@ function getCourseName(session: SessionResponseDto | null) {
   return session.subjectName || session.courseName || session.subjectCode || session.courseCode || 'Unknown Course'
 }
 
-function getScheduledTime(session: SessionResponseDto | null) {
+function getScheduledTime(session: Session | null) {
   if (!session)
     return 'N/A'
 
@@ -132,7 +132,7 @@ async function loadScheduleDetails() {
   try {
     const scheduleId = props.session.scheduleId as EntityId
     const response = await getScheduleById(scheduleId)
-    scheduleDetails.value = (response.data || response) as ScheduleDto
+    scheduleDetails.value = (response.data || response) as Schedule
   }
   catch (error) {
     console.error('Failed to load schedule details:', error)

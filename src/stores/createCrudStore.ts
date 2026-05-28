@@ -9,7 +9,8 @@ const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
 function getNestedValue(obj: unknown, path: string): unknown {
   return path.split('.').reduce((current, key) => {
-    if (RESERVED_KEYS.has(key)) return undefined
+    if (RESERVED_KEYS.has(key))
+      return undefined
     return current != null && typeof current === 'object'
       ? (current as Record<string, unknown>)[key]
       : undefined
@@ -55,9 +56,12 @@ export function createCrudStore<
         const valB = getNestedValue(b, sortKey)
 
         // Null/undefined sort last
-        if (valA == null && valB == null) return 0
-        if (valA == null) return 1
-        if (valB == null) return -1
+        if (valA == null && valB == null)
+          return 0
+        if (valA == null)
+          return 1
+        if (valB == null)
+          return -1
 
         // Numeric comparison when both values are numeric
         const numA = typeof valA === 'number' ? (Number.isNaN(valA) ? null : valA) : (typeof valA === 'string' && /^-?\d+(\.\d+)?$/.test(valA) ? Number(valA) : null)
@@ -116,7 +120,7 @@ export function createCrudStore<
       error.value = ''
       try {
         const response = await api.create(data)
-        items.value.push(response.data)
+        ;(items.value as TDto[]).push(response.data)
         return response.data
       }
       catch (err) {
@@ -140,7 +144,7 @@ export function createCrudStore<
         const response = await api.update(id, data)
         const index = items.value.findIndex(c => entityIdsMatch(c.id, id))
         if (index !== -1) {
-          items.value[index] = response.data
+          ;(items.value as TDto[])[index] = response.data
         }
         return response.data
       }

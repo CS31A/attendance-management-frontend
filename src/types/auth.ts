@@ -8,7 +8,6 @@ export interface AuthenticatedUser {
   userId?: EntityId
   username?: string
   email?: string
-  [key: string]: unknown
 }
 
 export interface AuthProfileDetails {
@@ -19,7 +18,6 @@ export interface AuthProfileDetails {
   sectionName?: string
   courseName?: string
   isRegular?: boolean
-  [key: string]: unknown
 }
 
 export interface AuthUserProfile {
@@ -32,16 +30,13 @@ export interface AuthUserProfile {
   studentProfile?: AuthProfileDetails | null
   instructorProfile?: AuthProfileDetails | null
   adminProfile?: AuthProfileDetails | null
-  [key: string]: unknown
 }
 
 export interface CheckAuthResponse {
   user?: AuthenticatedUser | string | null
-  [key: string]: unknown
 }
 
 export interface AuthActionResponse {
   success: boolean
   message?: string
-  [key: string]: unknown
 }

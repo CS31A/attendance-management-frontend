@@ -1,5 +1,5 @@
 import type { EntityId } from '@/types'
-import type { ApiUser, ApiUserProfile } from '@/types/user'
+import type { ApiUser } from '@/types/user'
 import type { UserRole } from '@/utils/constants'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -9,7 +9,6 @@ import { useLoadingState } from '@/composables/useLoadingState'
 import { ROLES } from '@/utils/constants'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
-
 
 type UiRole = 'Admin' | 'Instructor' | 'Student'
 
@@ -29,7 +28,6 @@ interface UserActionResult<T = unknown> {
   data?: T
   error?: string
 }
-
 
 function asLowerString(value: unknown): string {
   return typeof value === 'string' ? value.toLowerCase() : ''
@@ -81,7 +79,6 @@ export const useUserStore = defineStore('user', () => {
 
     return filtered
   })
-
 
   // ==================== ACTIONS ====================
 
@@ -278,7 +275,6 @@ export const useUserStore = defineStore('user', () => {
       }
     })
   }
-
 
   return {
     // State

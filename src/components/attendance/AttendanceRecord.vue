@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AttendanceStatus, SessionAttendanceResponseDto } from '@/api/attendance'
-import type { SessionResponseDto } from '@/api/sessions'
+import type { AttendanceStatus, SessionAttendanceRecord } from '@/types/domain/attendance'
+import type { Session } from '@/types/domain/session'
 import type { EntityId } from '@/types'
 import type { EditableAttendanceRecord } from '@/utils/attendanceRecord'
 import {
@@ -34,8 +34,8 @@ interface AttendanceStats {
 }
 
 const props = defineProps<{
-  session: SessionResponseDto
-  attendance: SessionAttendanceResponseDto[]
+  session: Session
+  attendance: SessionAttendanceRecord[]
   loading?: boolean
   onSubmit: (attendanceData: EditableAttendanceRecord[]) => Promise<void>
   stats?: AttendanceStats

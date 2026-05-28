@@ -8,6 +8,8 @@ import sectionsApi from '@/api/sections'
 import { useSectionStore } from '@/stores/sectionStore'
 
 vi.mock('@/api/sections')
+import { toSection } from '@/api/sections'
+vi.mocked(toSection).mockImplementation(((dto: any) => ({ ...dto })) as any)
 
 // Helper factory
 function createSection(overrides: Partial<SectionDto> = {}): SectionDto {

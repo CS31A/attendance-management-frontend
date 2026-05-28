@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CourseDto, CoursePayload } from '@/api/courses'
+import type { CoursePayload } from '@/api/courses'
+import type { Course } from '@/types/domain/course'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -69,7 +70,7 @@ const {
   openAddModal,
   openEditModal,
   closeModal,
-} = useCrudModal<CoursePayload, CourseDto>({
+} = useCrudModal<CoursePayload, Course>({
   showToast,
   createFn: data => courseStore.createCourse(data),
   updateFn: (id, data) => courseStore.updateCourse(id, data),
@@ -84,7 +85,7 @@ const {
   handleDelete: handleDeleteCourse,
   confirmDelete,
   cancelDelete,
-} = createDeleteFlow<CourseDto>({
+} = createDeleteFlow<Course>({
   store: {
     items: () => courseStore.courses,
     deleteItem: courseStore.deleteCourse,

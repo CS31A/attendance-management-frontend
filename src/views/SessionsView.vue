@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CreateSessionPayload, EndSessionPayload, SessionResponseDto, StartSessionPayload, UpdateSessionRoomPayload } from '@/api/sessions'
+import type { CreateSessionPayload, EndSessionPayload, Session, StartSessionPayload, UpdateSessionRoomPayload } from '@/api/sessions'
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'
@@ -41,9 +41,9 @@ const showQRDisplayModal = ref(false)
 const showQRListModal = ref(false)
 const showCancelModal = ref(false)
 const showRevokeModal = ref(false)
-const sessionToCancel = ref<SessionResponseDto | null>(null)
+const sessionToCancel = ref<Session | null>(null)
 const isCancelling = ref(false)
-const selectedSession = ref<SessionResponseDto | null>(null)
+const selectedSession = ref<Session | null>(null)
 const currentQrCode = ref<DisplayedQrCode | null>(null)
 const errorMessage = ref('')
 
@@ -165,7 +165,7 @@ async function handleCreateSession(payload: CreateSessionPayload) {
   }
 }
 
-function handleStartSession(session: SessionResponseDto) {
+function handleStartSession(session: Session) {
   selectedSession.value = session
   showStartModal.value = true
 }
@@ -193,7 +193,7 @@ async function handleConfirmStart(payload: Omit<StartSessionPayload, 'rowVersion
   }
 }
 
-function handleEndSession(session: SessionResponseDto) {
+function handleEndSession(session: Session) {
   selectedSession.value = session
   showEndModal.value = true
 }
@@ -226,7 +226,7 @@ function handleDeleteSession(id: EntityId) {
   openCancelSession(id)
 }
 
-function handleUpdateRoom(session: SessionResponseDto) {
+function handleUpdateRoom(session: Session) {
   selectedSession.value = session
   showUpdateRoomModal.value = true
 }
@@ -254,7 +254,7 @@ async function handleConfirmUpdateRoom(payload: Omit<UpdateSessionRoomPayload, '
   }
 }
 
-function handleGenerateQr(session: SessionResponseDto) {
+function handleGenerateQr(session: Session) {
   selectedSession.value = session
   showQRGenerateModal.value = true
 }
@@ -286,12 +286,12 @@ function handleQrFullscreen(qrCodeId: EntityId) {
   router.push(`/qr-code/projection/${qrCodeId}`)
 }
 
-function handleViewQrCodes(session: SessionResponseDto) {
+function handleViewQrCodes(session: Session) {
   selectedSession.value = session
   showQRListModal.value = true
 }
 
-function handleViewSessionDetails(session: SessionResponseDto) {
+function handleViewSessionDetails(session: Session) {
   router.push(`/sessions/${session.id}`)
 }
 

@@ -1,14 +1,12 @@
 import type {
   AttendanceQueryParams,
-  AttendanceResponseDto,
   AttendanceStatus,
-  AttendanceSummaryDto,
   AttendanceUpdateInput,
   BackendAttendanceStatus,
   RecordAttendancePayload,
-  SessionAttendanceResponseDto,
 } from '@/api/attendance'
 import type { EntityId } from '@/types'
+import type { AttendanceRecord, AttendanceSummary, SessionAttendanceRecord } from '@/types/domain/attendance'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import {
@@ -21,12 +19,15 @@ import {
   fetchStudentAttendance as apiFetchStudentAttendance,
   updateAttendance as apiUpdateAttendance,
   calculateAttendanceStats,
+  toAttendanceRecord,
+  toAttendanceSummary,
+  toSessionAttendanceRecord,
 } from '@/api/attendance'
 import { useLoadingState } from '@/composables/useLoadingState'
 import { normalizeNotes } from '@/utils/attendanceRecord'
+import { createAttendanceSubmissionError } from '@/utils/attendanceSubmission'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorStatus } from '@/utils/httpError'
-import { createAttendanceSubmissionError } from '@/utils/attendanceSubmission'
 import { withRollback } from '@/utils/withRollback'
 
 /**
@@ -47,18 +48,18 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   // ==================== STATE ====================
 
   /** @type {import('vue').Ref<Array>} */
-  const attendanceRecords = ref<AttendanceResponseDto[]>([])
+  const attendanceRecords = ref<AttendanceRecord[]>([])
 
   /** @type {import('vue').Ref<Array>} */
-  const sessionAttendance = ref<SessionAttendanceResponseDto[]>([])
+  const sessionAttendance = ref<SessionAttendanceRecord[]>([])
 
   const { loading, withLoading, resetLoading } = useLoadingState()
 
   /** @type {import('vue').Ref<object | null>} */
-  const currentRecord = ref<AttendanceResponseDto | null>(null)
+  const currentRecord = ref<AttendanceRecord | null>(null)
 
   /** @type {import('vue').Ref<object | null>} */
-  const summary = ref<AttendanceSummaryDto | null>(null)
+  const summary = ref<AttendanceSummary | null>(null)
 
   /** @type {import('vue').Ref<number | null>} */
   const currentSessionId = ref<EntityId | null>(null)
@@ -87,8 +88,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     return attendanceStatusWriteMap[status]
   }
 
-
-  function applyAttendanceUpdates(records: AttendanceResponseDto[], allowInsert = false) {
+  function applyAttendanceUpdates(records: AttendanceRecord[], allowInsert = false) {
     records.forEach((record) => {
       const indexById = sessionAttendance.value.findIndex(existing => entityIdsMatch(existing.id, record.id))
       if (indexById !== -1) {
@@ -109,7 +109,12 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
       }
 
       if (allowInsert) {
-        sessionAttendance.value.push(record)
+        sessionAttendance.value.push({
+          ...record,
+          studentNumber: '',
+          studentName: '',
+          checkInTime: '',
+        })
       }
     })
   }
@@ -118,7 +123,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   async function refreshSessionAttendanceWithRetry(sessionId: EntityId, retries = 1): Promise<boolean> {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const refreshedAttendance = await apiFetchSessionAttendance(sessionId)
+        const refreshedAttendance = (await apiFetchSessionAttendance(sessionId)).map(toSessionAttendanceRecord)
         if (isCurrentSession(sessionId)) {
           sessionAttendance.value = refreshedAttendance
         }
@@ -145,7 +150,6 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
   }
 
   // ==================== GETTERS ====================
-
 
   /**
    * Get attendance statistics for current session
@@ -181,7 +185,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const fetchAllAttendance = async (params: AttendanceQueryParams = {}) => {
     return withLoading(async () => {
-      const data = await apiFetchAllAttendance(params)
+      const data = (await apiFetchAllAttendance(params)).map(toAttendanceRecord)
       attendanceRecords.value = data
       return data
     }, err => console.error('Failed to fetch attendance records:', err))
@@ -194,7 +198,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const fetchAttendanceById = async (id: EntityId) => {
     return withLoading(async () => {
-      const data = await apiFetchAttendanceById(id)
+      const data = toAttendanceRecord(await apiFetchAttendanceById(id))
       currentRecord.value = data
       return data
     }, err => console.error('Failed to fetch attendance record:', err))
@@ -212,7 +216,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
     return withLoading(async () => {
       try {
         // API returns attendanceRecords array directly (extracted in api layer)
-        const data = await apiFetchSessionAttendance(sessionId)
+        const data = (await apiFetchSessionAttendance(sessionId)).map(toSessionAttendanceRecord)
         sessionAttendance.value = data
         return data
       }
@@ -235,7 +239,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const fetchStudentAttendance = async (studentId: EntityId) => {
     return withLoading(async () => {
-      const data = await apiFetchStudentAttendance(studentId)
+      const data = (await apiFetchStudentAttendance(studentId)).map(toAttendanceRecord)
       return data
     }, err => console.error('Failed to fetch student attendance:', err))
   }
@@ -247,7 +251,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const fetchAttendanceSummary = async (params: AttendanceQueryParams = {}) => {
     return withLoading(async () => {
-      const data = await apiFetchAttendanceSummary(params)
+      const data = toAttendanceSummary(await apiFetchAttendanceSummary(params))
       summary.value = data
       return data
     }, err => console.error('Failed to fetch attendance summary:', err))
@@ -263,7 +267,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
    */
   const submitAttendance = async (payload: RecordAttendancePayload) => {
     clearSyncWarning()
-    const submittedRecords: AttendanceResponseDto[] = []
+    const submittedRecords: AttendanceRecord[] = []
 
     return withLoading(async () => {
       try {
@@ -272,7 +276,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
           const backendStatus = mapAttendanceStatusForWrite(record.status)
           const existingRecordId = record.id
 
-          const savedRecord = existingRecordId !== undefined && existingRecordId !== null
+          const savedRecordDto = existingRecordId !== undefined && existingRecordId !== null
             ? await apiUpdateAttendance(existingRecordId, {
                 status: backendStatus,
                 notes: normalizedNotes,
@@ -285,7 +289,7 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
                 ...(record.checkInTime !== undefined && { checkInTime: record.checkInTime }),
               })
 
-          submittedRecords.push(savedRecord)
+          submittedRecords.push(toAttendanceRecord(savedRecordDto))
         }
 
         if (isCurrentSession(payload.sessionId)) {
@@ -325,10 +329,10 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
 
     return withLoading(() => withRollback(sessionAttendance, async () => {
       const recordIndex = sessionAttendance.value.findIndex(r => entityIdsMatch(r.id, id))
-      const updatedRecord = await apiUpdateAttendance(id, {
+      const updatedRecord = toAttendanceRecord(await apiUpdateAttendance(id, {
         ...payload,
         status: payload.status ? mapAttendanceStatusForWrite(payload.status) : undefined,
-      })
+      }))
       if (recordIndex !== -1) {
         applyAttendanceUpdates([updatedRecord])
       }
@@ -340,7 +344,10 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
         )
       }
       else if (recordIndex !== -1) {
-        sessionAttendance.value[recordIndex] = updatedRecord
+        sessionAttendance.value[recordIndex] = {
+          ...sessionAttendance.value[recordIndex],
+          ...updatedRecord,
+        }
       }
 
       return updatedRecord

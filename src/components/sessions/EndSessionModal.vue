@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { EndSessionPayload, SessionResponseDto } from '@/api/sessions'
+import type { EndSessionPayload } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import { AlertTriangle, StopCircle, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { formatLongWeekdayDate as formatDate } from '@/utils/date'
 
 defineProps<{
-  session: SessionResponseDto
+  session: Session
 }>()
 
 const emit = defineEmits<{
@@ -18,7 +19,7 @@ const notes = ref('')
 const errorMessage = ref('')
 
 // Methods
-function getCourseName(session: SessionResponseDto | null) {
+function getCourseName(session: Session | null) {
   if (!session)
     return 'N/A'
 

@@ -10,7 +10,15 @@ export interface SubjectDto {
   uuid?: EntityId
   numericId?: number
   name?: string
-  [key: string]: unknown
+  code?: string
+}
+
+export function toSubject(dto: SubjectDto): { id: EntityId; name: string; code: string } {
+  return {
+    id: dto.id,
+    name: dto.name ?? '',
+    code: dto.code ?? '',
+  }
 }
 
 export interface SubjectPayload {

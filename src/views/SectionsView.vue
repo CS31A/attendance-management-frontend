@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { SectionDto, SectionPayload } from '@/api/sections'
+import type { SectionPayload } from '@/api/sections'
+import type { Section } from '@/types/domain/section'
 import { AlertTriangle, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -66,7 +67,7 @@ const {
   resetToFirstPage,
 } = useLocalPagination({ items: filteredSections })
 
-function openEnrollmentModal(section: SectionDto) {
+function openEnrollmentModal(section: Section) {
   router.push(`/sections/${section.id}/enrollments`)
 }
 
@@ -80,7 +81,7 @@ const {
   openAddModal,
   openEditModal,
   closeModal,
-} = useCrudModal<SectionPayload, SectionDto>({
+} = useCrudModal<SectionPayload, Section>({
   showToast,
   createFn: data => sectionsStore.addSection(data),
   updateFn: (id, data) => sectionsStore.updateSection(id, data),
@@ -95,7 +96,7 @@ const {
   handleDelete: handleDeleteSection,
   confirmDelete,
   cancelDelete,
-} = createDeleteFlow<SectionDto>({
+} = createDeleteFlow<Section>({
   store: {
     items: () => sectionsStore.sections,
     deleteItem: sectionsStore.deleteSection,

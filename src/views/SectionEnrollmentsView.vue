@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SectionDto } from '@/api/sections'
+import type { Section } from '@/types/domain/section'
 import type { EntityId } from '@/types'
 import { AlertTriangle, ArrowLeft, Check, RefreshCw, Trash2, UserPlus, X } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
@@ -39,7 +39,7 @@ const sectionStore = useSectionStore()
 const userStore = useUserStore()
 
 // State
-const section = ref<SectionDto | null>(null)
+const section = ref<Section | null>(null)
 const searchQuery = ref('')
 const showAddModal = ref(false)
 const showDropModal = ref(false)
@@ -340,7 +340,7 @@ watch(sectionId, (nextSectionId) => {
                 {{ enrolledStudents.length === 0 ? 'No students enrolled in this section.' : 'No students match the current filters.' }}
               </td>
             </tr>
-            <tr v-for="student in filteredEnrolledStudents" :key="student.enrollmentId ?? student.studentId">
+            <tr v-for="student in filteredEnrolledStudents" :key="student.id">
               <td class="text-left">
                 {{ student.studentId }}
               </td>
@@ -361,18 +361,18 @@ watch(sectionId, (nextSectionId) => {
               <td>
                 <div class="row-actions">
                   <button
-                    v-if="student.status !== 'Dropped' && student.enrollmentId"
+                    v-if="student.status !== 'Dropped' && student.id"
                     class="btn-icon danger"
                     title="Drop Student"
-                    @click="handleDropClick(student.enrollmentId)"
+                    @click="handleDropClick(student.id)"
                   >
                     <Trash2 :size="16" />
                   </button>
                   <button
-                    v-else-if="student.enrollmentId"
+                    v-else-if="student.id"
                     class="btn-icon success"
                     title="Re-enroll Student"
-                    @click="handleReenroll(student.enrollmentId)"
+                    @click="handleReenroll(student.id)"
                   >
                     <RefreshCw :size="16" />
                   </button>

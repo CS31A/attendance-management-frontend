@@ -5,7 +5,6 @@ export interface QrCodePayload {
   sessionId: EntityId
   expirationMinutes?: number
   maxUsage?: number
-  [key: string]: unknown
 }
 
 export interface QrCodeScanPayload {
@@ -27,7 +26,6 @@ export interface QrCodeResponseDto {
   maxUsage?: number
   isActive?: boolean
   isExpired?: boolean
-  [key: string]: unknown
 }
 
 export type QrCodeValidationResponseDto = Record<string, unknown>
@@ -35,7 +33,6 @@ export interface QrCodeScanInfoDto {
   scheduleTitle?: string
   generatedAt?: string
   expiresAt?: string
-  [key: string]: unknown
 }
 
 export interface QrCodeScanStatisticsDto {
@@ -43,7 +40,6 @@ export interface QrCodeScanStatisticsDto {
   successfulScans?: number
   failedScans?: number
   uniqueStudents?: number
-  [key: string]: unknown
 }
 
 export interface QrCodeScanRecordDto {
@@ -53,13 +49,11 @@ export interface QrCodeScanRecordDto {
   scannedAt?: string
   status?: string
   deviceInfo?: string
-  [key: string]: unknown
 }
 
 export interface QrCodeScanHistoryItemsDto {
   items?: QrCodeScanRecordDto[]
   totalItems?: number
-  [key: string]: unknown
 }
 
 export interface QrCodeScanHistoryResponseDto {
@@ -71,7 +65,6 @@ export interface QrCodeScanHistoryResponseDto {
 export type QrCodePaginationParams = PaginationParams & {
   pageNumber?: number
   pageSize?: number
-  [key: string]: unknown
 }
 
 /**

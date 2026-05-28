@@ -10,6 +10,9 @@ import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 vi.mock('@/api/schedules')
 vi.mock('@/utils/httpError')
+import { toSchedule } from '@/api/schedules'
+vi.mocked(toSchedule).mockImplementation(((dto: any) => ({ ...dto })) as any)
+vi.mock('@/utils/httpError')
 
 // Helper factory
 function createSchedule(overrides: Partial<ScheduleDto> = {}): ScheduleDto {

@@ -10,6 +10,9 @@ import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 vi.mock('@/api/courses')
 vi.mock('@/utils/httpError')
+import { toCourse } from '@/api/courses'
+vi.mocked(toCourse).mockImplementation(((dto: any) => ({ ...dto })) as any)
+vi.mock('@/utils/httpError')
 
 interface Deferred<T> {
   promise: Promise<T>

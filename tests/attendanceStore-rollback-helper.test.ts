@@ -1,6 +1,4 @@
-import type {
-  SessionAttendanceResponseDto,
-} from '@/api/attendance'
+import type { SessionAttendanceRecord } from '@/types/domain/attendance'
 
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -21,12 +19,16 @@ vi.mock('@/api/attendance', async (importOriginal) => {
 })
 vi.mock('@/utils/httpError')
 
-function createSessionAttendanceRecord(overrides: Partial<SessionAttendanceResponseDto> = {}): SessionAttendanceResponseDto {
+function createSessionAttendanceRecord(overrides: Partial<SessionAttendanceRecord> = {}): SessionAttendanceRecord {
   return {
     id: '1',
     studentId: '1',
     sessionId: '1',
     status: 'present',
+    notes: '',
+    studentNumber: '',
+    studentName: '',
+    checkInTime: '',
     ...overrides,
   }
 }

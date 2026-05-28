@@ -1,5 +1,6 @@
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
+import type { Session } from '@/types/domain/session'
 import api from '@/api'
 import { isSessionScheduledForToday } from '@/utils/sessionDateHelpers'
 
@@ -13,7 +14,20 @@ export interface SessionResponseDto {
   sectionName?: string
   actualStartTime?: string
   actualEndTime?: string
-  [key: string]: unknown
+  scheduledRoomName?: string
+  actualRoomName?: string
+  scheduledStartTime?: string
+  scheduledEndTime?: string
+  startTime?: string
+  endTime?: string
+  courseCode?: string
+  courseName?: string
+  description?: string
+  totalEnrolled?: number
+  startedByName?: string
+  updatedAt?: string
+  modifiedAt?: string
+  roomName?: string
 }
 
 export interface CreateSessionPayload {
@@ -451,4 +465,32 @@ export function getSessionDisplayName(session: SessionResponseDto | null | undef
     parts.push(`(${session.sectionName})`)
 
   return parts.join(' - ') || `Session ${session.id}`
+}
+
+export function toSession(dto: SessionResponseDto): Session {
+  return {
+    id: dto.id,
+    status: dto.status,
+    rowVersion: dto.rowVersion ?? '',
+    sessionDate: dto.sessionDate ?? '',
+    subjectCode: dto.subjectCode ?? '',
+    subjectName: dto.subjectName ?? '',
+    sectionName: dto.sectionName ?? '',
+    actualStartTime: dto.actualStartTime ?? '',
+    actualEndTime: dto.actualEndTime ?? '',
+    scheduledRoomName: dto.scheduledRoomName ?? '',
+    actualRoomName: dto.actualRoomName ?? '',
+    scheduledStartTime: dto.scheduledStartTime ?? '',
+    scheduledEndTime: dto.scheduledEndTime ?? '',
+    startTime: dto.startTime ?? '',
+    endTime: dto.endTime ?? '',
+    courseCode: dto.courseCode ?? '',
+    courseName: dto.courseName ?? '',
+    description: dto.description ?? '',
+    totalEnrolled: dto.totalEnrolled ?? 0,
+    startedByName: dto.startedByName ?? '',
+    updatedAt: dto.updatedAt ?? '',
+    modifiedAt: dto.modifiedAt ?? '',
+    roomName: dto.roomName ?? '',
+  }
 }

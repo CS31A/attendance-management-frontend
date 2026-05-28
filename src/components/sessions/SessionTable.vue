@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import type { EntityId } from '@/types'
 import { Calendar, Clock, Eye, MapPin, Play, QrCode, StopCircle, Trash2 } from 'lucide-vue-next'
 import { canStartSession } from '@/api/sessions'
@@ -8,20 +8,20 @@ import { formatShortWeekdayDateWithYear as formatDate } from '@/utils/date'
 import SessionStatusBadge from './SessionStatusBadge.vue'
 
 defineProps<{
-  sessions: SessionResponseDto[]
+  sessions: Session[]
 }>()
 
 defineEmits<{
-  start: [session: SessionResponseDto]
-  end: [session: SessionResponseDto]
+  start: [session: Session]
+  end: [session: Session]
   delete: [id: EntityId]
-  updateRoom: [session: SessionResponseDto]
-  generateQr: [session: SessionResponseDto]
-  viewQrCodes: [session: SessionResponseDto]
-  viewDetails: [session: SessionResponseDto]
+  updateRoom: [session: Session]
+  generateQr: [session: Session]
+  viewQrCodes: [session: Session]
+  viewDetails: [session: Session]
 }>()
 
-function getCourseName(session: SessionResponseDto | null) {
+function getCourseName(session: Session | null) {
   if (!session)
     return 'Unknown Course'
 
@@ -43,7 +43,7 @@ function getCourseName(session: SessionResponseDto | null) {
     || 'Unknown Course'
 }
 
-function getScheduleInfo(session: SessionResponseDto) {
+function getScheduleInfo(session: Session) {
   const parts = []
   if (session.subjectCode)
     parts.push(session.subjectCode)
@@ -52,7 +52,7 @@ function getScheduleInfo(session: SessionResponseDto) {
   return parts.join(' • ') || 'No schedule info'
 }
 
-function getTimeRange(session: SessionResponseDto) {
+function getTimeRange(session: Session) {
   const actualStart = session.actualStartTime as string | undefined
   const actualEnd = session.actualEndTime as string | undefined
   const scheduledStart = (session.scheduledStartTime as string | undefined) || (session.startTime as string | undefined)

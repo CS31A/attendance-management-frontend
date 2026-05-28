@@ -34,7 +34,28 @@ export interface EnrollmentDto {
   enrolledAt?: string | null
   isActive?: boolean
   status?: string
-  [key: string]: unknown
+}
+
+export function toEnrollment(dto: EnrollmentDto): {
+  id: EntityId
+  studentId: EntityId
+  studentFirstname: string
+  studentLastname: string
+  enrollmentType: string
+  enrolledAt: string
+  isActive: boolean
+  status: string
+} {
+  return {
+    id: dto.enrollmentId ?? dto.id,
+    studentId: dto.studentId ?? '',
+    studentFirstname: dto.studentFirstname ?? '',
+    studentLastname: dto.studentLastname ?? '',
+    enrollmentType: dto.enrollmentType ?? '',
+    enrolledAt: dto.enrolledAt ?? '',
+    isActive: dto.isActive ?? false,
+    status: dto.status ?? '',
+  }
 }
 
 export interface StudentSectionsResponseDto {

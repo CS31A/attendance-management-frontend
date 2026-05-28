@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { StudentAttendance } from '@/api/attendance'
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import type { EntityId } from '@/types'
 import { AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -29,7 +29,7 @@ const { toast, showToast, closeToast } = useToast()
 // State
 const errorMessage = ref('')
 const currentView = ref<AttendanceViewMode>('list')
-const selectedSession = ref<SessionResponseDto | null>(null)
+const selectedSession = ref<Session | null>(null)
 
 // Computed
 const sessionId = computed<EntityId | undefined>(() => {
@@ -96,7 +96,7 @@ async function loadSessionDetails(sessionId: EntityId) {
   }
 }
 
-function handleSelectSession(session: SessionResponseDto) {
+function handleSelectSession(session: Session) {
   router.push(`/attendance/session/${session.id}`)
 }
 

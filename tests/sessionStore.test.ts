@@ -23,6 +23,18 @@ import {
 import { useSessionStore } from '@/stores/sessionStore'
 
 vi.mock('@/api/sessions')
+import { toSession } from '@/api/sessions'
+vi.mocked(toSession).mockImplementation(((dto: any) => ({
+  id: dto.id,
+  status: dto.status,
+  rowVersion: dto.rowVersion ?? '',
+  sessionDate: dto.sessionDate ?? '',
+  subjectCode: dto.subjectCode ?? '',
+  subjectName: dto.subjectName ?? '',
+  sectionName: dto.sectionName ?? '',
+  actualStartTime: dto.actualStartTime ?? '',
+  actualEndTime: dto.actualEndTime ?? '',
+})) as any)
 
 interface Deferred<T> {
   promise: Promise<T>
@@ -46,6 +58,11 @@ function createSession(overrides: Partial<SessionResponseDto> = {}): SessionResp
     status: 'not_started' as SessionStatus,
     sessionDate: todaySessionDate,
     rowVersion: 'row-version-1',
+    subjectCode: '',
+    subjectName: '',
+    sectionName: '',
+    actualStartTime: '',
+    actualEndTime: '',
     ...overrides,
   }
 }
@@ -397,7 +414,7 @@ describe('sessionStore', () => {
     })
 
     it('updateSessionRoom replaces matching session on success', async () => {
-      const updatedSession = createSession({ id: '1', status: 'active', actualRoomId: '202', rowVersion: 'row-version-4' })
+      const updatedSession = createSession({ id: '1', status: 'active', rowVersion: 'row-version-4' })
       vi.mocked(apiUpdateSessionRoom).mockResolvedValue(updatedSession as never)
 
       const store = useSessionStore()
@@ -407,9 +424,9 @@ describe('sessionStore', () => {
       const payload = { actualRoomId: '202' }
       const result = await store.updateSessionRoom('1', payload)
 
-      expect(store.sessions[0]).toEqual(updatedSession)
-      expect(store.currentSession).toEqual(updatedSession)
-      expect(result).toEqual(updatedSession)
+      expect(store.sessions[0]).toEqual(toSession(updatedSession))
+      expect(store.currentSession).toEqual(toSession(updatedSession))
+      expect(result).toEqual(toSession(updatedSession))
       expect(store.loading).toBe(false)
       expect(apiUpdateSessionRoom).toHaveBeenCalledWith('1', { actualRoomId: '202', rowVersion: 'row-version-1' })
     })

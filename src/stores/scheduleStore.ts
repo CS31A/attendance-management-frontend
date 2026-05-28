@@ -1,15 +1,16 @@
-import type { ScheduleCollectionDto, ScheduleDto, SchedulePayload } from '@/api/schedules'
+import type { SchedulePayload } from '@/api/schedules'
 import type { EntityId } from '@/types'
+import type { Schedule } from '@/types/domain/schedule'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import scheduleApi from '@/api/schedules'
+import scheduleApi, { toSchedule } from '@/api/schedules'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 export const useScheduleStore = defineStore('schedule', () => {
   // State
-  const schedules = ref<ScheduleCollectionDto>([])
-  const currentSchedule = ref<ScheduleDto | null>(null)
+  const schedules = ref<Schedule[]>([])
+  const currentSchedule = ref<Schedule | null>(null)
   const loading = ref(false)
   const error = ref('')
   const fetchError = ref('')
@@ -36,7 +37,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     fetchError.value = ''
     try {
       const data = await scheduleApi.getAllSchedules()
-      schedules.value = data
+      schedules.value = data.map(toSchedule)
     }
     catch (err) {
       const msg = getErrorMessage(err, 'Failed to fetch schedules')
@@ -57,7 +58,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     fetchError.value = ''
     try {
       const data = await scheduleApi.getScheduleById(id)
-      currentSchedule.value = data
+      currentSchedule.value = toSchedule(data)
     }
     catch (err) {
       const msg = getErrorMessage(err, `Schedule with ID ${id} not found`)
@@ -77,7 +78,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       const newSchedule = await scheduleApi.createSchedule(data)
       // Refetch all schedules to ensure we have fully populated data
       await fetchSchedules(true)
-      return newSchedule
+      return toSchedule(newSchedule)
     }
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to create schedule')
@@ -100,7 +101,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       const updatedSchedule = await scheduleApi.updateSchedule(id, data)
       // Refetch all schedules to ensure we have fully populated data
       await fetchSchedules(true)
-      return updatedSchedule
+      return toSchedule(updatedSchedule)
     }
     catch (err) {
       error.value = getErrorMessage(err, 'Failed to update schedule')

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QrCodeResponseDto } from '@/api/qrCode'
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import { AlertTriangle, ArrowLeft, Calendar, Check, Clock, Eye, History, MapPin, QrCode, RefreshCw } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -19,7 +19,7 @@ const router = useRouter()
 const sessionStore = useSessionStore()
 const qrCodeStore = useQrCodeStore()
 
-const session = ref<SessionResponseDto | null>(null)
+const session = ref<Session | null>(null)
 const sessionError = ref('')
 const loadingSession = ref(false)
 const loadingQrCodes = ref(false)
@@ -32,18 +32,19 @@ const selectedScanQrCodeId = ref('')
 const sessionId = computed(() => String(route.params.sessionId || ''))
 const qrCodes = computed(() => qrCodeStore.sessionQrCodes)
 
-function fieldValue(source: SessionResponseDto | QrCodeResponseDto | null, keys: string[]): unknown {
+function fieldValue(source: Session | QrCodeResponseDto | null, keys: string[]): unknown {
   if (!source)
     return undefined
 
-  return keys.map(key => source[key]).find(value => value != null && value !== '')
+  const record = source as Record<string, unknown>
+  return keys.map(key => record[key]).find(value => value != null && value !== '')
 }
 
 function displayText(value: unknown, fallback = 'Not provided') {
   return typeof value === 'string' && value.trim() ? value : fallback
 }
 
-function getCourseName(value: SessionResponseDto | null) {
+function getCourseName(value: Session | null) {
   if (!value)
     return 'Session Details'
 
@@ -78,7 +79,7 @@ function formatTime(value: unknown) {
   return `${displayHour}:${minutes} ${period}`
 }
 
-function formatTimeRange(value: SessionResponseDto | null) {
+function formatTimeRange(value: Session | null) {
   const actualStart = fieldValue(value, ['actualStartTime'])
   const actualEnd = fieldValue(value, ['actualEndTime'])
   const scheduledStart = fieldValue(value, ['scheduledStartTime', 'startTime'])
@@ -92,11 +93,11 @@ function formatTimeRange(value: SessionResponseDto | null) {
   return 'Time TBD'
 }
 
-function getRoomName(value: SessionResponseDto | null) {
+function getRoomName(value: Session | null) {
   return displayText(fieldValue(value, ['actualRoomName', 'scheduledRoomName', 'roomName']), 'Room TBD')
 }
 
-function getLifecycleTimestamp(value: SessionResponseDto | null, keys: string[]) {
+function getLifecycleTimestamp(value: Session | null, keys: string[]) {
   const timestamp = fieldValue(value, keys)
   return typeof timestamp === 'string' && timestamp ? formatDateTime(timestamp) : 'Not recorded'
 }

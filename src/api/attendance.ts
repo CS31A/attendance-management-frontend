@@ -11,7 +11,8 @@ import api from '@/api'
  * @module api/attendance
  */
 
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
+import type { AttendanceStatus } from '@/types/domain/attendance'
+export type { AttendanceStatus }
 
 /** PascalCase status values required by backend write operations ('Present' | 'Absent' | 'Late' | 'Excused') */
 export type BackendAttendanceStatus = Capitalize<AttendanceStatus>
@@ -22,7 +23,6 @@ export interface AttendanceResponseDto {
   sessionId: EntityId
   status: AttendanceStatus
   notes?: string
-  [key: string]: unknown
 }
 
 export interface SessionAttendanceResponseDto extends AttendanceResponseDto {
@@ -57,7 +57,6 @@ export interface AttendanceSummaryDto {
   attendanceRate?: number
   averageCheckInTime?: string
   mostFrequentStatus?: string
-  [key: string]: unknown
 }
 
 export type AttendanceQueryParams = PaginationParams & {
@@ -118,7 +117,8 @@ interface StudentAttendanceHistoryResponse {
  * Frontend expects 'present' | 'absent' | 'late' | 'excused'
  */
 function normalizeStatus(status: string): AttendanceStatus {
-  return status.toLowerCase() as AttendanceStatus
+  const normalized = status.toLowerCase()
+  return isValidAttendanceStatus(normalized) ? normalized : 'absent'
 }
 
 function normalizeAttendanceRecord(record: AttendanceResponseDto): AttendanceResponseDto {
@@ -139,6 +139,65 @@ function extractAttendanceRecords(data: AttendanceResponseDto[] | AttendancePage
     return data.attendanceRecords
 
   return []
+}
+
+export function toAttendanceRecord(dto: AttendanceResponseDto): {
+  id: EntityId
+  studentId: EntityId
+  sessionId: EntityId
+  status: AttendanceStatus
+  notes: string
+} {
+  const normalized = (dto.status ?? 'absent').toLowerCase()
+  return {
+    id: dto.id,
+    studentId: dto.studentId,
+    sessionId: dto.sessionId,
+    status: isValidAttendanceStatus(normalized) ? normalized : 'absent',
+    notes: dto.notes ?? '',
+  }
+}
+
+export function toSessionAttendanceRecord(dto: SessionAttendanceResponseDto): {
+  id: EntityId
+  studentId: EntityId
+  sessionId: EntityId
+  status: AttendanceStatus
+  notes: string
+  studentNumber: string
+  studentName: string
+  checkInTime: string
+} {
+  return {
+    ...toAttendanceRecord(dto),
+    studentNumber: dto.studentNumber ?? '',
+    studentName: dto.studentName ?? '',
+    checkInTime: dto.checkInTime ?? '',
+  }
+}
+
+export function toAttendanceSummary(dto: AttendanceSummaryDto): {
+  totalSessions: number
+  totalEnrolled: number
+  totalPresent: number
+  totalLate: number
+  totalAbsent: number
+  totalExcused: number
+  attendanceRate: number
+  averageCheckInTime: string
+  mostFrequentStatus: string
+} {
+  return {
+    totalSessions: dto.totalSessions ?? 0,
+    totalEnrolled: dto.totalEnrolled ?? 0,
+    totalPresent: dto.totalPresent ?? 0,
+    totalLate: dto.totalLate ?? 0,
+    totalAbsent: dto.totalAbsent ?? 0,
+    totalExcused: dto.totalExcused ?? 0,
+    attendanceRate: dto.attendanceRate ?? 0,
+    averageCheckInTime: dto.averageCheckInTime ?? '',
+    mostFrequentStatus: dto.mostFrequentStatus ?? '',
+  }
 }
 
 // ==================== READ OPERATIONS ====================

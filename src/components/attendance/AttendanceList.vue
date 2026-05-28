@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import { Calendar, ChevronRight, Clock, Filter, MapPin, Search } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { formatShortWeekdayDate as formatDate } from '@/utils/date'
 
 const props = defineProps<{
-  sessions: SessionResponseDto[]
+  sessions: Session[]
   loading?: boolean
 }>()
 
 const emit = defineEmits<{
-  select: [session: SessionResponseDto]
+  select: [session: Session]
 }>()
 
 const LoadingSpinner = defineAsyncComponent(() => import('@/components/common/LoadingSpinner.vue'))
@@ -80,7 +80,7 @@ const sessionCounts = computed(() => ({
 }))
 
 // Methods
-function handleSelectSession(session: SessionResponseDto) {
+function handleSelectSession(session: Session) {
   emit('select', session)
 }
 

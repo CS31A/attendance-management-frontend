@@ -10,7 +10,13 @@ export interface CourseDto {
   uuid?: EntityId
   numericId?: number
   name?: string
-  [key: string]: unknown
+}
+
+export function toCourse(dto: CourseDto): { id: EntityId; name: string } {
+  return {
+    id: dto.id,
+    name: dto.name ?? '',
+  }
 }
 
 export interface CoursePayload {

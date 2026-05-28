@@ -1,13 +1,14 @@
-import type { SectionDto, SectionPayload } from '@/api/sections'
+import type { SectionPayload } from '@/api/sections'
 import type { EntityId } from '@/types'
+import type { Section } from '@/types/domain/section'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import sectionsApi from '@/api/sections'
+import sectionsApi, { toSection } from '@/api/sections'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage } from '@/utils/httpError'
 
 export const useSectionStore = defineStore('sectionsStore', () => {
-  const sections = ref<SectionDto[]>([])
+  const sections = ref<Section[]>([])
   const itemsPerPage = ref(10)
   const loading = ref(false)
   const error = ref('')
@@ -28,7 +29,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     fetchError.value = ''
     try {
       const resp = await sectionsApi.getAllSections()
-      sections.value = resp.data
+      sections.value = resp.data.map(toSection)
     }
     catch (err) {
       console.error('Error fetching sections:', err)
@@ -48,8 +49,9 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     try {
       const resp = await sectionsApi.createSection(sectionData)
       // Optimistically add to list or re-fetch
-      sections.value.push(resp.data)
-      return resp.data
+      const section = toSection(resp.data)
+      sections.value.push(section)
+      return section
     }
     catch (err) {
       console.error('Error adding section:', err)
@@ -66,12 +68,13 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     error.value = ''
     try {
       const resp = await sectionsApi.updateSection(id, sectionData)
+      const section = toSection(resp.data)
       // Update in local list
       const index = sections.value.findIndex(s => entityIdsMatch(s.id, id))
       if (index !== -1) {
-        sections.value[index] = resp.data
+        sections.value[index] = section
       }
-      return resp.data
+      return section
     }
     catch (err) {
       console.error('Error updating section:', err)
@@ -105,7 +108,7 @@ export const useSectionStore = defineStore('sectionsStore', () => {
     loading.value = true
     try {
       const resp = await sectionsApi.getSection(id)
-      return resp.data
+      return toSection(resp.data)
     }
     catch (err) {
       console.error('Error fetching section:', err)

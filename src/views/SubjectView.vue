@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { SubjectDto, SubjectPayload } from '@/api/subjects'
+import type { SubjectPayload } from '@/api/subjects'
+import type { Subject } from '@/types/domain/subject'
 import type { FormFieldConfig } from '@/types/ui'
 import { AlertTriangle, BookOpen, Hash, Plus } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -79,7 +80,7 @@ const {
   openAddModal,
   openEditModal,
   closeModal,
-} = useCrudModal<SubjectPayload, SubjectDto>({
+} = useCrudModal<SubjectPayload, Subject>({
   showToast,
   createFn: data => subjectStore.createSubject(data),
   updateFn: (id, data) => subjectStore.updateSubject(id, data),
@@ -94,7 +95,7 @@ const {
   handleDelete: handleDeleteSubject,
   confirmDelete,
   cancelDelete,
-} = createDeleteFlow<SubjectDto>({
+} = createDeleteFlow<Subject>({
   store: {
     items: () => subjectStore.subjects,
     deleteItem: subjectStore.deleteSubject,

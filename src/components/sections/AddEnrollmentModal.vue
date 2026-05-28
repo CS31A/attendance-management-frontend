@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SectionDto } from '@/api/sections'
+import type { Section } from '@/types/domain/section'
 import type { EntityId } from '@/types'
 import { Loader2, X } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
@@ -9,7 +9,7 @@ import { useUserStore } from '@/stores/userStore'
 import { getPublicEntityId } from '@/utils/entityIdNormalization'
 
 const props = defineProps<{
-  section: SectionDto
+  section: Section
 }>()
 
 const emit = defineEmits<{

@@ -1,15 +1,16 @@
 import type { EnrollmentData, EnrollmentDto } from '@/api/enrollments'
 import type { EntityId } from '@/types'
+import type { Enrollment } from '@/types/domain/enrollment'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import enrollmentsApi from '@/api/enrollments'
+import enrollmentsApi, { toEnrollment } from '@/api/enrollments'
 import { entityIdsMatch } from '@/utils/entityId'
 import { getErrorMessage } from '@/utils/httpError'
 
 export const useEnrollmentStore = defineStore('enrollments', () => {
   // State
-  const sectionStudents = ref<EnrollmentDto[]>([])
-  const studentEnrollments = ref<EnrollmentDto[]>([])
+  const sectionStudents = ref<Enrollment[]>([])
+  const studentEnrollments = ref<Enrollment[]>([])
   const pendingRequests = ref(0)
   const loading = computed(() => pendingRequests.value > 0)
   const error = ref('')
@@ -56,8 +57,8 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     error.value = ''
     try {
       const response = await enrollmentsApi.getSectionStudents(sectionId)
-      sectionStudents.value = response.data
-      return response.data
+      sectionStudents.value = response.data.map(toEnrollment)
+      return sectionStudents.value
     }
     catch (err) {
       console.error('Error fetching section students:', err)
@@ -74,8 +75,10 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     error.value = ''
     try {
       const response = await enrollmentsApi.getStudentEnrollments(studentId)
-      studentEnrollments.value = response.data.enrollments
-      return response.data.enrollments
+      const raw = response.data as EnrollmentDto[] | { enrollments?: EnrollmentDto[] }
+      const items = Array.isArray(raw) ? raw : (raw.enrollments ?? [])
+      studentEnrollments.value = items.map(toEnrollment)
+      return studentEnrollments.value
     }
     catch (err) {
       console.error('Error fetching student enrollments:', err)
@@ -99,7 +102,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
       else {
         // Update local state only when we are not refreshing from API.
         sectionStudents.value = sectionStudents.value.filter(
-          s => !entityIdsMatch(s.enrollmentId, enrollmentId),
+          s => !entityIdsMatch(s.id, enrollmentId),
         )
       }
     }

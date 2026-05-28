@@ -69,6 +69,25 @@ type _entityIdNormalizerReturn = ExpectTrue<Extends<ReturnType<typeof import('@/
 type _entityIdMatcherReturn = ExpectTrue<Extends<ReturnType<typeof import('@/utils/entityId').entityIdsMatch>, boolean>>
 type _entityIdRejectsNumber = ExpectFalse<Extends<number, EntityId>>
 
+type _entityIdNormalizerAcceptsClassroomDto = ExpectTrue<
+  Extends<
+    import('@/api/classrooms').ClassroomDto[],
+    Parameters<typeof import('@/utils/entityIdNormalization').normalizePublicEntityId>[0]
+  >
+>
+type _entityIdNormalizerAcceptsCourseDto = ExpectTrue<
+  Extends<
+    import('@/api/courses').CourseDto[],
+    Parameters<typeof import('@/utils/entityIdNormalization').normalizePublicEntityId>[0]
+  >
+>
+type _entityIdNormalizerAcceptsSubjectDto = ExpectTrue<
+  Extends<
+    import('@/api/subjects').SubjectDto[],
+    Parameters<typeof import('@/utils/entityIdNormalization').normalizePublicEntityId>[0]
+  >
+>
+
 type _paginationParamsAcceptPage = ExpectTrue<Extends<{ page: number, limit: number }, PaginationParams>>
 type _paginationParamsAcceptOffset = ExpectTrue<Extends<{ offset: number, limit: number }, PaginationParams>>
 type _paginationParamsRejectMixed = ExpectFalse<Extends<{ page: number, offset: number, limit: number }, PaginationParams>>

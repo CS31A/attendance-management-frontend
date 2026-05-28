@@ -5,7 +5,13 @@ import api from './index'
 export interface SectionDto {
   id: EntityId
   name?: string
-  [key: string]: unknown
+}
+
+export function toSection(dto: SectionDto): { id: EntityId; name: string } {
+  return {
+    id: dto.id,
+    name: dto.name ?? '',
+  }
 }
 
 export interface SectionPayload {

@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import type { AttendanceSummaryDto, SessionAttendanceResponseDto } from '@/api/attendance'
-import type { SessionResponseDto } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
 import type { EntityId } from '@/types'
-import { ArcElement, CategoryScale, Chart as ChartJS, DoughnutController, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js'
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import { BookOpen, Calendar, CheckCircle, Clock } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { calculateAttendanceStats, fetchAttendanceSummary, fetchSessionAttendance, getStatusLabel } from '@/api/attendance'
 import { getInstructorSubjects, getMySchedules } from '@/api/instructors'
 import AdminDashboard from '@/components/dashboard/AdminDashboard.vue'
+import SessionAttendanceModal from '@/components/dashboard/SessionAttendanceModal.vue'
+import AttendanceChart from '@/components/dashboard/widgets/AttendanceChart.vue'
+import StatsCard from '@/components/dashboard/widgets/StatsCard.vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { LOCALE } from '@/utils/constants'
-import { formatLongDate } from '@/utils/date'
-import { entityIdsMatch } from '@/utils/entityId'
-import { getErrorMessage } from '@/utils/httpError'
-
-const Doughnut = defineAsyncComponent(() => import('vue-chartjs').then(module => ({ default: module.Doughnut })))
 
 interface InstructorProfile {
   id?: EntityId
@@ -50,7 +46,7 @@ interface RefreshIntervalMap {
   timeUpdate?: ReturnType<typeof setInterval>
 }
 
-interface DashboardAttendanceSummary extends AttendanceSummaryDto {
+interface DashboardAttendanceSummary {
   totalSessions?: number
   totalPresent?: number
   totalLate?: number
@@ -65,21 +61,6 @@ interface InstructorSubject extends Record<string, unknown> {
   name?: string
 }
 
-interface SessionAttendanceModalData {
-  session: SessionResponseDto
-  attendanceRecords: SessionAttendanceResponseDto[]
-  presentCount: number
-  lateCount: number
-  absentCount: number
-  excusedCount: number
-  attendanceRate: number
-  totalEnrolled: number | null
-  attendanceMeta: string
-}
-
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, DoughnutController, ArcElement)
-
 const authStore = useAuthStore()
 const sessionStore = useSessionStore()
 const router = useRouter()
@@ -88,22 +69,18 @@ const router = useRouter()
 const isLoading = ref(true)
 const instructorProfile = ref<InstructorProfile | null>(null)
 const schedules = ref<ScheduleItem[]>([])
-const activeSessions = ref<SessionResponseDto[]>([])
-const upcomingSessions = ref<SessionResponseDto[]>([])
+const activeSessions = ref<Session[]>([])
+const upcomingSessions = ref<Session[]>([])
 const attendanceSummary = ref<DashboardAttendanceSummary | null>(null)
 const subjects = ref<InstructorSubject[]>([])
-const todaySessions = ref<SessionResponseDto[]>([])
-const showModal = ref(false)
-const modalSessionData = ref<SessionAttendanceModalData | null>(null)
-const modalLoading = ref(false)
-const modalErrorMessage = ref('')
+const todaySessions = ref<Session[]>([])
 const activeModalSessionId = ref<EntityId | null>(null)
 const currentDateTime = ref(new Date())
 const refreshIntervals = ref<RefreshIntervalMap>({})
 
 // Computed
 const isAuthenticated = computed(() => authStore.getIsAuthenticated)
-const user = computed(() => authStore.userProfile) // Changed from authStore.user to authStore.userProfile for role info
+const user = computed(() => authStore.userProfile)
 const isStudent = computed(() => user.value?.role === 'Student')
 const isInstructor = computed(() => user.value?.role === 'Instructor')
 const isAdmin = computed(() => user.value?.role === 'Admin')
@@ -137,54 +114,6 @@ const formattedTime = computed(() => {
   return currentDateTime.value.toLocaleTimeString(LOCALE.DEFAULT, LOCALE.TIME_FORMAT)
 })
 
-// Attendance chart data
-const attendanceChartData = computed(() => {
-  if (!attendanceSummary.value) {
-    return {
-      labels: ['Present', 'Late', 'Absent', 'Excused'],
-      datasets: [{
-        data: [0, 0, 0, 0],
-        backgroundColor: [
-          'var(--color-success)',
-          'var(--color-warning)',
-          'var(--color-error)',
-          'var(--color-info)',
-        ],
-        borderWidth: 0,
-      }],
-    }
-  }
-
-  return {
-    labels: ['Present', 'Late', 'Absent', 'Excused'],
-    datasets: [{
-      data: [
-        attendanceSummary.value.totalPresent || 0,
-        attendanceSummary.value.totalLate || 0,
-        attendanceSummary.value.totalAbsent || 0,
-        attendanceSummary.value.totalExcused || 0,
-      ],
-      backgroundColor: [
-        'var(--color-success)',
-        'var(--color-warning)',
-        'var(--color-error)',
-        'var(--color-info)',
-      ],
-      borderWidth: 0,
-    }],
-  }
-})
-
-const attendanceChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
-}
-
 // Weekly schedule grouped by day
 const weeklySchedule = computed(() => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -205,9 +134,7 @@ const currentDay = computed(() => {
 // API Functions
 async function loadInstructorData() {
   try {
-    // Fetch the user profile from the store
     await authStore.fetchUserProfile()
-    // Get the instructor profile from the store's userProfile
     const profile = authStore.userProfile
     instructorProfile.value = profile?.instructorProfile || null
 
@@ -266,6 +193,7 @@ async function loadUpcomingSessions() {
 
 async function loadAttendanceSummary() {
   try {
+    const { fetchAttendanceSummary } = await import('@/api/attendance')
     const data = await fetchAttendanceSummary()
     attendanceSummary.value = data
   }
@@ -290,72 +218,12 @@ async function loadTodaySessions() {
   }
 }
 
-// Modal functions
-async function openSessionModal(sessionId: EntityId) {
+// Modal
+function openSessionModal(sessionId: EntityId) {
   activeModalSessionId.value = sessionId
-  showModal.value = true
-  modalLoading.value = true
-  modalSessionData.value = null
-  modalErrorMessage.value = ''
-  const requestSessionId = sessionId
-
-  try {
-    const selectedSession = sessionStore.sessions.find(session => entityIdsMatch(session.id, sessionId))
-      || activeSessions.value.find(session => entityIdsMatch(session.id, sessionId))
-      || upcomingSessions.value.find(session => entityIdsMatch(session.id, sessionId))
-      || todaySessions.value.find(session => entityIdsMatch(session.id, sessionId))
-      || await sessionStore.fetchSessionById(sessionId)
-
-    const attendanceRecords = await fetchSessionAttendance(sessionId)
-    const stats = calculateAttendanceStats(attendanceRecords)
-    const totalEnrolled = typeof selectedSession.totalEnrolled === 'number'
-      ? selectedSession.totalEnrolled
-      : null
-    const attendanceMeta = attendanceRecords.length === 0
-      ? 'Attendance not recorded yet'
-      : `${attendanceRecords.length} attendance record${attendanceRecords.length === 1 ? '' : 's'}`
-
-    if (!entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
-      return
-    }
-
-    modalSessionData.value = {
-      session: selectedSession,
-      attendanceRecords,
-      presentCount: stats.presentCount,
-      lateCount: stats.lateCount,
-      absentCount: stats.absentCount,
-      excusedCount: stats.excusedCount,
-      attendanceRate: stats.presentPercentage,
-      totalEnrolled,
-      attendanceMeta,
-    }
-  }
-  catch (error) {
-    console.error('Failed to load session attendance:', error)
-    if (!entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
-      return
-    }
-    modalSessionData.value = null
-    modalErrorMessage.value = getErrorMessage(error, 'Failed to load session attendance. Please try again.')
-  }
-  finally {
-    if (entityIdsMatch(activeModalSessionId.value, requestSessionId)) {
-      modalLoading.value = false
-    }
-  }
 }
 
-function retrySessionModal() {
-  if (activeModalSessionId.value !== null) {
-    void openSessionModal(activeModalSessionId.value)
-  }
-}
-
-function closeModal() {
-  showModal.value = false
-  modalSessionData.value = null
-  modalErrorMessage.value = ''
+function onModalClose() {
   activeModalSessionId.value = null
 }
 
@@ -379,18 +247,15 @@ onMounted(async () => {
   }
 
   if (isAdmin.value) {
-    // Admin users have their own dashboard component which handles data loading
     isLoading.value = false
     return
   }
 
   if (isStudent.value) {
-    // Student users see a different dashboard - existing implementation
     isLoading.value = false
     return
   }
 
-  // Only show instructor dashboard for instructors
   if (!isInstructor.value) {
     isLoading.value = false
     return
@@ -420,11 +285,10 @@ onMounted(async () => {
   }
 
   // Setup refresh intervals
-  refreshIntervals.value.activeSessions = setInterval(loadActiveSessions, 30000) // 30 seconds
-  refreshIntervals.value.upcomingSessions = setInterval(loadUpcomingSessions, 120000) // 2 minutes
-  refreshIntervals.value.attendanceStats = setInterval(loadAttendanceSummary, 300000) // 5 minutes
+  refreshIntervals.value.activeSessions = setInterval(loadActiveSessions, 30000)
+  refreshIntervals.value.upcomingSessions = setInterval(loadUpcomingSessions, 120000)
+  refreshIntervals.value.attendanceStats = setInterval(loadAttendanceSummary, 300000)
 
-  // Cleanup timer
   refreshIntervals.value.timeUpdate = timeInterval
 })
 
@@ -500,65 +364,30 @@ onBeforeUnmount(() => {
         <!-- Statistics Cards -->
         <section class="stats-section">
           <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon purple">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
-              </div>
-              <div class="stat-content">
-                <h3 class="stat-label">
-                  Total Sessions
-                </h3>
-                <p class="stat-value">
-                  {{ attendanceSummary?.totalSessions || 0 }}
-                </p>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon green">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-              </div>
-              <div class="stat-content">
-                <h3 class="stat-label">
-                  Attendance Rate
-                </h3>
-                <p class="stat-value">
-                  {{ attendanceSummary?.attendanceRate?.toFixed(1) || 0 }}%
-                </p>
-                <div class="trend-indicator" :class="{ positive: (attendanceSummary?.attendanceRate || 0) >= 75 }">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
-                  <span>{{ (attendanceSummary?.attendanceRate || 0) >= 90 ? 'Excellent' : (attendanceSummary?.attendanceRate || 0) >= 75 ? 'Good' : 'Needs Improvement' }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon amber">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-              </div>
-              <div class="stat-content">
-                <h3 class="stat-label">
-                  Active Classes
-                </h3>
-                <p class="stat-value">
-                  {{ activeSessions.length }}
-                </p>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon blue">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>
-              </div>
-              <div class="stat-content">
-                <h3 class="stat-label">
-                  Subjects Taught
-                </h3>
-                <p class="stat-value">
-                  {{ subjects.length }}
-                </p>
-              </div>
-            </div>
+            <StatsCard
+              title="Total Sessions"
+              :value="attendanceSummary?.totalSessions || 0"
+              :icon="Calendar"
+              color="purple"
+            />
+            <StatsCard
+              title="Attendance Rate"
+              :value="`${attendanceSummary?.attendanceRate?.toFixed(1) || 0}%`"
+              :icon="CheckCircle"
+              color="success"
+            />
+            <StatsCard
+              title="Active Classes"
+              :value="activeSessions.length"
+              :icon="Clock"
+              color="warning"
+            />
+            <StatsCard
+              title="Subjects Taught"
+              :value="subjects.length"
+              :icon="BookOpen"
+              color="info"
+            />
           </div>
         </section>
 
@@ -653,53 +482,8 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <!-- Attendance Statistics -->
-            <div class="widget">
-              <div class="widget-header">
-                <h2 class="widget-title">
-                  Attendance Overview
-                </h2>
-              </div>
-              <div class="widget-content">
-                <div class="attendance-stats-grid">
-                  <div class="attendance-stat present">
-                    <div class="attendance-stat-value">
-                      {{ attendanceSummary?.totalPresent || 0 }}
-                    </div>
-                    <div class="attendance-stat-label">
-                      Present
-                    </div>
-                  </div>
-                  <div class="attendance-stat late">
-                    <div class="attendance-stat-value">
-                      {{ attendanceSummary?.totalLate || 0 }}
-                    </div>
-                    <div class="attendance-stat-label">
-                      Late
-                    </div>
-                  </div>
-                  <div class="attendance-stat absent">
-                    <div class="attendance-stat-value">
-                      {{ attendanceSummary?.totalAbsent || 0 }}
-                    </div>
-                    <div class="attendance-stat-label">
-                      Absent
-                    </div>
-                  </div>
-                  <div class="attendance-stat excused">
-                    <div class="attendance-stat-value">
-                      {{ attendanceSummary?.totalExcused || 0 }}
-                    </div>
-                    <div class="attendance-stat-label">
-                      Excused
-                    </div>
-                  </div>
-                </div>
-                <div class="chart-container">
-                  <Doughnut :data="attendanceChartData" :options="attendanceChartOptions" />
-                </div>
-              </div>
-            </div>
+            <!-- Attendance Overview -->
+            <AttendanceChart :data="attendanceSummary" />
           </div>
 
           <!-- Right Column -->
@@ -792,106 +576,11 @@ onBeforeUnmount(() => {
       </template>
     </template>
 
-    <!-- Session Detail Modal -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">
-            Session Attendance
-          </h2>
-          <button class="modal-close" @click="closeModal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18" /><line x1="6" x2="18" y1="6" y2="18" /></svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div v-if="modalLoading" class="modal-loading">
-            <div class="spinner" />
-            <p>Loading attendance data...</p>
-          </div>
-          <div v-else-if="modalSessionData" class="modal-content">
-            <div class="session-info">
-              <h3>{{ modalSessionData.session.subjectName }} - {{ modalSessionData.session.sectionName }}</h3>
-              <p>
-                {{ formatLongDate(modalSessionData.session.sessionDate, '-') }} •
-                {{ modalSessionData.totalEnrolled === null ? 'Enrollment unavailable' : `${modalSessionData.totalEnrolled} students enrolled` }}
-                • {{ modalSessionData.attendanceMeta }}
-              </p>
-            </div>
-
-            <div class="attendance-stats-grid" style="margin: 1.5rem 0;">
-              <div class="attendance-stat present">
-                <div class="attendance-stat-value">
-                  {{ modalSessionData.presentCount }}
-                </div>
-                <div class="attendance-stat-label">
-                  Present
-                </div>
-              </div>
-              <div class="attendance-stat late">
-                <div class="attendance-stat-value">
-                  {{ modalSessionData.lateCount }}
-                </div>
-                <div class="attendance-stat-label">
-                  Late
-                </div>
-              </div>
-              <div class="attendance-stat absent">
-                <div class="attendance-stat-value">
-                  {{ modalSessionData.absentCount }}
-                </div>
-                <div class="attendance-stat-label">
-                  Absent
-                </div>
-              </div>
-              <div class="attendance-stat rate">
-                <div class="attendance-stat-value" style="color: var(--color-primary);">
-                  {{ modalSessionData.attendanceRate?.toFixed(1) }}%
-                </div>
-                <div class="attendance-stat-label">
-                  Rate
-                </div>
-              </div>
-            </div>
-
-            <table class="attendance-table">
-              <thead>
-                <tr>
-                  <th>Student Number</th>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Check-in Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="record in modalSessionData.attendanceRecords" :key="record.studentId">
-                  <td>{{ record.studentNumber }}</td>
-                  <td>{{ record.studentName }}</td>
-                  <td>
-                    <span class="attendance-badge" :class="record.status.toLowerCase()">
-                      {{ getStatusLabel(record.status) }}
-                    </span>
-                  </td>
-                  <td>{{ record.checkInTime ? formatTime(record.checkInTime) : '-' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div v-else class="modal-error-state">
-            <p class="modal-error-message">
-              {{ modalErrorMessage || 'Failed to load session attendance. Please try again.' }}
-            </p>
-            <div class="modal-error-actions">
-              <button class="btn-secondary" @click="closeModal">
-                Close
-              </button>
-              <button class="btn-primary" @click="retrySessionModal">
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Session Attendance Modal -->
+    <SessionAttendanceModal
+      :session-id="activeModalSessionId"
+      @close="onModalClose"
+    />
   </div>
 </template>
 
@@ -1012,82 +701,6 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--spacing-lg);
-}
-
-.stat-card {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  transition: all var(--transition-base);
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: white;
-}
-
-.stat-icon.purple {
-  background: var(--gradient-primary-diagonal);
-}
-
-.stat-icon.green {
-  background: linear-gradient(135deg, var(--color-success), var(--color-success-light));
-}
-
-.stat-icon.amber {
-  background: linear-gradient(135deg, var(--color-warning), var(--color-warning-light));
-}
-
-.stat-icon.blue {
-  background: linear-gradient(135deg, var(--color-info), var(--color-info-light));
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  margin: 0 0 0.25rem 0;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-  margin: 0;
-}
-
-.trend-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-error);
-}
-
-.trend-indicator.positive {
-  color: var(--color-success);
 }
 
 /* Main Grid */
@@ -1267,52 +880,6 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
-/* Attendance Stats */
-.attendance-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.attendance-stat {
-  text-align: center;
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  transition: all var(--transition-base);
-}
-
-.attendance-stat.present { border-color: var(--color-success); }
-.attendance-stat.late { border-color: var(--color-warning); }
-.attendance-stat.absent { border-color: var(--color-error); }
-.attendance-stat.excused { border-color: var(--color-info); }
-
-.attendance-stat-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.attendance-stat.present .attendance-stat-value { color: var(--color-success); }
-.attendance-stat.late .attendance-stat-value { color: var(--color-warning); }
-.attendance-stat.absent .attendance-stat-value { color: var(--color-error); }
-.attendance-stat.excused .attendance-stat-value { color: var(--color-info); }
-
-.attendance-stat-label {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  font-weight: 500;
-  margin: 0;
-}
-
-.chart-container {
-  height: 200px;
-  margin-top: var(--spacing-lg);
-}
-
 /* Schedule */
 .schedule-widget {
   min-height: 600px;
@@ -1418,182 +985,6 @@ onBeforeUnmount(() => {
   border: 1px solid var(--border-primary);
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-overlay);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  animation: fadeIn var(--transition-base);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal {
-  width: 90%;
-  max-width: 900px;
-  max-height: 90vh;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp var(--transition-base);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-base);
-}
-
-.modal-close:hover {
-  background: var(--bg-active);
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: var(--spacing-lg);
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2xl);
-  gap: var(--spacing-md);
-  color: var(--text-secondary);
-}
-
-.modal-error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-2xl);
-  text-align: center;
-}
-
-.modal-error-message {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.modal-error-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
-.session-info h3 {
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-}
-
-.session-info p {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.attendance-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.attendance-table th {
-  text-align: left;
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.attendance-table td {
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-  color: var(--text-secondary);
-}
-
-.attendance-table tr:hover {
-  background: var(--bg-hover);
-}
-
-.attendance-badge {
-  display: inline-flex;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.attendance-badge.present {
-  background: var(--color-success-bg);
-  color: var(--color-success);
-}
-
-.attendance-badge.late {
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
-}
-
-.attendance-badge.absent {
-  background: var(--color-error-bg);
-  color: var(--color-error);
-}
-
-.attendance-badge.excused {
-  background: var(--color-info-bg);
-  color: var(--color-info);
-}
-
 /* Loading State */
 .loading-state {
   display: flex;
@@ -1683,25 +1074,12 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 
-  .attendance-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .welcome-text {
     font-size: 1.5rem;
-  }
-
-  .modal {
-    width: 95%;
-    max-height: 95vh;
   }
 }
 
 @media (max-width: 640px) {
-  .attendance-stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .schedule-widget {
     min-height: auto;
   }

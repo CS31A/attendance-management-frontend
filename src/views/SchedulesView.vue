@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { ClassroomDto } from '@/api/classrooms'
-import type { ScheduleDto, SchedulePayload } from '@/api/schedules'
-import type { SectionDto } from '@/api/sections'
-import type { SubjectDto } from '@/api/subjects'
+import type { Classroom } from '@/types/domain/classroom'
+import type { Schedule } from '@/types/domain/schedule'
+import type { Section } from '@/types/domain/section'
+import type { Subject } from '@/types/domain/subject'
+import type { SchedulePayload } from '@/api/schedules'
 import type { EntityId } from '@/types'
 import type { FormFieldConfig, FormOption } from '@/types/ui'
 import { AlertTriangle, BookOpen, Calendar, Clock, DoorOpen, GraduationCap, Plus, User, X } from 'lucide-vue-next'
@@ -94,7 +95,7 @@ const scheduleFields: FormFieldConfig[] = [
     options: async () => {
       const response = await subjectApi.getAllSubjects()
       const subjects = extractResponseData(response)
-      return subjects.map((s: SubjectDto) => ({
+      return subjects.map((s: Subject) => ({"}
         value: getPublicEntityId(s),
         label: `${s.name} (${s.code})`,
       }))
@@ -110,7 +111,7 @@ const scheduleFields: FormFieldConfig[] = [
     options: async () => {
       const response = await classroomApi.getAllClassrooms()
       const classrooms = extractResponseData(response)
-      return classrooms.map((c: ClassroomDto) => ({
+      return classrooms.map((c: Classroom) => ({"}
         value: getPublicEntityId(c),
         label: c.name || 'Unnamed Classroom',
       }))
@@ -126,7 +127,7 @@ const scheduleFields: FormFieldConfig[] = [
     options: async () => {
       const response = await sectionsApi.getAllSections()
       const sections = extractResponseData(response)
-      return sections.map((s: SectionDto) => ({
+      return sections.map((s: Section) => ({"}
         value: s.id,
         label: s.name || 'Unnamed Section',
       }))
@@ -245,7 +246,7 @@ const {
   openAddModal,
   openEditModal,
   closeModal,
-} = useCrudModal<SchedulePayload, ScheduleDto>({
+} = useCrudModal<SchedulePayload, Schedule>({
   showToast,
   createFn: data => scheduleStore.createSchedule(data),
   updateFn: (id, data) => scheduleStore.updateSchedule(id, data),
@@ -261,7 +262,7 @@ const {
   handleDelete: handleDeleteSchedule,
   confirmDelete,
   cancelDelete,
-} = createDeleteFlow<ScheduleDto>({
+} = createDeleteFlow<Schedule>({
   store: {
     items: () => scheduleStore.schedules,
     deleteItem: scheduleStore.deleteSchedule,
@@ -473,7 +474,7 @@ watch(selectedDay, () => {
       :show="showDeleteModal"
       title="Delete Schedule"
       message="Are you sure you want to delete this schedule? This action cannot be undone."
-      :item-name="scheduleToDelete ? `${scheduleToDelete.subject?.name || scheduleToDelete.subjectName || 'Schedule'} - ${scheduleToDelete.section?.name || scheduleToDelete.sectionName || ''}` : ''"
+      :item-name="scheduleToDelete ? `${scheduleToDelete.subjectName || 'Schedule'} - ${scheduleToDelete.sectionName || ''}` : ''"
       :is-deleting="isDeleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

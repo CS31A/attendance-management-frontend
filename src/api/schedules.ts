@@ -13,7 +13,6 @@ export interface ScheduleRelationDto {
   sectionName?: string
   courseName?: string
   classroomName?: string
-  [key: string]: unknown
 }
 
 export interface ScheduleInstructorDto {
@@ -22,7 +21,6 @@ export interface ScheduleInstructorDto {
   lastname?: string
   firstName?: string
   lastName?: string
-  [key: string]: unknown
 }
 
 export interface ScheduleDto {
@@ -52,7 +50,6 @@ export interface ScheduleDto {
   classroom?: ScheduleRelationDto | null
   course?: ScheduleRelationDto | null
   instructor?: ScheduleInstructorDto | null
-  [key: string]: unknown
 }
 
 export type ScheduleCollectionDto = ScheduleDto[]
@@ -67,7 +64,6 @@ export interface SchedulePayload {
 }
 
 export type ScheduleQueryParams = PaginationParams & {
-  [key: string]: unknown
 }
 
 function normalizeSchedule(schedule: ScheduleDto): ScheduleDto {
@@ -88,6 +84,58 @@ function normalizeSchedule(schedule: ScheduleDto): ScheduleDto {
     instructorFirstName: schedule.instructorFirstName ?? instructor?.firstName ?? instructor?.firstname,
     instructorLastName: schedule.instructorLastName ?? instructor?.lastName ?? instructor?.lastname,
   })
+}
+
+export function toSchedule(dto: ScheduleDto): {
+  id: EntityId
+  dayOfWeek: string
+  timeIn: string
+  timeOut: string
+  subjectId: EntityId | null
+  classroomId: EntityId | null
+  sectionId: EntityId | null
+  instructorId: EntityId | null
+  courseId: EntityId | null
+  subjectCode: string
+  subjectName: string
+  courseCode: string
+  courseName: string
+  sectionName: string
+  classroomName: string
+  instructorFirstName: string
+  instructorLastName: string
+} {
+  return {
+    id: dto.id,
+    dayOfWeek: dto.dayOfWeek ?? '',
+    timeIn: dto.timeIn ?? '',
+    timeOut: dto.timeOut ?? '',
+    subjectId: dto.subjectId ?? dto.subject?.id ?? null,
+    classroomId: dto.classroomId ?? dto.classroom?.id ?? null,
+    sectionId: dto.sectionId ?? dto.section?.id ?? null,
+    instructorId: dto.instructorId ?? dto.instructor?.id ?? null,
+    courseId: dto.courseId ?? dto.course?.id ?? null,
+    subjectCode: dto.subjectCode ?? dto.subject?.code ?? '',
+    subjectName: dto.subjectName ?? dto.subject?.name ?? '',
+    courseCode: dto.courseCode ?? dto.course?.code ?? '',
+    courseName: dto.courseName ?? dto.course?.name ?? '',
+    sectionName: dto.sectionName ?? dto.section?.name ?? '',
+    classroomName: dto.classroomName ?? dto.classroom?.name ?? '',
+    instructorFirstName: dto.instructorFirstName ?? dto.instructor?.firstName ?? dto.instructor?.firstname ?? '',
+    instructorLastName: dto.instructorLastName ?? dto.instructor?.lastName ?? dto.instructor?.lastname ?? '',
+  }
+}
+
+export function toScheduleInstructor(dto: ScheduleInstructorDto): {
+  id: EntityId
+  firstName: string
+  lastName: string
+} {
+  return {
+    id: dto.id ?? '',
+    firstName: dto.firstName ?? dto.firstname ?? '',
+    lastName: dto.lastName ?? dto.lastname ?? '',
+  }
 }
 
 function normalizeScheduleCollection(data: ScheduleCollectionDto): ScheduleCollectionDto {

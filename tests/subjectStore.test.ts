@@ -10,6 +10,9 @@ import { getErrorMessage, getValidationErrorMessages } from '@/utils/httpError'
 
 vi.mock('@/api/subjects')
 vi.mock('@/utils/httpError')
+import { toSubject } from '@/api/subjects'
+vi.mocked(toSubject).mockImplementation(((dto: any) => ({ ...dto })) as any)
+vi.mock('@/utils/httpError')
 
 // Helper factory
 function createSubject(overrides: Partial<SubjectDto> = {}): SubjectDto {
