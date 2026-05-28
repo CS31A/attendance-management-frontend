@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CreateSessionPayload, EndSessionPayload, Session, StartSessionPayload, UpdateSessionRoomPayload } from '@/api/sessions'
+import type { Session } from '@/types/domain/session'
+import type { CreateSessionPayload, EndSessionPayload, StartSessionPayload, UpdateSessionRoomPayload } from '@/api/sessions'
 import type { EntityId } from '@/types'
 import type { SessionStatus } from '@/utils/constants'
 import { AlertTriangle, Calendar, Plus, RefreshCw } from 'lucide-vue-next'

@@ -120,7 +120,7 @@ export function createCrudStore<
       error.value = ''
       try {
         const response = await api.create(data)
-        ;(items.value as TDto[]).push(response.data)
+        items.value.push(response.data)
         return response.data
       }
       catch (err) {
@@ -144,7 +144,7 @@ export function createCrudStore<
         const response = await api.update(id, data)
         const index = items.value.findIndex(c => entityIdsMatch(c.id, id))
         if (index !== -1) {
-          ;(items.value as TDto[])[index] = response.data
+          items.value[index] = response.data
         }
         return response.data
       }

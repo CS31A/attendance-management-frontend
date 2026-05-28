@@ -108,6 +108,9 @@ export const useAttendanceStore = defineStore('attendanceStore', () => {
         return
       }
 
+      // Optimistic insert: API create/update returns AttendanceResponseDto (no student metadata).
+      // Background refresh (refreshSessionAttendanceWithRetry) replaces these with full data shortly after.
+
       if (allowInsert) {
         sessionAttendance.value.push({
           ...record,

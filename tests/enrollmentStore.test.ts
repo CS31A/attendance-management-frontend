@@ -128,6 +128,24 @@ describe('enrollmentStore', () => {
       expect(store.loading).toBe(false)
     })
 
+    it('fetchStudentEnrollments maps each enrollment through toEnrollment', async () => {
+      const dto1 = createEnrollment({ id: '10' as EntityId, firstName: 'Alice' })
+      const dto2 = createEnrollment({ id: '20' as EntityId, firstName: 'Bob' })
+      vi.mocked(enrollmentsApi.getStudentEnrollments).mockResolvedValue({
+        data: { studentId: '5' as EntityId, enrollments: [dto1, dto2] },
+      } as never)
+
+      vi.mocked(toEnrollment).mockClear()
+
+      const store = useEnrollmentStore()
+      await store.fetchStudentEnrollments('5' as EntityId)
+
+      expect(toEnrollment).toHaveBeenCalledTimes(2)
+      expect(vi.mocked(toEnrollment).mock.calls[0][0]).toBe(dto1)
+      expect(vi.mocked(toEnrollment).mock.calls[1][0]).toBe(dto2)
+      expect(store.studentEnrollments).toHaveLength(2)
+    })
+
     it('enrollStudent returns created enrollment', async () => {
       const newEnrollment = createEnrollment({ id: '2' as EntityId })
       const enrollmentData: EnrollmentData = {
@@ -323,7 +341,7 @@ describe('enrollmentStore', () => {
 
       expect(store.isLoading).toBe(true)
 
-      deferred.resolve({ data: [createEnrollment()] } as never)
+      deferred.resolve({ data: { studentId: '1' as EntityId, enrollments: [createEnrollment()] } } as never)
       await request
 
       expect(store.isLoading).toBe(false)
@@ -347,7 +365,7 @@ describe('enrollmentStore', () => {
       await sectionRequest
       expect(store.isLoading).toBe(true)
 
-      studentDeferred.resolve({ data: [createEnrollment()] } as never)
+      studentDeferred.resolve({ data: { studentId: '2' as EntityId, enrollments: [createEnrollment()] } } as never)
       await studentRequest
       expect(store.isLoading).toBe(false)
     })

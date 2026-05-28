@@ -196,7 +196,7 @@ function formatTime(isoString: string | null | undefined) {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="record in sessionData.attendanceRecords" :key="record.studentId">
+              <tr v-for="record in sessionData.attendanceRecords" :key="record.id">
                 <td>{{ record.studentNumber }}</td>
                 <td>{{ record.studentName }}</td>
                 <td>

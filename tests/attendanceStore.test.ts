@@ -663,5 +663,44 @@ describe('attendanceStore', () => {
       expect(store.sessionAttendance).toEqual([])
       expect(store.loading).toBe(false)
     })
+
+    it('submitAttendance inserts new records with empty student metadata (optimistic insert before background refresh)', async () => {
+      // API create returns AttendanceResponseDto without student metadata fields
+      const apiResult = createAttendanceRecord({ id: '101', studentId: '1', sessionId: '55', status: 'present' })
+      vi.mocked(createAttendance).mockResolvedValue(apiResult)
+
+      // Use deferred promise for background refresh so we can inspect optimistic state
+      let resolveRefresh!: (value: AttendanceRecord[]) => void
+      const refreshPromise = new Promise<AttendanceRecord[]>((resolve) => { resolveRefresh = resolve })
+      vi.mocked(apiFetchSessionAttendance).mockReturnValue(refreshPromise)
+
+      const store = useAttendanceStore()
+      store.currentSessionId = '55'
+      store.sessionAttendance = []
+
+      const submitPromise = store.submitAttendance({
+        sessionId: '55',
+        records: [{ studentId: '1', status: 'present' }],
+      })
+
+      // Flush the synchronous + microtask portion of submitAttendance
+      await submitPromise
+
+      // Immediately after submit, optimistic insert has empty student metadata
+      // (background refresh hasn't resolved yet since we control the promise)
+      expect(store.sessionAttendance).toHaveLength(1)
+      expect(store.sessionAttendance[0].studentNumber).toBe('')
+      expect(store.sessionAttendance[0].studentName).toBe('')
+      expect(store.sessionAttendance[0].checkInTime).toBe('')
+      expect(store.sessionAttendance[0].status).toBe('present')
+
+      // Now let background refresh complete
+      resolveRefresh([
+        createSessionAttendanceRecord({ id: '101', studentId: '1', sessionId: '55', status: 'present', studentNumber: 'S001', studentName: 'Alice', checkInTime: '09:00' }),
+      ])
+      await vi.waitFor(() => {
+        expect(store.sessionAttendance[0].studentNumber).toBe('S001')
+      })
+    })
   })
 })

@@ -1,4 +1,4 @@
-import type { EnrollmentData, EnrollmentDto } from '@/api/enrollments'
+import type { EnrollmentData } from '@/api/enrollments'
 import type { EntityId } from '@/types'
 import type { Enrollment } from '@/types/domain/enrollment'
 import { defineStore } from 'pinia'
@@ -75,8 +75,7 @@ export const useEnrollmentStore = defineStore('enrollments', () => {
     error.value = ''
     try {
       const response = await enrollmentsApi.getStudentEnrollments(studentId)
-      const raw = response.data as EnrollmentDto[] | { enrollments?: EnrollmentDto[] }
-      const items = Array.isArray(raw) ? raw : (raw.enrollments ?? [])
+      const items = response.data.enrollments ?? []
       studentEnrollments.value = items.map(toEnrollment)
       return studentEnrollments.value
     }
